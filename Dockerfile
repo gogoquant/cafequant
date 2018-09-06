@@ -42,9 +42,9 @@ COPY ./docker/config /opt/app/config
 ENV GOPATH /opt/gb
 ENV PATH    $PATH:/opt/depend/node-v8.9.3-linux-x64/bin/:/opt/gb/bin
 ENV QUANT_CONFIG /opt/app/config/config.ini
-RUN go get github.com/constabulary/gb/... 
+#RUN go get github.com/constabulary/gb/... 
 
-RUN ls /opt/gb && ls /opt/depend && ls /opt/app
+#RUN ls /opt/gb && ls /opt/depend && ls /opt/app
 RUN env
 
 #RUN cd /opt/app && gb vendor restore && mkdir vendor/src/golang.org/x -p && cd vendor/src/golang.org/x && git clone https://github.com/golang/text && git clone https://github.com/golang/tools && git clone https://github.com/golang/net 
