@@ -47,7 +47,7 @@ RUN go get github.com/constabulary/gb/...
 RUN ls /opt/gb && ls /opt/depend && ls /opt/app
 RUN env
 
-RUN cd /opt/app && gb vendor restore && mkdir vendor/src/golang.org/x -p && cd vendor/src/golang.org/x && git clone https://github.com/golang/text && git clone https://github.com/golang/tools && git clone https://github.com/golang/net 
+#RUN cd /opt/app && gb vendor restore && mkdir vendor/src/golang.org/x -p && cd vendor/src/golang.org/x && git clone https://github.com/golang/text && git clone https://github.com/golang/tools && git clone https://github.com/golang/net 
 
 #build web depended
 RUN npm install -g cnpm --registry=https://registry.npm.taobao.org && cnpm install cooking -g && cnpm install cooking-cli -g && cd /opt/app/web && cnpm install 
