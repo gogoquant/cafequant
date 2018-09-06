@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xiyanxiyan10/conver"
+	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/robertkrimen/otto"
 )

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/xiyanxiyan10/conver"
+	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/model"
 )
