@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/samaritan/api"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/model"
-	"github.com/robertkrimen/otto"
 )
 
 // Trader Variable

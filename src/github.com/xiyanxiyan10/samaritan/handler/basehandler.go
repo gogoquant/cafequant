@@ -6,7 +6,6 @@ package handler
  * seesion val bind to session
  */
 
-
 import (
 	"github.com/gorilla/sessions"
 	"github.com/hprose/hprose-golang/rpc"
@@ -20,7 +19,7 @@ type BaseHandler struct {
 	store map[interface{}]interface{}
 }
 
-func (handler *BaseHandler) GetLocalVal(key interface{}) (interface{}) {
+func (handler *BaseHandler) GetLocalVal(key interface{}) interface{} {
 	return handler.store[key]
 }
 
@@ -28,7 +27,7 @@ func (handler *BaseHandler) SetLocalVal(key interface{}, val interface{}) {
 	handler.store[key] = val
 }
 
-func (handler *BaseHandler) GetSessonVal(ctx rpc.HTTPContext, key interface{}) (interface{}) {
+func (handler *BaseHandler) GetSessonVal(ctx rpc.HTTPContext, key interface{}) interface{} {
 	session, _ := cookieStore.Get(ctx.Request, sessionName)
 	return session.Values[key]
 }

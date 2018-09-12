@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xiyanxiyan10/samaritan/conver"
-	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/robertkrimen/otto"
+	"github.com/xiyanxiyan10/samaritan/constant"
+	"github.com/xiyanxiyan10/samaritan/conver"
 )
 
 type task struct {

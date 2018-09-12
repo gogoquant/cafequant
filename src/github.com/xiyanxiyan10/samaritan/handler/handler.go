@@ -53,7 +53,7 @@ func Server() {
 		spend := (time.Now().UnixNano() - ctx.GetInt64("start")) / 1000000
 		spendInfo := ""
 		if spend > 1000 {
-			spendInfo = fmt.Sprintf("%vs", spend / 1000)
+			spendInfo = fmt.Sprintf("%vs", spend/1000)
 		} else {
 			spendInfo = fmt.Sprintf("%vms", spend)
 		}
@@ -65,5 +65,5 @@ func Server() {
 	http.Handle("/", http.FileServer(http.Dir(config.String("webdist"))))
 	fmt.Printf("%v  Version %v\n", constant.Banner, constant.Version)
 	log.Printf("Running at http://localhost:%v\n", port)
-	http.ListenAndServe(":" + port, nil)
+	http.ListenAndServe(":"+port, nil)
 }
