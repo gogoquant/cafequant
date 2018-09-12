@@ -123,6 +123,44 @@ func (t *Backtest) Run() error {
 	return nil
 }
 
+// Run starts the backtest to get data tick
+func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
+	// poll event queue
+	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
+		// no event in the queue
+		if !ok {
+			// poll data stream
+			data, ok := t.data.Next()
+			// no more data, exit event loop
+			if !ok {
+				break
+			}
+			// found data event, add to event stream
+			t.eventQueue = append(t.eventQueue, data)
+			// start new event cycle
+			continue
+		}
+
+		// processing event and try to get data
+		data, err := t.eventLoop2Data(event)
+		if err != nil {
+			return nil, false, err
+		}
+		// event in queue found, add to event history
+		t.statistic.TrackEvent(event)
+		if data != nil{
+			return data, false, nil
+		}
+	}
+
+	// teardown at the end of the backtest
+	err := t.teardown()
+	if err != nil {
+		return nil, false, err
+	}
+	return nil, true, nil
+}
+
 // setup runs at the beginning of the backtest to perfom preparing operations.
 func (t *Backtest) setup() error {
 	// before first run, set portfolio cash
@@ -207,4 +245,42 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 	}
 
 	return nil
+}
+
+// eventLoop2Data directs the different events to their handler.
+func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
+	// type check for event type
+	switch event := e.(type) {
+	case DataEvent:
+		// update portfolio to the last known price data
+		t.portfolio.Update(event)
+		// update statistics
+		t.statistic.Update(event, t.portfolio)
+		// check if any orders are filled before proceding
+		t.exchange.OnData(event)
+		return &e, nil
+
+	case *Signal:
+		order, err := t.portfolio.OnSignal(event, t.data)
+		if err != nil {
+			break
+		}
+		t.eventQueue = append(t.eventQueue, order)
+
+	case *Order:
+		fill, err := t.exchange.OnOrder(event, t.data)
+		if err != nil {
+			break
+		}
+		t.eventQueue = append(t.eventQueue, fill)
+
+	case *Fill:
+		transaction, err := t.portfolio.OnFill(event, t.data)
+		if err != nil {
+			break
+		}
+		t.statistic.TrackTransaction(transaction)
+	}
+
+	return nil,nil
 }
