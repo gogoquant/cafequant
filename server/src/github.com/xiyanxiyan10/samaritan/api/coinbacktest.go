@@ -2,18 +2,32 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"github.com/bitly/go-simplejson"
 	goback "github.com/dirkolbrich/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/constant"
+	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
+	"strings"
+	"time"
 )
 
 // Backtest backtest struct
 type BtBacktest struct {
 	goback.Backtest
 
+	stockTypeMap     map[string]string
+	tradeTypeMap     map[string]string
+	recordsPeriodMap map[string]string
+	minAmountMap     map[string]float64
+	records          map[string][]Record
+
 	logger           model.Logger
 	option           Option
+
+	limit     float64
+	lastSleep int64
+	lastTimes int64
 }
 
 // NewBacktest create a backtest
@@ -64,15 +78,61 @@ func (e *BtBacktest) GetAccount() interface{} {
 
 // Trade place an order
 func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount interface{}, msgs ...interface{}) interface{} {
-	return map[string]float64{}
+	stockType = strings.ToUpper(stockType)
+	tradeType = strings.ToUpper(tradeType)
+	price := conver.Float64Must(_price)
+	amount := conver.Float64Must(_amount)
+	if _, ok := e.stockTypeMap[stockType]; !ok {
+		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized stockType: ", stockType)
+		return false
+	}
+	switch tradeType {
+	case constant.TradeTypeBuy:
+		return e.buy(stockType, price, amount, msgs...)
+	case constant.TradeTypeSell:
+		return e.sell(stockType, price, amount, msgs...)
+	default:
+		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized tradeType: ", tradeType)
+		return false
+	}
 }
 
 func (e *BtBacktest) buy(stockType string, price, amount float64, msgs ...interface{}) interface{} {
-	return map[string]float64{}
+	//Todo time and symbol test set
+	event := &goback.Event{}
+	event.SetTime(time.Now())
+	event.SetSymbol("debug")
+	signal := &goback.Signal{
+		Event: *event,
+	}
+	signal.SetPrice(price)
+	signal.SetAmount(amount)
+	if price < 0 {
+		signal.SetOrderType(goback.MarketOrder)
+	}else{
+		signal.SetOrderType(goback.LimitOrder)
+	}
+	e.AddSignal(signal)
+	return fmt.Sprint("%s", "success")
 }
 
 func (e *BtBacktest) sell(stockType string, price, amount float64, msgs ...interface{}) interface{} {
-	return map[string]float64{}
+	//Todo time and symbol test set
+	event := &goback.Event{}
+	event.SetTime(time.Now())
+	event.SetSymbol("debug")
+	signal := &goback.Signal{
+		Event: *event,
+	}
+	signal.SetPrice(price)
+	signal.SetAmount(amount)
+	if price < 0 {
+		signal.SetOrderType(goback.MarketOrder)
+	}else{
+		signal.SetOrderType(goback.LimitOrder)
+	}
+	e.AddSignal(signal)
+	return fmt.Sprint("%s", "success")
 }
 
 // GetOrder get details of an order

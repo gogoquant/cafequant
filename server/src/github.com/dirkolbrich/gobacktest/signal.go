@@ -21,6 +21,7 @@ type Signal struct {
 	orderType OrderType // orderType order type
 	qty   int64         // qte of the trader
 	price float64       // price of the Signal
+	amount float64      // amount of the Signal
 	direction Direction // long, short, exit or hold
 }
 
@@ -54,13 +55,23 @@ func (s *Signal) SetPrice(i float64) {
 	s.price = i
 }
 
+// Amount returns the Amount field of a Signal
+func (s *Signal) Amount() float64 {
+	return s.amount
+}
+
+// SetAmount sets the Amount field of a Signal
+func (s *Signal) SetAmount(i float64) {
+	s.amount = i
+}
+
 // OrderType returns the OrderType field of a Signal
 func (s *Signal) OrderType() OrderType {
 	return s.orderType
 }
 
 // SetOrderType sets the OrderType field of a Signal
-func (s *Signal) SetOrderType(i float64) {
-	s.price = i
+func (s *Signal) SetOrderType(i OrderType) {
+	s.orderType = i
 }
 

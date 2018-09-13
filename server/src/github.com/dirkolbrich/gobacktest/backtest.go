@@ -76,6 +76,14 @@ func (t *Backtest) Reset() error {
 	return nil
 }
 
+// SignalAdd Add signal event into event queue
+func (t *Backtest) AddSignal(signals ...SignalEvent)  error{
+	for _, signal := range signals {
+		t.eventQueue = append(t.eventQueue, signal)
+	}
+	return nil
+}
+
 // Stats returns the statistic handler of the backtest.
 func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
