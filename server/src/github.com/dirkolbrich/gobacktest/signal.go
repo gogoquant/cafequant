@@ -18,6 +18,9 @@ const (
 // Signal declares a basic signal event
 type Signal struct {
 	Event
+	orderType OrderType // orderType order type
+	qty   int64         // qte of the trader
+	price float64       // price of the Signal
 	direction Direction // long, short, exit or hold
 }
 
@@ -30,3 +33,34 @@ func (s Signal) Direction() Direction {
 func (s *Signal) SetDirection(dir Direction) {
 	s.direction = dir
 }
+
+// Qty returns the Qty field of a Signal
+func (s *Signal) Qty() int64 {
+	return s.qty
+}
+
+// SetQty sets the Qty field of a Signal
+func (s *Signal) SetQty(i int64) {
+	s.qty = i
+}
+
+// Price returns the Price field of a Signal
+func (s *Signal) Price() float64 {
+	return s.price
+}
+
+// SetPrice sets the Price field of a Signal
+func (s *Signal) SetPrice(i float64) {
+	s.price = i
+}
+
+// OrderType returns the OrderType field of a Signal
+func (s *Signal) OrderType() OrderType {
+	return s.orderType
+}
+
+// SetOrderType sets the OrderType field of a Signal
+func (s *Signal) SetOrderType(i float64) {
+	s.price = i
+}
+
