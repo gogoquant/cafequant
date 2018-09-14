@@ -20,19 +20,24 @@ type Size struct {
 func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) (*Order, error) {
 	// assert interface to concrete Type
 	o := order.(*Order)
-	// no default set, no sizing possible, order rejected
-	if (s.DefaultSize == 0) || (s.DefaultValue == 0) {
-		return o, errors.New("cannot size order: no defaultSize or defaultValue set,")
+
+	//set the float val for cost Calculate
+	if o.QtyType() == INT64_QTY {
+		o.SetFQty(float64(o.Qty()))
 	}
+	// no default set, no sizing possible, order rejected
+	/*
+		if (s.DefaultSize == 0) || (s.DefaultValue == 0) {
+			return o, errors.New("cannot size order: no defaultSize or defaultValue set,")
+		}
+	*/
 
 	// decide on order direction
 	switch o.Direction() {
 	case BOT:
-		o.SetDirection(BOT)
-		o.SetQty(s.setDefaultSize(data.Price()))
+		//o.SetQty(s.setDefaultSize(data.Price()))
 	case SLD:
-		o.SetDirection(SLD)
-		o.SetQty(s.setDefaultSize(data.Price()))
+		//o.SetQty(s.setDefaultSize(data.Price()))
 	case EXT: // all shares should be sold or bought, depending on position
 		// poll postions
 		if _, ok := pf.IsInvested(o.Symbol()); !ok {
@@ -52,6 +57,7 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 	return o, nil
 }
 
+// setDefaultSize this use to set amount as the market price
 func (s *Size) setDefaultSize(price float64) int64 {
 	if (float64(s.DefaultSize) * price) > s.DefaultValue {
 		correctedQty := int64(math.Floor(s.DefaultValue / price))

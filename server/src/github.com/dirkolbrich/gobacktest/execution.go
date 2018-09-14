@@ -33,21 +33,35 @@ func (e *Exchange) OnData(data DataEvent) (*Fill, error) {
 
 // OnOrder executes an order event
 func (e *Exchange) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
-	// fetch latest known data event for the symbol
-	latest := data.Latest(order.Symbol())
+	if order.OrderType() == LimitOrder || order.OrderType() == MarketOrder {
+		return e.createOrder(order, data)
+	}
+	//Todo close order
+	return nil, nil
+}
+
+// OnOrder executes an order event
+func (e *Exchange) createOrder(order OrderEvent, data DataHandler) (*Fill, error) {
 
 	// simple implementation, creates a direct fill from the order
 	// based on the last known data price
 	f := &Fill{
 		Event:    Event{timestamp: order.Time(), symbol: order.Symbol()},
 		Exchange: e.Symbol,
-		qty:      order.Qty(),
-		price:    latest.Price(), // last price from data event
+		//qty:      order.Qty(),
+		//price:    latest.Price(), // last price from data event
+	}
+	f.SetQuantifier(order.Quantifier())
+
+	var fqty float64
+	if order.OrderType() == LimitOrder {
+		fqty = order.FQty()
+	} else {
+		//@todo
+		fqty = order.FQty()
 	}
 
-	f.direction = order.Direction()
-
-	commission, err := e.Commission.Calculate(float64(f.qty), f.price)
+	commission, err := e.Commission.Calculate(fqty, f.price)
 	if err != nil {
 		return f, err
 	}

@@ -77,7 +77,7 @@ func (t *Backtest) Reset() error {
 }
 
 // SignalAdd Add signal event into event queue
-func (t *Backtest) AddSignal(signals ...SignalEvent)  error{
+func (t *Backtest) AddSignal(signals ...SignalEvent) error {
 	for _, signal := range signals {
 		t.eventQueue = append(t.eventQueue, signal)
 	}
@@ -156,7 +156,7 @@ func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
 		}
 		// event in queue found, add to event history
 		t.statistic.TrackEvent(event)
-		if data != nil{
+		if data != nil {
 			return data, false, nil
 		}
 	}
@@ -257,6 +257,8 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 
 // eventLoop2Data directs the different events to their handler.
 func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
+	// married deal at first;
+
 	// type check for event type
 	switch event := e.(type) {
 	case DataEvent:
@@ -290,5 +292,5 @@ func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
 		t.statistic.TrackTransaction(transaction)
 	}
 
-	return nil,nil
+	return nil, nil
 }

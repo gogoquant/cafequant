@@ -51,19 +51,12 @@ func (e *Event) SetSymbol(s string) {
 // SignalEvent declares the signal event interface.
 type SignalEvent interface {
 	EventHandler
-	Directioner
-}
-
-// Directioner defines a direction interface
-type Directioner interface {
-	Direction() Direction
-	SetDirection(Direction)
+	Quantifier
 }
 
 // OrderEvent declares the order event interface.
 type OrderEvent interface {
 	EventHandler
-	Directioner
 	Quantifier
 	IDer
 	Status() OrderStatus
@@ -75,6 +68,18 @@ type OrderEvent interface {
 type Quantifier interface {
 	Qty() int64
 	SetQty(int64)
+	FQty() float64
+	SetFQty(float64)
+	Price() float64
+	SetPrice(i float64)
+	QtyType() QtyType
+	SetQtyType(i QtyType)
+	OrderType() OrderType
+	SetOrderType(i OrderType)
+	Direction() Direction
+	SetDirection(dir Direction)
+	SetQuantifier(orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64)
+	Quantifier() (orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64)
 }
 
 // IDer declares setting and retrieving of an Id.
@@ -86,9 +91,8 @@ type IDer interface {
 // FillEvent declares fill event functionality.
 type FillEvent interface {
 	EventHandler
-	Directioner
 	Quantifier
-	Price() float64
+	//Price() float64
 	Commission() float64
 	ExchangeFee() float64
 	Cost() float64

@@ -97,16 +97,17 @@ func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount i
 	}
 }
 
-func (e *BtBacktest) buy(stockType string, price, amount float64, msgs ...interface{}) interface{} {
+func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interface{}) interface{} {
 	//Todo time and symbol test set
 	event := &goback.Event{}
 	event.SetTime(time.Now())
-	event.SetSymbol("debug")
+	event.SetSymbol(stockType)
 	signal := &goback.Signal{
 		Event: *event,
 	}
 	signal.SetPrice(price)
-	signal.SetAmount(amount)
+	signal.SetFQty(fqty)
+	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
 		signal.SetOrderType(goback.MarketOrder)
 	}else{
@@ -116,16 +117,17 @@ func (e *BtBacktest) buy(stockType string, price, amount float64, msgs ...interf
 	return fmt.Sprint("%s", "success")
 }
 
-func (e *BtBacktest) sell(stockType string, price, amount float64, msgs ...interface{}) interface{} {
+func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interface{}) interface{} {
 	//Todo time and symbol test set
 	event := &goback.Event{}
 	event.SetTime(time.Now())
-	event.SetSymbol("debug")
+	event.SetSymbol(stockType)
 	signal := &goback.Signal{
 		Event: *event,
 	}
 	signal.SetPrice(price)
-	signal.SetAmount(amount)
+	signal.SetFQty(fqty)
+	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
 		signal.SetOrderType(goback.MarketOrder)
 	}else{
@@ -137,22 +139,22 @@ func (e *BtBacktest) sell(stockType string, price, amount float64, msgs ...inter
 
 // GetOrder get details of an order
 func (e *BtBacktest) GetOrder(stockType, id string) interface{} {
-	return map[string]float64{}
+	return false
 }
 
 // GetOrders get all unfilled orders
 func (e *BtBacktest) GetOrders(stockType string) interface{} {
-	return map[string]float64{}
+	return false
 }
 
 // GetTrades get all filled orders recently
 func (e *BtBacktest) GetTrades(stockType string) interface{} {
-	return map[string]float64{}
+	return false
 }
 
 // CancelOrder cancel an order
 func (e *BtBacktest) CancelOrder(order Order) bool {
-	return true
+	return false
 }
 
 // getTicker get market ticker & depth
@@ -184,5 +186,5 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 
 // GetRecords get candlestick data
 func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
-	return map[string]float64{}
+	return false
 }

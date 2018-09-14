@@ -30,13 +30,11 @@ const (
 
 // Order declares a basic order event.
 type Order struct {
+	QuantifierType
 	Event
 	id           int
-	orderType    OrderType // market or limit
 	status       OrderStatus
-	direction    Direction // buy or sell
 	assetType    string
-	qty          int64 // quantity of the order
 	qtyFilled    int64
 	avgFillPrice float64
 	limitPrice   float64 // limit for the order
@@ -51,26 +49,6 @@ func (o Order) ID() int {
 // SetID of the Order.
 func (o *Order) SetID(id int) {
 	o.id = id
-}
-
-// Direction returns the Direction of an Order
-func (o Order) Direction() Direction {
-	return o.direction
-}
-
-// SetDirection sets the Directions field of an Order
-func (o *Order) SetDirection(dir Direction) {
-	o.direction = dir
-}
-
-// Qty returns the Qty field of an Order
-func (o Order) Qty() int64 {
-	return o.qty
-}
-
-// SetQty sets the Qty field of an Order
-func (o *Order) SetQty(i int64) {
-	o.qty = i
 }
 
 // Status returns the status of an Order

@@ -1,11 +1,6 @@
 package gobacktest
 
-import (
-	"reflect"
-	"testing"
-	"time"
-)
-
+/*
 func TestOnOrder(t *testing.T) {
 	// set the example time string in format yyyy-mm-dd
 	var exampleTime, _ = time.Parse("2006-01-02", "2017-06-01")
@@ -83,3 +78,4 @@ func TestOnOrder(t *testing.T) {
 		}
 	}
 }
+*/

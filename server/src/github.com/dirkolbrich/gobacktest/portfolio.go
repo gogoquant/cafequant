@@ -105,7 +105,7 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 	// fmt.Printf("Portfolio receives Signal: %#v \n", signal)
 
 	// set order type
-	orderType := MarketOrder // default Market, should be set by risk manager
+	//orderType := MarketOrder // default Market, should be set by risk manager
 	var limit float64
 
 	initialOrder := &Order{
@@ -113,11 +113,10 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 			timestamp: signal.Time(),
 			symbol:    signal.Symbol(),
 		},
-		direction: signal.Direction(),
-		// Qty should be set by PositionSizer
-		orderType:  orderType,
 		limitPrice: limit,
 	}
+	//copy the Quantifier into order
+	initialOrder.SetQuantifier(signal.Quantifier())
 
 	// fetch latest known price for the symbol
 	latest := data.Latest(signal.Symbol())
