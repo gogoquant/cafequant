@@ -20,6 +20,11 @@ type Backtest struct {
 	eventQueue []EventHandler
 }
 
+// OrdersBySymbol
+func (t *Backtest)OrdersBySymbol(stockType string) ([]OrderEvent, bool){
+	return t.portfolio.OrdersBySymbol(stockType)
+}
+
 // New creates a default backtest with sensible defaults ready for use.
 func New() *Backtest {
 	return &Backtest{

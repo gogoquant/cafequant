@@ -8,6 +8,7 @@ import (
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -167,12 +168,63 @@ func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interfa
 
 // GetOrder get details of an order
 func (e *BtBacktest) GetOrder(stockType, id string) interface{} {
+	backorders, ok := e.OrdersBySymbol(stockType)
+	if !ok {
+		return false
+	}
+
+	for _, backorder := range backorders {
+		if strconv.Itoa(backorder.ID()) == id {
+
+			order := Order{
+				ID:         strconv.Itoa(backorder.ID()),
+				Price:      backorder.Price(),
+				Amount:     backorder.FQty(),
+				DealAmount: backorder.FQty(),
+
+				StockType: stockType,
+			}
+			// @todo more trade type
+			if backorder.Direction() == 0 {
+				order.StockType = constant.TradeTypeBuy
+			} else {
+				order.StockType = constant.TradeTypeSell
+			}
+			return order
+		}
+
+	}
 	return false
 }
 
 // GetOrders get all unfilled orders
 func (e *BtBacktest) GetOrders(stockType string) interface{} {
-	return false
+	orders := []Order{}
+	backorders, ok := e.OrdersBySymbol(stockType)
+	if !ok {
+		return false
+	}
+
+	for _, backorder := range backorders {
+		order := Order{
+			ID:         strconv.Itoa(backorder.ID()),
+			Price:      backorder.Price(),
+			Amount:     backorder.FQty(),
+			DealAmount: backorder.FQty(),
+			//TradeType:  backorder.Direction() ? "buy": "sell",
+			StockType: stockType,
+		}
+		// @todo more trade type
+		if backorder.Direction() == 0 {
+			order.StockType = constant.TradeTypeBuy
+		} else {
+			order.StockType = constant.TradeTypeSell
+		}
+
+		orders = append(orders, order)
+
+	}
+	return orders
 }
 
 // GetTrades get all filled orders recently
@@ -182,6 +234,7 @@ func (e *BtBacktest) GetTrades(stockType string) interface{} {
 
 // CancelOrder cancel an order
 func (e *BtBacktest) CancelOrder(order Order) bool {
+	//e.CancelOrder(or)
 	return false
 }
 

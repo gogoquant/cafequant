@@ -8,6 +8,7 @@ type PortfolioHandler interface {
 	Updater
 	Casher
 	Valuer
+	Booker
 	Reseter
 }
 
@@ -48,6 +49,7 @@ type Valuer interface {
 
 // Booker defines methods for handling the order book of the portfolio
 type Booker interface {
+	//CancelOrder(id int) error
 	OrderBook() ([]OrderEvent, bool)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
 }

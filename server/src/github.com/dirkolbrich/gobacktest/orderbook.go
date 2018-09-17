@@ -40,6 +40,11 @@ func (ob *OrderBook) Remove(id int) error {
 	return fmt.Errorf("order with id %v not found", id)
 }
 
+// Remove an order from the order book, append it to history.
+func (ob *OrderBook) CancelOrder(id int) error {
+	return ob.Remove(id)
+}
+
 // Orders returns all Orders from the order book
 func (ob OrderBook) Orders() ([]OrderEvent, bool) {
 	if len(ob.orders) == 0 {
