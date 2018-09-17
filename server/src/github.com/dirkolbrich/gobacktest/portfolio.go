@@ -265,3 +265,7 @@ func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 
 	return orders, true
 }
+
+
+
+

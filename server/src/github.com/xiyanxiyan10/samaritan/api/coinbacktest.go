@@ -234,7 +234,6 @@ func (e *BtBacktest) GetTrades(stockType string) interface{} {
 
 // CancelOrder cancel an order
 func (e *BtBacktest) CancelOrder(order Order) bool {
-	//e.CancelOrder(or)
 	return false
 }
 

@@ -46,7 +46,7 @@ func (ob *OrderBook) CancelOrder(id int) error {
 }
 
 // Orders returns all Orders from the order book
-func (ob OrderBook) Orders() ([]OrderEvent, bool) {
+func (ob *OrderBook) Orders() ([]OrderEvent, bool) {
 	if len(ob.orders) == 0 {
 		return ob.orders, false
 	}
@@ -55,7 +55,7 @@ func (ob OrderBook) Orders() ([]OrderEvent, bool) {
 }
 
 // OrderBy returns the order by a select function from the order book.
-func (ob OrderBook) OrderBy(fn func(order OrderEvent) bool) ([]OrderEvent, bool) {
+func (ob *OrderBook) OrderBy(fn func(order OrderEvent) bool) ([]OrderEvent, bool) {
 	var orders = []OrderEvent{}
 
 	for _, order := range ob.orders {
@@ -72,7 +72,7 @@ func (ob OrderBook) OrderBy(fn func(order OrderEvent) bool) ([]OrderEvent, bool)
 }
 
 // OrdersBySymbol returns the order of a specific symbol from the order book.
-func (ob OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
+func (ob *OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
 		if order.Symbol() != symbol {
 			return false
@@ -85,7 +85,7 @@ func (ob OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 }
 
 // OrdersBidBySymbol returns all bid orders of a specific symbol from the order book.
-func (ob OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
+func (ob *OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
 		if (order.Symbol() != symbol) || (order.Direction() != BOT) {
 			return false
@@ -107,7 +107,7 @@ func (ob OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
 }
 
 // OrdersAskBySymbol returns all bid orders of a specific symbol from the order book.
-func (ob OrderBook) OrdersAskBySymbol(symbol string) ([]OrderEvent, bool) {
+func (ob *OrderBook) OrdersAskBySymbol(symbol string) ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
 		if (order.Symbol() != symbol) || (order.Direction() != SLD) {
 			return false
@@ -129,7 +129,7 @@ func (ob OrderBook) OrdersAskBySymbol(symbol string) ([]OrderEvent, bool) {
 }
 
 // OrdersOpen returns all orders which are open from the order book.
-func (ob OrderBook) OrdersOpen() ([]OrderEvent, bool) {
+func (ob *OrderBook) OrdersOpen() ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
 		if (order.Status() != OrderNew) || (order.Status() != OrderSubmitted) || (order.Status() != OrderPartiallyFilled) {
 			return false
@@ -142,7 +142,7 @@ func (ob OrderBook) OrdersOpen() ([]OrderEvent, bool) {
 }
 
 // OrdersCanceled returns all orders which are canceled from the order book.
-func (ob OrderBook) OrdersCanceled() ([]OrderEvent, bool) {
+func (ob *OrderBook) OrdersCanceled() ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
 		if (order.Status() == OrderCanceled) || (order.Status() == OrderCancelPending) {
 			return true
