@@ -83,7 +83,7 @@ func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount i
 	price := conver.Float64Must(_price)
 	amount := conver.Float64Must(_amount)
 	if _, ok := e.stockTypeMap[stockType]; !ok {
-		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized stockType: ", stockType)
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "Trade() error, unrecognized stockType: ", stockType)
 		return false
 	}
 	switch tradeType {
@@ -92,7 +92,7 @@ func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount i
 	case constant.TradeTypeSell:
 		return e.sell(stockType, price, amount, msgs...)
 	default:
-		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized tradeType: ", tradeType)
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "Trade() error, unrecognized tradeType: ", tradeType)
 		return false
 	}
 }
@@ -114,6 +114,7 @@ func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interfac
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
+	e.logger.Log(constant.BUY, stockType, price, fqty, msgs...)
 	return fmt.Sprint("%s", "success")
 }
 
@@ -134,6 +135,7 @@ func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interfa
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
+	e.logger.Log(constant.SELL, stockType, price, fqty, msgs...)
 	return fmt.Sprint("%s", "success")
 }
 
@@ -175,9 +177,9 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 	ticker, end, err := e.getTicker(stockType, sizes...)
 	if err != nil {
 		if end {
-			e.logger.Log(constant.INFO, "", 0.0, 0.0, err)
+			e.logger.Log(constant.INFO, stockType, 0.0, 0.0, err)
 		}else {
-			e.logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
 		}
 		return false
 	}

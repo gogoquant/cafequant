@@ -115,7 +115,7 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 		},
 		limitPrice: limit,
 	}
-	//copy the Quantifier into order
+	//copy the Quantifier from signal into order
 	initialOrder.SetQuantifier(signal.Quantifier())
 
 	// fetch latest known price for the symbol
