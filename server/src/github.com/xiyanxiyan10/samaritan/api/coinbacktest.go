@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+func init() {
+	constructor["coinbacktest"] = NewBacktest
+}
+
 // Backtest backtest struct
 type BtBacktest struct {
 	goback.Backtest
@@ -22,17 +26,39 @@ type BtBacktest struct {
 	minAmountMap     map[string]float64
 	records          map[string][]Record
 
-	logger           model.Logger
-	option           Option
+	logger model.Logger
+	option Option
 
 	limit     float64
 	lastSleep int64
 	lastTimes int64
+
+	exchangeHandler ExchangeHandler
+}
+
+// ExchangeHandler api used for backtest
+type ExchangeHandler interface {
+	GetTicker(stockType string, sizes ...interface{}) interface{}
+}
+
+// BacktestData online back test support
+type BacktestData interface {
+	getTicker(stockType string, sizes ...interface{}) (ticker Ticker, err error)
 }
 
 // NewBacktest create a backtest
 func NewBacktest(opt Option) Exchange {
-	return &BtBacktest{}
+	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
+		option: opt,
+
+		limit:     10.0,
+		lastSleep: time.Now().UnixNano()}
+
+	// @todo check if exists
+	maker, _ := constructor[opt.Type]
+
+	back.exchangeHandler = maker(opt)
+	return &back
 }
 
 // Log print something to console
@@ -110,7 +136,7 @@ func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interfac
 	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
 		signal.SetOrderType(goback.MarketOrder)
-	}else{
+	} else {
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
@@ -131,7 +157,7 @@ func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interfa
 	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
 		signal.SetOrderType(goback.MarketOrder)
-	}else{
+	} else {
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
@@ -163,7 +189,7 @@ func (e *BtBacktest) CancelOrder(order Order) bool {
 func (e *BtBacktest) getTicker(stockType string, sizes ...interface{}) (ticker Ticker, end bool, err error) {
 	// @Todo convert data to tick
 	_, end, err = e.Run2Data()
-	if err != nil{
+	if err != nil {
 		return ticker, false, err
 	}
 	if end == true {
@@ -174,14 +200,23 @@ func (e *BtBacktest) getTicker(stockType string, sizes ...interface{}) (ticker T
 
 // GetTicker get market ticker & depth
 func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface{} {
-	ticker, end, err := e.getTicker(stockType, sizes...)
-	if err != nil {
-		if end {
-			e.logger.Log(constant.INFO, stockType, 0.0, 0.0, err)
-		}else {
-			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
+	if e.option.Mode == constant.OFFLINE {
+		ticker, end, err := e.getTicker(stockType, sizes...)
+		if err != nil {
+			if end {
+				e.logger.Log(constant.INFO, stockType, 0.0, 0.0, err)
+			} else {
+				e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
+			}
+			return false
 		}
-		return false
+		return ticker
+	}
+	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
+	//process all event every tick
+	err := e.Run2Event()
+	if err != nil {
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
 	}
 	return ticker
 }

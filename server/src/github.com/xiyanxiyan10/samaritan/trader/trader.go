@@ -87,6 +87,7 @@ func initialize(id int64) (trader Global, err error) {
 		trader.Ctx.Set(c, c)
 	}
 	for _, e := range es {
+
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := api.Option{
 				TraderID:  trader.ID,
@@ -94,10 +95,29 @@ func initialize(id int64) (trader Global, err error) {
 				Name:      e.Name,
 				AccessKey: e.AccessKey,
 				SecretKey: e.SecretKey,
+				Mode:      e.Mode,
 				// Ctx:       trader.Ctx,
 			}
-			trader.es = append(trader.es, maker(opt))
+
+			backmaker, ok := exchangeMaker[e.Type]
+			if !ok {
+				err = fmt.Errorf("get backtest module fail")
+				return
+			}
+
+			switch e.Mode {
+			case constant.ONLINE:
+				trader.es = append(trader.es, maker(opt))
+			case constant.OFFLINE:
+				trader.es = append(trader.es, backmaker(opt))
+			case constant.HALFLINE:
+				trader.es = append(trader.es, backmaker(opt))
+			default:
+				err = fmt.Errorf("unknown mode")
+				return
+			}
 		}
+
 	}
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("Please add at least one exchange")

@@ -133,6 +133,7 @@ func (t *Backtest) Run() error {
 
 // Run starts the backtest to get data tick
 func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
+	//@todo init the backtest data queue at first
 	// poll event queue
 	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
 		// no event in the queue
@@ -167,6 +168,26 @@ func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
 		return nil, false, err
 	}
 	return nil, true, nil
+}
+
+// Run starts the backtest to get data tick
+func (t *Backtest) Run2Event()  error{
+	// poll event queue
+	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
+		// no event in the queue
+		if !ok {
+			return nil
+		}
+
+		// processing event and try to get data
+		err := t.eventLoop2Event(event)
+		if err != nil {
+			return err
+		}
+		// event in queue found, add to event history
+		t.statistic.TrackEvent(event)
+	}
+	return nil
 }
 
 // setup runs at the beginning of the backtest to perfom preparing operations.
@@ -293,4 +314,37 @@ func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
 	}
 
 	return nil, nil
+}
+
+
+// eventLoop2Event directs the different events to their handler.
+func (t *Backtest) eventLoop2Event(e EventHandler) (error) {
+	// married deal at first;
+
+	// type check for event type
+	switch event := e.(type) {
+
+	case *Signal:
+		order, err := t.portfolio.OnSignal(event, t.data)
+		if err != nil {
+			break
+		}
+		t.eventQueue = append(t.eventQueue, order)
+
+	case *Order:
+		fill, err := t.exchange.OnOrder(event, t.data)
+		if err != nil {
+			break
+		}
+		t.eventQueue = append(t.eventQueue, fill)
+
+	case *Fill:
+		transaction, err := t.portfolio.OnFill(event, t.data)
+		if err != nil {
+			break
+		}
+		t.statistic.TrackTransaction(transaction)
+	}
+
+	return nil
 }

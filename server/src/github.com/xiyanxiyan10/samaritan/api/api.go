@@ -7,6 +7,7 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
+	Mode      string
 	// Ctx       *otto.Otto
 }
 

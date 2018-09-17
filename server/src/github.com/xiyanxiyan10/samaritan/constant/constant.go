@@ -23,6 +23,13 @@ const (
 	OandaV20     = "oanda.v20"
 )
 
+// exchange run mode online or offline
+const (
+	ONLINE    = "ONLINE"
+	OFFLINE   = "OFFLINE"
+	HALFLINE  = "HALFLINE"
+)
+
 // log types
 const (
 	ERROR      = "ERROR"
