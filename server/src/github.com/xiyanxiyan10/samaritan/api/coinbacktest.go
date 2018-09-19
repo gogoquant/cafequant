@@ -238,7 +238,7 @@ func (e *BtBacktest) CancelOrder(order Order) bool {
 	if err != nil {
 		e.logger.Log(constant.ERROR, order.StockType, 0.0, 0.0, err)
 	}
-	e.CancelOneOrder(id)
+	e.Backtest.CancelOrder(id)
 	return false
 }
 

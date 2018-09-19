@@ -51,8 +51,8 @@ type Valuer interface {
 
 // Booker defines methods for handling the order book of the portfolio
 type Booker interface {
-	CancelOneOrder(id int) error
-	OrderBook() ([]OrderEvent, bool)
+	CancelOrder(id int) error
+	Orders() ([]OrderEvent, bool)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
 }
 
@@ -61,7 +61,8 @@ type Portfolio struct {
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
-	orderBook    []OrderEvent
+	//orderBook    []OrderEvent
+	orderManager OrderBook
 	transactions []FillEvent
 	sizeManager  SizeHandler
 	riskManager  RiskHandler
@@ -243,38 +244,17 @@ func (p Portfolio) Holdings() map[string]Position {
 }
 
 // OrderBook returns the order book of the portfolio
-func (p Portfolio) OrderBook() ([]OrderEvent, bool) {
-	if len(p.orderBook) == 0 {
-		return p.orderBook, false
-	}
-
-	return p.orderBook, true
+func (p Portfolio) Orders() ([]OrderEvent, bool) {
+	return p.orderManager.Orders()
 }
 
 // OrdersBySymbol returns the order of a specific symbol from the order book.
 func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
-	var orders = []OrderEvent{}
-
-	for _, order := range p.orderBook {
-		if order.Symbol() == symbol {
-			orders = append(orders, order)
-		}
-	}
-
-	if len(orders) == 0 {
-		return orders, false
-	}
-
-	return orders, true
+	return p.orderManager.OrdersBySymbol(symbol)
 }
 
 // CancelOrder ...
-func (p *Portfolio) CancelOneOrder(id int) error {
-	for _, order := range p.orderBook {
-		if order.ID() == id {
-			order.Cancel()
-			return nil
-		}
-	}
+func (p *Portfolio) CancelOrder(id int) error {
+	p.orderManager.CancelOrder(id)
 	return errors.New("order not found")
 }

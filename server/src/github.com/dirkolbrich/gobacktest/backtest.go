@@ -27,8 +27,8 @@ func (t *Backtest) OrdersBySymbol(stockType string) ([]OrderEvent, bool) {
 }
 
 // CancelOneOrder ...
-func (t *Backtest) CancelOneOrder(id int) error {
-	return t.portfolio.CancelOneOrder(id)
+func (t *Backtest) CancelOrder(id int) error {
+	return t.portfolio.CancelOrder(id)
 }
 
 // New creates a default backtest with sensible defaults ready for use.
