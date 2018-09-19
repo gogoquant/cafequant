@@ -17,6 +17,7 @@ type Backtest struct {
 	portfolio  PortfolioHandler
 	exchange   ExecutionHandler
 	statistic  StatisticHandler
+	marry      MarryHandler
 	eventQueue []EventHandler
 }
 
@@ -75,6 +76,11 @@ func (t *Backtest) SetExchange(exchange ExecutionHandler) {
 // SetStatistic sets the statistic provider to be used within the backtest.
 func (t *Backtest) SetStatistic(statistic StatisticHandler) {
 	t.statistic = statistic
+}
+
+// SetMarry sets the statistic provider to be used within the backtest.
+func (t *Backtest) SetMarry(marry MarryHandler) {
+	t.marry = marry
 }
 
 // Reset the backtest into a clean state with loaded data.

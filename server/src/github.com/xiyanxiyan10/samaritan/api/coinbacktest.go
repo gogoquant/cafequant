@@ -58,6 +58,9 @@ func NewBacktest(opt Option) Exchange {
 	// @todo check if exists
 	maker, _ := constructor[opt.Type]
 
+	// set married handler
+	back.SetMarry(BtMarry{})
+
 	back.exchangeHandler = maker(opt)
 	return &back
 }
@@ -279,3 +282,10 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
 	return false
 }
+
+
+// BtMarry
+type BtMarry struct {
+
+}
+
