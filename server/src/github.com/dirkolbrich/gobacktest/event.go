@@ -59,6 +59,7 @@ type OrderEvent interface {
 	EventHandler
 	Quantifier
 	IDer
+	Cancel()
 	Status() OrderStatus
 	Limit() float64
 	Stop() float64

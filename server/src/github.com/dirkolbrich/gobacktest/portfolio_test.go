@@ -21,8 +21,8 @@ func TestResetPortfolio(t *testing.T) {
 					"BAS.DE":  {qty: 90},
 				},
 				transactions: []FillEvent{
-					&Fill{direction: BOT, qty: 100},
-					&Fill{direction: BOT, qty: 90},
+					//&Fill{direction: BOT, qty: 100},
+					//&Fill{direction: BOT, qty: 90},
 				},
 				sizeManager: &Size{},
 				riskManager: &Risk{},

@@ -1,5 +1,7 @@
 package gobacktest
 
+import "errors"
+
 // PortfolioHandler is the combined interface building block for a portfolio.
 type PortfolioHandler interface {
 	OnSignaler
@@ -49,7 +51,7 @@ type Valuer interface {
 
 // Booker defines methods for handling the order book of the portfolio
 type Booker interface {
-	//CancelOrder(id int) error
+	CancelOneOrder(id int) error
 	OrderBook() ([]OrderEvent, bool)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
 }
@@ -266,6 +268,13 @@ func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 	return orders, true
 }
 
-
-
-
+// CancelOrder ...
+func (p *Portfolio) CancelOneOrder(id int) error {
+	for _, order := range p.orderBook {
+		if order.ID() == id {
+			order.Cancel()
+			return nil
+		}
+	}
+	return errors.New("order not found")
+}

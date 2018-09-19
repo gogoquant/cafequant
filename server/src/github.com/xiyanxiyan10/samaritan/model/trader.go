@@ -26,11 +26,11 @@ type Trader struct {
 
 // TraderExchange struct
 type TraderExchange struct {
-	ID         int64 `gorm:"primary_key"`
-	TraderID   int64 `gorm:"index"`
-	ExchangeID int64 `gorm:"index"`
+	ID         int64  `gorm:"primary_key"`
+	TraderID   int64  `gorm:"index"`
+	ExchangeID int64  `gorm:"index"`
 	Mode       string `gorm:"type:varchar(200)"`
-	Exchange `gorm:"-"`
+	Exchange   `gorm:"-"`
 }
 
 // ListTrader ...

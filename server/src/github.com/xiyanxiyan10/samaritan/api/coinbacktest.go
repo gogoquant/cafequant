@@ -211,8 +211,7 @@ func (e *BtBacktest) GetOrders(stockType string) interface{} {
 			Price:      backorder.Price(),
 			Amount:     backorder.FQty(),
 			DealAmount: backorder.FQty(),
-			//TradeType:  backorder.Direction() ? "buy": "sell",
-			StockType: stockType,
+			StockType:  stockType,
 		}
 		// @todo more trade type
 		if backorder.Direction() == 0 {
@@ -220,9 +219,7 @@ func (e *BtBacktest) GetOrders(stockType string) interface{} {
 		} else {
 			order.StockType = constant.TradeTypeSell
 		}
-
 		orders = append(orders, order)
-
 	}
 	return orders
 }
@@ -234,6 +231,11 @@ func (e *BtBacktest) GetTrades(stockType string) interface{} {
 
 // CancelOrder cancel an order
 func (e *BtBacktest) CancelOrder(order Order) bool {
+	id, err := strconv.Atoi(order.ID)
+	if err != nil {
+		e.logger.Log(constant.ERROR, order.StockType, 0.0, 0.0, err)
+	}
+	e.CancelOneOrder(id)
 	return false
 }
 

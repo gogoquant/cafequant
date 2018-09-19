@@ -20,9 +20,14 @@ type Backtest struct {
 	eventQueue []EventHandler
 }
 
-// OrdersBySymbol
-func (t *Backtest)OrdersBySymbol(stockType string) ([]OrderEvent, bool){
+// OrdersBySymbol ...
+func (t *Backtest) OrdersBySymbol(stockType string) ([]OrderEvent, bool) {
 	return t.portfolio.OrdersBySymbol(stockType)
+}
+
+// CancelOneOrder ...
+func (t *Backtest) CancelOneOrder(id int) error {
+	return t.portfolio.CancelOneOrder(id)
 }
 
 // New creates a default backtest with sensible defaults ready for use.
@@ -176,7 +181,7 @@ func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
 }
 
 // Run starts the backtest to get data tick
-func (t *Backtest) Run2Event()  error{
+func (t *Backtest) Run2Event() error {
 	// poll event queue
 	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
 		// no event in the queue
@@ -321,9 +326,8 @@ func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
 	return nil, nil
 }
 
-
 // eventLoop2Event directs the different events to their handler.
-func (t *Backtest) eventLoop2Event(e EventHandler) (error) {
+func (t *Backtest) eventLoop2Event(e EventHandler) error {
 	// married deal at first;
 
 	// type check for event type

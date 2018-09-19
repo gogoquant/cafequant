@@ -25,9 +25,9 @@ const (
 
 // exchange run mode online or offline
 const (
-	ONLINE    = "ONLINE"
-	OFFLINE   = "OFFLINE"
-	HALFLINE  = "HALFLINE"
+	ONLINE   = "ONLINE"
+	OFFLINE  = "OFFLINE"
+	HALFLINE = "HALFLINE"
 )
 
 // log types
