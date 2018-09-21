@@ -83,6 +83,11 @@ func (t *Backtest) SetMarry(marry MarryHandler) {
 	t.marry = marry
 }
 
+// Portfolio sets the Portfolio provider to be used within the backtest.
+func (t *Backtest) Portfolio() PortfolioHandler {
+	return t.portfolio
+}
+
 // Reset the backtest into a clean state with loaded data.
 func (t *Backtest) Reset() error {
 	t.eventQueue = nil
@@ -103,6 +108,11 @@ func (t *Backtest) AddSignal(signals ...SignalEvent) error {
 // Stats returns the statistic handler of the backtest.
 func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
+}
+
+// Marry returns the Marry handler of the backtest.
+func (t *Backtest) Marry() MarryHandler {
+	return t.marry
 }
 
 // Run starts the backtest.

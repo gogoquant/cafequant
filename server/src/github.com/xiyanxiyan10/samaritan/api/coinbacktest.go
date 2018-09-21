@@ -59,7 +59,7 @@ func NewBacktest(opt Option) Exchange {
 	maker, _ := constructor[opt.Type]
 
 	// set married handler
-	back.SetMarry(BtMarry{})
+	back.SetMarry(&BtMarry{})
 
 	back.exchangeHandler = maker(opt)
 	return &back
@@ -270,6 +270,25 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 		return ticker
 	}
 	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
+	//try to marry at first
+	marry := e.Marry()
+	if marry == nil {
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, errors.New("need marry handler"))
+		return false
+	}
+
+	// try to marry order
+	for ; ; {
+		end, err := marry.Marry(e.Portfolio())
+		if err != nil {
+			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
+			return false
+		}
+		if end {
+			break
+		}
+	}
+
 	//process all event every tick
 	err := e.Run2Event()
 	if err != nil {
@@ -287,5 +306,10 @@ func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) 
 // BtMarry
 type BtMarry struct {
 
+}
+
+// Marry function
+func (bt *BtMarry)Marry(handler goback.PortfolioHandler) (bool, error){
+	return true, nil
 }
 
