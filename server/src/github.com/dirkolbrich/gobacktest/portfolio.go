@@ -58,9 +58,9 @@ type Booker interface {
 
 // Portfolio represent a simple portfolio struct.
 type Portfolio struct {
-	initialCash  float64
-	cash         float64
-	holdings     map[string]Position
+	initialCash float64
+	cash        float64
+	holdings    map[string]Position
 	//orderBook    []OrderEvent
 	orderManager OrderBook
 	transactions []FillEvent

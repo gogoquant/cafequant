@@ -93,7 +93,6 @@ type IDer interface {
 type FillEvent interface {
 	EventHandler
 	Quantifier
-	//Price() float64
 	Commission() float64
 	ExchangeFee() float64
 	Cost() float64

@@ -61,7 +61,9 @@ func (p *Position) UpdateValue(data DataEvent) {
 // internal function to update a position on a new fill event
 func (p *Position) update(fill FillEvent) {
 	// convert fill to internally used decimal numbers
-	fillQty := float64(fill.Qty())
+
+	// qty already convert to fqty
+	fillQty := fill.FQty()
 	fillPrice := fill.Price()
 	fillCommission := fill.Commission()
 	fillExchangeFee := fill.ExchangeFee()
@@ -151,22 +153,36 @@ func (p *Position) update(fill FillEvent) {
 	p.qty = int64(qty)
 	p.qtyBOT = int64(qtyBot)
 	p.qtySLD = int64(qtySld)
-	p.avgPrice = math.Round(avgPrice*math.Pow10(DP)) / math.Pow10(DP)
-	p.avgPriceBOT = math.Round(avgPriceBot*math.Pow10(DP)) / math.Pow10(DP)
-	p.avgPriceSLD = math.Round(avgPriceSld*math.Pow10(DP)) / math.Pow10(DP)
-	p.avgPriceNet = math.Round(avgPriceNet*math.Pow10(DP)) / math.Pow10(DP)
-	p.value = math.Round(value*math.Pow10(DP)) / math.Pow10(DP)
-	p.valueBOT = math.Round(valueBot*math.Pow10(DP)) / math.Pow10(DP)
-	p.valueSLD = math.Round(valueSld*math.Pow10(DP)) / math.Pow10(DP)
-	p.netValue = math.Round(netValue*math.Pow10(DP)) / math.Pow10(DP)
-	p.netValueBOT = math.Round(netValueBot*math.Pow10(DP)) / math.Pow10(DP)
-	p.netValueSLD = math.Round(netValueSld*math.Pow10(DP)) / math.Pow10(DP)
 	p.commission = commission
 	p.exchangeFee = exchangeFee
 	p.cost = cost
-	p.costBasis = math.Round(costBasis*math.Pow10(DP)) / math.Pow10(DP)
-	p.realProfitLoss = math.Round(realProfitLoss*math.Pow10(DP)) / math.Pow10(DP)
+	/*
+		p.avgPrice = math.Round(avgPrice*math.Pow10(DP)) / math.Pow10(DP)
+		p.avgPriceBOT = math.Round(avgPriceBot*math.Pow10(DP)) / math.Pow10(DP)
+		p.avgPriceSLD = math.Round(avgPriceSld*math.Pow10(DP)) / math.Pow10(DP)
+		p.avgPriceNet = math.Round(avgPriceNet*math.Pow10(DP)) / math.Pow10(DP)
+		p.value = math.Round(value*math.Pow10(DP)) / math.Pow10(DP)
+		p.valueBOT = math.Round(valueBot*math.Pow10(DP)) / math.Pow10(DP)
+		p.valueSLD = math.Round(valueSld*math.Pow10(DP)) / math.Pow10(DP)
+		p.netValue = math.Round(netValue*math.Pow10(DP)) / math.Pow10(DP)
+		p.netValueBOT = math.Round(netValueBot*math.Pow10(DP)) / math.Pow10(DP)
+		p.netValueSLD = math.Round(netValueSld*math.Pow10(DP)) / math.Pow10(DP)
+		p.costBasis = math.Round(costBasis*math.Pow10(DP)) / math.Pow10(DP)
+		p.realProfitLoss = math.Round(realProfitLoss*math.Pow10(DP)) / math.Pow10(DP)
+	*/
+	p.avgPrice = avgPrice
+	p.avgPriceBOT = avgPriceBot
+	p.avgPriceSLD = avgPriceSld
+	p.avgPriceNet = avgPriceNet
+	p.value = value
+	p.valueBOT = valueBot
+	p.valueSLD = valueSld
+	p.netValue = netValue
+	p.netValueBOT = netValueBot
+	p.netValueSLD = netValueSld
 
+	p.costBasis = costBasis
+	p.realProfitLoss = realProfitLoss
 	p.updateValue(fill.Price())
 }
 
