@@ -138,7 +138,9 @@ type DataEvent interface {
 
 // Pricer defines the handling otf the latest Price Information
 type Pricer interface {
-	Price() float64
+	Mid() float64
+	Low() float64
+	High() float64
 }
 
 // BarEvent declares a bar event interface.

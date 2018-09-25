@@ -24,7 +24,8 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 	//use recorded price for the market order
 	if o.OrderType() == MarketOrder {
 		o.SetQtyType(FLOAT64_QTY)
-		order.SetFQty(data.Price())
+		//todo which price needed?
+		order.SetFQty(data.Mid())
 	} else {
 		//set the float val for cost Calculate
 		if o.QtyType() == INT64_QTY {

@@ -51,7 +51,6 @@ type BacktestData interface {
 func NewBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option: opt,
-
 		limit:     10.0,
 		lastSleep: time.Now().UnixNano()}
 
@@ -257,7 +256,7 @@ func (e *BtBacktest) getTicker(stockType string, sizes ...interface{}) (ticker T
 
 // GetTicker get market ticker & depth
 func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface{} {
-	if e.option.Mode == constant.OFFLINE {
+	if e.option.Mode == constant.MODE_OFFLINE {
 		ticker, end, err := e.getTicker(stockType, sizes...)
 		if err != nil {
 			if end {
@@ -270,6 +269,24 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 		return ticker
 	}
 	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
+
+	// record into latest
+	var ok bool = false
+	var data goback.DataEvent
+	if e.option.Mode == constant.MODE_OFFLINE {
+		data, ok = e.Portfolio().Latest(stockType)
+	}else if e.option.Mode == constant.MODE_HALFLINE {
+		data, ok = ticker.(goback.DataEvent)
+	}else{
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "code error, running in error mode")
+		return false
+	}
+	if !ok{
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "convert interface to data fail")
+		return false
+	}
+	e.Portfolio().SetLatest(stockType, data)
+
 	//try to marry at first
 	marry := e.Marry()
 	if marry == nil {
@@ -279,7 +296,7 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 
 	// try to marry order
 	for ; ; {
-		end, err := marry.Marry(e.Portfolio())
+		end, err := marry.Marry(&e.Backtest, stockType)
 		if err != nil {
 			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
 			return false
@@ -309,7 +326,38 @@ type BtMarry struct {
 }
 
 // Marry function
-func (bt *BtMarry)Marry(handler goback.PortfolioHandler) (bool, error){
+func (bt *BtMarry)Marry(back *goback.Backtest, stockType string) (bool, error){
+	orders, ok := back.OrdersBySymbol(stockType)
+	if ok != true {
+		return false, errors.New("get orders fail")
+	}
+	latest, ok := back.Portfolio().Latest(stockType)
+	if ok != true {
+		return false, errors.New("get latest fail")
+	}
+	for _, order := range(orders){
+		status := order.Status()
+		if status == goback.OrderCanceled && status == goback.OrderCancelPending{
+			continue
+		}
+		dir := order.Direction()
+		var err error
+		switch (dir) {
+		case goback.BOT:
+				if order.FQty() >= latest.High() {
+					_, err = back.CommitOrder(order.ID())
+				}
+		case goback.SLD:
+				if order.FQty() <= latest.Low() {
+					_, err = back.CommitOrder(order.ID())
+				}
+		default:
+			return false, errors.New("unknown dir")
+		}
+		if err != nil{
+			return false, err
+		}
+	}
 	return true, nil
 }
 

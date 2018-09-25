@@ -106,11 +106,11 @@ func initialize(id int64) (trader Global, err error) {
 			}
 
 			switch e.Mode {
-			case constant.ONLINE:
+			case constant.MODE_ONLINE:
 				trader.es = append(trader.es, maker(opt))
-			case constant.OFFLINE:
+			case constant.MODE_OFFLINE:
 				trader.es = append(trader.es, backmaker(opt))
-			case constant.HALFLINE:
+			case constant.MODE_HALFLINE:
 				trader.es = append(trader.es, backmaker(opt))
 			default:
 				err = fmt.Errorf("unknown mode")

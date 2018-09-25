@@ -45,6 +45,23 @@ func (ob *OrderBook) CancelOrder(id int) error {
 	return ob.Remove(id)
 }
 
+// Remove an order from the order book, append it to history.
+func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
+	for _, order := range ob.orders {
+		// order found
+		if order.ID() == id {
+		   if order.Status() == OrderCanceled || order.Status() == OrderCancelPending{
+			   return nil, fmt.Errorf("order with id %v canceled again", id)
+		   }
+		   order.Submit()
+		   fill := new(Fill)
+		   fill.SetQuantifier(order.Quantifier())
+		   return fill, nil
+		}
+	}
+	return nil, fmt.Errorf("order with id %v not found", id)
+}
+
 // Orders returns all Orders from the order book
 func (ob *OrderBook) Orders() ([]OrderEvent, bool) {
 	if len(ob.orders) == 0 {

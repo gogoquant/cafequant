@@ -71,6 +71,11 @@ func (o *Order) Cancel() {
 	o.status = OrderCancelPending
 }
 
+// Cancel cancels an order
+func (o *Order) Submit() {
+	o.status = OrderSubmitted
+}
+
 // Update updates an order on a fill event
 func (o *Order) Update(fill FillEvent) {
 	// not implemented

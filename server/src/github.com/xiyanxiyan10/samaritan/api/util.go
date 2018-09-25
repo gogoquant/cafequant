@@ -64,6 +64,19 @@ type Ticker struct {
 	Asks []OrderBook
 }
 
+func (t Ticker) Price() float64 {
+	return t.Mid
+}
+
+func (t Ticker) Low() float64 {
+	return t.Sell
+}
+
+func (t Ticker) High() float64 {
+	return t.Buy
+}
+
+
 func base64Encode(data string) string {
 	return base64.StdEncoding.EncodeToString([]byte(data))
 }

@@ -27,6 +27,6 @@
     "cooking-less": "^1.0.5",
     "cooking-lint": "^0.1.4",
     "cooking-react": "^0.1.0",
-    "copy-webpack-plugin": "^4.0.1"
+    "copy-webpack-plugin": "^4.5.2"
   }
 }
