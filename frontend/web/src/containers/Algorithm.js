@@ -5,7 +5,7 @@ import { TraderList, TraderPut, TraderDelete, TraderSwitch, TraderCache } from '
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link, browserHistory } from 'react-router';
-import { Badge, Button, Dropdown, Form, Input, Menu, Modal, Select, Table, Tag, Tooltip, notification } from 'antd';
+import { Badge, Button, Dropdown, Form, Input, Menu, Modal, Select, Table, Tag, Tooltip, notification} from 'antd';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -15,6 +15,7 @@ class Algorithm extends React.Component {
     super(props);
 
     this.state = {
+      mode: 'halfLine',
       messageErrorKey: '',
       selectedRowKeys: [],
       pagination: {
@@ -42,6 +43,7 @@ class Algorithm extends React.Component {
     this.handleExchangeClose = this.handleExchangeClose.bind(this);
     this.handleTraderModelOk = this.handleTraderModelOk.bind(this);
     this.handleTraderModelCancel = this.handleTraderModelCancel.bind(this);
+    this.handleMode = this.handleMode.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -129,6 +131,12 @@ class Algorithm extends React.Component {
       iconType: 'exclamation-circle',
     });
   }
+
+  handleMode(value) {
+    // const { mode } = this.state;
+    console.log(`Click on item ${value}`);
+    this.setState({mode: value});
+  };
 
   handleEdit(info) {
     const { dispatch } = this.props;
@@ -327,6 +335,17 @@ function main() {
           </Menu>
         }>{r.status > 0 ? 'Stop' : 'Run'}</Dropdown.Button>
       ),
+    }, {
+      title: 'Mode',
+      key: 'mode',
+      render: (v, r) =>(
+        <Select defaultValue="halfLine" style={{ width: 120 }} onChange={(value)=>{this.handleMode(value);} }>
+          <Option value="halfLine">halfLine</Option>
+          <Option value="offLine">offLine</Option>
+          <Option value="onLine">onLine</Option>
+        </Select>
+      )
+
     }];
     const expandedRowRender = (r) => {
       const data = trader.map[r.id];
