@@ -20,6 +20,7 @@ type Trader struct {
 	DeletedAt   *time.Time `sql:"index" json:"-"`
 
 	Exchanges []Exchange `gorm:"-" json:"exchanges"`
+	Mode       string `gorm:"type:varchar(200)" json:"mode"`
 	Status    int64      `gorm:"-" json:"status"`
 	Algorithm Algorithm  `gorm:"-" json:"algorithm"`
 }
@@ -29,7 +30,6 @@ type TraderExchange struct {
 	ID         int64  `gorm:"primary_key"`
 	TraderID   int64  `gorm:"index"`
 	ExchangeID int64  `gorm:"index"`
-	Mode       string `gorm:"type:varchar(200)"`
 	Exchange   `gorm:"-"`
 }
 
@@ -97,6 +97,7 @@ func (user User) UpdateTrader(req Trader) (err error) {
 		return err
 	}
 	runner.Name = req.Name
+	runner.Mode = req.Mode
 	runner.Environment = req.Environment
 	rs, err := user.GetTraderExchanges(runner.ID)
 	if err != nil {

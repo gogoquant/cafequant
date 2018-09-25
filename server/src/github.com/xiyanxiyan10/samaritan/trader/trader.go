@@ -95,7 +95,7 @@ func initialize(id int64) (trader Global, err error) {
 				Name:      e.Name,
 				AccessKey: e.AccessKey,
 				SecretKey: e.SecretKey,
-				Mode:      e.Mode,
+				Mode:      trader.Mode,
 				// Ctx:       trader.Ctx,
 			}
 
@@ -105,7 +105,7 @@ func initialize(id int64) (trader Global, err error) {
 				return
 			}
 
-			switch e.Mode {
+			switch trader.Mode {
 			case constant.MODE_ONLINE:
 				trader.es = append(trader.es, maker(opt))
 			case constant.MODE_OFFLINE:
