@@ -16,6 +16,7 @@ class Algorithm extends React.Component {
 
     this.state = {
       mode: 'halfLine',
+      defaultMode: 'halfLine',
       messageErrorKey: '',
       selectedRowKeys: [],
       pagination: {
@@ -231,6 +232,7 @@ function main() {
       }
 
       const { traderInfo } = this.state;
+      const { defaultMode } = this.state;
 
       if (!traderInfo.exchanges || traderInfo.exchanges.length < 1) {
         notification['error']({
@@ -247,6 +249,7 @@ function main() {
         algorithmId: traderInfo.algorithmId,
         name: values.name,
         exchanges: traderInfo.exchanges,
+        mode: defaultMode
       };
 
       dispatch(TraderPut(info));
