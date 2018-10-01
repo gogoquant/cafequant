@@ -44,7 +44,7 @@ class Algorithm extends React.Component {
     this.handleExchangeClose = this.handleExchangeClose.bind(this);
     this.handleTraderModelOk = this.handleTraderModelOk.bind(this);
     this.handleTraderModelCancel = this.handleTraderModelCancel.bind(this);
-    this.handleMode = this.handleMode.bind(this);
+    this.handleTraderModeEdit = this.handleTraderModeEdit.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -190,6 +190,13 @@ function main() {
       },
       iconType: 'exclamation-circle',
     });
+  }
+
+  handleTraderModeEdit(req, val) {
+    const { dispatch } = this.props;
+
+    req.mode = val;
+    dispatch(TraderPut(req));
   }
 
   handleTraderSwitch(req) {
@@ -342,7 +349,7 @@ function main() {
       title: 'Mode',
       key: 'mode',
       render: (v, r) =>(
-        <Select defaultValue="halfLine" style={{ width: 120 }} onChange={(value)=>{this.handleMode(value);} }>
+        <Select defaultValue={r.mode} style={{ width: 120 }} onChange={(value) => {this.handleTraderModeEdit(r, value); }}>
           <Option value="halfLine">halfLine</Option>
           <Option value="offLine">offLine</Option>
           <Option value="onLine">onLine</Option>
