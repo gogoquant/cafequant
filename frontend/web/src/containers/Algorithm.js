@@ -336,6 +336,9 @@ function main() {
       render: (v, r) => (
         <Dropdown.Button type="ghost" onClick={this.handleTraderSwitch.bind(this, r)} overlay={
           <Menu>
+            <Menu.Item key="datagram">
+              <a type="ghost" onClick={this.handleTraderLog.bind(this, r)}>View DataGram</a>
+            </Menu.Item>
             <Menu.Item key="log">
               <a type="ghost" onClick={this.handleTraderLog.bind(this, r)}>View Log</a>
             </Menu.Item>
