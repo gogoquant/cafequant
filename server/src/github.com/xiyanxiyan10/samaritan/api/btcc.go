@@ -17,7 +17,7 @@ import (
 )
 
 func init() {
-	constructor["btcc"] = NewBtcc
+	constructor[constant.Btcc] = NewBtcc
 }
 
 // Btcc the exchange struct of btcc.com

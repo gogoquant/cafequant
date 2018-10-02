@@ -12,6 +12,10 @@ import (
 	"github.com/xiyanxiyan10/samaritan/model"
 )
 
+func init() {
+	constructor[constant.Huobi] = NewHuobi
+}
+
 // Huobi the exchange struct of huobi.com
 type Huobi struct {
 	stockTypeMap     map[string]string
@@ -55,7 +59,7 @@ func NewHuobi(opt Option) Exchange {
 			"LTC/CNY": 0.01,
 		},
 		records: make(map[string][]Record),
-		host:    "https://api.huobi.com/apiv3",
+		host:    "https://api.huobi.pro/v1",
 		logger:  model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option:  opt,
 

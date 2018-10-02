@@ -28,7 +28,7 @@ type Chbtc struct {
 }
 
 func init() {
-	constructor["chbtc"] = NewChbtc
+	constructor[constant.Chbtc] = NewChbtc
 }
 
 // NewChbtc create an exchange struct of chbtc.com

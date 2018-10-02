@@ -308,7 +308,9 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 		return ticker
 	}
 	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
-
+	if ticker == false{
+		return false
+	}
 	// record into latest
 	var ok bool = false
 	var data goback.DataEvent
