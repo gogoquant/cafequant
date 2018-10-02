@@ -53,13 +53,7 @@ func (e *Exchange) createOrder(order OrderEvent, data DataHandler) (*Fill, error
 	}
 	f.SetQuantifier(order.Quantifier())
 
-	var fqty float64
-	if order.OrderType() == LimitOrder {
-		fqty = order.FQty()
-	} else {
-		//@todo
-		fqty = order.FQty()
-	}
+	fqty := order.FQty()
 
 	commission, err := e.Commission.Calculate(fqty, f.price)
 	if err != nil {

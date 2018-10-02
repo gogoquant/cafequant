@@ -76,7 +76,6 @@ func (t Ticker) High() float64 {
 	return t.Buy
 }
 
-
 func base64Encode(data string) string {
 	return base64.StdEncoding.EncodeToString([]byte(data))
 }

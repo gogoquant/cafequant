@@ -20,16 +20,16 @@ type Trader struct {
 	DeletedAt   *time.Time `sql:"index" json:"-"`
 
 	Exchanges []Exchange `gorm:"-" json:"exchanges"`
-	Mode       string `gorm:"type:varchar(200)" json:"mode"`
+	Mode      string     `gorm:"type:varchar(200)" json:"mode"`
 	Status    int64      `gorm:"-" json:"status"`
 	Algorithm Algorithm  `gorm:"-" json:"algorithm"`
 }
 
 // TraderExchange struct
 type TraderExchange struct {
-	ID         int64  `gorm:"primary_key"`
-	TraderID   int64  `gorm:"index"`
-	ExchangeID int64  `gorm:"index"`
+	ID         int64 `gorm:"primary_key"`
+	TraderID   int64 `gorm:"index"`
+	ExchangeID int64 `gorm:"index"`
 	Exchange   `gorm:"-"`
 }
 

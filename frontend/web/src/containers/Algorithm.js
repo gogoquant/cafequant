@@ -15,8 +15,7 @@ class Algorithm extends React.Component {
     super(props);
 
     this.state = {
-      mode: 'halfLine',
-      defaultMode: 'halfLine',
+      defaultMode: 'simulation',
       messageErrorKey: '',
       selectedRowKeys: [],
       pagination: {
@@ -336,7 +335,7 @@ function main() {
       render: (v, r) => (
         <Dropdown.Button type="ghost" onClick={this.handleTraderSwitch.bind(this, r)} overlay={
           <Menu>
-            <Menu.Item key="datagram">
+            <Menu.Item key="dataGram">
               <a type="ghost" onClick={this.handleTraderLog.bind(this, r)}>View DataGram</a>
             </Menu.Item>
             <Menu.Item key="log">
@@ -353,9 +352,9 @@ function main() {
       key: 'mode',
       render: (v, r) =>(
         <Select defaultValue={r.mode} style={{ width: 120 }} onChange={(value) => {this.handleTraderModeEdit(r, value); }}>
-          <Option value="halfLine">halfLine</Option>
-          <Option value="offLine">offLine</Option>
-          <Option value="onLine">onLine</Option>
+          <Option value="offline">offline</Option>
+          <Option value="simulation">simulation</Option>
+          <Option value="online">online</Option>
         </Select>
       )
 

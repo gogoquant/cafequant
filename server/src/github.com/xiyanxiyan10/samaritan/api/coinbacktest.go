@@ -40,6 +40,9 @@ type BtBacktest struct {
 // ExchangeHandler api used for backtest
 type ExchangeHandler interface {
 	GetTicker(stockType string, sizes ...interface{}) interface{}
+	SetLimit(times interface{}) float64
+	GetMinAmount(stock string) float64
+	AutoSleep()
 }
 
 // BacktestData online back test support
@@ -50,13 +53,14 @@ type BacktestData interface {
 // NewBacktest create a backtest
 func NewBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
-		option: opt,
+		option:    opt,
 		limit:     10.0,
 		lastSleep: time.Now().UnixNano()}
 
-	// @todo check if exists
-	maker, _ := constructor[opt.Type]
-
+	maker, ok := constructor[opt.Type]
+	if !ok {
+		return nil
+	}
 	// set married handler
 	back.SetMarry(&BtMarry{})
 
@@ -66,32 +70,32 @@ func NewBacktest(opt Option) Exchange {
 
 // Log print something to console
 func (e *BtBacktest) Log(msgs ...interface{}) {
-
+	e.logger.Log(constant.INFO, "", 0.0, 0.0, msgs...)
 }
 
 // GetType get the type of this exchange
 func (e *BtBacktest) GetType() string {
-	return ""
+	return e.option.Type
 }
 
 // GetName get the name of this exchange
 func (e *BtBacktest) GetName() string {
-	return ""
+	return e.option.Name
 }
 
 // SetLimit set the limit calls amount per second of this exchange
 func (e *BtBacktest) SetLimit(times interface{}) float64 {
-	return 0.0
+	return e.exchangeHandler.SetLimit(times)
 }
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
 func (e *BtBacktest) AutoSleep() {
-
+	e.exchangeHandler.AutoSleep()
 }
 
 // GetMinAmount get the min trade amonut of this exchange
 func (e *BtBacktest) GetMinAmount(stock string) float64 {
-	return 0.0
+	return e.exchangeHandler.GetMinAmount(stock)
 }
 
 // getAuthJSON
@@ -127,19 +131,24 @@ func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount i
 }
 
 func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interface{}) interface{} {
-	//Todo time and symbol test set
 	event := &goback.Event{}
 	event.SetTime(time.Now())
 	event.SetSymbol(stockType)
 	signal := &goback.Signal{
 		Event: *event,
 	}
-	signal.SetPrice(price)
 	signal.SetFQty(fqty)
 	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
+		data, ok := e.Backtest.Portfolio().Latest(stockType)
+		if !ok {
+			e.logger.Log(constant.ERROR, stockType, price, fqty, "get market price fail")
+			return false
+		}
+		signal.SetPrice(data.Mid())
 		signal.SetOrderType(goback.MarketOrder)
 	} else {
+		signal.SetPrice(price)
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
@@ -148,19 +157,24 @@ func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interfac
 }
 
 func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interface{}) interface{} {
-	//Todo time and symbol test set
 	event := &goback.Event{}
 	event.SetTime(time.Now())
 	event.SetSymbol(stockType)
 	signal := &goback.Signal{
 		Event: *event,
 	}
-	signal.SetPrice(price)
 	signal.SetFQty(fqty)
 	signal.SetQtyType(goback.FLOAT64_QTY)
 	if price < 0 {
+		data, ok := e.Backtest.Portfolio().Latest(stockType)
+		if !ok {
+			e.logger.Log(constant.ERROR, stockType, price, fqty, "get market price fail")
+			return false
+		}
+		signal.SetPrice(data.Mid())
 		signal.SetOrderType(goback.MarketOrder)
 	} else {
+		signal.SetPrice(price)
 		signal.SetOrderType(goback.LimitOrder)
 	}
 	e.AddSignal(signal)
@@ -186,7 +200,6 @@ func (e *BtBacktest) GetOrder(stockType, id string) interface{} {
 
 				StockType: stockType,
 			}
-			// @todo more trade type
 			if backorder.Direction() == 0 {
 				order.StockType = constant.TradeTypeBuy
 			} else {
@@ -208,6 +221,9 @@ func (e *BtBacktest) GetOrders(stockType string) interface{} {
 	}
 
 	for _, backorder := range backorders {
+		if backorder.Status() != goback.OrderNew {
+			continue
+		}
 		order := Order{
 			ID:         strconv.Itoa(backorder.ID()),
 			Price:      backorder.Price(),
@@ -215,7 +231,6 @@ func (e *BtBacktest) GetOrders(stockType string) interface{} {
 			DealAmount: backorder.FQty(),
 			StockType:  stockType,
 		}
-		// @todo more trade type
 		if backorder.Direction() == 0 {
 			order.StockType = constant.TradeTypeBuy
 		} else {
@@ -228,7 +243,31 @@ func (e *BtBacktest) GetOrders(stockType string) interface{} {
 
 // GetTrades get all filled orders recently
 func (e *BtBacktest) GetTrades(stockType string) interface{} {
-	return false
+	orders := []Order{}
+	backorders, ok := e.OrdersBySymbol(stockType)
+	if !ok {
+		return false
+	}
+
+	for _, backorder := range backorders {
+		if backorder.Status() != goback.OrderSubmitted {
+			continue
+		}
+		order := Order{
+			ID:         strconv.Itoa(backorder.ID()),
+			Price:      backorder.Price(),
+			Amount:     backorder.FQty(),
+			DealAmount: backorder.FQty(),
+			StockType:  stockType,
+		}
+		if backorder.Direction() == 0 {
+			order.StockType = constant.TradeTypeBuy
+		} else {
+			order.StockType = constant.TradeTypeSell
+		}
+		orders = append(orders, order)
+	}
+	return orders
 }
 
 // CancelOrder cancel an order
@@ -275,13 +314,13 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 	var data goback.DataEvent
 	if e.option.Mode == constant.MODE_OFFLINE {
 		data, ok = e.Portfolio().Latest(stockType)
-	}else if e.option.Mode == constant.MODE_HALFLINE {
+	} else if e.option.Mode == constant.MODE_HALFLINE {
 		data, ok = ticker.(goback.DataEvent)
-	}else{
+	} else {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "code error, running in error mode")
 		return false
 	}
-	if !ok{
+	if !ok {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "convert interface to data fail")
 		return false
 	}
@@ -295,7 +334,7 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 	}
 
 	// try to marry order
-	for ; ; {
+	for {
 		end, err := marry.Marry(&e.Backtest, stockType)
 		if err != nil {
 			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
@@ -319,14 +358,12 @@ func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) 
 	return false
 }
 
-
 // BtMarry
 type BtMarry struct {
-
 }
 
 // Marry function
-func (bt *BtMarry)Marry(back *goback.Backtest, stockType string) (bool, error){
+func (bt *BtMarry) Marry(back *goback.Backtest, stockType string) (bool, error) {
 	orders, ok := back.OrdersBySymbol(stockType)
 	if ok != true {
 		return false, errors.New("get orders fail")
@@ -335,29 +372,28 @@ func (bt *BtMarry)Marry(back *goback.Backtest, stockType string) (bool, error){
 	if ok != true {
 		return false, errors.New("get latest fail")
 	}
-	for _, order := range(orders){
+	for _, order := range orders {
 		status := order.Status()
-		if status == goback.OrderCanceled && status == goback.OrderCancelPending{
+		if status == goback.OrderCanceled || status == goback.OrderCancelPending {
 			continue
 		}
 		dir := order.Direction()
 		var err error
-		switch (dir) {
+		switch dir {
 		case goback.BOT:
-				if order.FQty() >= latest.High() {
-					_, err = back.CommitOrder(order.ID())
-				}
+			if order.FQty() >= latest.High() {
+				_, err = back.CommitOrder(order.ID())
+			}
 		case goback.SLD:
-				if order.FQty() <= latest.Low() {
-					_, err = back.CommitOrder(order.ID())
-				}
+			if order.FQty() <= latest.Low() {
+				_, err = back.CommitOrder(order.ID())
+			}
 		default:
 			return false, errors.New("unknown dir")
 		}
-		if err != nil{
+		if err != nil {
 			return false, err
 		}
 	}
 	return true, nil
 }
-
