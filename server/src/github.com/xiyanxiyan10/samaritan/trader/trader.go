@@ -22,6 +22,8 @@ var (
 		constant.Chbtc:        api.NewChbtc,
 		constant.OkcoinFuture: api.NewOKCoinFuture,
 		constant.OandaV20:     api.NewOandaV20,
+		constant.CoinBacktest: api.NewCoinBacktest,
+
 	}
 )
 
@@ -99,7 +101,7 @@ func initialize(id int64) (trader Global, err error) {
 				// Ctx:       trader.Ctx,
 			}
 
-			backmaker, ok := exchangeMaker[e.Type]
+			coinbackmaker, ok := exchangeMaker[constant.CoinBacktest]
 			if !ok {
 				err = fmt.Errorf("get backtest module fail")
 				return
@@ -109,9 +111,9 @@ func initialize(id int64) (trader Global, err error) {
 			case constant.MODE_ONLINE:
 				trader.es = append(trader.es, maker(opt))
 			case constant.MODE_OFFLINE:
-				trader.es = append(trader.es, backmaker(opt))
+				trader.es = append(trader.es, coinbackmaker(opt))
 			case constant.MODE_HALFLINE:
-				trader.es = append(trader.es, backmaker(opt))
+				trader.es = append(trader.es, coinbackmaker(opt))
 			default:
 				err = fmt.Errorf("unknown mode")
 				return

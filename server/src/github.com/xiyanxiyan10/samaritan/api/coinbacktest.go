@@ -14,7 +14,7 @@ import (
 )
 
 func init() {
-	constructor["coinbacktest"] = NewBacktest
+	constructor["coinbacktest"] = NewCoinBacktest
 }
 
 // Backtest backtest struct
@@ -51,7 +51,7 @@ type BacktestData interface {
 }
 
 // NewBacktest create a backtest
-func NewBacktest(opt Option) Exchange {
+func NewCoinBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option:    opt,
 		limit:     10.0,
