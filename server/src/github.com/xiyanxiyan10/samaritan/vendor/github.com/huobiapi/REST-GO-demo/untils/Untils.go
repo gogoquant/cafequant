@@ -92,17 +92,17 @@ func HttpPostRequest(strUrl string, mapParams map[string]string) string {
 // mapParams: map类型的请求参数, key:value
 // strRequest: API路由路径
 // return: 请求结果
-func ApiKeyGet(mapParams map[string]string, strRequestPath string) string {
+func ApiKeyGet(mapParams map[string]string, strRequestPath, accessKey, secretKey string) string {
 	strMethod := "GET"
 	timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
 
-	mapParams["AccessKeyId"] = config.ACCESS_KEY
+	mapParams["AccessKeyId"] = accessKey
 	mapParams["SignatureMethod"] = "HmacSHA256"
 	mapParams["SignatureVersion"] = "2"
 	mapParams["Timestamp"] = timestamp
 
 	hostName := config.HOST_NAME
-	mapParams["Signature"] = CreateSign(mapParams, strMethod, hostName, strRequestPath, config.SECRET_KEY)
+	mapParams["Signature"] = CreateSign(mapParams, strMethod, hostName, strRequestPath, secretKey)
 
 	if config.ENABLE_PRIVATE_SIGNATURE == true {
 		privateSignature, err := CreatePrivateSignByJWT(mapParams["Signature"])
@@ -122,19 +122,19 @@ func ApiKeyGet(mapParams map[string]string, strRequestPath string) string {
 // mapParams: map类型的请求参数, key:value
 // strRequest: API路由路径
 // return: 请求结果
-func ApiKeyPost(mapParams map[string]string, strRequestPath string) string {
+func ApiKeyPost(mapParams map[string]string, strRequestPath string, accessKey, secretKey string) string {
 	strMethod := "POST"
 	timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
 
 	mapParams2Sign := make(map[string]string)
-	mapParams2Sign["AccessKeyId"] = config.ACCESS_KEY
+	mapParams2Sign["AccessKeyId"] = accessKey
 	mapParams2Sign["SignatureMethod"] = "HmacSHA256"
 	mapParams2Sign["SignatureVersion"] = "2"
 	mapParams2Sign["Timestamp"] = timestamp
 
 	hostName := config.HOST_NAME
 
-	mapParams2Sign["Signature"] = CreateSign(mapParams2Sign, strMethod, hostName, strRequestPath, config.SECRET_KEY)
+	mapParams2Sign["Signature"] = CreateSign(mapParams2Sign, strMethod, hostName, strRequestPath, secretKey)
 
 	if config.ENABLE_PRIVATE_SIGNATURE == true {
 		privateSignature, err := CreatePrivateSignByJWT(mapParams2Sign["Signature"])
