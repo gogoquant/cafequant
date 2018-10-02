@@ -11,7 +11,16 @@ import (
 )
 
 type HuobiApi struct {
+	accessKey string
+	secretKey string
+}
 
+// NewHuobiApi
+func NewHuobiApi(accessKey, secretKey string) *HuobiApi{
+	api := new(HuobiApi)
+	api.accessKey = accessKey
+	api.secretKey = secretKey
+	return api
 }
 
 // 批量操作的API下个版本再封装
@@ -189,7 +198,7 @@ func (h *HuobiApi)GetAccounts() models.AccountsReturn {
 	accountsReturn := models.AccountsReturn{}
 
 	strRequest := "/v1/account/accounts"
-	jsonAccountsReturn := untils.ApiKeyGet(make(map[string]string), strRequest)
+	jsonAccountsReturn := untils.ApiKeyGet(make(map[string]string), strRequest, h.accessKey, h.secretKey)
 	json.Unmarshal([]byte(jsonAccountsReturn), &accountsReturn)
 
 	return accountsReturn
@@ -202,7 +211,7 @@ func (h *HuobiApi)GetAccountBalance(strAccountID string) models.BalanceReturn {
 	balanceReturn := models.BalanceReturn{}
 
 	strRequest := fmt.Sprintf("/v1/account/accounts/%s/balance", strAccountID)
-	jsonBanlanceReturn := untils.ApiKeyGet(make(map[string]string), strRequest)
+	jsonBanlanceReturn := untils.ApiKeyGet(make(map[string]string), strRequest, h.accessKey, h.secretKey)
 	json.Unmarshal([]byte(jsonBanlanceReturn), &balanceReturn)
 
 	return balanceReturn
