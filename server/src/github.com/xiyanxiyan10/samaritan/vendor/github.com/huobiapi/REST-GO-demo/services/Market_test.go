@@ -2,15 +2,16 @@ package services
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
-	"strconv"
 
 	"github.com/huobiapi/REST-GO-demo/models"
 )
 
 func TestPlaceOrder(t *testing.T) {
-	account := GetAccounts()
+	huobiApi := NewHuobiApi("accessKey", "secretKey")
+	account := huobiApi.GetAccounts()
 
 	fmt.Println("Account: ", account)
 
@@ -37,7 +38,7 @@ func TestPlaceOrder(t *testing.T) {
 				placeParams.Type = "sell-limit"
 
 				fmt.Println("Place order with: ", placeParams)
-				placeReturn := Place(placeParams)
+				placeReturn := huobiApi.Place(placeParams)
 				if placeReturn.Status == "ok" {
 					fmt.Println("Place return: ", placeReturn.Data)
 				} else {
@@ -54,8 +55,9 @@ func TestPlaceOrder(t *testing.T) {
 	}
 }
 
-func Test_getSymbols(t *testing.T)  {
-	symbols := GetSymbols()
+func Test_getSymbols(t *testing.T) {
+	huobiApi := NewHuobiApi("accessKey", "secretKey")
+	symbols := huobiApi.GetSymbols()
 	if symbols.Status != "ok" {
 		t.Error("failed to get symbols")
 	} else {

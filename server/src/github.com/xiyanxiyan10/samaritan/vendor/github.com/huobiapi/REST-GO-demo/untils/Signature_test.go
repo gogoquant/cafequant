@@ -1,9 +1,9 @@
 package untils
 
 import (
-	"testing"
-	"github.com/stretchr/testify/assert"
 	"github.com/huobiapi/REST-GO-demo/config"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func generateParameters() map[string]string {
