@@ -10,6 +10,10 @@ import (
 	"github.com/huobiapi/REST-GO-demo/untils"
 )
 
+type HuobiApi struct {
+
+}
+
 // 批量操作的API下个版本再封装
 
 //------------------------------------------------------------------------------------------
@@ -20,7 +24,7 @@ import (
 // strPeriod: K线类型, 1min, 5min, 15min......
 // nSize: 获取数量, [1-2000]
 // return: KLineReturn 对象
-func GetKLine(strSymbol, strPeriod string, nSize int) models.KLineReturn {
+func (h *HuobiApi)GetKLine(strSymbol, strPeriod string, nSize int) models.KLineReturn {
 	kLineReturn := models.KLineReturn{}
 
 	mapParams := make(map[string]string)
@@ -40,7 +44,7 @@ func GetKLine(strSymbol, strPeriod string, nSize int) models.KLineReturn {
 // 获取聚合行情
 // strSymbol: 交易对, btcusdt, bccbtc......
 // return: TickReturn对象
-func GetTicker(strSymbol string) models.TickerReturn {
+func (h *HuobiApi)GetTicker(strSymbol string) models.TickerReturn {
 	tickerReturn := models.TickerReturn{}
 
 	mapParams := make(map[string]string)
@@ -59,7 +63,7 @@ func GetTicker(strSymbol string) models.TickerReturn {
 // strSymbol: 交易对, btcusdt, bccbtc......
 // strType: Depth类型, step0、step1......stpe5 (合并深度0-5, 0时不合并)
 // return: MarketDepthReturn对象
-func GetMarketDepth(strSymbol, strType string) models.MarketDepthReturn {
+func (h *HuobiApi)GetMarketDepth(strSymbol, strType string) models.MarketDepthReturn {
 	marketDepthReturn := models.MarketDepthReturn{}
 
 	mapParams := make(map[string]string)
@@ -78,7 +82,7 @@ func GetMarketDepth(strSymbol, strType string) models.MarketDepthReturn {
 // 获取交易细节信息
 // strSymbol: 交易对, btcusdt, bccbtc......
 // return: TradeDetailReturn对象
-func GetTradeDetail(strSymbol string) models.TradeDetailReturn {
+func (h *HuobiApi)GetTradeDetail(strSymbol string) models.TradeDetailReturn {
 	tradeDetailReturn := models.TradeDetailReturn{}
 
 	mapParams := make(map[string]string)
@@ -97,7 +101,7 @@ func GetTradeDetail(strSymbol string) models.TradeDetailReturn {
 // strSymbol: 交易对, btcusdt, bccbtc......
 // nSize: 获取交易记录的数量, 范围1-2000
 // return: TradeReturn对象
-func GetTrade(strSymbol string, nSize int) models.TradeReturn {
+func (h *HuobiApi)GetTrade(strSymbol string, nSize int) models.TradeReturn {
 	tradeReturn := models.TradeReturn{}
 
 	mapParams := make(map[string]string)
@@ -116,7 +120,7 @@ func GetTrade(strSymbol string, nSize int) models.TradeReturn {
 // 获取Market Detail 24小时成交量数据
 // strSymbol: 交易对, btcusdt, bccbtc......
 // return: MarketDetailReturn对象
-func GetMarketDetail(strSymbol string) models.MarketDetailReturn {
+func (h *HuobiApi)GetMarketDetail(strSymbol string) models.MarketDetailReturn {
 	marketDetailReturn := models.MarketDetailReturn{}
 
 	mapParams := make(map[string]string)
@@ -136,7 +140,7 @@ func GetMarketDetail(strSymbol string) models.MarketDetailReturn {
 
 // 查询系统支持的所有交易及精度
 // return: SymbolsReturn对象
-func GetSymbols() models.SymbolsReturn {
+func (h *HuobiApi)GetSymbols() models.SymbolsReturn {
 	symbolsReturn := models.SymbolsReturn{}
 
 	strRequestUrl := "/v1/common/symbols"
@@ -150,7 +154,7 @@ func GetSymbols() models.SymbolsReturn {
 
 // 查询系统支持的所有币种
 // return: CurrencysReturn对象
-func GetCurrencys() models.CurrencysReturn {
+func (h *HuobiApi)GetCurrencys() models.CurrencysReturn {
 	currencysReturn := models.CurrencysReturn{}
 
 	strRequestUrl := "/v1/common/currencys"
@@ -164,7 +168,7 @@ func GetCurrencys() models.CurrencysReturn {
 
 // 查询系统当前时间戳
 // return: TimestampReturn对象
-func GetTimestamp() models.TimestampReturn {
+func (h *HuobiApi)GetTimestamp() models.TimestampReturn {
 	timestampReturn := models.TimestampReturn{}
 
 	strRequest := "/v1/common/timestamp"
@@ -181,7 +185,7 @@ func GetTimestamp() models.TimestampReturn {
 
 // 查询当前用户的所有账户, 根据包含的私钥查询
 // return: AccountsReturn对象
-func GetAccounts() models.AccountsReturn {
+func (h *HuobiApi)GetAccounts() models.AccountsReturn {
 	accountsReturn := models.AccountsReturn{}
 
 	strRequest := "/v1/account/accounts"
@@ -194,7 +198,7 @@ func GetAccounts() models.AccountsReturn {
 // 根据账户ID查询账户余额
 // nAccountID: 账户ID, 不知道的话可以通过GetAccounts()获取, 可以只现货账户, C2C账户, 期货账户
 // return: BalanceReturn对象
-func GetAccountBalance(strAccountID string) models.BalanceReturn {
+func (h *HuobiApi)GetAccountBalance(strAccountID string) models.BalanceReturn {
 	balanceReturn := models.BalanceReturn{}
 
 	strRequest := fmt.Sprintf("/v1/account/accounts/%s/balance", strAccountID)
@@ -210,7 +214,7 @@ func GetAccountBalance(strAccountID string) models.BalanceReturn {
 // 下单
 // placeRequestParams: 下单信息
 // return: PlaceReturn对象
-func Place(placeRequestParams models.PlaceRequestParams) models.PlaceReturn {
+func (h *HuobiApi)Place(placeRequestParams models.PlaceRequestParams) models.PlaceReturn {
 	placeReturn := models.PlaceReturn{}
 
 	mapParams := make(map[string]string)
@@ -235,7 +239,7 @@ func Place(placeRequestParams models.PlaceRequestParams) models.PlaceReturn {
 // 申请撤销一个订单请求
 // strOrderID: 订单ID
 // return: PlaceReturn对象
-func SubmitCancel(strOrderID string) models.PlaceReturn {
+func (h *HuobiApi)SubmitCancel(strOrderID string) models.PlaceReturn {
 	placeReturn := models.PlaceReturn{}
 
 	strRequest := fmt.Sprintf("/v1/order/orders/%s/submitcancel", strOrderID)
