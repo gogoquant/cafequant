@@ -132,12 +132,6 @@ class Algorithm extends React.Component {
     });
   }
 
-  handleMode(value) {
-    // const { mode } = this.state;
-    console.log(`Click on item ${value}`);
-    this.setState({mode: value});
-  };
-
   handleEdit(info) {
     const { dispatch } = this.props;
 
