@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"github.com/dirkolbrich/gobacktest"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -57,28 +58,59 @@ type OrderBook struct {
 
 // Ticker struct
 type Ticker struct {
-	Bids []OrderBook
-	Buy  float64     // 最高价
-	Mid  float64     // 中间价
-	Sell float64     // 最低价
-	Amount float64   // 成交量
-	Count  int64     // 成交笔数
-	Open   float64   // 开盘价
-	Close  float64   // 收盘价
-	Vol    float64   // 成交额
-	Asks []OrderBook
+	gobacktest.Event
+
+	high  float64     // 最高价
+	mid  float64     // 中间价
+	low float64     // 最低价
+	amount float64   // 成交量
+	count  int64     // 成交笔数
+	open   float64   // 开盘价
+	close  float64   // 收盘价
+	vol    float64   // 成交额
+	asks []OrderBook
+	bids []OrderBook
 }
 
-func (t Ticker) Price() float64 {
-	return t.Mid
+func (t Ticker) Mid() float64 {
+	return t.mid
+}
+
+func (t Ticker) Open() float64 {
+	return t.open
+}
+
+
+func (t Ticker) Close() float64 {
+	return t.close
 }
 
 func (t Ticker) Low() float64 {
-	return t.Sell
+	return t.low
 }
 
-func (t Ticker) High() float64 {
-	return t.Buy
+func (t Ticker) High() float64{
+	return t.high
+}
+
+func (t *Ticker) SetOpen(open float64) {
+	t.open = open
+}
+
+func (t *Ticker) SetClose(close float64) {
+	t.close = close
+}
+
+func (t *Ticker) SetMid(mid float64) {
+	t.mid = mid
+}
+
+func (t *Ticker) SetLow(low float64) {
+	t.low = low
+}
+
+func (t *Ticker) SetHigh(high float64)  {
+	t.high = high
 }
 
 func base64Encode(data string) string {

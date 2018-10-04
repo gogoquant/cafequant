@@ -50,13 +50,13 @@ func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
 	for _, order := range ob.orders {
 		// order found
 		if order.ID() == id {
-		   if order.Status() == OrderCanceled || order.Status() == OrderCancelPending{
-			   return nil, fmt.Errorf("order with id %v canceled again", id)
-		   }
-		   order.Submit()
-		   fill := new(Fill)
-		   fill.SetQuantifier(order.Quantifier())
-		   return fill, nil
+			if order.Status() == OrderCanceled || order.Status() == OrderCancelPending {
+				return nil, fmt.Errorf("order with id %v canceled again", id)
+			}
+			order.Submit()
+			fill := new(Fill)
+			fill.SetQuantifier(order.Quantifier())
+			return fill, nil
 		}
 	}
 	return nil, fmt.Errorf("order with id %v not found", id)

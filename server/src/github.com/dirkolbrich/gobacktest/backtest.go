@@ -24,7 +24,7 @@ type Backtest struct {
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 	fill, err := t.portfolio.CommitOrder(id)
-	if err != nil{
+	if err != nil {
 		t.eventQueue = append(t.eventQueue, fill)
 	}
 	return fill, err

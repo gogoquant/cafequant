@@ -132,7 +132,7 @@ func (d *Data) updateList(event DataEvent) {
 // DataEvent declares a data event interface
 type DataEvent interface {
 	EventHandler
-	MetricHandler
+	//MetricHandler
 	Pricer
 }
 
@@ -141,6 +141,16 @@ type Pricer interface {
 	Mid() float64
 	Low() float64
 	High() float64
+	Open() float64
+	Close() float64
+
+
+	SetMid(mid float64)
+	SetLow(low float64)
+	SetHigh(high float64)
+	SetOpen(open float64)
+	SetClose(close float64)
+
 }
 
 // BarEvent declares a bar event interface.

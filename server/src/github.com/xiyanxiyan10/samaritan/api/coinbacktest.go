@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"github.com/bitly/go-simplejson"
 	goback "github.com/dirkolbrich/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/constant"
@@ -45,11 +44,6 @@ type ExchangeHandler interface {
 	AutoSleep()
 }
 
-// BacktestData online back test support
-type BacktestData interface {
-	getTicker(stockType string, sizes ...interface{}) (ticker Ticker, err error)
-}
-
 // NewBacktest create a backtest
 func NewCoinBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
@@ -61,7 +55,8 @@ func NewCoinBacktest(opt Option) Exchange {
 	if !ok {
 		return nil
 	}
-	// set married handler
+
+	back.SetPortfolio(goback.NewPortfolio())
 	back.SetMarry(&BtMarry{})
 
 	back.exchangeHandler = maker(opt)
@@ -153,7 +148,7 @@ func (e *BtBacktest) buy(stockType string, price, fqty float64, msgs ...interfac
 	}
 	e.AddSignal(signal)
 	e.logger.Log(constant.BUY, stockType, price, fqty, msgs...)
-	return fmt.Sprint("%s", "success")
+	return "success"
 }
 
 func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interface{}) interface{} {
@@ -179,7 +174,7 @@ func (e *BtBacktest) sell(stockType string, price, fqty float64, msgs ...interfa
 	}
 	e.AddSignal(signal)
 	e.logger.Log(constant.SELL, stockType, price, fqty, msgs...)
-	return fmt.Sprint("%s", "success")
+	return "success"
 }
 
 // GetOrder get details of an order
@@ -312,23 +307,25 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 		return false
 	}
 	// record into latest
-	var ok bool = false
+
 	var data goback.DataEvent
 	if e.option.Mode == constant.MODE_OFFLINE {
-		data, ok = e.Portfolio().Latest(stockType)
+		//data, ok := e.Portfolio().Latest(stockType)
 	} else if e.option.Mode == constant.MODE_HALFLINE {
-		data, ok = ticker.(goback.DataEvent)
+		realTicker, ok := ticker.(Ticker)
+		if !ok{
+			e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "code error, running in error mode")
+			return false
+		}
+		data = &realTicker
 	} else {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "code error, running in error mode")
 		return false
 	}
-	if !ok {
-		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, "convert interface to data fail")
-		return false
-	}
-	e.Portfolio().SetLatest(stockType, data)
 
-	//try to marry at first
+	portfolio := e.Portfolio()
+	portfolio.SetLatest(stockType, data)
+
 	marry := e.Marry()
 	if marry == nil {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, errors.New("need marry handler"))
@@ -352,6 +349,7 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 	if err != nil {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0, err)
 	}
+
 	return ticker
 }
 
@@ -368,7 +366,7 @@ type BtMarry struct {
 func (bt *BtMarry) Marry(back *goback.Backtest, stockType string) (bool, error) {
 	orders, ok := back.OrdersBySymbol(stockType)
 	if ok != true {
-		return false, errors.New("get orders fail")
+		return true, nil
 	}
 	latest, ok := back.Portfolio().Latest(stockType)
 	if ok != true {

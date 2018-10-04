@@ -15,13 +15,7 @@ var (
 	Executor      = make(map[int64]*Global)
 	errHalt       = fmt.Errorf("HALT")
 	exchangeMaker = map[string]func(api.Option) api.Exchange{
-		constant.OkCoinCn:     api.NewOKCoinCn,
 		constant.Huobi:        api.NewHuobi,
-		constant.Poloniex:     api.NewPoloniex,
-		constant.Btcc:         api.NewBtcc,
-		constant.Chbtc:        api.NewChbtc,
-		constant.OkcoinFuture: api.NewOKCoinFuture,
-		constant.OandaV20:     api.NewOandaV20,
 		constant.CoinBacktest: api.NewCoinBacktest,
 
 	}

@@ -29,7 +29,7 @@ type Huobi struct {
 	option           Option
 
 	// real api
-	api              *services.HuobiApi
+	api *services.HuobiApi
 
 	limit     float64
 	lastSleep int64
@@ -41,7 +41,7 @@ func NewHuobi(opt Option) Exchange {
 	return &Huobi{
 		stockTypeMap: map[string]string{
 			"btcusdt": "1",
-			"bchbtc": "2",
+			"bchbtc":  "2",
 		},
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
@@ -348,35 +348,28 @@ func (e *Huobi) CancelOrder(order Order) bool {
 
 // getTicker get market ticker & depth
 func (e *Huobi) getTicker(stockType string, sizes ...interface{}) (ticker Ticker, err error) {
-	/*
-	stockType = strings.ToUpper(stockType)
-	if _, ok := e.stockTypeMap[stockType]; !ok {
-		err = fmt.Errorf("GetTicker() error, unrecognized stockType: %+v", stockType)
-		return
-	}
-	*/
 	huobiTicker, err := e.api.GetTicker(stockType)
 	if err != nil {
 		return ticker, err
 	}
 	for i := 0; i < len(huobiTicker.Tick.Bid); i++ {
-		ticker.Bids = append(ticker.Bids, OrderBook{
+		ticker.bids = append(ticker.bids, OrderBook{
 			Price:  0,
 			Amount: huobiTicker.Tick.Bid[i],
 		})
 	}
 	for i := 0; i < len(huobiTicker.Tick.Ask); i++ {
-		ticker.Asks = append(ticker.Asks, OrderBook{
+		ticker.asks = append(ticker.asks, OrderBook{
 			Price:  0,
 			Amount: huobiTicker.Tick.Ask[i],
 		})
 	}
 
-	ticker.Buy = huobiTicker.Tick.High
-	ticker.Sell = huobiTicker.Tick.Low
-	ticker.Open = huobiTicker.Tick.Open
-	ticker.Close = huobiTicker.Tick.Close
-	ticker.Mid = (ticker.Buy + ticker.Sell) / 2
+	ticker.SetHigh(huobiTicker.Tick.High)
+	ticker.SetLow(huobiTicker.Tick.Low)
+	ticker.SetOpen(huobiTicker.Tick.Open)
+	ticker.SetClose(huobiTicker.Tick.Close)
+	ticker.SetMid((huobiTicker.Tick.High + huobiTicker.Tick.Low) / 2)
 	return
 }
 

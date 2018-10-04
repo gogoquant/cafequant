@@ -13,10 +13,8 @@ func init() {
 	config_path := os.Getenv("QUANT_CONFIG")
 	conf, err := ini.InsensitiveLoad(config_path)
 	if err != nil {
-		conf, err = ini.InsensitiveLoad("config.ini")
-		if err != nil {
-			log.Fatalln("Load config.ini error:", err)
-		}
+		log.Fatalf("Load config.ini from (%s) error (%s):", config_path, err.Error())
+		return
 	}
 	keys := conf.Section("").KeyStrings()
 	for _, k := range keys {
