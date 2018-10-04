@@ -58,9 +58,14 @@ type OrderBook struct {
 // Ticker struct
 type Ticker struct {
 	Bids []OrderBook
-	Buy  float64
-	Mid  float64
-	Sell float64
+	Buy  float64     // 最高价
+	Mid  float64     // 中间价
+	Sell float64     // 最低价
+	Amount float64   // 成交量
+	Count  int64     // 成交笔数
+	Open   float64   // 开盘价
+	Close  float64   // 收盘价
+	Vol    float64   // 成交额
 	Asks []OrderBook
 }
 

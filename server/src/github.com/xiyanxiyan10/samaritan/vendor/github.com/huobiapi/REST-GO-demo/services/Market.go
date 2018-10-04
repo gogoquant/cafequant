@@ -53,19 +53,22 @@ func (h *HuobiApi) GetKLine(strSymbol, strPeriod string, nSize int) models.KLine
 // 获取聚合行情
 // strSymbol: 交易对, btcusdt, bccbtc......
 // return: TickReturn对象
-func (h *HuobiApi) GetTicker(strSymbol string) models.TickerReturn {
+func (h *HuobiApi) GetTicker(strSymbol string) (models.TickerReturn, error) {
 	tickerReturn := models.TickerReturn{}
 
 	mapParams := make(map[string]string)
 	mapParams["symbol"] = strSymbol
 
 	strRequestUrl := "/market/detail/merged"
+	//strRequestUrl := "/market/tickers"
 	strUrl := config.MARKET_URL + strRequestUrl
 
 	jsonTickReturn := untils.HttpGetRequest(strUrl, mapParams)
-	json.Unmarshal([]byte(jsonTickReturn), &tickerReturn)
-
-	return tickerReturn
+	err := json.Unmarshal([]byte(jsonTickReturn), &tickerReturn)
+	if err != nil{
+		return  tickerReturn, err
+	}
+	return tickerReturn, nil
 }
 
 // 获取交易深度信息
@@ -239,7 +242,7 @@ func (h *HuobiApi) Place(placeRequestParams models.PlaceRequestParams) models.Pl
 	mapParams["type"] = placeRequestParams.Type
 
 	strRequest := "/v1/order/orders/place"
-	jsonPlaceReturn := untils.ApiKeyPost(mapParams, strRequest)
+	jsonPlaceReturn := untils.ApiKeyPost(mapParams, strRequest, h.accessKey, h.secretKey)
 	json.Unmarshal([]byte(jsonPlaceReturn), &placeReturn)
 
 	return placeReturn
@@ -252,7 +255,7 @@ func (h *HuobiApi) SubmitCancel(strOrderID string) models.PlaceReturn {
 	placeReturn := models.PlaceReturn{}
 
 	strRequest := fmt.Sprintf("/v1/order/orders/%s/submitcancel", strOrderID)
-	jsonPlaceReturn := untils.ApiKeyPost(make(map[string]string), strRequest)
+	jsonPlaceReturn := untils.ApiKeyPost(make(map[string]string), strRequest, h.accessKey, h.secretKey)
 	json.Unmarshal([]byte(jsonPlaceReturn), &placeReturn)
 
 	return placeReturn

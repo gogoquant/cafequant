@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/huobiapi/REST-GO-demo/services"
 	"sort"
 	"strings"
 	"time"
@@ -27,6 +28,9 @@ type Huobi struct {
 	logger           model.Logger
 	option           Option
 
+	// real api
+	api              *services.HuobiApi
+
 	limit     float64
 	lastSleep int64
 	lastTimes int64
@@ -36,8 +40,8 @@ type Huobi struct {
 func NewHuobi(opt Option) Exchange {
 	return &Huobi{
 		stockTypeMap: map[string]string{
-			"BTC/CNY": "1",
-			"LTC/CNY": "2",
+			"btcusdt": "1",
+			"bchbtc": "2",
 		},
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
@@ -62,6 +66,7 @@ func NewHuobi(opt Option) Exchange {
 		host:    "https://api.huobi.pro/v1",
 		logger:  model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option:  opt,
+		api:     services.NewHuobiApi(opt.AccessKey, opt.SecretKey),
 
 		limit:     10.0,
 		lastSleep: time.Now().UnixNano(),
@@ -343,47 +348,34 @@ func (e *Huobi) CancelOrder(order Order) bool {
 
 // getTicker get market ticker & depth
 func (e *Huobi) getTicker(stockType string, sizes ...interface{}) (ticker Ticker, err error) {
+	/*
 	stockType = strings.ToUpper(stockType)
 	if _, ok := e.stockTypeMap[stockType]; !ok {
 		err = fmt.Errorf("GetTicker() error, unrecognized stockType: %+v", stockType)
 		return
 	}
-	size := 20
-	if len(sizes) > 0 && conver.IntMust(sizes[0]) > 0 {
-		size = conver.IntMust(sizes[0])
-	}
-	resp, err := get(fmt.Sprintf("http://api.huobi.com/staticmarket/depth_%v_%v.js", strings.ToLower(strings.TrimSuffix(stockType, "/CNY")), size))
+	*/
+	huobiTicker, err := e.api.GetTicker(stockType)
 	if err != nil {
-		err = fmt.Errorf("GetTicker() error, %+v", err)
-		return
+		return ticker, err
 	}
-	json, err := simplejson.NewJson(resp)
-	if err != nil {
-		err = fmt.Errorf("GetTicker() error, %+v", err)
-		return
-	}
-	depthsJSON := json.Get("bids")
-	for i := 0; i < len(depthsJSON.MustArray()); i++ {
-		depthJSON := depthsJSON.GetIndex(i)
+	for i := 0; i < len(huobiTicker.Tick.Bid); i++ {
 		ticker.Bids = append(ticker.Bids, OrderBook{
-			Price:  depthJSON.GetIndex(0).MustFloat64(),
-			Amount: depthJSON.GetIndex(1).MustFloat64(),
+			Price:  0,
+			Amount: huobiTicker.Tick.Bid[i],
 		})
 	}
-	depthsJSON = json.Get("asks")
-	for i := 0; i < len(depthsJSON.MustArray()); i++ {
-		depthJSON := depthsJSON.GetIndex(i)
+	for i := 0; i < len(huobiTicker.Tick.Ask); i++ {
 		ticker.Asks = append(ticker.Asks, OrderBook{
-			Price:  depthJSON.GetIndex(0).MustFloat64(),
-			Amount: depthJSON.GetIndex(1).MustFloat64(),
+			Price:  0,
+			Amount: huobiTicker.Tick.Ask[i],
 		})
 	}
-	if len(ticker.Bids) < 1 || len(ticker.Asks) < 1 {
-		err = fmt.Errorf("GetTicker() error, can not get enough Bids or Asks")
-		return
-	}
-	ticker.Buy = ticker.Bids[0].Price
-	ticker.Sell = ticker.Asks[0].Price
+
+	ticker.Buy = huobiTicker.Tick.High
+	ticker.Sell = huobiTicker.Tick.Low
+	ticker.Open = huobiTicker.Tick.Open
+	ticker.Close = huobiTicker.Tick.Close
 	ticker.Mid = (ticker.Buy + ticker.Sell) / 2
 	return
 }
