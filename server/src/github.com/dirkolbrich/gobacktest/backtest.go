@@ -362,6 +362,7 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 				return err, true
 			}
 		}
+		// record data to datagram
 
 	case *Signal:
 		order, err := t.portfolio.OnSignal(event, t.data)
