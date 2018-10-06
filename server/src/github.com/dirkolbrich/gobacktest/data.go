@@ -144,13 +144,11 @@ type Pricer interface {
 	Open() float64
 	Close() float64
 
-
 	SetMid(mid float64)
 	SetLow(low float64)
 	SetHigh(high float64)
 	SetOpen(open float64)
 	SetClose(close float64)
-
 }
 
 // BarEvent declares a bar event interface.

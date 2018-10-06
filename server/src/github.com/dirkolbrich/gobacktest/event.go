@@ -61,9 +61,20 @@ type OrderEvent interface {
 	IDer
 	Cancel()
 	Submit()
+	Fill(from OrderEvent)
+	SetStatus(OrderStatus)
 	Status() OrderStatus
 	Limit() float64
 	Stop() float64
+}
+
+type CmdEvent interface {
+	EventHandler
+	CmdHandler
+}
+
+type CmdHandler interface {
+	Cmd() string
 }
 
 // Quantifier defines a qty interface.

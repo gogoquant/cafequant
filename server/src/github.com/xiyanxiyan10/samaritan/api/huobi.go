@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/huobiapi/REST-GO-demo/services"
 	"sort"
@@ -11,6 +12,7 @@ import (
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
+	goback "github.com/dirkolbrich/gobacktest"
 )
 
 func init() {
@@ -20,6 +22,7 @@ func init() {
 // Huobi the exchange struct of huobi.com
 type Huobi struct {
 	stockTypeMap     map[string]string
+	status           int
 	tradeTypeMap     map[int]string
 	recordsPeriodMap map[string]string
 	minAmountMap     map[string]float64
@@ -383,7 +386,7 @@ func (e *Huobi) GetTicker(stockType string, sizes ...interface{}) interface{} {
 	return ticker
 }
 
-// GetRecords get candlestick data
+// GetRecords
 func (e *Huobi) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
 	stockType = strings.ToUpper(stockType)
 	if _, ok := e.stockTypeMap[stockType]; !ok {
@@ -444,4 +447,85 @@ func (e *Huobi) GetRecords(stockType, period string, sizes ...interface{}) inter
 		e.records[period] = e.records[period][len(e.records[period])-size : len(e.records[period])]
 	}
 	return e.records[period]
+}
+
+
+// Marry
+func (bt *Huobi) Marry(back *goback.Backtest, data goback.DataEvent) (bool, error) {
+	stockType := data.Symbol()
+	orders, ok := back.OrdersBySymbol(stockType)
+	if ok != true {
+		return true, nil
+	}
+	if ok != true {
+		return false, errors.New("get latest fail")
+	}
+	for _, order := range orders {
+		status := order.Status()
+		if status == goback.OrderCanceled || status == goback.OrderCancelPending {
+			continue
+		}
+		dir := order.Direction()
+		var err error
+		switch dir {
+		case goback.BOT:
+			if order.FQty() >= data.High() {
+				_, err = back.CommitOrder(order.ID())
+			}
+		case goback.SLD:
+			if order.FQty() <= data.Low() {
+				_, err = back.CommitOrder(order.ID())
+			}
+		default:
+			return false, errors.New("unknown dir")
+		}
+		if err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+
+// Start
+func (bt *Huobi) Start(back *goback.Backtest) error {
+	if bt.status == goback.GobackRun{
+		return errors.New("already running")
+	}
+	bt.status = goback.GobackRun
+
+	go bt.Run(back)
+
+	return nil
+}
+
+// Run
+func (bt *Huobi) Run(back *goback.Backtest) error {
+	for {
+		var data goback.DataEvent
+		subscribes := back.Subscribes()
+		for stockType, _ := range(subscribes){
+				ticker, err := bt.getTicker(stockType)
+				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
+				ticker.SetSymbol(stockType)
+				data = &ticker
+				bt.Marry(back, data)
+				back.AddEvent(data)
+				time.Sleep(time.Millisecond * 100)
+		}
+	}
+	return nil
+}
+
+// Stop
+func (bt *Huobi) Stop(back *goback.Backtest) error {
+	if bt.status == goback.GobackStop || bt.status == goback.GobackPending{
+		return errors.New("already stop")
+	}
+	bt.status = goback.GobackPending
+	return nil
+}
+
+func (bt *Huobi) Status() int{
+	return bt.status
 }

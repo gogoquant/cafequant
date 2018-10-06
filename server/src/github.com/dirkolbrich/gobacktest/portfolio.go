@@ -51,9 +51,8 @@ type Valuer interface {
 
 // Booker defines methods for handling the order book of the portfolio
 type Booker interface {
-	SetLatest(symbol string, data DataEvent)
-	Latest(symbol string) (DataEvent, bool)
 	CancelOrder(id int) error
+	Subscribes() map[string]int
 	Orders() ([]OrderEvent, bool)
 	CommitOrder(id int) (*Fill, error)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
@@ -64,7 +63,6 @@ type Portfolio struct {
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
-	latests      map[string]DataEvent
 	orderManager OrderBook
 	transactions []FillEvent
 	sizeManager  SizeHandler
@@ -77,7 +75,6 @@ func NewPortfolio() *Portfolio {
 		initialCash: 100000,
 		sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
 		riskManager: &Risk{},
-		latests:     make(map[string]DataEvent),
 		holdings:    make(map[string]Position),
 	}
 }
@@ -269,14 +266,7 @@ func (p *Portfolio) CommitOrder(id int) (*Fill, error) {
 	return p.orderManager.CommitOrder(id)
 }
 
-// SetLatest ...
-func (p *Portfolio) SetLatest(symbol string, data DataEvent) {
-	p.latests[symbol] = data
-	return
-}
-
-// Latest ...
-func (p *Portfolio) Latest(symbol string) (DataEvent, bool) {
-	data, ok := p.latests[symbol]
-	return data, ok
+// CancelOrder ...
+func (p *Portfolio) Subscribes() map[string]int {
+	return p.orderManager.Subscribes()
 }

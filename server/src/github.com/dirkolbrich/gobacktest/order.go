@@ -30,8 +30,8 @@ const (
 
 // Order declares a basic order event.
 type Order struct {
-	QuantifierType
 	Event
+	QuantifierType
 	id           int
 	status       OrderStatus
 	assetType    string
@@ -39,6 +39,22 @@ type Order struct {
 	avgFillPrice float64
 	limitPrice   float64 // limit for the order
 	stopPrice    float64
+}
+
+func (o *Order)Fill(from OrderEvent){
+	o.SetQuantifier(from.Quantifier())
+	o.SetID(from.ID())
+	o.SetSymbol(from.Symbol())
+	o.SetTime(from.Time())
+	o.SetStatus(from.Status())
+
+	/* @todo
+	o.assetType = from.assetType
+	o.qtyFilled = from.qtyFilled
+	o.avgFillPrice = from.avgFillPrice
+	o.limitPrice = from.limitPrice
+	o.stopPrice = from.stopPrice
+	*/
 }
 
 // ID returns the id of the Order.
@@ -49,6 +65,11 @@ func (o Order) ID() int {
 // SetID of the Order.
 func (o *Order) SetID(id int) {
 	o.id = id
+}
+
+// SetStatus
+func (o *Order) SetStatus(status OrderStatus){
+	o.status = status
 }
 
 // Status returns the status of an Order
@@ -68,7 +89,7 @@ func (o Order) Stop() float64 {
 
 // Cancel cancels an order
 func (o *Order) Cancel() {
-	o.status = OrderCancelPending
+	o.status = OrderCanceled
 }
 
 // Cancel cancels an order

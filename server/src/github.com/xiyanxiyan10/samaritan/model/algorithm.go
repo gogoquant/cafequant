@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/xiyanxiyan10/samaritan/util"
 	"time"
 )
 
@@ -34,9 +35,9 @@ func (user User) ListAlgorithm(size, page int64, order string) (total int64, alg
 		return
 	}
 	if size < 0 {
-		err = DB.Where("user_id in (?)", userIDs).Order(toUnderScoreCase(order)).Limit(size).Find(&algorithms).Error
+		err = DB.Where("user_id in (?)", userIDs).Order(util.ToUnderScoreCase(order)).Limit(size).Find(&algorithms).Error
 	} else {
-		err = DB.Where("user_id in (?)", userIDs).Order(toUnderScoreCase(order)).Limit(size).Offset((page - 1) * size).Find(&algorithms).Error
+		err = DB.Where("user_id in (?)", userIDs).Order(util.ToUnderScoreCase(order)).Limit(size).Offset((page - 1) * size).Find(&algorithms).Error
 	}
 	return
 }

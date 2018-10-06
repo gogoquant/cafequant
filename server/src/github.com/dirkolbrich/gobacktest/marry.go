@@ -2,5 +2,5 @@ package gobacktest
 
 // MarryHandler .
 type MarryHandler interface {
-	Marry(bt *Backtest, stockType string) (bool, error)
+	Marry(bt *Backtest, data DataEvent) (end bool, err error)
 }

@@ -1,8 +1,19 @@
 package gobacktest
 
+import (
+	"errors"
+	//"github.com/xiyanxiyan10/samaritan/api"
+)
+
 // DP sets the the precision of rounded floating numbers
 // used after calculations to format
 const DP = 4 // DP
+
+const (
+	GobackRun     = 2
+	GobackPending = 1
+	GobackStop    = 0
+)
 
 // Reseter provides a resting interface.
 type Reseter interface {
@@ -11,21 +22,46 @@ type Reseter interface {
 
 // Backtest is the main struct which holds all elements.
 type Backtest struct {
-	symbols    []string
-	data       DataHandler
-	strategy   StrategyHandler
-	portfolio  PortfolioHandler
-	exchange   ExecutionHandler
-	statistic  StatisticHandler
-	marry      MarryHandler
+	eventCh chan EventHandler
+	status  int
+
+	symbols []string
+
+	data      DataHandler
+	strategy  StrategyHandler
+	portfolio PortfolioHandler
+	exchange  ExecutionHandler
+	statistic StatisticHandler
+	marries map[string]MarryHandler
+
 	eventQueue []EventHandler
+}
+
+// NewBacktest
+func NewBacktest() *Backtest {
+	back := NewBacktest()
+	back.eventCh = make(chan EventHandler, 20)
+	back.marries = make(map[string]MarryHandler)
+	back.status = GobackStop
+
+	return back
+}
+
+// SetMarry
+func (t *Backtest) SetMarry(name string, handler MarryHandler) {
+	t.marries[name] = handler
+}
+
+// Marries
+func (t *Backtest) Marries() map[string]MarryHandler{
+	return t.marries
 }
 
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 	fill, err := t.portfolio.CommitOrder(id)
 	if err != nil {
-		t.eventQueue = append(t.eventQueue, fill)
+		t.AddEvent(fill)
 	}
 	return fill, err
 }
@@ -38,6 +74,37 @@ func (t *Backtest) OrdersBySymbol(stockType string) ([]OrderEvent, bool) {
 // CancelOneOrder ...
 func (t *Backtest) CancelOrder(id int) error {
 	return t.portfolio.CancelOrder(id)
+}
+
+// Subscribe..
+func (t *Backtest) Subscribes() map[string]int {
+	return t.portfolio.Subscribes()
+}
+
+// Start
+func (t *Backtest) Start() error {
+	if t.status == GobackRun {
+		return errors.New("already running")
+	}
+	t.status = GobackRun
+
+	go t.Run2Event()
+
+	return nil
+}
+
+// Stop
+func (t *Backtest) Stop() error {
+	if t.status == GobackStop || t.status == GobackPending {
+		return errors.New("already stop or pending")
+
+	}
+
+	t.status = GobackPending
+	var cmd Cmd
+	cmd.SetCmd("stop")
+	t.AddEvent(&cmd)
+	return nil
 }
 
 // New creates a default backtest with sensible defaults ready for use.
@@ -87,11 +154,6 @@ func (t *Backtest) SetStatistic(statistic StatisticHandler) {
 	t.statistic = statistic
 }
 
-// SetMarry sets the statistic provider to be used within the backtest.
-func (t *Backtest) SetMarry(marry MarryHandler) {
-	t.marry = marry
-}
-
 // Portfolio sets the Portfolio provider to be used within the backtest.
 func (t *Backtest) Portfolio() PortfolioHandler {
 	return t.portfolio
@@ -109,7 +171,7 @@ func (t *Backtest) Reset() error {
 // SignalAdd Add signal event into event queue
 func (t *Backtest) AddSignal(signals ...SignalEvent) error {
 	for _, signal := range signals {
-		t.eventQueue = append(t.eventQueue, signal)
+		t.AddEvent(signal)
 	}
 	return nil
 }
@@ -117,11 +179,6 @@ func (t *Backtest) AddSignal(signals ...SignalEvent) error {
 // Stats returns the statistic handler of the backtest.
 func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
-}
-
-// Marry returns the Marry handler of the backtest.
-func (t *Backtest) Marry() MarryHandler {
-	return t.marry
 }
 
 // Run starts the backtest.
@@ -162,62 +219,20 @@ func (t *Backtest) Run() error {
 	if err != nil {
 		return err
 	}
-
 	return nil
-}
-
-// Run starts the backtest to get data tick
-func (t *Backtest) Run2Data() (*EventHandler, bool, error) {
-	//@todo init the backtest data queue at first
-	// poll event queue
-	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
-		// no event in the queue
-		if !ok {
-			// poll data stream
-			data, ok := t.data.Next()
-			// no more data, exit event loop
-			if !ok {
-				break
-			}
-			// found data event, add to event stream
-			t.eventQueue = append(t.eventQueue, data)
-			// start new event cycle
-			continue
-		}
-
-		// processing event and try to get data
-		data, err := t.eventLoop2Data(event)
-		if err != nil {
-			return nil, false, err
-		}
-		// event in queue found, add to event history
-		t.statistic.TrackEvent(event)
-		if data != nil {
-			return data, false, nil
-		}
-	}
-
-	// teardown at the end of the backtest
-	err := t.teardown()
-	if err != nil {
-		return nil, false, err
-	}
-	return nil, true, nil
 }
 
 // Run starts the backtest to get data tick
 func (t *Backtest) Run2Event() error {
 	// poll event queue
-	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
-		// no event in the queue
-		if !ok {
-			return nil
-		}
-
-		// processing event and try to get data
-		err := t.eventLoop2Event(event)
+	select {
+	case event := <-t.eventCh:
+		err, end := t.eventLoop2Event(event)
 		if err != nil {
 			return err
+		}
+		if end {
+			return nil
 		}
 		// event in queue found, add to event history
 		t.statistic.TrackEvent(event)
@@ -253,6 +268,7 @@ func (t *Backtest) teardown() error {
 
 // nextEvent gets the next event from the events queue.
 func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
+
 	// if event queue empty return false
 	if len(t.eventQueue) == 0 {
 		return e, false
@@ -265,10 +281,17 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 	return e, true
 }
 
+// AddEvent
+func (t *Backtest) AddEvent(e EventHandler) error {
+	t.eventCh <- e
+	return nil
+}
+
 // eventLoop directs the different events to their handler.
 func (t *Backtest) eventLoop(e EventHandler) error {
 	// type check for event type
 	switch event := e.(type) {
+
 	case DataEvent:
 		// update portfolio to the last known price data
 		t.portfolio.Update(event)
@@ -311,12 +334,19 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 	return nil
 }
 
-// eventLoop2Data directs the different events to their handler.
-func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
-	// married deal at first;
+// eventLoop2Event directs the different events to their handler.
+func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
+	end = false
 
 	// type check for event type
 	switch event := e.(type) {
+
+	case CmdEvent:
+		t.status = GobackStop
+		err = nil
+		end = true
+		break
+
 	case DataEvent:
 		// update portfolio to the last known price data
 		t.portfolio.Update(event)
@@ -324,61 +354,35 @@ func (t *Backtest) eventLoop2Data(e EventHandler) (*EventHandler, error) {
 		t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before proceding
 		t.exchange.OnData(event)
-		return &e, nil
+		// marry all orders
+		marries := t.Marries()
+		for _, marry := range(marries){
+			_, err := marry.Marry(t, event)
+			if err != nil{
+				return err, true
+			}
+		}
 
 	case *Signal:
 		order, err := t.portfolio.OnSignal(event, t.data)
 		if err != nil {
 			break
 		}
-		t.eventQueue = append(t.eventQueue, order)
+		t.AddEvent(order)
 
 	case *Order:
 		fill, err := t.exchange.OnOrder(event, t.data)
 		if err != nil {
 			break
 		}
-		t.eventQueue = append(t.eventQueue, fill)
+		t.AddEvent(fill)
 
 	case *Fill:
 		transaction, err := t.portfolio.OnFill(event, t.data)
 		if err != nil {
 			break
 		}
-		t.statistic.TrackTransaction(transaction)
+		t.AddEvent(transaction)
 	}
-
-	return nil, nil
-}
-
-// eventLoop2Event directs the different events to their handler.
-func (t *Backtest) eventLoop2Event(e EventHandler) error {
-	// married deal at first;
-
-	// type check for event type
-	switch event := e.(type) {
-
-	case *Signal:
-		order, err := t.portfolio.OnSignal(event, t.data)
-		if err != nil {
-			break
-		}
-		t.eventQueue = append(t.eventQueue, order)
-
-	case *Order:
-		fill, err := t.exchange.OnOrder(event, t.data)
-		if err != nil {
-			break
-		}
-		t.eventQueue = append(t.eventQueue, fill)
-
-	case *Fill:
-		transaction, err := t.portfolio.OnFill(event, t.data)
-		if err != nil {
-			break
-		}
-		t.statistic.TrackTransaction(transaction)
-	}
-
-	return nil
+	return
 }

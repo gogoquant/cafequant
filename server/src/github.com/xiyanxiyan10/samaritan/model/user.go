@@ -2,6 +2,7 @@ package model
 
 import (
 	// "log"
+	"github.com/xiyanxiyan10/samaritan/util"
 	"time"
 )
 
@@ -38,9 +39,9 @@ func (user User) ListUser(size, page int64, order string) (total int64, users []
 	// log.Printf("page %d, size %d, order %s", page, size, order)
 
 	if size < 0 {
-		err = DB.Where("level < ? OR id = ?", user.Level, user.ID).Order(toUnderScoreCase(order)).Limit(size).Find(&users).Error
+		err = DB.Where("level < ? OR id = ?", user.Level, user.ID).Order(util.ToUnderScoreCase(order)).Limit(size).Find(&users).Error
 	} else {
-		err = DB.Where("level < ? OR id = ?", user.Level, user.ID).Order(toUnderScoreCase(order)).Limit(size).Offset((page - 1) * size).Find(&users).Error
+		err = DB.Where("level < ? OR id = ?", user.Level, user.ID).Order(util.ToUnderScoreCase(order)).Limit(size).Offset((page - 1) * size).Find(&users).Error
 	}
 	return
 }

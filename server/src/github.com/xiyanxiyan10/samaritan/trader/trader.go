@@ -2,6 +2,7 @@ package trader
 
 import (
 	"fmt"
+	"github.com/dirkolbrich/gobacktest"
 	"time"
 
 	"github.com/robertkrimen/otto"
@@ -23,10 +24,14 @@ var (
 
 // Global ...
 type Global struct {
+	back *gobacktest.Backtest
+
 	model.Trader
 	Logger    model.Logger
 	Ctx       *otto.Otto
 	es        []api.Exchange
+	// key as exchange type
+	esMap     map[string]api.Exchange
 	tasks     []task
 	execed    bool
 	statusLog string
@@ -49,6 +54,12 @@ func Switch(id int64) (err error) {
 }
 
 func initialize(id int64) (trader Global, err error) {
+	trader.esMap = make(map[string]api.Exchange)
+	back := gobacktest.NewBacktest()
+	portfolio := new(gobacktest.Portfolio)
+	back.SetPortfolio(portfolio)
+	trader.back = back
+
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
 	}
@@ -107,7 +118,11 @@ func initialize(id int64) (trader Global, err error) {
 			case constant.MODE_OFFLINE:
 				trader.es = append(trader.es, coinbackmaker(opt))
 			case constant.MODE_HALFLINE:
-				trader.es = append(trader.es, coinbackmaker(opt))
+				exchange := coinbackmaker(opt)
+				trader.es = append(trader.es, exchange)
+				// register exchange as type
+				trader.esMap[e.Type] = exchange
+				trader.back.SetMarry(e.Type, exchange)
 			default:
 				err = fmt.Errorf("unknown mode")
 				return
@@ -128,6 +143,7 @@ func initialize(id int64) (trader Global, err error) {
 
 	//register math tool
 	trader.Ctx.Set("Math", Mathtools)
+
 	return
 }
 
@@ -137,6 +153,21 @@ func run(id int64) (err error) {
 	if err != nil {
 		return
 	}
+
+	//start gobacktest and exchange
+	err = trader.back.Start()
+
+	//start exchange filebeat
+	for _, e := range(trader.esMap){
+		if err = e.Start(trader.back); err != nil{
+				return err
+		}
+	}
+
+	if err != nil{
+		trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+	}
+
 	go func() {
 		defer func() {
 			if err := recover(); err != nil && err != errHalt {
@@ -176,10 +207,14 @@ func getStatus(id int64) (status string) {
 
 // stop ...
 func stop(id int64) (err error) {
+	//start gobacktest and exchange
+
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("Can not found the Trader")
 	}
 	Executor[id].Ctx.Interrupt <- func() { panic(errHalt) }
+	Executor[id].back.Stop()
+
 	return
 }
 
