@@ -30,7 +30,6 @@ type Exchange interface {
 	Start(back *goback.Backtest) error
 	Stop(back *goback.Backtest) error
 	Status() int
-	Marry(back *goback.Backtest, data goback.DataEvent) (bool, error)
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
 }

@@ -44,7 +44,7 @@ type ExchangeHandler interface {
 	Start(back *goback.Backtest) error
 	Stop(back *goback.Backtest) error
 	Status() int
-	Marry(back *goback.Backtest, data goback.DataEvent) (bool, error)
+	//Marry(back *goback.Backtest, data goback.DataEvent) (bool, error)
 	AutoSleep()
 }
 
@@ -283,10 +283,6 @@ func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) 
 	return false
 }
 
-// Marry
-func (bt *BtBacktest) Marry(back *goback.Backtest, data goback.DataEvent) (bool, error) {
-	return bt.exchangeHandler.Marry(back, data)
-}
 
 // Start
 func (bt *BtBacktest) Start(back *goback.Backtest) error {

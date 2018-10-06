@@ -3,6 +3,7 @@ package trader
 import (
 	"fmt"
 	"github.com/dirkolbrich/gobacktest"
+	"github.com/xiyanxiyan10/samaritan/marry"
 	"time"
 
 	"github.com/robertkrimen/otto"
@@ -30,8 +31,7 @@ type Global struct {
 	Logger    model.Logger
 	Ctx       *otto.Otto
 	es        []api.Exchange
-	// key as exchange type
-	esMap     map[string]api.Exchange
+
 	tasks     []task
 	execed    bool
 	statusLog string
@@ -54,7 +54,7 @@ func Switch(id int64) (err error) {
 }
 
 func initialize(id int64) (trader Global, err error) {
-	trader.esMap = make(map[string]api.Exchange)
+
 	back := gobacktest.NewBacktest()
 	portfolio := new(gobacktest.Portfolio)
 	back.SetPortfolio(portfolio)
@@ -121,8 +121,7 @@ func initialize(id int64) (trader Global, err error) {
 				exchange := coinbackmaker(opt)
 				trader.es = append(trader.es, exchange)
 				// register exchange as type
-				trader.esMap[e.Type] = exchange
-				trader.back.SetMarry(e.Type, exchange)
+				//trader.back.SetMarry(e.Type, exchange)
 			default:
 				err = fmt.Errorf("unknown mode")
 				return
@@ -134,6 +133,13 @@ func initialize(id int64) (trader Global, err error) {
 		err = fmt.Errorf("Please add at least one exchange")
 		return
 	}
+
+	//Register marry handler
+	marryStore := marry.MarryStore()
+	for stockType, Handler := range(marryStore){
+		trader.back.SetMarry(stockType, Handler)
+	}
+
 	trader.Ctx.Set("Global", &trader)
 	trader.Ctx.Set("G", &trader)
 	trader.Ctx.Set("Exchange", trader.es[0])
@@ -158,7 +164,7 @@ func run(id int64) (err error) {
 	err = trader.back.Start()
 
 	//start exchange filebeat
-	for _, e := range(trader.esMap){
+	for _, e := range(trader.es){
 		if err = e.Start(trader.back); err != nil{
 				return err
 		}
@@ -212,6 +218,14 @@ func stop(id int64) (err error) {
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("Can not found the Trader")
 	}
+
+	//stop exchange filebeat
+	for _, e := range(Executor[id].es){
+		if err = e.Stop(Executor[id].back); err != nil{
+			return err
+		}
+	}
+
 	Executor[id].Ctx.Interrupt <- func() { panic(errHalt) }
 	Executor[id].back.Stop()
 

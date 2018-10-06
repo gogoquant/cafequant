@@ -57,6 +57,12 @@ func (t *Backtest) Marries() map[string]MarryHandler{
 	return t.marries
 }
 
+// Marry
+func (t *Backtest) Marry(stockType string) (MarryHandler, bool){
+	handler, ok := t.marries[stockType]
+	return handler, ok
+}
+
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 	fill, err := t.portfolio.CommitOrder(id)
@@ -354,9 +360,9 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 		t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before proceding
 		t.exchange.OnData(event)
-		// marry all orders
-		marries := t.Marries()
-		for _, marry := range(marries){
+		// marry all orders by stockType
+		marry, ok := t.Marry(event.Symbol())
+		if ok{
 			_, err := marry.Marry(t, event)
 			if err != nil{
 				return err, true
