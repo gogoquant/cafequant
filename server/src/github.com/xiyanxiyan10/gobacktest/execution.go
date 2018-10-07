@@ -36,7 +36,6 @@ func (e *Exchange) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
 	if order.OrderType() == LimitOrder || order.OrderType() == MarketOrder {
 		return e.createOrder(order, data)
 	}
-	//Todo close order
 	return nil, nil
 }
 

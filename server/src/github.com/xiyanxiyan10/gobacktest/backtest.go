@@ -257,7 +257,7 @@ func (t *Backtest) Run2Event() error {
 	// poll event queue
 	for {
 	    event := <-t.eventCh
-	    log.Infof("Get event %s", event.Symbol())
+	    //log.Infof("Get event:")
 		err, end := t.eventLoop2Event(event)
 		if err != nil {
 			return err
@@ -373,17 +373,21 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 	switch event := e.(type) {
 
 	case DataGramEvent:
+		log.Infof("Get dataGram event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+
 		err = t.AddPoint(event)
 		end = true
 		break
 
 	case CmdEvent:
+		log.Infof("Get cmd event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		t.status = GobackStop
 		err = nil
 		end = true
 		break
 
 	case DataEvent:
+		log.Infof("Get data event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		// update portfolio to the last known price data
 		//t.portfolio.Update(event)
 		// update statistics
@@ -401,6 +405,7 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 
 	case *Signal:
+		log.Infof("Get signal event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		order, err := t.portfolio.OnSignal(event, t.data)
 		if err != nil {
 			break
@@ -408,18 +413,21 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 		t.AddEvent(order)
 
 	case *Order:
-		fill, err := t.exchange.OnOrder(event, t.data)
+		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+		//fill, err := t.exchange.OnOrder(event, t.data)
+		t.Portfolio().AddOrder(event)
 		if err != nil {
 			break
 		}
-		t.AddEvent(fill)
+		//t.AddEvent(fill)
 
 	case *Fill:
-		transaction, err := t.portfolio.OnFill(event, t.data)
+		log.Infof("Get fill event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+		_, err := t.portfolio.OnFill(event, t.data)
 		if err != nil {
 			break
 		}
-		t.AddEvent(transaction)
+		//t.AddEvent(transaction)
 	}
 	return
 }

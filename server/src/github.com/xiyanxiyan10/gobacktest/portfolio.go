@@ -57,6 +57,7 @@ type Booker interface {
 	Subscribes() map[string]int
 	DisableSubscribe(symbol string) error
 	EnableSubscribe(symbol string) error
+	AddOrder(OrderEvent) error
 	Orders() ([]OrderEvent, bool)
 	CommitOrder(id int) (*Fill, error)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
@@ -132,13 +133,13 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 	initialOrder.SetQuantifier(signal.Quantifier())
 
 	// fetch latest known price for the symbol
-	latest := data.Latest(signal.Symbol())
+	//latest := data.Latest(signal.Symbol())
 
-	sizedOrder, err := p.sizeManager.SizeOrder(initialOrder, latest, p)
+	sizedOrder, err := p.sizeManager.SizeOrder(initialOrder, nil, p)
 	if err != nil {
 	}
 
-	order, err := p.riskManager.EvaluateOrder(sizedOrder, latest, p.holdings)
+	order, err := p.riskManager.EvaluateOrder(sizedOrder, nil, p.holdings)
 	if err != nil {
 	}
 
@@ -270,6 +271,11 @@ func (p *Portfolio) CancelOrder(id int) error {
 // CancelOrder ...
 func (p *Portfolio) CommitOrder(id int) (*Fill, error) {
 	return p.orderManager.CommitOrder(id)
+}
+
+// AddOrder
+func (p *Portfolio) AddOrder(o OrderEvent) error {
+	return p.orderManager.Add(o)
 }
 
 // Subscribes ...

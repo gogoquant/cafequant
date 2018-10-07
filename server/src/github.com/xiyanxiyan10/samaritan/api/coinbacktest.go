@@ -2,12 +2,11 @@ package api
 
 import (
 	"github.com/bitly/go-simplejson"
-     goback "github.com/xiyanxiyan10/gobacktest"
+	goback "github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -52,18 +51,31 @@ func NewCoinBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option:    opt,
 		limit:     10.0,
-		lastSleep: time.Now().UnixNano()}
+		lastSleep: time.Now().UnixNano(),
+		stockTypeMap:map[string]string{},
+	}
 
 	maker, ok := constructor[opt.Type]
 	if !ok {
 		return nil
 	}
+	handler := maker(opt)
+	back.SetStockMap(handler.StockMap())
 
 	//back.SetPortfolio(goback.NewPortfolio())
 	//back.SetMarry(&BtMarry{})
-
 	back.exchangeHandler = maker(opt)
 	return &back
+}
+
+// StockMap ...
+func (e *BtBacktest)StockMap()map[string]string{
+	return e.stockTypeMap
+}
+
+// SetGoback ...
+func (e *BtBacktest)SetStockMap(m map[string]string){
+	e.stockTypeMap = m
 }
 
 // SetGoback ...
@@ -114,8 +126,8 @@ func (e *BtBacktest) GetAccount() interface{} {
 
 // Trade place an order
 func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount interface{}, msgs ...interface{}) interface{} {
-	stockType = strings.ToUpper(stockType)
-	tradeType = strings.ToUpper(tradeType)
+	//stockType = strings.ToUpper(stockType)
+	//tradeType = strings.ToUpper(tradeType)
 	price := conver.Float64Must(_price)
 	amount := conver.Float64Must(_amount)
 	if _, ok := e.stockTypeMap[stockType]; !ok {

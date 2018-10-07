@@ -47,8 +47,7 @@ type Huobi struct {
 func NewHuobi(opt Option) Exchange {
 	return &Huobi{
 		stockTypeMap: map[string]string{
-			"btcusdt": "1",
-			"bchbtc":  "2",
+			"datxbtc": "1",
 		},
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
@@ -78,6 +77,16 @@ func NewHuobi(opt Option) Exchange {
 		limit:     10.0,
 		lastSleep: time.Now().UnixNano(),
 	}
+}
+
+// StockMap ...
+func (e *Huobi)StockMap()map[string]string{
+	return e.stockTypeMap
+}
+
+// SetGoback ...
+func (e *Huobi)SetStockMap(m map[string]string){
+	e.stockTypeMap = m
 }
 
 // SetGoback ...

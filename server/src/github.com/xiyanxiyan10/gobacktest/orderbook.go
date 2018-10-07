@@ -124,7 +124,10 @@ func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
 				return nil, fmt.Errorf("order with id %v canceled again", id)
 			}
 			order.Submit()
+
 			fill := new(Fill)
+			fill.SetSymbol(order.Symbol())
+			fill.SetTime(order.Time())
 			fill.SetQuantifier(order.Quantifier())
 
 			//ob.DisableSubscribe(fill.symbol)

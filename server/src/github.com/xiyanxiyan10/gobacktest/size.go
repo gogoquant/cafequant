@@ -21,17 +21,6 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 	// assert interface to concrete Type
 	o := order.(*Order)
 
-	//use recorded price for the market order
-	if o.OrderType() == MarketOrder {
-		o.SetQtyType(FLOAT64_QTY)
-		//todo which price needed?
-		order.SetFQty(data.Mid())
-	} else {
-		//set the float val for cost Calculate
-		if o.QtyType() == INT64_QTY {
-			o.SetFQty(float64(o.Qty()))
-		}
-	}
 	// no default set, no sizing possible, order rejected
 	/*
 		if (s.DefaultSize == 0) || (s.DefaultValue == 0) {

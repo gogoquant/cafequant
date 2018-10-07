@@ -33,6 +33,8 @@ type Exchange interface {
 	EnableSubscribe(symbol string) error
 	DisableSubscribe(symbol string) error
 	Status() int
+	StockMap()map[string]string
+	SetStockMap(m map[string]string)
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
 }
