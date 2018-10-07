@@ -132,11 +132,11 @@ func TestEngine_Digest(t *testing.T) {
 	}
 
 	exp := []span{
-		span{
+		{
 			key: "cpu,host=A#!~#value",
 			tspan: &tsm1.DigestTimeSpan{
 				Ranges: []tsm1.DigestTimeRange{
-					tsm1.DigestTimeRange{
+					{
 						Min: 1000000000,
 						Max: 1000000000,
 						N:   1,
@@ -145,11 +145,11 @@ func TestEngine_Digest(t *testing.T) {
 				},
 			},
 		},
-		span{
+		{
 			key: "cpu,host=B#!~#value",
 			tspan: &tsm1.DigestTimeSpan{
 				Ranges: []tsm1.DigestTimeRange{
-					tsm1.DigestTimeRange{
+					{
 						Min: 2000000000,
 						Max: 2000000000,
 						N:   1,
@@ -194,7 +194,7 @@ func TestEngine_Digest(t *testing.T) {
 		key: "cpu,host=C#!~#value",
 		tspan: &tsm1.DigestTimeSpan{
 			Ranges: []tsm1.DigestTimeRange{
-				tsm1.DigestTimeRange{
+				{
 					Min: 3000000000,
 					Max: 3000000000,
 					N:   1,
@@ -399,14 +399,14 @@ func TestEngine_Export(t *testing.T) {
 	}
 
 	// TEST 1: did we get any extra files not found in the store?
-	for k, _ := range fileData {
+	for k := range fileData {
 		if _, ok := fileNames[k]; !ok {
 			t.Errorf("exported a file not in the store: %s", k)
 		}
 	}
 
 	// TEST 2: did we miss any files that the store had?
-	for k, _ := range fileNames {
+	for k := range fileNames {
 		if _, ok := fileData[k]; !ok {
 			t.Errorf("failed to export a file from the store: %s", k)
 		}

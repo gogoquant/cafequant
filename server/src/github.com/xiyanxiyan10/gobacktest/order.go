@@ -41,7 +41,7 @@ type Order struct {
 	stopPrice    float64
 }
 
-func (o *Order)Fill(from OrderEvent){
+func (o *Order) Fill(from OrderEvent) {
 	o.SetQuantifier(from.Quantifier())
 	o.SetID(from.ID())
 	o.SetSymbol(from.Symbol())
@@ -68,7 +68,7 @@ func (o *Order) SetID(id int) {
 }
 
 // SetStatus
-func (o *Order) SetStatus(status OrderStatus){
+func (o *Order) SetStatus(status OrderStatus) {
 	o.status = status
 }
 

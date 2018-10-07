@@ -2,6 +2,8 @@ package gobacktest
 
 import (
 	"errors"
+	"gopkg.in/logger.v1"
+
 	//"github.com/xiyanxiyan10/samaritan/api"
 )
 
@@ -20,9 +22,10 @@ type Reseter interface {
 	Reset() error
 }
 
-
 // Backtest is the main struct which holds all elements.
 type Backtest struct {
+	DataGramMaster
+
 	eventCh chan EventHandler
 	status  int
 
@@ -33,19 +36,27 @@ type Backtest struct {
 	portfolio PortfolioHandler
 	exchange  ExecutionHandler
 	statistic StatisticHandler
-	marries map[string]MarryHandler
+	marries   map[string]MarryHandler
 
 	eventQueue []EventHandler
 }
 
 // NewBacktest
 func NewBacktest() *Backtest {
-	back := NewBacktest()
-	back.eventCh = make(chan EventHandler, 20)
-	back.marries = make(map[string]MarryHandler)
-	back.status = GobackStop
+	return &Backtest{
+		eventCh : make(chan EventHandler, 20),
+		marries : make(map[string]MarryHandler),
+		status : GobackStop,
+	}
+}
 
-	return back
+// SetInfluxdb
+func (t *Backtest) SetInfluxdb(config map[string]string) {
+	host := config["host"]
+	user := config["user"]
+	pwd := config["pwd"]
+	database := config["database"]
+	t.influx = NewInfluxdb(host, user, pwd, database)
 }
 
 // SetMarry
@@ -54,12 +65,12 @@ func (t *Backtest) SetMarry(name string, handler MarryHandler) {
 }
 
 // Marries
-func (t *Backtest) Marries() map[string]MarryHandler{
+func (t *Backtest) Marries() map[string]MarryHandler {
 	return t.marries
 }
 
 // Marry
-func (t *Backtest) Marry(stockType string) (MarryHandler, bool){
+func (t *Backtest) Marry(stockType string) (MarryHandler, bool) {
 	handler, ok := t.marries[stockType]
 	return handler, ok
 }
@@ -95,6 +106,12 @@ func (t *Backtest) Start() error {
 	}
 	t.status = GobackRun
 
+	/*
+	err := t.influx.Connect()
+	if nil != err{
+		return err
+	}
+	*/
 	go t.Run2Event()
 
 	return nil
@@ -106,6 +123,12 @@ func (t *Backtest) Stop() error {
 		return errors.New("already stop or pending")
 
 	}
+	/*
+	err := t.influx.Close()
+	if nil != err{
+		return err
+	}
+	*/
 
 	t.status = GobackPending
 	var cmd Cmd
@@ -232,8 +255,9 @@ func (t *Backtest) Run() error {
 // Run starts the backtest to get data tick
 func (t *Backtest) Run2Event() error {
 	// poll event queue
-	select {
-	case event := <-t.eventCh:
+	for {
+	    event := <-t.eventCh
+	    log.Infof("Get event %s", event.Symbol())
 		err, end := t.eventLoop2Event(event)
 		if err != nil {
 			return err
@@ -242,7 +266,7 @@ func (t *Backtest) Run2Event() error {
 			return nil
 		}
 		// event in queue found, add to event history
-		t.statistic.TrackEvent(event)
+		//t.statistic.TrackEvent(event)
 	}
 	return nil
 }
@@ -348,6 +372,11 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 	// type check for event type
 	switch event := e.(type) {
 
+	case DataGramEvent:
+		err = t.AddPoint(event)
+		end = true
+		break
+
 	case CmdEvent:
 		t.status = GobackStop
 		err = nil
@@ -356,20 +385,20 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 	case DataEvent:
 		// update portfolio to the last known price data
-		t.portfolio.Update(event)
+		//t.portfolio.Update(event)
 		// update statistics
-		t.statistic.Update(event, t.portfolio)
+		//t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before proceding
-		t.exchange.OnData(event)
+		//t.exchange.OnData(event)
 		// marry all orders by stockType
 		marry, ok := t.Marry(event.Symbol())
-		if ok{
+		if ok {
 			_, err := marry.Marry(t, event)
-			if err != nil{
+			if err != nil {
 				return err, true
 			}
 		}
-		// record data to datagram
+
 
 	case *Signal:
 		order, err := t.portfolio.OnSignal(event, t.data)

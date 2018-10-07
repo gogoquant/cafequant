@@ -54,6 +54,19 @@ type SignalEvent interface {
 	Quantifier
 }
 
+// DataGramEvent ...
+type DataGramEvent interface {
+	EventHandler
+	SetId(uid string)
+	Id() string
+	SetTag(key, val string)
+	Tags()map[string]string
+	SetColor(c string)
+	Color(c string) string
+	SetVal(key, v interface{})
+	Val() map[string]interface{}
+}
+
 // OrderEvent declares the order event interface.
 type OrderEvent interface {
 	EventHandler

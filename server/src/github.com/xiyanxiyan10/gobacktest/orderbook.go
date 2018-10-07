@@ -7,11 +7,20 @@ import (
 	"sync"
 )
 
+func NewOrderBook() OrderBook{
+	return OrderBook{
+		counter:0,
+		subscribes:make(map[string]int),
+		orders: []OrderEvent{},
+		history:[]OrderEvent{},
+	}
+}
+
 // OrderBook represents an order book.
 type OrderBook struct {
 	lock       sync.Mutex
 	counter    int
-	subscribes   map[string]int
+	subscribes map[string]int
 	orders     []OrderEvent
 	history    []OrderEvent
 }
@@ -54,7 +63,6 @@ func (ob *OrderBook) DisableSubscribe(symbol string) error {
 	}
 	return nil
 }
-
 
 // Add an order to the order book.
 func (ob *OrderBook) Add(order OrderEvent) error {
@@ -138,9 +146,9 @@ func (ob *OrderBook) Orders() ([]OrderEvent, bool) {
 }
 
 // Orders returns all Orders from the order book
-func (ob *OrderBook) deepCopyOrders(backorders []OrderEvent) ([]OrderEvent) {
-	var orders[]OrderEvent
-	for _, backorder := range(backorders) {
+func (ob *OrderBook) deepCopyOrders(backorders []OrderEvent) []OrderEvent {
+	var orders []OrderEvent
+	for _, backorder := range backorders {
 		var o Order
 		var order OrderEvent
 		order = &o

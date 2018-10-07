@@ -79,7 +79,9 @@ func NewPortfolio() *Portfolio {
 		initialCash: 100000,
 		sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
 		riskManager: &Risk{},
+		orderManager:NewOrderBook(),
 		holdings:    make(map[string]Position),
+		transactions:[]FillEvent{},
 	}
 }
 
@@ -284,4 +286,3 @@ func (p *Portfolio) EnableSubscribe(symbol string) error {
 func (p *Portfolio) DisableSubscribe(symbol string) error {
 	return p.orderManager.DisableSubscribe(symbol)
 }
-

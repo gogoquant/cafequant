@@ -477,11 +477,13 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 		subscribes := back.Subscribes()
 		for stockType, _ := range(subscribes){
 				ticker, err := bt.getTicker(stockType)
-				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
+				if nil != err {
+					bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
+				}
 				ticker.SetSymbol(stockType)
 				data = &ticker
 				back.AddEvent(data)
-				time.Sleep(time.Millisecond * 100)
+				time.Sleep(time.Second * 2)
 		}
 	}
 	return nil

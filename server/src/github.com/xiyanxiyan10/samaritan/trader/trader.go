@@ -1,12 +1,10 @@
 package trader
 
 import (
+	"time"
 	"fmt"
 	"github.com/xiyanxiyan10/gobacktest"
-
 	"github.com/xiyanxiyan10/samaritan/marry"
-	"time"
-
 	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/samaritan/api"
 	"github.com/xiyanxiyan10/samaritan/constant"
@@ -53,10 +51,11 @@ func Switch(id int64) (err error) {
 	return run(id)
 }
 
+// initialize ...
 func initialize(id int64) (trader Global, err error) {
 
 	back := gobacktest.NewBacktest()
-	portfolio := new(gobacktest.Portfolio)
+	portfolio := gobacktest.NewPortfolio()
 	back.SetPortfolio(portfolio)
 	trader.back = back
 
@@ -166,7 +165,7 @@ func run(id int64) (err error) {
 	//start gobacktest and exchange
 	err = trader.back.Start()
 
-	//start exchange filebeat
+	//start exchange filebeats
 	for _, e := range(trader.es){
 		if err = e.Start(trader.back); err != nil{
 				return err

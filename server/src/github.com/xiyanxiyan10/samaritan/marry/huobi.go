@@ -7,7 +7,7 @@ import (
 
 func init() {
 	//@todo more coin type register
-	marryStore["btcoin"] = new(MarryHuobi)
+	marryStore["datxbtc"] = new(MarryHuobi)
 }
 
 type MarryHuobi struct {

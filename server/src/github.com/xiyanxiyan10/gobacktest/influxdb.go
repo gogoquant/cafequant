@@ -4,6 +4,7 @@ import (
 	"github.com/influxdata/influxdb/client/v2"
 	"log"
 )
+
 /*
 const (
 	MyDB          = "test"
@@ -39,25 +40,32 @@ func main() {
 }
 */
 
+type InfluxdbHandler interface {
+	Connect() error
+	Close() error
+	QueryDB(cmd string) (res []client.Result, err error)
+	WritesPoints(point *client.Point) error
+}
+
 // NewInfluxdb ...
-func NewInfluxdb(host, user, pwd, database string) *Influxdb{
-	return  &Influxdb{
-		host:host,
-		user:user,
-		pwd:pwd,
-		database:database,
+func NewInfluxdb(host, user, pwd, database string) InfluxdbHandler {
+	return &Influxdb{
+		host:     host,
+		user:     user,
+		pwd:      pwd,
+		database: database,
 	}
 }
 
-type Influxdb struct{
-	host string
-	user string
-	pwd  string
-	database   string
-	c    client.Client
+type Influxdb struct {
+	host     string
+	user     string
+	pwd      string
+	database string
+	c        client.Client
 }
 
-func (d *Influxdb) connect() error {
+func (d *Influxdb) Connect() error {
 	cli, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr:     d.host,
 		Username: d.user,
@@ -70,8 +78,12 @@ func (d *Influxdb) connect() error {
 	return nil
 }
 
+func (d *Influxdb) Close() error {
+	return d.c.Close()
+}
+
 //query
-func (d *Influxdb)QueryDB(cmd string) (res []client.Result, err error) {
+func (d *Influxdb) QueryDB(cmd string) (res []client.Result, err error) {
 	cli := d.c
 	q := client.Query{
 		Command:  cmd,
@@ -89,19 +101,21 @@ func (d *Influxdb)QueryDB(cmd string) (res []client.Result, err error) {
 }
 
 //Insert
-func (d *Influxdb)WritesPoints(point *client.Point) {
+func (d *Influxdb) WritesPoints(point *client.Point) error{
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  d.database,
 		Precision: "s",
 	})
 	if err != nil {
 		log.Fatal(err)
+		return err
 	}
 
 	bp.AddPoint(point)
 
 	if err := d.c.Write(bp); err != nil {
 		log.Fatal(err)
+		return err
 	}
+	return nil
 }
-
