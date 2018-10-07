@@ -12,7 +12,9 @@ import (
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
-	goback "github.com/dirkolbrich/gobacktest"
+
+	goback "github.com/xiyanxiyan10/gobacktest"
+
 )
 
 func init() {
@@ -21,6 +23,8 @@ func init() {
 
 // Huobi the exchange struct of huobi.com
 type Huobi struct {
+	back *goback.Backtest
+
 	stockTypeMap     map[string]string
 	status           int
 	tradeTypeMap     map[int]string
@@ -74,6 +78,11 @@ func NewHuobi(opt Option) Exchange {
 		limit:     10.0,
 		lastSleep: time.Now().UnixNano(),
 	}
+}
+
+// SetGoback ...
+func (e *Huobi)SetGoback(back *goback.Backtest){
+	e.back = back
 }
 
 // Log print something to console
@@ -471,12 +480,21 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
 				ticker.SetSymbol(stockType)
 				data = &ticker
-				bt.Marry(back, data)
 				back.AddEvent(data)
 				time.Sleep(time.Millisecond * 100)
 		}
 	}
 	return nil
+}
+
+// EnableSubscribe ...
+func (e *Huobi)  EnableSubscribe(symbol string) error  {
+	return e.back.Portfolio().EnableSubscribe(symbol)
+}
+
+// DisableSubscribe ...
+func (e *Huobi)  DisableSubscribe(symbol string) error  {
+	return e.back.Portfolio().DisableSubscribe(symbol)
 }
 
 // Stop

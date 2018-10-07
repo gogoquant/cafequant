@@ -1,6 +1,6 @@
 package api
 
-import goback "github.com/dirkolbrich/gobacktest"
+import goback "github.com/xiyanxiyan10/gobacktest"
 
 // Option is an exchange option
 type Option struct {
@@ -29,6 +29,9 @@ type Exchange interface {
 	CancelOrder(order Order) bool
 	Start(back *goback.Backtest) error
 	Stop(back *goback.Backtest) error
+	SetGoback(back *goback.Backtest)
+	EnableSubscribe(symbol string) error
+	DisableSubscribe(symbol string) error
 	Status() int
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}

@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/bitly/go-simplejson"
-	goback "github.com/dirkolbrich/gobacktest"
+     goback "github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
 	"github.com/xiyanxiyan10/samaritan/model"
@@ -44,7 +44,6 @@ type ExchangeHandler interface {
 	Start(back *goback.Backtest) error
 	Stop(back *goback.Backtest) error
 	Status() int
-	//Marry(back *goback.Backtest, data goback.DataEvent) (bool, error)
 	AutoSleep()
 }
 
@@ -65,6 +64,11 @@ func NewCoinBacktest(opt Option) Exchange {
 
 	back.exchangeHandler = maker(opt)
 	return &back
+}
+
+// SetGoback ...
+func (e *BtBacktest)SetGoback(back *goback.Backtest){
+	e.back = back
 }
 
 // Log print something to console
@@ -265,6 +269,16 @@ func (e *BtBacktest) CancelOrder(order Order) bool {
 	}
 	e.back.CancelOrder(id)
 	return false
+}
+
+// EnableSubscribe ...
+func (e *BtBacktest)  EnableSubscribe(symbol string) error  {
+	return e.back.Portfolio().EnableSubscribe(symbol)
+}
+
+// DisableSubscribe ...
+func (e *BtBacktest)  DisableSubscribe(symbol string) error  {
+	return e.back.Portfolio().DisableSubscribe(symbol)
 }
 
 

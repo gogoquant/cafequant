@@ -2,7 +2,8 @@ package trader
 
 import (
 	"fmt"
-	"github.com/dirkolbrich/gobacktest"
+	"github.com/xiyanxiyan10/gobacktest"
+
 	"github.com/xiyanxiyan10/samaritan/marry"
 	"time"
 
@@ -19,7 +20,6 @@ var (
 	exchangeMaker = map[string]func(api.Option) api.Exchange{
 		constant.Huobi:        api.NewHuobi,
 		constant.CoinBacktest: api.NewCoinBacktest,
-
 	}
 )
 
@@ -114,14 +114,17 @@ func initialize(id int64) (trader Global, err error) {
 
 			switch trader.Mode {
 			case constant.MODE_ONLINE:
-				trader.es = append(trader.es, maker(opt))
+				exchange := maker(opt)
+				exchange.SetGoback(trader.back)
+				trader.es = append(trader.es, exchange)
 			case constant.MODE_OFFLINE:
-				trader.es = append(trader.es, coinbackmaker(opt))
+				exchange := coinbackmaker(opt)
+				exchange.SetGoback(trader.back)
+				trader.es = append(trader.es, exchange)
 			case constant.MODE_HALFLINE:
 				exchange := coinbackmaker(opt)
+				exchange.SetGoback(trader.back)
 				trader.es = append(trader.es, exchange)
-				// register exchange as type
-				//trader.back.SetMarry(e.Type, exchange)
 			default:
 				err = fmt.Errorf("unknown mode")
 				return
