@@ -26,7 +26,7 @@ func (f Fill) Cost() float64 {
 }
 
 // Cost returns the Cost field of a Fill
-func (f *Fill) SetCost(cost float64)  {
+func (f *Fill) SetCost(cost float64) {
 	f.cost = cost
 }
 

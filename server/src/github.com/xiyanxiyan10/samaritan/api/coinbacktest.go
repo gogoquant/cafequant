@@ -19,6 +19,7 @@ type BtBacktest struct {
 	// one Trader pointer to one backtest with some exchanges
 	back *goback.Backtest
 
+
 	stockTypeMap     map[string]string
 	tradeTypeMap     map[string]string
 	recordsPeriodMap map[string]string
@@ -72,6 +73,8 @@ func NewCoinBacktest(opt Option) Exchange {
 func (e *BtBacktest)StockMap()map[string]string{
 	return e.stockTypeMap
 }
+
+
 
 // SetGoback ...
 func (e *BtBacktest)SetStockMap(m map[string]string){
@@ -291,6 +294,21 @@ func (e *BtBacktest)  EnableSubscribe(symbol string) error  {
 // DisableSubscribe ...
 func (e *BtBacktest)  DisableSubscribe(symbol string) error  {
 	return e.back.Portfolio().DisableSubscribe(symbol)
+}
+
+// Draw point
+func (e *BtBacktest)  Draw(val float64, tag, color string) interface{}  {
+	if e.back.DataGram() == nil{
+		return false
+	}
+
+		datagram := goback.NewDataGram()
+		datagram.SetTime(time.Now())
+		datagram.SetColor(color)
+		datagram.SetVal(goback.DATAGRAM_VAL, val)
+		datagram.SetTag(goback.DATAGRAM_TAG, tag)
+		e.back.AddEvent(datagram)
+	return true
 }
 
 

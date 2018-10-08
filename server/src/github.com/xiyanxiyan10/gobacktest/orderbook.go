@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-func NewOrderBook() OrderBook{
+func NewOrderBook() OrderBook {
 	return OrderBook{
-		counter:0,
-		subscribes:make(map[string]int),
-		orders: []OrderEvent{},
-		history:[]OrderEvent{},
+		counter:    0,
+		subscribes: make(map[string]int),
+		orders:     []OrderEvent{},
+		history:    []OrderEvent{},
 	}
 }
 

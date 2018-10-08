@@ -1,14 +1,16 @@
 package trader
 
 import (
-	"time"
 	"fmt"
-	"github.com/xiyanxiyan10/gobacktest"
-	"github.com/xiyanxiyan10/samaritan/marry"
 	"github.com/robertkrimen/otto"
+	"github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/api"
+	"github.com/xiyanxiyan10/samaritan/config"
 	"github.com/xiyanxiyan10/samaritan/constant"
+	"github.com/xiyanxiyan10/samaritan/marry"
 	"github.com/xiyanxiyan10/samaritan/model"
+	"gopkg.in/logger.v1"
+	"time"
 )
 
 // Trader Variable
@@ -19,11 +21,33 @@ var (
 		constant.Huobi:        api.NewHuobi,
 		constant.CoinBacktest: api.NewCoinBacktest,
 	}
+	globaldataGram *gobacktest.DataGramMaster
 )
+
+func init() {
+	globaldataGram = gobacktest.NewDataGramMaster(config.GetConfs())
+	err := globaldataGram.Connect()
+	if err != nil{
+		log.Errorf("DataGram connect fail (%s)", err.Error())
+		globaldataGram = nil
+		return
+	}
+	err = globaldataGram.Start()
+	if err != nil{
+		log.Errorf("DataGram start fail (%s)", err.Error())
+		globaldataGram = nil
+		return
+	}
+}
+
+func GlobalDataGram() * gobacktest.DataGramMaster{
+	return globaldataGram
+}
 
 // Global ...
 type Global struct {
 	back *gobacktest.Backtest
+	datagram *gobacktest.DataGramMaster
 
 	model.Trader
 	Logger    model.Logger
@@ -54,11 +78,13 @@ func Switch(id int64) (err error) {
 // initialize ...
 func initialize(id int64) (trader Global, err error) {
 	//Install exchange and portfolio into backtest
-	back := gobacktest.NewBacktest()
+	back := gobacktest.NewBacktest(config.GetConfs())
 	portfolio := gobacktest.NewPortfolio()
 	back.SetPortfolio(portfolio)
 	exchange := gobacktest.NewExchange()
 	back.SetExchange(exchange)
+	back.SetDataGram(GlobalDataGram())
+	back.SetName(fmt.Sprintf("name_%d", id))
 
 	trader.back = back
 

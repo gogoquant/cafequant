@@ -37,6 +37,7 @@ type Exchange interface {
 	SetStockMap(m map[string]string)
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
+	Draw(val float64, tag, color string) interface{}
 }
 
 //Entity transaction

@@ -3,7 +3,6 @@ package gobacktest
 import (
 	"errors"
 	"gopkg.in/logger.v1"
-
 	//"github.com/xiyanxiyan10/samaritan/api"
 )
 
@@ -24,14 +23,16 @@ type Reseter interface {
 
 // Backtest is the main struct which holds all elements.
 type Backtest struct {
-	DataGramMaster
+	config map[string]string
 
 	eventCh chan EventHandler
 	status  int
+	name    string
 
 	symbols []string
 
 	data      DataHandler
+	datagram  *DataGramMaster
 	strategy  StrategyHandler
 	portfolio PortfolioHandler
 	exchange  ExecutionHandler
@@ -42,21 +43,33 @@ type Backtest struct {
 }
 
 // NewBacktest
-func NewBacktest() *Backtest {
+func NewBacktest(m map[string]string) *Backtest {
 	return &Backtest{
-		eventCh : make(chan EventHandler, 20),
-		marries : make(map[string]MarryHandler),
-		status : GobackStop,
+		eventCh: make(chan EventHandler, 20),
+		marries: make(map[string]MarryHandler),
+		status:  GobackStop,
+		config:  m,
 	}
 }
 
-// SetInfluxdb
-func (t *Backtest) SetInfluxdb(config map[string]string) {
-	host := config["host"]
-	user := config["user"]
-	pwd := config["pwd"]
-	database := config["database"]
-	t.influx = NewInfluxdb(host, user, pwd, database)
+// Name ...
+func (e *Backtest) Name() string {
+	return e.name
+}
+
+// Name ...
+func (e *Backtest) SetName(name string) {
+	e.name = name
+}
+
+// SetDataGram
+func (t *Backtest) SetDataGram(d *DataGramMaster) {
+	t.datagram = d
+}
+
+// SetDataGram
+func (t *Backtest) DataGram() *DataGramMaster {
+	return t.datagram
 }
 
 // SetMarry
@@ -78,7 +91,7 @@ func (t *Backtest) Marry(stockType string) (MarryHandler, bool) {
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 	fill, err := t.portfolio.CommitOrder(id)
-	if err == nil && fill != nil{
+	if err == nil && fill != nil {
 		t.AddEvent(fill)
 	}
 	return fill, err
@@ -107,11 +120,19 @@ func (t *Backtest) Start() error {
 	t.status = GobackRun
 
 	/*
-	err := t.influx.Connect()
-	if nil != err{
-		return err
-	}
+		err := t.influx.Connect()
+		if nil != err{
+			return err
+		}
 	*/
+	// start datagram
+	if t.datagram != nil {
+		if err := t.datagram.Start(); err != nil {
+			log.Infof("datagram run fail")
+		}
+	}
+
+	// start goback
 	go t.Run2Event()
 
 	return nil
@@ -124,16 +145,25 @@ func (t *Backtest) Stop() error {
 
 	}
 	/*
-	err := t.influx.Close()
-	if nil != err{
-		return err
-	}
+		err := t.influx.Close()
+		if nil != err{
+			return err
+		}
 	*/
 
+	//stop datagram
+	if t.datagram != nil {
+		if err := t.datagram.Stop(); err != nil {
+			log.Infof("datagram stop fail")
+		}
+	}
+
+	//stop gobacktest
 	t.status = GobackPending
 	var cmd Cmd
 	cmd.SetCmd("stop")
 	t.AddEvent(&cmd)
+
 	return nil
 }
 
@@ -146,7 +176,7 @@ func New() *Backtest {
 			riskManager: &Risk{},
 		},
 		exchange: &Exchange{
-			Symbol:      "TEST",
+			Symbol: "TEST",
 			//Commission:  &FixedCommission{Commission: 0},
 			ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
 		},
@@ -256,8 +286,8 @@ func (t *Backtest) Run() error {
 func (t *Backtest) Run2Event() error {
 	// poll event queue
 	for {
-	    event := <-t.eventCh
-	    //log.Infof("Get event:")
+		event := <-t.eventCh
+		//log.Infof("Get event:")
 		err, end := t.eventLoop2Event(event)
 		if err != nil {
 			return err
@@ -312,7 +342,6 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 	return e, true
 }
 
-
 // AddEvent
 func (t *Backtest) AddEvent(e EventHandler) error {
 	t.eventCh <- e
@@ -323,46 +352,46 @@ func (t *Backtest) AddEvent(e EventHandler) error {
 func (t *Backtest) eventLoop(e EventHandler) error {
 	// type check for event type
 	/*
-	switch event := e.(type) {
+		switch event := e.(type) {
 
-	case DataEvent:
-		// update portfolio to the last known price data
-		t.portfolio.Update(event)
-		// update statistics
-		t.statistic.Update(event, t.portfolio)
-		// check if any orders are filled before proceding
-		t.exchange.OnData(event)
+		case DataEvent:
+			// update portfolio to the last known price data
+			t.portfolio.Update(event)
+			// update statistics
+			t.statistic.Update(event, t.portfolio)
+			// check if any orders are filled before proceding
+			t.exchange.OnData(event)
 
-		// run strategy with this data event
-		signals, err := t.strategy.OnData(event)
-		if err != nil {
-			break
-		}
-		for _, signal := range signals {
-			t.eventQueue = append(t.eventQueue, signal)
-		}
+			// run strategy with this data event
+			signals, err := t.strategy.OnData(event)
+			if err != nil {
+				break
+			}
+			for _, signal := range signals {
+				t.eventQueue = append(t.eventQueue, signal)
+			}
 
-	case *Signal:
-		order, err := t.portfolio.OnSignal(event, t.data)
-		if err != nil {
-			break
-		}
-		t.eventQueue = append(t.eventQueue, order)
+		case *Signal:
+			order, err := t.portfolio.OnSignal(event, t.data)
+			if err != nil {
+				break
+			}
+			t.eventQueue = append(t.eventQueue, order)
 
-	case *Order:
-		fill, err := t.exchange.OnOrder(event, t.data)
-		if err != nil {
-			break
-		}
-		t.eventQueue = append(t.eventQueue, fill)
+		case *Order:
+			fill, err := t.exchange.OnOrder(event, t.data)
+			if err != nil {
+				break
+			}
+			t.eventQueue = append(t.eventQueue, fill)
 
-	case *Fill:
-		transaction, err := t.portfolio.OnFill(event, t.data)
-		if err != nil {
-			break
+		case *Fill:
+			transaction, err := t.portfolio.OnFill(event, t.data)
+			if err != nil {
+				break
+			}
+			t.statistic.TrackTransaction(transaction)
 		}
-		t.statistic.TrackTransaction(transaction)
-	}
 	*/
 	return nil
 
@@ -378,8 +407,17 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 	case DataGramEvent:
 		log.Infof("Get dataGram event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 
-		err = t.AddPoint(event)
-		end = true
+		if t.datagram == nil {
+			log.Infof("dataGram master not found")
+		}
+
+		//get backtest name
+		event.SetId(t.name)
+		err = t.datagram.AddDataGram(event)
+		if err != nil {
+			end = true
+		}
+		end = false
 		break
 
 	case CmdEvent:
@@ -405,7 +443,6 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 				return err, true
 			}
 		}
-
 
 	case *Signal:
 		log.Infof("Get signal event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())

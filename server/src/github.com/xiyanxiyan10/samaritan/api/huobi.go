@@ -480,6 +480,11 @@ func (bt *Huobi) Start(back *goback.Backtest) error {
 	return nil
 }
 
+// Draw
+func (bt *Huobi)  Draw(val float64, tag, color string) interface{} {
+	return false
+}
+
 // Run
 func (bt *Huobi) Run(back *goback.Backtest) error {
 	for {

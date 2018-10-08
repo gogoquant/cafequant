@@ -60,10 +60,10 @@ type DataGramEvent interface {
 	SetId(uid string)
 	Id() string
 	SetTag(key, val string)
-	Tags()map[string]string
+	Tags() map[string]string
 	SetColor(c string)
 	Color(c string) string
-	SetVal(key, v interface{})
+	SetVal(key string, v interface{})
 	Val() map[string]interface{}
 }
 
@@ -105,8 +105,8 @@ type Quantifier interface {
 	Direction() Direction
 	SetDirection(dir Direction)
 	SetFeeHandler(handler FeeHandler)
-	FeeHandler()FeeHandler
-	Exchange()(string)
+	FeeHandler() FeeHandler
+	Exchange() string
 	SetExchange(string)
 	SetQuantifier(exchange string, orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64, feeHandler FeeHandler)
 	Quantifier() (exchange string, orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64, feeHandler FeeHandler)

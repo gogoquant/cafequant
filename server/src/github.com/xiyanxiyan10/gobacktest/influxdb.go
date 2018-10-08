@@ -101,7 +101,7 @@ func (d *Influxdb) QueryDB(cmd string) (res []client.Result, err error) {
 }
 
 //Insert
-func (d *Influxdb) WritesPoints(point *client.Point) error{
+func (d *Influxdb) WritesPoints(point *client.Point) error {
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  d.database,
 		Precision: "s",

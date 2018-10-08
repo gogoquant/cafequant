@@ -29,3 +29,13 @@ func init() {
 func String(key string) string {
 	return confs[strings.ToLower(key)]
 }
+
+// GetConf ...
+func GetConf(key string) string {
+	return confs[strings.ToLower(key)]
+}
+
+// GetConfs ...
+func GetConfs() map[string]string {
+	return confs
+}

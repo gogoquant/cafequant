@@ -26,20 +26,20 @@ const (
 )
 
 // FeeHandler
-type FeeHandler interface{
+type FeeHandler interface {
 	Fee(exchange string, fqty, price float64, ordertype OrderType, symbol string, direction Direction) float64
 }
 
 // QuantifierType ...
 type QuantifierType struct {
-	exchange    string 		// exchange from
-	feeHandler FeeHandler   // used to get cost
-	orderType OrderType 	// orderType order type
-	qtyType   QtyType   	// qty type
-	qty       int64     	// qte of the trader as int64
-	fqty      float64   	// qte of the trader as float64
-	price     float64   	// price of the Signal
-	direction Direction 	// long, short, exit or hold
+	exchange   string     // exchange from
+	feeHandler FeeHandler // used to get cost
+	orderType  OrderType  // orderType order type
+	qtyType    QtyType    // qty type
+	qty        int64      // qte of the trader as int64
+	fqty       float64    // qte of the trader as float64
+	price      float64    // price of the Signal
+	direction  Direction  // long, short, exit or hold
 }
 
 // Direction returns the Direction of a Signal
@@ -110,7 +110,7 @@ func (s *QuantifierType) SetFeeHandler(handler FeeHandler) {
 }
 
 // FeeHandler
-func (s *QuantifierType) FeeHandler()(FeeHandler) {
+func (s *QuantifierType) FeeHandler() FeeHandler {
 	return s.feeHandler
 }
 
@@ -120,7 +120,7 @@ func (s *QuantifierType) SetExchange(exchange string) {
 }
 
 // Exchange
-func (s *QuantifierType) Exchange()(string) {
+func (s *QuantifierType) Exchange() string {
 	return s.exchange
 }
 

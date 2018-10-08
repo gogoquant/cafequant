@@ -77,12 +77,12 @@ type Portfolio struct {
 // NewPortfolio creates a default portfolio with sensible defaults ready for use.
 func NewPortfolio() *Portfolio {
 	return &Portfolio{
-		initialCash: 100000,
-		sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
-		riskManager: &Risk{},
-		orderManager:NewOrderBook(),
-		holdings:    make(map[string]Position),
-		transactions:[]FillEvent{},
+		initialCash:  100000,
+		sizeManager:  &Size{DefaultSize: 100, DefaultValue: 1000},
+		riskManager:  &Risk{},
+		orderManager: NewOrderBook(),
+		holdings:     make(map[string]Position),
+		transactions: []FillEvent{},
 	}
 }
 

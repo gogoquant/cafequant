@@ -8,12 +8,12 @@ import (
 type ExecutionHandler interface {
 	OnData(DataEvent) (*Fill, error)
 	OnOrder(OrderEvent, DataHandler) (*Fill, error)
-	OnFill(*Fill) (error)
+	OnFill(*Fill) error
 }
 
 // Exchange is a basic execution handler implementation
 type Exchange struct {
-	Symbol      string
+	Symbol string
 	//Commission  CommissionHandler
 	ExchangeFee ExchangeFeeHandler
 }
@@ -21,7 +21,7 @@ type Exchange struct {
 // NewExchange creates a default exchange with sensible defaults ready for use.
 func NewExchange() *Exchange {
 	return &Exchange{
-		Symbol:      "TEST",
+		Symbol: "TEST",
 		//Commission:  &FixedCommission{Commission: 0},
 		ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
 	}
@@ -38,13 +38,12 @@ func (e *Exchange) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
 }
 
 // OnOrder executes an order event
-func (e *Exchange) OnFill(fill *Fill) (error) {
+func (e *Exchange) OnFill(fill *Fill) error {
 	freeHandler := fill.FeeHandler()
-	if freeHandler == nil{
+	if freeHandler == nil {
 		return nil
 	}
 	cost := freeHandler.Fee(fill.Exchange(), fill.FQty(), fill.Price(), fill.OrderType(), fill.Symbol(), fill.Direction())
 	fill.SetCost(cost)
 	return nil
 }
-
