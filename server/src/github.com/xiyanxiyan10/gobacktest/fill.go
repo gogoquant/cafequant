@@ -4,7 +4,7 @@ package gobacktest
 type Fill struct {
 	QuantifierType
 	Event
-	Exchange    string // exchange symbol
+	//Exchange    string // exchange symbol
 	commission  float64
 	exchangeFee float64
 	cost        float64 // the total cost of the filled order incl commission and fees
@@ -25,9 +25,14 @@ func (f Fill) Cost() float64 {
 	return f.cost
 }
 
+// Cost returns the Cost field of a Fill
+func (f *Fill) SetCost(cost float64)  {
+	f.cost = cost
+}
+
 // Value returns the value without cost.
 func (f Fill) Value() float64 {
-	value := float64(f.qty) * f.price
+	value := float64(f.fqty) * f.price
 	return value
 }
 
@@ -35,11 +40,11 @@ func (f Fill) Value() float64 {
 func (f Fill) NetValue() float64 {
 	if f.direction == BOT {
 		// qty * price + cost
-		netValue := float64(f.qty)*f.price + f.cost
+		netValue := float64(f.fqty)*f.price + f.cost
 		return netValue
 	}
 	// SLD
 	//qty * price - cost
-	netValue := float64(f.qty)*f.price - f.cost
+	netValue := float64(f.fqty)*f.price - f.cost
 	return netValue
 }

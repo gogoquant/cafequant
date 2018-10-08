@@ -104,8 +104,12 @@ type Quantifier interface {
 	SetOrderType(i OrderType)
 	Direction() Direction
 	SetDirection(dir Direction)
-	SetQuantifier(orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64)
-	Quantifier() (orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64)
+	SetFeeHandler(handler FeeHandler)
+	FeeHandler()FeeHandler
+	Exchange()(string)
+	SetExchange(string)
+	SetQuantifier(exchange string, orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64, feeHandler FeeHandler)
+	Quantifier() (exchange string, orderType OrderType, qtyType QtyType, qty int64, fqty float64, direction Direction, price float64, feeHandler FeeHandler)
 }
 
 // IDer declares setting and retrieving of an Id.
@@ -120,6 +124,7 @@ type FillEvent interface {
 	Quantifier
 	Commission() float64
 	ExchangeFee() float64
+	SetCost(cost float64)
 	Cost() float64
 	Value() float64
 	NetValue() float64

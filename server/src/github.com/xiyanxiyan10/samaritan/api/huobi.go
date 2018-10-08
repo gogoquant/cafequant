@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/huobiapi/REST-GO-demo/services"
+	"gopkg.in/logger.v1"
 	"sort"
 	"strings"
 	"time"
@@ -482,6 +483,11 @@ func (bt *Huobi) Start(back *goback.Backtest) error {
 // Run
 func (bt *Huobi) Run(back *goback.Backtest) error {
 	for {
+		if bt.status == goback.GobackPending || bt.status == goback.GobackStop {
+			bt.status = goback.GobackStop
+			break;
+		}
+		log.Info("filebeat of huobi")
 		var data goback.DataEvent
 		subscribes := back.Subscribes()
 		for stockType, _ := range(subscribes){

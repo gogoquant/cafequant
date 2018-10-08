@@ -78,7 +78,7 @@ func (t *Backtest) Marry(stockType string) (MarryHandler, bool) {
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 	fill, err := t.portfolio.CommitOrder(id)
-	if err != nil {
+	if err == nil && fill != nil{
 		t.AddEvent(fill)
 	}
 	return fill, err
@@ -147,7 +147,7 @@ func New() *Backtest {
 		},
 		exchange: &Exchange{
 			Symbol:      "TEST",
-			Commission:  &FixedCommission{Commission: 0},
+			//Commission:  &FixedCommission{Commission: 0},
 			ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
 		},
 		statistic: &Statistic{},
@@ -312,6 +312,7 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 	return e, true
 }
 
+
 // AddEvent
 func (t *Backtest) AddEvent(e EventHandler) error {
 	t.eventCh <- e
@@ -321,6 +322,7 @@ func (t *Backtest) AddEvent(e EventHandler) error {
 // eventLoop directs the different events to their handler.
 func (t *Backtest) eventLoop(e EventHandler) error {
 	// type check for event type
+	/*
 	switch event := e.(type) {
 
 	case DataEvent:
@@ -361,8 +363,9 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 		}
 		t.statistic.TrackTransaction(transaction)
 	}
-
+	*/
 	return nil
+
 }
 
 // eventLoop2Event directs the different events to their handler.
@@ -414,6 +417,7 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 	case *Order:
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+		//@Todo move to exchange to manger the order
 		//fill, err := t.exchange.OnOrder(event, t.data)
 		t.Portfolio().AddOrder(event)
 		if err != nil {
@@ -423,10 +427,12 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 	case *Fill:
 		log.Infof("Get fill event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+		t.exchange.OnFill(event)
 		_, err := t.portfolio.OnFill(event, t.data)
 		if err != nil {
 			break
 		}
+
 		//t.AddEvent(transaction)
 	}
 	return

@@ -53,10 +53,13 @@ func Switch(id int64) (err error) {
 
 // initialize ...
 func initialize(id int64) (trader Global, err error) {
-
+	//Install exchange and portfolio into backtest
 	back := gobacktest.NewBacktest()
 	portfolio := gobacktest.NewPortfolio()
 	back.SetPortfolio(portfolio)
+	exchange := gobacktest.NewExchange()
+	back.SetExchange(exchange)
+
 	trader.back = back
 
 	if t := Executor[id]; t != nil && t.Status > 0 {

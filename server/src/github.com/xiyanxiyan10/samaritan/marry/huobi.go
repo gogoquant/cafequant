@@ -26,7 +26,7 @@ func (bt *MarryHuobi) Marry(back *goback.Backtest, data goback.DataEvent) (bool,
 	}
 	for _, order := range orders {
 		status := order.Status()
-		if status == goback.OrderCanceled || status == goback.OrderCancelPending {
+		if status == goback.OrderCanceled || status == goback.OrderCancelPending ||status == goback.OrderSubmitted{
 			continue
 		}
 		dir := order.Direction()
