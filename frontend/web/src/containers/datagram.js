@@ -113,9 +113,9 @@ class Datagram extends React.Component {
           <div>
             <Chart height={400} data={dv} scale={cols} forceFit>
               <Legend />
-              <Axis name="month" />
+              <Axis name="timestamp" />
               <Axis
-                name="temperature"
+                name="amount"
                 label={{
                   formatter: val => `${val}°C`
                 }}
@@ -127,16 +127,16 @@ class Datagram extends React.Component {
               />
               <Geom
                 type="line"
-                position="month*temperature"
+                position="amount*timestamp"
                 size={2}
-                color={'city'}
+                color={'symbol'}
               />
               <Geom
                 type="point"
-                position="month*temperature"
+                position="amount*timestamp"
                 size={4}
                 shape={'circle'}
-                color={'city'}
+                color={'symbol'}
                 style={{
                   stroke: '#fff',
                   lineWidth: 1
