@@ -10,10 +10,13 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@antv/data-set": "^0.9.6",
     "antd": "^2.4.3",
+    "bizcharts": "^3.2.4",
     "eslint": "^5.6.0",
     "hprose-js": "^2.0.29",
     "lodash.keys": "^4.2.0",
+    "react": "latest",
     "react-fa": "^4.1.2",
     "react-monaco-editor": "^0.7.0",
     "react-redux": "^4.4.6",
@@ -21,8 +24,7 @@
     "react-router-redux": "^4.0.7",
     "recharts": "^0.15.1",
     "redux": "^3.6.0",
-    "redux-thunk": "^2.1.0",
-    "react": "latest"
+    "redux-thunk": "^2.1.0"
   },
   "devDependencies": {
     "babel-plugin-import": "^1.0.1",

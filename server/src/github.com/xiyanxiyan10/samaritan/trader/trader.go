@@ -59,6 +59,12 @@ type Global struct {
 	statusLog string
 }
 
+// Datagram
+func (g *Global)Datagram() *gobacktest.DataGramMaster{
+	//@ todo bugs here, can't get dategram master
+	return GlobalDataGram()
+}
+
 // GetTraderStatus ...
 func GetTraderStatus(id int64) (status int64) {
 	if t, ok := Executor[id]; ok && t != nil {
@@ -73,6 +79,15 @@ func Switch(id int64) (err error) {
 		return stop(id)
 	}
 	return run(id)
+}
+
+// GetTrader
+func GetTrader(id int64) (global *Global, err error) {
+	log.Infof("%s", Executor)
+	if t, ok := Executor[id]; !ok || t == nil {
+		return nil, fmt.Errorf("Can not found the Trader")
+	}
+	return Executor[id], nil
 }
 
 // initialize ...

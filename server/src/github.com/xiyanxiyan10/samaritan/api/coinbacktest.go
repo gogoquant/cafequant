@@ -19,7 +19,6 @@ type BtBacktest struct {
 	// one Trader pointer to one backtest with some exchanges
 	back *goback.Backtest
 
-
 	stockTypeMap     map[string]string
 	tradeTypeMap     map[string]string
 	recordsPeriodMap map[string]string
@@ -47,13 +46,13 @@ type ExchangeHandler interface {
 	AutoSleep()
 }
 
-// NewBacktest create a backtest
+// NewCoinBacktest create a coin backtest
 func NewCoinBacktest(opt Option) Exchange {
 	back := BtBacktest{logger: model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
-		option:    opt,
-		limit:     10.0,
-		lastSleep: time.Now().UnixNano(),
-		stockTypeMap:map[string]string{},
+		option:       opt,
+		limit:        10.0,
+		lastSleep:    time.Now().UnixNano(),
+		stockTypeMap: map[string]string{},
 	}
 
 	maker, ok := constructor[opt.Type]
@@ -70,19 +69,17 @@ func NewCoinBacktest(opt Option) Exchange {
 }
 
 // StockMap ...
-func (e *BtBacktest)StockMap()map[string]string{
+func (e *BtBacktest) StockMap() map[string]string {
 	return e.stockTypeMap
 }
 
-
-
-// SetGoback ...
-func (e *BtBacktest)SetStockMap(m map[string]string){
+// SetStockMap ...
+func (e *BtBacktest) SetStockMap(m map[string]string) {
 	e.stockTypeMap = m
 }
 
 // SetGoback ...
-func (e *BtBacktest)SetGoback(back *goback.Backtest){
+func (e *BtBacktest) SetGoback(back *goback.Backtest) {
 	e.back = back
 }
 
@@ -129,8 +126,6 @@ func (e *BtBacktest) GetAccount() interface{} {
 
 // Trade place an order
 func (e *BtBacktest) Trade(tradeType string, stockType string, _price, _amount interface{}, msgs ...interface{}) interface{} {
-	//stockType = strings.ToUpper(stockType)
-	//tradeType = strings.ToUpper(tradeType)
 	price := conver.Float64Must(_price)
 	amount := conver.Float64Must(_amount)
 	if _, ok := e.stockTypeMap[stockType]; !ok {
@@ -287,35 +282,33 @@ func (e *BtBacktest) CancelOrder(order Order) bool {
 }
 
 // EnableSubscribe ...
-func (e *BtBacktest)  EnableSubscribe(symbol string) error  {
+func (e *BtBacktest) EnableSubscribe(symbol string) error {
 	return e.back.Portfolio().EnableSubscribe(symbol)
 }
 
 // DisableSubscribe ...
-func (e *BtBacktest)  DisableSubscribe(symbol string) error  {
+func (e *BtBacktest) DisableSubscribe(symbol string) error {
 	return e.back.Portfolio().DisableSubscribe(symbol)
 }
 
 // Draw point
-func (e *BtBacktest)  Draw(val float64, tag, color string) interface{}  {
-	if e.back.DataGram() == nil{
+func (e *BtBacktest) Draw(val map[string]interface{}) interface{} {
+
+	if e.back.DataGram() == nil {
 		return false
 	}
 
-		datagram := goback.NewDataGram()
-		datagram.SetTime(time.Now())
-		datagram.SetColor(color)
-		datagram.SetVal(goback.DATAGRAM_VAL, val)
-		datagram.SetTag(goback.DATAGRAM_TAG, tag)
-		e.back.AddEvent(datagram)
+	datagram := goback.NewDataGram()
+	datagram.SetTime(time.Now())
+	datagram.SetFields(val)
+	e.back.AddEvent(datagram)
 	return true
 }
-
 
 // GetTicker get market ticker & depth
 func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface{} {
 	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
-	if ticker == false{
+	if ticker == false {
 		return false
 	}
 
@@ -326,7 +319,6 @@ func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface
 func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
 	return false
 }
-
 
 // Start
 func (bt *BtBacktest) Start(back *goback.Backtest) error {
@@ -339,6 +331,6 @@ func (bt *BtBacktest) Stop(back *goback.Backtest) error {
 }
 
 // Status
-func (bt *BtBacktest) Status() int{
+func (bt *BtBacktest) Status() int {
 	return bt.exchangeHandler.Status()
 }

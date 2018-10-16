@@ -3,6 +3,7 @@ import exchange from './exchange';
 import algorithm from './algorithm';
 import trader from './trader';
 import log from './log';
+import datagram from './datagram';
 import { combineReducers } from 'redux';
 import { routerReducer as routing } from 'react-router-redux';
 
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
   algorithm,
   trader,
   log,
+  datagram,
 });
 
 export default rootReducer;

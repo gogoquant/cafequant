@@ -60,16 +60,16 @@ type OrderBook struct {
 type Ticker struct {
 	gobacktest.Event
 
-	high  float64     // 最高价
-	mid  float64     // 中间价
-	low float64     // 最低价
-	amount float64   // 成交量
-	count  int64     // 成交笔数
-	open   float64   // 开盘价
-	close  float64   // 收盘价
-	vol    float64   // 成交额
-	asks []OrderBook
-	bids []OrderBook
+	high   float64 // 最高价
+	mid    float64 // 中间价
+	low    float64 // 最低价
+	amount float64 // 成交量
+	count  int64   // 成交笔数
+	open   float64 // 开盘价
+	close  float64 // 收盘价
+	vol    float64 // 成交额
+	asks   []OrderBook
+	bids   []OrderBook
 }
 
 func (t Ticker) Mid() float64 {
@@ -80,7 +80,6 @@ func (t Ticker) Open() float64 {
 	return t.open
 }
 
-
 func (t Ticker) Close() float64 {
 	return t.close
 }
@@ -89,7 +88,7 @@ func (t Ticker) Low() float64 {
 	return t.low
 }
 
-func (t Ticker) High() float64{
+func (t Ticker) High() float64 {
 	return t.high
 }
 
@@ -109,7 +108,7 @@ func (t *Ticker) SetLow(low float64) {
 	t.low = low
 }
 
-func (t *Ticker) SetHigh(high float64)  {
+func (t *Ticker) SetHigh(high float64) {
 	t.high = high
 }
 

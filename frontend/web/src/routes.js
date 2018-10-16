@@ -8,6 +8,7 @@ import Exchange from './containers/Exchange';
 import Algorithm from './containers/Algorithm';
 import AlgorithmEdit from './containers/AlgorithmEdit';
 import AlgorithmLog from './containers/AlgorithmLog';
+import Datagram from './containers/datagram';
 
 export default (
   <Route>
@@ -18,6 +19,7 @@ export default (
       <Route path="/algorithm" component={Algorithm} />
       <Route path="/algorithmEdit" component={AlgorithmEdit} />
       <Route path="/algorithmLog" component={AlgorithmLog} />
+      <Route path="/datagram/:id" component={Datagram} />
     </Route>
     <Route path="/login" component={Login} />
   </Route>

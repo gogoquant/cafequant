@@ -15,7 +15,6 @@ import (
 	"github.com/xiyanxiyan10/samaritan/model"
 
 	goback "github.com/xiyanxiyan10/gobacktest"
-
 )
 
 func init() {
@@ -81,17 +80,17 @@ func NewHuobi(opt Option) Exchange {
 }
 
 // StockMap ...
-func (e *Huobi)StockMap()map[string]string{
+func (e *Huobi) StockMap() map[string]string {
 	return e.stockTypeMap
 }
 
 // SetGoback ...
-func (e *Huobi)SetStockMap(m map[string]string){
+func (e *Huobi) SetStockMap(m map[string]string) {
 	e.stockTypeMap = m
 }
 
 // SetGoback ...
-func (e *Huobi)SetGoback(back *goback.Backtest){
+func (e *Huobi) SetGoback(back *goback.Backtest) {
 	e.back = back
 }
 
@@ -470,7 +469,7 @@ func (e *Huobi) GetRecords(stockType, period string, sizes ...interface{}) inter
 
 // Start
 func (bt *Huobi) Start(back *goback.Backtest) error {
-	if bt.status == goback.GobackRun{
+	if bt.status == goback.GobackRun {
 		return errors.New("already running")
 	}
 	bt.status = goback.GobackRun
@@ -481,7 +480,7 @@ func (bt *Huobi) Start(back *goback.Backtest) error {
 }
 
 // Draw
-func (bt *Huobi)  Draw(val float64, tag, color string) interface{} {
+func (bt *Huobi) Draw(val map[string]interface{})  interface{} {
 	return false
 }
 
@@ -490,44 +489,44 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 	for {
 		if bt.status == goback.GobackPending || bt.status == goback.GobackStop {
 			bt.status = goback.GobackStop
-			break;
+			break
 		}
 		log.Info("filebeat of huobi")
 		var data goback.DataEvent
 		subscribes := back.Subscribes()
-		for stockType, _ := range(subscribes){
-				ticker, err := bt.getTicker(stockType)
-				if nil != err {
-					bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
-				}
-				ticker.SetSymbol(stockType)
-				data = &ticker
-				back.AddEvent(data)
-				time.Sleep(time.Second * 2)
+		for stockType := range subscribes {
+			ticker, err := bt.getTicker(stockType)
+			if nil != err {
+				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
+			}
+			ticker.SetSymbol(stockType)
+			data = &ticker
+			back.AddEvent(data)
+			time.Sleep(time.Second * 2)
 		}
 	}
 	return nil
 }
 
 // EnableSubscribe ...
-func (e *Huobi)  EnableSubscribe(symbol string) error  {
+func (e *Huobi) EnableSubscribe(symbol string) error {
 	return e.back.Portfolio().EnableSubscribe(symbol)
 }
 
 // DisableSubscribe ...
-func (e *Huobi)  DisableSubscribe(symbol string) error  {
+func (e *Huobi) DisableSubscribe(symbol string) error {
 	return e.back.Portfolio().DisableSubscribe(symbol)
 }
 
 // Stop
 func (bt *Huobi) Stop(back *goback.Backtest) error {
-	if bt.status == goback.GobackStop || bt.status == goback.GobackPending{
+	if bt.status == goback.GobackStop || bt.status == goback.GobackPending {
 		return errors.New("already stop")
 	}
 	bt.status = goback.GobackPending
 	return nil
 }
 
-func (bt *Huobi) Status() int{
+func (bt *Huobi) Status() int {
 	return bt.status
 }

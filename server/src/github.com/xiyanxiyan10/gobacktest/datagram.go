@@ -7,11 +7,10 @@ import (
 	"time"
 )
 
-var (
-	DATAGRAM_VAL    = "data_val"
-	DATAGRAM_COLOR  = "data_color"
-	DATAGRAM_SYMBOL = "data_symbol"
-	DATAGRAM_TAG    = "data_tag"
+const (
+	DATAGRAM_VAL    = "val"
+	DATAGRAM_TAG    = "tag"
+	DATAGRAM_SYMBOL = "symbol"
 )
 
 // Datagram
@@ -21,11 +20,17 @@ type Datagram struct {
 	uid    string                 `json:"uuid"`
 	fields map[string]interface{} `json:"fields"`
 	tags   map[string]string      `json:"tags"`
-	time   time.Time              `json:"time"`
+}
+
+// DatagramInfo
+type DatagramInfo struct {
+	Symbol interface{}
+	Timestamp interface{}
+	Fields map[string]interface{}
 }
 
 // NewDataGram
-func NewDataGram() *Datagram {
+func NewDataGram() DataGramEvent {
 	return &Datagram{
 		fields: make(map[string]interface{}),
 		tags:   make(map[string]string),
@@ -42,47 +47,28 @@ func (d *Datagram) Id() string {
 	return d.uid
 }
 
-// SetTag
-func (d *Datagram) SetTag(key, val string) {
-	d.tags[key] = val
+
+// SetVal
+func (d *Datagram) SetFields(f map[string]interface{}) {
+	d.fields = f
+}
+
+// Fields
+func (d *Datagram) Fields() map[string]interface{} {
+	vals := make(map[string]interface{})
+	for key, val  := range d.fields{
+		vals[key]=val
+	}
+	return vals
 }
 
 // Tags
 func (d *Datagram) Tags() map[string]string {
-	res := make(map[string]string)
-	for key, val := range d.tags {
-		res[key] = val
+	vals := make(map[string]string)
+	for key, val  := range d.tags{
+		vals[key]=val
 	}
-	return res
-}
-
-// Tag
-func (d *Datagram) Tag() string {
-	return d.tags[DATAGRAM_TAG]
-}
-
-// SetColor
-func (d *Datagram) SetColor(c string) {
-	d.tags[DATAGRAM_COLOR] = c
-}
-
-// Color
-func (d *Datagram) Color(c string) string {
-	return d.tags[DATAGRAM_COLOR]
-}
-
-// SetVal
-func (d *Datagram) SetVal(key string, v interface{}) {
-	d.fields[key] = v
-}
-
-// Val
-func (d *Datagram) Val() map[string]interface{} {
-	res := make(map[string]interface{})
-	for key, val := range d.fields {
-		res[key] = val
-	}
-	return res
+	return vals
 }
 
 // DataGramMaster ...
@@ -106,15 +92,60 @@ func NewDataGramMaster(m map[string]string) *DataGramMaster {
 	}
 }
 
+// QueryDB
+func (m *DataGramMaster) QueryDB(cmd string) (infos []DatagramInfo, table []string, err error){
+	data, err := m.influx.QueryDB(cmd)
+	if err != nil{
+		return
+	}
+	if len(data) == 0{
+		return
+	}
+	if len(data[0].Series) == 0{
+		return
+	}
+	keyMap := make(map[string]int)
+	for key, val := range data[0].Series[0].Columns{
+		keyMap[val] = key
+	}
+	for key, _ := range keyMap{
+		if key == "time" || key == "symbol"{
+			continue
+		}
+		table = append(table, key)
+	}
+
+	for _, val := range data[0].Series[0].Values{
+		var info DatagramInfo
+		info.Fields = make(map[string]interface{})
+		for name, idx := range keyMap {
+			if name == "time" {
+				info.Timestamp = val[idx]
+				continue
+			}
+			if name == "symbol"{
+				info.Symbol = val[idx]
+				continue
+			}
+			info.Fields[name] = val[idx]
+		}
+		infos = append(infos, info)
+	}
+	return
+}
+
 // AddPoint ...
 func (m *DataGramMaster) AddPoint(datagram DataGramEvent) error {
-	// set id here
-	//datagram.SetId("test")
+
+	fields := datagram.Fields()
+	tags := datagram.Tags()
+	fields[DATAGRAM_SYMBOL] = datagram.Symbol()
+	tags[DATAGRAM_SYMBOL] = datagram.Symbol()
 
 	point, err := client.NewPoint(
 		datagram.Id(),
-		datagram.Tags(),
-		datagram.Val(),
+		tags,
+		fields,
 		datagram.Time(),
 	)
 	if err != nil {
@@ -122,6 +153,7 @@ func (m *DataGramMaster) AddPoint(datagram DataGramEvent) error {
 	}
 	return m.influx.WritesPoints(point)
 }
+
 
 // Connect ...
 func (m *DataGramMaster) Connect() error {
@@ -139,12 +171,7 @@ func (m *DataGramMaster) Start() error {
 		return errors.New("already running")
 	}
 	m.status = GobackRun
-	/*
-		if err := m.Close(); err != nil{
-			log.Error("influxdb close fail")
-			return err
-		}
-	*/
+
 	go m.Run()
 
 	return nil
@@ -160,13 +187,12 @@ func (m *DataGramMaster) Stop() error {
 	var cmd Cmd
 	cmd.SetCmd("stop")
 	m.eventCh <- &cmd
-	/*
-		time.Sleep(time.Millisecond *500)
-		if err := m.Close(); err != nil{
-			log.Error("influxdb close fail")
-			return err
-		}
-	*/
+
+	time.Sleep(time.Millisecond * 500)
+	if err := m.Close(); err != nil {
+		log.Error("influxdb close fail")
+		return err
+	}
 
 	return nil
 }
