@@ -77,20 +77,49 @@ class Datagram extends React.Component {
     let datas = [];
     let items = datagram.list;
     let col = datagram.col;
+    let mode = this.props.params.mode;
+
     for (let i = 0;i < items.length;i++) {
-      let data = new Map();
+      let data_map = Object.create(null);
       for (let j = 0;j < col.length;j++) {
         let key = col[j];
-        data[key] = items[i].fields[key];
+        if (key === 'time') {
+          let date = new Date(items[i].fields[key]);
+          if (mode === 'hour') {
+            // set year key but used  as hour
+            data_map['year'] = date.getHours();
+            // todo for test
+            // data_map[key] = 9;
+          } if (mode === 'minute') {
+            data_map['year'] = date.getMinutes();
+          } else {
+            let mTime = date.toUTCString();
+            data_map[key] = mTime;
+          }
+          continue;
+        }
+        let value = items[i].fields[key];
+        let float_value = parseFloat(value).toFixed(3);
+        console.log('convert ' + value + ' to ' + float_value);
+        data_map[key] = float_value;
+        // data_map[key] = i;
       }
-      datas.push(data);
+      datas.push(data_map);
     }
 
     const ds = new DataSet();
     const dv = ds.createView().source(datas);
+
+    let new_col = [];
+    for (let i = 0;i < col.length;i++) {
+      if (col[i] !== 'time') {
+        new_col.push(col[i]);
+      }
+    }
+
     dv.transform({
       type: 'fold',
-      fields: col,
+      fields: new_col,
       // 展开字段集
       key: 'symbol',
       // key字段
@@ -98,8 +127,8 @@ class Datagram extends React.Component {
     });
     console.log(dv);
     const cols = {
-      timestamp: {
-        range: [0, 100]
+      hour: {
+        range: [0, 1439]
       }
     };
 
@@ -113,11 +142,11 @@ class Datagram extends React.Component {
           <div>
             <Chart height={400} data={dv} scale={cols} forceFit>
               <Legend />
-              <Axis name="timestamp" />
+              <Axis name="year" />
               <Axis
                 name="amount"
                 label={{
-                  formatter: val => `${val}°C`
+                  formatter: val => `( ${val})`
                 }}
               />
               <Tooltip
@@ -127,13 +156,13 @@ class Datagram extends React.Component {
               />
               <Geom
                 type="line"
-                position="amount*timestamp"
+                position="year*amount"
                 size={2}
                 color={'symbol'}
               />
               <Geom
                 type="point"
-                position="amount*timestamp"
+                position="year*amount"
                 size={4}
                 shape={'circle'}
                 color={'symbol'}

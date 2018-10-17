@@ -21,10 +21,12 @@ function datagram(state = DATAGRAM_INIT, action) {
       });
     case actions.DATAGRAM_LIST_SUCCESS:
       console.log('get col->' + action.col);
+      console.log('get mode->' + action.mode);
       return assign({}, state, {
         loading: false,
         list: action.list,
         col: action.col,
+        mode: action.mode,
       });
     case actions.DATAGRAM_LIST_FAILURE:
       return assign({}, state, {

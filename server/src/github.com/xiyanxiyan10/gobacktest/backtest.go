@@ -32,6 +32,7 @@ type Backtest struct {
 	symbols []string
 
 	data      DataHandler
+	//showMode string
 	datagram  *DataGramMaster
 	strategy  StrategyHandler
 	portfolio PortfolioHandler

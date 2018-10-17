@@ -484,6 +484,10 @@ func (bt *Huobi) Draw(val map[string]interface{})  interface{} {
 	return false
 }
 
+// SetDrawMode
+func (bt *Huobi)SetDrawMode(mode string)interface{}{
+	return true
+}
 // Run
 func (bt *Huobi) Run(back *goback.Backtest) error {
 	for {
@@ -502,8 +506,9 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 			ticker.SetSymbol(stockType)
 			data = &ticker
 			back.AddEvent(data)
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1)
 		}
+		time.Sleep(time.Second * 1)
 	}
 	return nil
 }

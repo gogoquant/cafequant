@@ -109,7 +109,7 @@ func (m *DataGramMaster) QueryDB(cmd string) (infos []DatagramInfo, table []stri
 		keyMap[val] = key
 	}
 	for key, _ := range keyMap{
-		if key == "time" || key == "symbol"{
+		if key == "symbol"{
 			continue
 		}
 		table = append(table, key)
@@ -119,10 +119,6 @@ func (m *DataGramMaster) QueryDB(cmd string) (infos []DatagramInfo, table []stri
 		var info DatagramInfo
 		info.Fields = make(map[string]interface{})
 		for name, idx := range keyMap {
-			if name == "time" {
-				info.Timestamp = val[idx]
-				continue
-			}
 			if name == "symbol"{
 				info.Symbol = val[idx]
 				continue

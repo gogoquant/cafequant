@@ -38,6 +38,7 @@ type Exchange interface {
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
 	Draw(map[string]interface{}) interface{}
+	SetDrawMode(string)interface{}
 }
 
 //Entity transaction

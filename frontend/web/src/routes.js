@@ -19,7 +19,7 @@ export default (
       <Route path="/algorithm" component={Algorithm} />
       <Route path="/algorithmEdit" component={AlgorithmEdit} />
       <Route path="/algorithmLog" component={AlgorithmLog} />
-      <Route path="/datagram/:id" component={Datagram} />
+      <Route path="/datagram/:id(/:mode)" component={Datagram} />
     </Route>
     <Route path="/login" component={Login} />
   </Route>

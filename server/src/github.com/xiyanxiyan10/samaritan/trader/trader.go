@@ -48,6 +48,7 @@ func GlobalDataGram() * gobacktest.DataGramMaster{
 type Global struct {
 	back *gobacktest.Backtest
 	datagram *gobacktest.DataGramMaster
+	showmode string
 
 	model.Trader
 	Logger    model.Logger
@@ -63,6 +64,16 @@ type Global struct {
 func (g *Global)Datagram() *gobacktest.DataGramMaster{
 	//@ todo bugs here, can't get dategram master
 	return GlobalDataGram()
+}
+
+// SetShowMode
+func (g *Global)SetShowMode(mode string) {
+	g.showmode = mode
+}
+
+// ShowMode
+func (g *Global)ShowMode()string {
+	return g.showmode
 }
 
 // GetTraderStatus ...

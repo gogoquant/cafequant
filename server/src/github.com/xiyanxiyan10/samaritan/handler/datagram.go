@@ -11,7 +11,7 @@ import (
 
 type datagram struct{}
 
-func (datagram) List(id string, ctx rpc.Context) (resp response) {
+func (datagram) List(id string, mode string, ctx rpc.Context) (resp response) {
 	username := ctx.GetString("username")
 	if username == "" {
 		resp.Message = constant.ErrAuthorizationError
@@ -38,12 +38,15 @@ func (datagram) List(id string, ctx rpc.Context) (resp response) {
 		resp.Message = err.Error()
 		return
 	}
+
 	resp.Data = struct {
 		List  interface{}
 		Col []string
+		Mode string
 	}{
 		List:  items,
 		Col: tables,
+		Mode: mode,
 	}
 	resp.Success = true
 	return

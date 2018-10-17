@@ -305,6 +305,17 @@ func (e *BtBacktest) Draw(val map[string]interface{}) interface{} {
 	return true
 }
 
+// SetDrawMode
+func (e *BtBacktest)SetDrawMode(mode string)interface{}{
+	if e.back.DataGram() == nil {
+		return false
+	}
+	datagram := goback.NewDataGram()
+	datagram.SetSymbol(mode)
+	e.back.AddEvent(datagram)
+	return true
+}
+
 // GetTicker get market ticker & depth
 func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface{} {
 	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)

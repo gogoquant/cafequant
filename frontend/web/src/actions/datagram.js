@@ -6,15 +6,15 @@ function datagramListRequest() {
   return { type: actions.DATAGRAM_LIST_REQUEST };
 }
 
-function datagramListSuccess(list, col) {
-  return { type: actions.DATAGRAM_LIST_SUCCESS, list, col };
+function datagramListSuccess(list, col, mode) {
+  return { type: actions.DATAGRAM_LIST_SUCCESS, list, col, mode };
 }
 
 function datagramListFailure(message) {
   return { type: actions.DATAGRAM_LIST_FAILURE, message };
 }
 
-export function DatagramList(traderId) {
+export function DatagramList(traderId, mode) {
   return (dispatch, getState) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
@@ -29,9 +29,9 @@ export function DatagramList(traderId) {
     const client = Client.create(`${cluster}/api`, { Datagram: ['List'] });
 
     client.setHeader('Authorization', `Bearer ${token}`);
-    client.Datagram.List(traderId, (resp) => {
+    client.Datagram.List(traderId, mode, (resp) => {
       if (resp.success) {
-        dispatch(datagramListSuccess(resp.data.list, resp.data.col));
+        dispatch(datagramListSuccess(resp.data.list, resp.data.col, resp.data.mode));
       } else {
         dispatch(datagramListFailure(resp.message));
       }
