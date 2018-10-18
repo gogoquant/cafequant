@@ -33,6 +33,19 @@ function datagram(state = DATAGRAM_INIT, action) {
         loading: false,
         message: action.message,
       });
+    case actions.DATAGRAM_DELETE_REQUEST:
+      return assign({}, state, {
+        loading: true,
+      });
+    case actions.DATAGRAM_DELETE_SUCCESS:
+      return assign({}, state, {
+        loading: false,
+      });
+    case actions.DATAGRAM_DELETE_FAILURE:
+      return assign({}, state, {
+        loading: false,
+        message: action.message,
+      });
     default:
       return state;
   }

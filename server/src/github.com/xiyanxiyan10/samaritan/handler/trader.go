@@ -125,6 +125,18 @@ func (runner) Delete(req model.Trader, ctx rpc.Context) (resp response) {
 	} else {
 		resp.Success = true
 	}
+
+	master := trader.GlobalDataGram()
+	if master == nil{
+		resp.Message = "datagram not found"
+		return
+	}
+	cmd := fmt.Sprintf("drop measurement  data_%d",req.ID)
+	_, _, err = master.QueryDB(cmd)
+	if err != nil{
+		resp.Message = err.Error()
+		return
+	}
 	return
 }
 

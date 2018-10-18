@@ -25,7 +25,7 @@ export function DatagramList(traderId, mode) {
       return;
     }
 
-    console.log('call datagram with id:' + traderId);
+    console.log('call datagram show with id:' + traderId);
     const client = Client.create(`${cluster}/api`, { Datagram: ['List'] });
 
     client.setHeader('Authorization', `Bearer ${token}`);
@@ -37,6 +37,47 @@ export function DatagramList(traderId, mode) {
       }
     }, (resp, err) => {
       dispatch(datagramListFailure('Server error'));
+      console.log('【Hprose】Log.List Error:', resp, err);
+    });
+  };
+}
+
+// Delete
+function datagramDeleteRequest() {
+  return { type: actions.DATAGRAM_DELETE_REQUEST };
+}
+
+function datagramDeleteSuccess() {
+  return { type: actions.DATAGRAM_DELETE_SUCCESS};
+}
+
+function datagramDeleteFailure(message) {
+  return { type: actions.DATAGRAM_DELETE_FAILURE, message };
+}
+
+export function DatagramDelete(traderId) {
+  return (dispatch, getState) => {
+    const cluster = localStorage.getItem('cluster');
+    const token = localStorage.getItem('token');
+
+    dispatch(datagramDeleteRequest());
+    if (!cluster || !token) {
+      dispatch(logListFailure('No authorization'));
+      return;
+    }
+
+    console.log('call datagram delete with id:' + traderId);
+    const client = Client.create(`${cluster}/api`, { Datagram: ['Delete'] });
+
+    client.setHeader('Authorization', `Bearer ${token}`);
+    client.Datagram.Delete(traderId, (resp) => {
+      if (resp.success) {
+        dispatch(datagramDeleteSuccess());
+      } else {
+        dispatch(datagramDeleteFailure(resp.message));
+      }
+    }, (resp, err) => {
+      dispatch(datagramDeleteFailure('Server error'));
       console.log('【Hprose】Log.List Error:', resp, err);
     });
   };

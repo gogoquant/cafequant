@@ -412,8 +412,6 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 			log.Infof("dataGram master not found")
 		}
 
-		//@TODO get backtest name, need CONTAINER id
-		event.SetId(t.name)
 		err = t.datagram.AddDataGram(event)
 		if err != nil {
 			end = true

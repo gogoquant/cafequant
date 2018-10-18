@@ -67,7 +67,7 @@ class Datagram extends React.Component {
   }
 
   handleCancel() {
-    browserHistory.push('/datagram/' + id);
+    browserHistory.push('/algorithm');
   }
 
   render() {
@@ -88,10 +88,8 @@ class Datagram extends React.Component {
           if (mode === 'hour') {
             // set year key but used  as hour
             data_map['year'] = date.getHours();
-            // todo for test
-            // data_map[key] = 9;
           } if (mode === 'minute') {
-            data_map['year'] = date.getMinutes();
+            data_map['time'] = date.getMonth().toString() + '/' + date.getDay().toString() + ' ' + date.getHours().toString() + ':' + date.getMinutes().toString() ;
           } else {
             let mTime = date.toUTCString();
             data_map[key] = mTime;
@@ -99,7 +97,7 @@ class Datagram extends React.Component {
           continue;
         }
         let value = items[i].fields[key];
-        let float_value = parseFloat(value).toFixed(3);
+        let float_value = parseFloat(value).toFixed(2);
         console.log('convert ' + value + ' to ' + float_value);
         data_map[key] = float_value;
         // data_map[key] = i;
@@ -140,9 +138,9 @@ class Datagram extends React.Component {
         </div>
         <div id="mountNode">
           <div>
-            <Chart height={400} data={dv} scale={cols} forceFit>
+            <Chart height={600} data={dv} scale={cols} forceFit>
               <Legend />
-              <Axis name="year" />
+              <Axis name="time" />
               <Axis
                 name="amount"
                 label={{
@@ -156,13 +154,13 @@ class Datagram extends React.Component {
               />
               <Geom
                 type="line"
-                position="year*amount"
+                position="time*amount"
                 size={2}
                 color={'symbol'}
               />
               <Geom
                 type="point"
-                position="year*amount"
+                position="time*amount"
                 size={4}
                 shape={'circle'}
                 color={'symbol'}

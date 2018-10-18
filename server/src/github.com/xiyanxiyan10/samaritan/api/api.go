@@ -1,15 +1,19 @@
 package api
 
-import goback "github.com/xiyanxiyan10/gobacktest"
+import (
+	goback "github.com/xiyanxiyan10/gobacktest"
+)
 
 // Option is an exchange option
 type Option struct {
-	TraderID  int64
-	Type      string
-	Name      string
-	AccessKey string
-	SecretKey string
-	Mode      string
+	TraderID  int64			//trader id
+	AlgorithmID int64		//algorithm id
+	User      string		//user token
+	Type      string		//exchange type
+	Name      string		//exchange name
+	AccessKey string		//asscess key
+	SecretKey string		//secret key
+	Mode      string		//run mode
 	// Ctx       *otto.Otto
 }
 

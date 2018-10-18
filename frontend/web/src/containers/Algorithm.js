@@ -6,6 +6,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link, browserHistory } from 'react-router';
 import { Badge, Button, Dropdown, Form, Input, Menu, Modal, Select, Table, Tag, Tooltip, notification} from 'antd';
+import {DatagramDelete} from '../actions/datagram';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -39,11 +40,13 @@ class Algorithm extends React.Component {
     this.handleTraderDelete = this.handleTraderDelete.bind(this);
     this.handleTraderSwitch = this.handleTraderSwitch.bind(this);
     this.handleTraderLog = this.handleTraderLog.bind(this);
+    this.handleTraderShow = this.handleTraderShow.bind(this);
     this.handleExchangeChange = this.handleExchangeChange.bind(this);
     this.handleExchangeClose = this.handleExchangeClose.bind(this);
     this.handleTraderModelOk = this.handleTraderModelOk.bind(this);
     this.handleTraderModelCancel = this.handleTraderModelCancel.bind(this);
     this.handleTraderModeEdit = this.handleTraderModeEdit.bind(this);
+    this. handleTraderShowReset = this. handleTraderShowReset.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -205,6 +208,18 @@ function main() {
     browserHistory.push('/algorithmLog');
   }
 
+  handleTraderShow(info, mode) {
+    // const { dispatch } = this.props;
+
+    // dispatch(TraderCache(info));
+    browserHistory.push('/datagram/' + info.id + '/' + mode);
+  }
+
+  handleTraderShowReset(info) {
+    const { dispatch } = this.props;
+    dispatch(DatagramDelete(info.id));
+  }
+
   handleExchangeChange(value) {
     const { exchange } = this.props;
     const { traderInfo } = this.state;
@@ -307,6 +322,7 @@ function main() {
       selectedRowKeys,
       onChange: this.onSelectChange,
     };
+    // noinspection JSAnnotator
     const expcolumns = [{
       title: 'Name',
       dataIndex: 'name',
@@ -329,9 +345,6 @@ function main() {
       render: (v, r) => (
         <Dropdown.Button type="ghost" onClick={this.handleTraderSwitch.bind(this, r)} overlay={
           <Menu>
-            <Menu.Item key="dataGram">
-              <a type="ghost" onClick={this.handleTraderLog.bind(this, r)}>View DataGram</a>
-            </Menu.Item>
             <Menu.Item key="log">
               <a type="ghost" onClick={this.handleTraderLog.bind(this, r)}>View Log</a>
             </Menu.Item>
@@ -340,6 +353,24 @@ function main() {
             </Menu.Item>
           </Menu>
         }>{r.status > 0 ? 'Stop' : 'Run'}</Dropdown.Button>
+      ),
+    }, {
+      title: 'Datagram',
+      key: 'datagram',
+      render: (v, r) => (
+        <Dropdown.Button type="ghost" onClick={this.handleTraderShowReset.bind(this, r)} overlay={
+          <Menu>
+            <Menu.Item key="minute">
+              <a type="ghost" onClick={this.handleTraderShow.bind(this, r, 'minute')}>minute</a>
+            </Menu.Item>
+            <Menu.Item key="hour">
+              <a type="ghost" onClick={this.handleTraderShow.bind(this, r, 'hour')}>hour</a>
+            </Menu.Item>
+            <Menu.Item key="day">
+              <a type="ghost" onClick={this.handleTraderShow.bind(this, r, 'day')}>day</a>
+            </Menu.Item>
+          </Menu>
+        }>{'Clean'}</Dropdown.Button>
       ),
     }, {
       title: 'Mode',

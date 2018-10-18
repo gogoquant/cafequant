@@ -301,6 +301,7 @@ func (e *BtBacktest) Draw(val map[string]interface{}) interface{} {
 	datagram := goback.NewDataGram()
 	datagram.SetTime(time.Now())
 	datagram.SetFields(val)
+	datagram.SetId("data_" + strconv.FormatInt(e.option.TraderID, 10))
 	e.back.AddEvent(datagram)
 	return true
 }

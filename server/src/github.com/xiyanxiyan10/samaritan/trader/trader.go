@@ -110,7 +110,7 @@ func initialize(id int64) (trader Global, err error) {
 	exchange := gobacktest.NewExchange()
 	back.SetExchange(exchange)
 	back.SetDataGram(GlobalDataGram())
-	back.SetName(fmt.Sprintf("name_%d", id))
+	//back.SetName(fmt.Sprintf("name_%d", id))
 
 	trader.back = back
 

@@ -48,6 +48,7 @@ func NewHuobi(opt Option) Exchange {
 	return &Huobi{
 		stockTypeMap: map[string]string{
 			"datxbtc": "1",
+			"aaceth": "1",
 		},
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
