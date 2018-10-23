@@ -48,7 +48,7 @@ func NewHuobi(opt Option) Exchange {
 	return &Huobi{
 		stockTypeMap: map[string]string{
 			"datxbtc": "1",
-			"aaceth": "1",
+			"aaceth":  "1",
 		},
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
@@ -468,6 +468,16 @@ func (e *Huobi) GetRecords(stockType, period string, sizes ...interface{}) inter
 	return e.records[period]
 }
 
+// SetSubscribe ...
+func (e *Huobi) SetSubscribe(symbol string) error {
+	return e.back.Exchange().SetSubscribe(symbol)
+}
+
+// Draw
+func (bt *Huobi) Draw(val map[string]interface{}) interface{} {
+	return false
+}
+
 // Start
 func (bt *Huobi) Start(back *goback.Backtest) error {
 	if bt.status == goback.GobackRun {
@@ -480,15 +490,6 @@ func (bt *Huobi) Start(back *goback.Backtest) error {
 	return nil
 }
 
-// Draw
-func (bt *Huobi) Draw(val map[string]interface{})  interface{} {
-	return false
-}
-
-// SetDrawMode
-func (bt *Huobi)SetDrawMode(mode string)interface{}{
-	return true
-}
 // Run
 func (bt *Huobi) Run(back *goback.Backtest) error {
 	for {
@@ -498,8 +499,9 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 		}
 		log.Info("filebeat of huobi")
 		var data goback.DataEvent
-		subscribes := back.Subscribes()
-		for stockType := range subscribes {
+		subscribes := back.Exchange().Subscribes()
+		for _, item := range subscribes.ToSlice() {
+			stockType, _ := item.(string)
 			ticker, err := bt.getTicker(stockType)
 			if nil != err {
 				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
@@ -514,18 +516,8 @@ func (bt *Huobi) Run(back *goback.Backtest) error {
 	return nil
 }
 
-// EnableSubscribe ...
-func (e *Huobi) EnableSubscribe(symbol string) error {
-	return e.back.Portfolio().EnableSubscribe(symbol)
-}
-
-// DisableSubscribe ...
-func (e *Huobi) DisableSubscribe(symbol string) error {
-	return e.back.Portfolio().DisableSubscribe(symbol)
-}
-
 // Stop
-func (bt *Huobi) Stop(back *goback.Backtest) error {
+func (bt *Huobi) Stop() error {
 	if bt.status == goback.GobackStop || bt.status == goback.GobackPending {
 		return errors.New("already stop")
 	}
@@ -533,6 +525,7 @@ func (bt *Huobi) Stop(back *goback.Backtest) error {
 	return nil
 }
 
+// Status
 func (bt *Huobi) Status() int {
 	return bt.status
 }

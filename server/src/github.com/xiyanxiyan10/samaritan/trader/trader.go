@@ -27,33 +27,33 @@ var (
 func init() {
 	globaldataGram = gobacktest.NewDataGramMaster(config.GetConfs())
 	err := globaldataGram.Connect()
-	if err != nil{
+	if err != nil {
 		log.Errorf("DataGram connect fail (%s)", err.Error())
 		globaldataGram = nil
 		return
 	}
 	err = globaldataGram.Start()
-	if err != nil{
+	if err != nil {
 		log.Errorf("DataGram start fail (%s)", err.Error())
 		globaldataGram = nil
 		return
 	}
 }
 
-func GlobalDataGram() * gobacktest.DataGramMaster{
+func GlobalDataGram() *gobacktest.DataGramMaster {
 	return globaldataGram
 }
 
 // Global ...
 type Global struct {
-	back *gobacktest.Backtest
+	back     *gobacktest.Backtest
 	datagram *gobacktest.DataGramMaster
 	showmode string
 
 	model.Trader
-	Logger    model.Logger
-	Ctx       *otto.Otto
-	es        []api.Exchange
+	Logger model.Logger
+	Ctx    *otto.Otto
+	es     []api.Exchange
 
 	tasks     []task
 	execed    bool
@@ -61,18 +61,18 @@ type Global struct {
 }
 
 // Datagram
-func (g *Global)Datagram() *gobacktest.DataGramMaster{
+func (g *Global) Datagram() *gobacktest.DataGramMaster {
 	//@ todo bugs here, can't get dategram master
 	return GlobalDataGram()
 }
 
 // SetShowMode
-func (g *Global)SetShowMode(mode string) {
+func (g *Global) SetShowMode(mode string) {
 	g.showmode = mode
 }
 
 // ShowMode
-func (g *Global)ShowMode()string {
+func (g *Global) ShowMode() string {
 	return g.showmode
 }
 
@@ -109,7 +109,7 @@ func initialize(id int64) (trader Global, err error) {
 	back.SetPortfolio(portfolio)
 	exchange := gobacktest.NewExchange()
 	back.SetExchange(exchange)
-	back.SetDataGram(GlobalDataGram())
+
 	//back.SetName(fmt.Sprintf("name_%d", id))
 
 	trader.back = back
@@ -166,6 +166,7 @@ func initialize(id int64) (trader Global, err error) {
 				return
 			}
 
+			//@Todo Not allowed  choose one exchange twice
 			switch trader.Mode {
 			case constant.MODE_ONLINE:
 				exchange := maker(opt)
@@ -193,7 +194,7 @@ func initialize(id int64) (trader Global, err error) {
 
 	//Register marry handler
 	marryStore := marry.MarryStore()
-	for stockType, Handler := range(marryStore){
+	for stockType, Handler := range marryStore {
 		trader.back.SetMarry(stockType, Handler)
 	}
 
@@ -221,13 +222,13 @@ func run(id int64) (err error) {
 	err = trader.back.Start()
 
 	//start exchange filebeats
-	for _, e := range(trader.es){
-		if err = e.Start(trader.back); err != nil{
-				return err
+	for _, e := range trader.es {
+		if err = e.Start(trader.back); err != nil {
+			return err
 		}
 	}
 
-	if err != nil{
+	if err != nil {
 		trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
 	}
 
@@ -277,8 +278,8 @@ func stop(id int64) (err error) {
 	}
 
 	//stop exchange filebeat
-	for _, e := range(Executor[id].es){
-		if err = e.Stop(Executor[id].back); err != nil{
+	for _, e := range Executor[id].es {
+		if err = e.Stop(); err != nil {
 			return err
 		}
 	}

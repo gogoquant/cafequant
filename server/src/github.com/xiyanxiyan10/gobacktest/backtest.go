@@ -6,23 +6,15 @@ import (
 	//"github.com/xiyanxiyan10/samaritan/api"
 )
 
-// DP sets the the precision of rounded floating numbers
-// used after calculations to format
-const DP = 4 // DP
-
-const (
-	GobackRun     = 2
-	GobackPending = 1
-	GobackStop    = 0
-)
-
 // Reseter provides a resting interface.
 type Reseter interface {
 	Reset() error
 }
 
-// Backtest is the main struct which holds all elements.
+// Backtest is the main struct which holds all back event for users
 type Backtest struct {
+	Id string
+
 	config map[string]string
 
 	eventCh chan EventHandler
@@ -31,12 +23,11 @@ type Backtest struct {
 
 	symbols []string
 
-	data      DataHandler
-	//showMode string
-	datagram  *DataGramMaster
+	data DataHandler
+
 	strategy  StrategyHandler
 	portfolio PortfolioHandler
-	exchange  ExecutionHandler
+	exchange  ExchangeHandler
 	statistic StatisticHandler
 	marries   map[string]MarryHandler
 
@@ -63,16 +54,6 @@ func (e *Backtest) SetName(name string) {
 	e.name = name
 }
 
-// SetDataGram
-func (t *Backtest) SetDataGram(d *DataGramMaster) {
-	t.datagram = d
-}
-
-// SetDataGram
-func (t *Backtest) DataGram() *DataGramMaster {
-	return t.datagram
-}
-
 // SetMarry
 func (t *Backtest) SetMarry(name string, handler MarryHandler) {
 	t.marries[name] = handler
@@ -91,7 +72,7 @@ func (t *Backtest) Marry(stockType string) (MarryHandler, bool) {
 
 // CommitOrder ...
 func (t *Backtest) CommitOrder(id int) (*Fill, error) {
-	fill, err := t.portfolio.CommitOrder(id)
+	fill, err := t.exchange.CommitOrder(id)
 	if err == nil && fill != nil {
 		t.AddEvent(fill)
 	}
@@ -100,17 +81,12 @@ func (t *Backtest) CommitOrder(id int) (*Fill, error) {
 
 // OrdersBySymbol ...
 func (t *Backtest) OrdersBySymbol(stockType string) ([]OrderEvent, bool) {
-	return t.portfolio.OrdersBySymbol(stockType)
+	return t.exchange.OrdersBySymbol(stockType)
 }
 
 // CancelOneOrder ...
 func (t *Backtest) CancelOrder(id int) error {
-	return t.portfolio.CancelOrder(id)
-}
-
-// Subscribe..
-func (t *Backtest) Subscribes() map[string]int {
-	return t.portfolio.Subscribes()
+	return t.exchange.CancelOrder(id)
 }
 
 // Start
@@ -119,19 +95,6 @@ func (t *Backtest) Start() error {
 		return errors.New("already running")
 	}
 	t.status = GobackRun
-
-	/*
-		err := t.influx.Connect()
-		if nil != err{
-			return err
-		}
-	*/
-	// start datagram
-	if t.datagram != nil {
-		if err := t.datagram.Start(); err != nil {
-			log.Infof("datagram run fail")
-		}
-	}
 
 	// start goback
 	go t.Run2Event()
@@ -144,19 +107,6 @@ func (t *Backtest) Stop() error {
 	if t.status == GobackStop || t.status == GobackPending {
 		return errors.New("already stop or pending")
 
-	}
-	/*
-		err := t.influx.Close()
-		if nil != err{
-			return err
-		}
-	*/
-
-	//stop datagram
-	if t.datagram != nil {
-		if err := t.datagram.Stop(); err != nil {
-			log.Infof("datagram stop fail")
-		}
 	}
 
 	//stop gobacktest
@@ -177,9 +127,9 @@ func New() *Backtest {
 			riskManager: &Risk{},
 		},
 		exchange: &Exchange{
-			Symbol: "TEST",
+			//Symbol: "TEST",
 			//Commission:  &FixedCommission{Commission: 0},
-			ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
+			//ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
 		},
 		statistic: &Statistic{},
 	}
@@ -206,7 +156,7 @@ func (t *Backtest) SetPortfolio(portfolio PortfolioHandler) {
 }
 
 // SetExchange sets the execution provider to be used within the backtest.
-func (t *Backtest) SetExchange(exchange ExecutionHandler) {
+func (t *Backtest) SetExchange(exchange ExchangeHandler) {
 	t.exchange = exchange
 }
 
@@ -218,6 +168,10 @@ func (t *Backtest) SetStatistic(statistic StatisticHandler) {
 // Portfolio sets the Portfolio provider to be used within the backtest.
 func (t *Backtest) Portfolio() PortfolioHandler {
 	return t.portfolio
+}
+
+func (t *Backtest) Exchange() ExchangeHandler {
+	return t.exchange
 }
 
 // Reset the backtest into a clean state with loaded data.
@@ -408,11 +362,11 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 	case DataGramEvent:
 		log.Infof("Get dataGram event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 
-		if t.datagram == nil {
+		if GetDataGramMaster() == nil {
 			log.Infof("dataGram master not found")
 		}
 
-		err = t.datagram.AddDataGram(event)
+		err = GetDataGramMaster().AddDataGram(event)
 		if err != nil {
 			end = true
 		}
@@ -455,7 +409,7 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		//@Todo move to exchange to manger the order
 		//fill, err := t.exchange.OnOrder(event, t.data)
-		t.Portfolio().AddOrder(event)
+		t.exchange.AddOrder(event)
 		if err != nil {
 			break
 		}
@@ -464,7 +418,7 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 	case *Fill:
 		log.Infof("Get fill event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		t.exchange.OnFill(event)
-		_, err := t.portfolio.OnFill(event, t.data)
+		_, err := t.portfolio.OnFill(event)
 		if err != nil {
 			break
 		}

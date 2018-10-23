@@ -2,7 +2,7 @@ package gobacktest
 
 import (
 	"fmt"
-	"github.com/xiyanxiyan10/samaritan/util"
+	"github.com/deckarep/golang-set"
 	"sort"
 	"sync"
 )
@@ -10,7 +10,7 @@ import (
 func NewOrderBook() OrderBook {
 	return OrderBook{
 		counter:    0,
-		subscribes: make(map[string]int),
+		subscribes: mapset.NewSet(),
 		orders:     []OrderEvent{},
 		history:    []OrderEvent{},
 	}
@@ -20,48 +20,9 @@ func NewOrderBook() OrderBook {
 type OrderBook struct {
 	lock       sync.Mutex
 	counter    int
-	subscribes map[string]int
+	subscribes mapset.Set
 	orders     []OrderEvent
 	history    []OrderEvent
-}
-
-// Subscribe
-func (ob *OrderBook) Subscribes() map[string]int {
-	ob.lock.Lock()
-	defer ob.lock.Unlock()
-
-	//todo type bugs here
-	subscribes := util.DeepCopy(ob.subscribes)
-	res, _ := subscribes.(map[string]int)
-	return res
-}
-
-// EnableSubscribe
-func (ob *OrderBook) EnableSubscribe(symbol string) error {
-	ob.lock.Lock()
-	defer ob.lock.Unlock()
-
-	ob.subscribes[symbol]++
-	return nil
-}
-
-// DisableSubscribe
-func (ob *OrderBook) DisableSubscribe(symbol string) error {
-	ob.lock.Lock()
-	defer ob.lock.Unlock()
-
-	_, ok := ob.subscribes[symbol]
-	if !ok {
-		return nil
-	}
-	count := ob.subscribes[symbol]
-	count--
-	if count <= 0 {
-		delete(ob.subscribes, symbol)
-	} else {
-		ob.subscribes[symbol] = count
-	}
-	return nil
 }
 
 // Add an order to the order book.
@@ -77,6 +38,22 @@ func (ob *OrderBook) Add(order OrderEvent) error {
 	ob.orders = append(ob.orders, order)
 
 	//ob.EnableSubscribe(order.Symbol())
+	return nil
+}
+
+// SetSubscribes
+func (ob *OrderBook) SetSubscribe(symbol string) error {
+	ob.lock.Lock()
+	defer ob.lock.Unlock()
+	ob.subscribes.Add(symbol)
+	return nil
+}
+
+// Subscribes
+func (ob *OrderBook) Subscribes() mapset.Set {
+	ob.lock.Lock()
+	defer ob.lock.Unlock()
+	ob.subscribes.Clone()
 	return nil
 }
 
@@ -96,23 +73,19 @@ func (ob *OrderBook) Remove(id int) error {
 		}
 	}
 
-	// order not found in orderbook
+	// order not found
 	return fmt.Errorf("order with id %v not found", id)
 }
 
-// Remove an order from the order book, append it to history.
+// CancelOrder Remove an order from the order book, append it to history.
 func (ob *OrderBook) CancelOrder(id int) error {
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
 
-	//return ob.Remove(id)
-	for _, order := range ob.orders {
-		order.Cancel()
-	}
-	return nil
+	return ob.Remove(id)
 }
 
-// Remove an order from the order book, append it to history.
+// CommitOrder ...
 func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
@@ -130,7 +103,6 @@ func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
 			fill.SetTime(order.Time())
 			fill.SetQuantifier(order.Quantifier())
 
-			//ob.DisableSubscribe(fill.symbol)
 			return fill, nil
 		}
 	}

@@ -6,14 +6,14 @@ import (
 
 // Option is an exchange option
 type Option struct {
-	TraderID  int64			//trader id
-	AlgorithmID int64		//algorithm id
-	User      string		//user token
-	Type      string		//exchange type
-	Name      string		//exchange name
-	AccessKey string		//asscess key
-	SecretKey string		//secret key
-	Mode      string		//run mode
+	TraderID    int64  //trader id
+	AlgorithmID int64  //algorithm id
+	User        string //user token
+	Type        string //exchange type
+	Name        string //exchange name
+	AccessKey   string //asscess key
+	SecretKey   string //secret key
+	Mode        string //run mode
 	// Ctx       *otto.Otto
 }
 
@@ -31,18 +31,17 @@ type Exchange interface {
 	GetOrders(stockType string) interface{}
 	GetTrades(stockType string) interface{}
 	CancelOrder(order Order) bool
-	Start(back *goback.Backtest) error
-	Stop(back *goback.Backtest) error
-	SetGoback(back *goback.Backtest)
-	EnableSubscribe(symbol string) error
-	DisableSubscribe(symbol string) error
-	Status() int
+	SetSubscribe(symbol string) error
 	StockMap() map[string]string
 	SetStockMap(m map[string]string)
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
+	SetGoback(back *goback.Backtest)
+
 	Draw(map[string]interface{}) interface{}
-	SetDrawMode(string)interface{}
+	Start(back *goback.Backtest) error
+	Stop() error
+	Status() int
 }
 
 //Entity transaction

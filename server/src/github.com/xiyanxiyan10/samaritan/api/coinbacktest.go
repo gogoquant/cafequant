@@ -40,10 +40,11 @@ type ExchangeHandler interface {
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	SetLimit(times interface{}) float64
 	GetMinAmount(stock string) float64
-	Start(back *goback.Backtest) error
-	Stop(back *goback.Backtest) error
-	Status() int
 	AutoSleep()
+
+	Stop() error
+	Status() int
+	Start(back *goback.Backtest) error
 }
 
 // NewCoinBacktest create a coin backtest
@@ -68,6 +69,10 @@ func NewCoinBacktest(opt Option) Exchange {
 	return &back
 }
 
+func (e *BtBacktest) SetGoback(back *goback.Backtest) {
+	e.back = back
+}
+
 // StockMap ...
 func (e *BtBacktest) StockMap() map[string]string {
 	return e.stockTypeMap
@@ -76,11 +81,6 @@ func (e *BtBacktest) StockMap() map[string]string {
 // SetStockMap ...
 func (e *BtBacktest) SetStockMap(m map[string]string) {
 	e.stockTypeMap = m
-}
-
-// SetGoback ...
-func (e *BtBacktest) SetGoback(back *goback.Backtest) {
-	e.back = back
 }
 
 // Log print something to console
@@ -281,38 +281,12 @@ func (e *BtBacktest) CancelOrder(order Order) bool {
 	return false
 }
 
-// EnableSubscribe ...
-func (e *BtBacktest) EnableSubscribe(symbol string) error {
-	return e.back.Portfolio().EnableSubscribe(symbol)
-}
-
-// DisableSubscribe ...
-func (e *BtBacktest) DisableSubscribe(symbol string) error {
-	return e.back.Portfolio().DisableSubscribe(symbol)
-}
-
-// Draw point
+// Draw ...
 func (e *BtBacktest) Draw(val map[string]interface{}) interface{} {
-
-	if e.back.DataGram() == nil {
-		return false
-	}
-
 	datagram := goback.NewDataGram()
 	datagram.SetTime(time.Now())
 	datagram.SetFields(val)
 	datagram.SetId("data_" + strconv.FormatInt(e.option.TraderID, 10))
-	e.back.AddEvent(datagram)
-	return true
-}
-
-// SetDrawMode
-func (e *BtBacktest)SetDrawMode(mode string)interface{}{
-	if e.back.DataGram() == nil {
-		return false
-	}
-	datagram := goback.NewDataGram()
-	datagram.SetSymbol(mode)
 	e.back.AddEvent(datagram)
 	return true
 }
@@ -332,17 +306,22 @@ func (e *BtBacktest) GetRecords(stockType, period string, sizes ...interface{}) 
 	return false
 }
 
-// Start
-func (bt *BtBacktest) Start(back *goback.Backtest) error {
-	return bt.exchangeHandler.Start(back)
+// SetSubscribe ...
+func (e *BtBacktest) SetSubscribe(symbol string) error {
+	return e.back.Exchange().SetSubscribe(symbol)
 }
 
 // Stop
-func (bt *BtBacktest) Stop(back *goback.Backtest) error {
-	return bt.exchangeHandler.Stop(back)
+func (bt *BtBacktest) Stop() error {
+	return bt.exchangeHandler.Stop()
 }
 
 // Status
 func (bt *BtBacktest) Status() int {
 	return bt.exchangeHandler.Status()
+}
+
+// Start
+func (bt *BtBacktest) Start(back *goback.Backtest) error {
+	return bt.exchangeHandler.Start(back)
 }

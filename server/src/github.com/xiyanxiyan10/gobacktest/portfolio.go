@@ -1,9 +1,5 @@
 package gobacktest
 
-import (
-	"errors"
-)
-
 // PortfolioHandler is the combined interface building block for a portfolio.
 type PortfolioHandler interface {
 	OnSignaler
@@ -12,7 +8,6 @@ type PortfolioHandler interface {
 	Updater
 	Casher
 	Valuer
-	Booker
 	Reseter
 }
 
@@ -23,7 +18,7 @@ type OnSignaler interface {
 
 // OnFiller is an interface for the OnFill method
 type OnFiller interface {
-	OnFill(FillEvent, DataHandler) (*Fill, error)
+	OnFill(FillEvent) (*Fill, error)
 }
 
 // Investor is an interface to check if a portfolio has a position of a symbol
@@ -51,24 +46,11 @@ type Valuer interface {
 	Value() float64
 }
 
-// Booker defines methods for handling the order book of the portfolio
-type Booker interface {
-	CancelOrder(id int) error
-	Subscribes() map[string]int
-	DisableSubscribe(symbol string) error
-	EnableSubscribe(symbol string) error
-	AddOrder(OrderEvent) error
-	Orders() ([]OrderEvent, bool)
-	CommitOrder(id int) (*Fill, error)
-	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
-}
-
 // Portfolio represent a simple portfolio struct.
 type Portfolio struct {
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
-	orderManager OrderBook
 	transactions []FillEvent
 	sizeManager  SizeHandler
 	riskManager  RiskHandler
@@ -80,7 +62,6 @@ func NewPortfolio() *Portfolio {
 		initialCash:  100000,
 		sizeManager:  &Size{DefaultSize: 100, DefaultValue: 1000},
 		riskManager:  &Risk{},
-		orderManager: NewOrderBook(),
 		holdings:     make(map[string]Position),
 		transactions: []FillEvent{},
 	}
@@ -114,12 +95,8 @@ func (p *Portfolio) Reset() error {
 	return nil
 }
 
-// OnSignal handles an incomming signal event
+// OnSignal ...
 func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, error) {
-	// fmt.Printf("Portfolio receives Signal: %#v \n", signal)
-
-	// set order type
-	//orderType := MarketOrder // default Market, should be set by risk manager
 	var limit float64
 
 	initialOrder := &Order{
@@ -132,22 +109,19 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 	//copy the Quantifier from signal into order
 	initialOrder.SetQuantifier(signal.Quantifier())
 
-	// fetch latest known price for the symbol
-	//latest := data.Latest(signal.Symbol())
-
 	sizedOrder, err := p.sizeManager.SizeOrder(initialOrder, nil, p)
 	if err != nil {
 	}
 
 	order, err := p.riskManager.EvaluateOrder(sizedOrder, nil, p.holdings)
 	if err != nil {
-	}
 
+	}
 	return order, nil
 }
 
 // OnFill handles an incomming fill event
-func (p *Portfolio) OnFill(fill FillEvent, data DataHandler) (*Fill, error) {
+func (p *Portfolio) OnFill(fill FillEvent) (*Fill, error) {
 	// Check for nil map, else initialise the map
 	if p.holdings == nil {
 		p.holdings = make(map[string]Position)
@@ -180,13 +154,39 @@ func (p *Portfolio) OnFill(fill FillEvent, data DataHandler) (*Fill, error) {
 	return f, nil
 }
 
-// IsInvested checks if the portfolio has an open position on the given symbol
-func (p Portfolio) IsInvested(symbol string) (pos Position, ok bool) {
-	pos, ok = p.holdings[symbol]
-	if ok && (pos.qty != 0) {
-		return pos, true
+// SetInitialCash sets the initial cash value of the portfolio
+func (p *Portfolio) SetInitialCash(initial float64) {
+	p.initialCash = initial
+}
+
+// InitialCash returns the initial cash value of the portfolio
+func (p Portfolio) InitialCash() float64 {
+	return p.initialCash
+}
+
+// SetCash sets the current cash value of the portfolio
+func (p *Portfolio) SetCash(cash float64) {
+	p.cash = cash
+}
+
+// Cash returns the current cash value of the portfolio
+func (p Portfolio) Cash() float64 {
+	return p.cash
+}
+
+// Value return the current total value of the portfolio
+func (p Portfolio) Value() float64 {
+	var holdingValue float64
+	for _, pos := range p.holdings {
+		holdingValue += pos.marketValue
 	}
-	return pos, false
+	value := p.cash + holdingValue
+	return value
+}
+
+// Holdings returns the holdings of the portfolio
+func (p Portfolio) Holdings() map[string]Position {
+	return p.holdings
 }
 
 // IsLong checks if the portfolio has an open long position on the given symbol
@@ -215,80 +215,11 @@ func (p *Portfolio) Update(d DataEvent) {
 	}
 }
 
-// SetInitialCash sets the initial cash value of the portfolio
-func (p *Portfolio) SetInitialCash(initial float64) {
-	p.initialCash = initial
-}
-
-// InitialCash returns the initial cash value of the portfolio
-func (p Portfolio) InitialCash() float64 {
-	return p.initialCash
-}
-
-// SetCash sets the current cash value of the portfolio
-func (p *Portfolio) SetCash(cash float64) {
-	p.cash = cash
-}
-
-// Cash returns the current cash value of the portfolio
-func (p Portfolio) Cash() float64 {
-	return p.cash
-}
-
-// Value return the current total value of the portfolio
-func (p Portfolio) Value() float64 {
-	var holdingValue float64
-	for _, pos := range p.holdings {
-
-		holdingValue += pos.marketValue
+// IsInvested checks if the portfolio has an open position on the given symbol
+func (p Portfolio) IsInvested(symbol string) (pos Position, ok bool) {
+	pos, ok = p.holdings[symbol]
+	if ok && (pos.qty != 0) {
+		return pos, true
 	}
-
-	value := p.cash + holdingValue
-	return value
-}
-
-// Holdings returns the holdings of the portfolio
-func (p Portfolio) Holdings() map[string]Position {
-	return p.holdings
-}
-
-// OrderBook returns the order book of the portfolio
-func (p Portfolio) Orders() ([]OrderEvent, bool) {
-	return p.orderManager.Orders()
-}
-
-// OrdersBySymbol returns the order of a specific symbol from the order book.
-func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
-	return p.orderManager.OrdersBySymbol(symbol)
-}
-
-// CancelOrder ...
-func (p *Portfolio) CancelOrder(id int) error {
-	p.orderManager.CancelOrder(id)
-	return errors.New("order not found")
-}
-
-// CancelOrder ...
-func (p *Portfolio) CommitOrder(id int) (*Fill, error) {
-	return p.orderManager.CommitOrder(id)
-}
-
-// AddOrder
-func (p *Portfolio) AddOrder(o OrderEvent) error {
-	return p.orderManager.Add(o)
-}
-
-// Subscribes ...
-func (p *Portfolio) Subscribes() map[string]int {
-	return p.orderManager.Subscribes()
-}
-
-// EnableSubscribe ...
-func (p *Portfolio) EnableSubscribe(symbol string) error {
-	return p.orderManager.EnableSubscribe(symbol)
-}
-
-// DisableSubscribe ...
-func (p *Portfolio) DisableSubscribe(symbol string) error {
-	return p.orderManager.DisableSubscribe(symbol)
+	return pos, false
 }

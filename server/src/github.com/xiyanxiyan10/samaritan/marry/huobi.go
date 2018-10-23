@@ -12,7 +12,6 @@ func init() {
 }
 
 type MarryHuobi struct {
-
 }
 
 // Marry
@@ -27,7 +26,7 @@ func (bt *MarryHuobi) Marry(back *goback.Backtest, data goback.DataEvent) (bool,
 	}
 	for _, order := range orders {
 		status := order.Status()
-		if status == goback.OrderCanceled || status == goback.OrderCancelPending ||status == goback.OrderSubmitted{
+		if status == goback.OrderCanceled || status == goback.OrderCancelPending || status == goback.OrderSubmitted {
 			continue
 		}
 		dir := order.Direction()
@@ -50,5 +49,3 @@ func (bt *MarryHuobi) Marry(back *goback.Backtest, data goback.DataEvent) (bool,
 	}
 	return true, nil
 }
-
-

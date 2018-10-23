@@ -39,21 +39,18 @@ type Position struct {
 func (p *Position) Create(fill FillEvent) {
 	p.timestamp = fill.Time()
 	p.symbol = fill.Symbol()
-
 	p.update(fill)
 }
 
 // Update a position on a new fill event
 func (p *Position) Update(fill FillEvent) {
 	p.timestamp = fill.Time()
-
 	p.update(fill)
 }
 
 // UpdateValue updates the current market value of a position
 func (p *Position) UpdateValue(data DataEvent) {
 	p.timestamp = data.Time()
-
 	latest := data.Mid()
 	p.updateValue(latest)
 }

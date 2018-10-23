@@ -13,6 +13,18 @@ const (
 	DATAGRAM_SYMBOL = "symbol"
 )
 
+var (
+	globaldataGram *DataGramMaster
+)
+
+func SetDataGramMaster(m *DataGramMaster) {
+	globaldataGram = m
+}
+
+func GetDataGramMaster() *DataGramMaster {
+	return globaldataGram
+}
+
 // Datagram
 type Datagram struct {
 	Event
@@ -24,9 +36,9 @@ type Datagram struct {
 
 // DatagramInfo
 type DatagramInfo struct {
-	Symbol interface{}
+	Symbol    interface{}
 	Timestamp interface{}
-	Fields map[string]interface{}
+	Fields    map[string]interface{}
 }
 
 // NewDataGram
@@ -47,7 +59,6 @@ func (d *Datagram) Id() string {
 	return d.uid
 }
 
-
 // SetVal
 func (d *Datagram) SetFields(f map[string]interface{}) {
 	d.fields = f
@@ -56,8 +67,8 @@ func (d *Datagram) SetFields(f map[string]interface{}) {
 // Fields
 func (d *Datagram) Fields() map[string]interface{} {
 	vals := make(map[string]interface{})
-	for key, val  := range d.fields{
-		vals[key]=val
+	for key, val := range d.fields {
+		vals[key] = val
 	}
 	return vals
 }
@@ -65,8 +76,8 @@ func (d *Datagram) Fields() map[string]interface{} {
 // Tags
 func (d *Datagram) Tags() map[string]string {
 	vals := make(map[string]string)
-	for key, val  := range d.tags{
-		vals[key]=val
+	for key, val := range d.tags {
+		vals[key] = val
 	}
 	return vals
 }
@@ -93,33 +104,33 @@ func NewDataGramMaster(m map[string]string) *DataGramMaster {
 }
 
 // QueryDB
-func (m *DataGramMaster) QueryDB(cmd string) (infos []DatagramInfo, table []string, err error){
+func (m *DataGramMaster) QueryDB(cmd string) (infos []DatagramInfo, table []string, err error) {
 	data, err := m.influx.QueryDB(cmd)
-	if err != nil{
+	if err != nil {
 		return
 	}
-	if len(data) == 0{
+	if len(data) == 0 {
 		return
 	}
-	if len(data[0].Series) == 0{
+	if len(data[0].Series) == 0 {
 		return
 	}
 	keyMap := make(map[string]int)
-	for key, val := range data[0].Series[0].Columns{
+	for key, val := range data[0].Series[0].Columns {
 		keyMap[val] = key
 	}
-	for key, _ := range keyMap{
-		if key == "symbol"{
+	for key := range keyMap {
+		if key == "symbol" {
 			continue
 		}
 		table = append(table, key)
 	}
 
-	for _, val := range data[0].Series[0].Values{
+	for _, val := range data[0].Series[0].Values {
 		var info DatagramInfo
 		info.Fields = make(map[string]interface{})
 		for name, idx := range keyMap {
-			if name == "symbol"{
+			if name == "symbol" {
 				info.Symbol = val[idx]
 				continue
 			}
@@ -149,7 +160,6 @@ func (m *DataGramMaster) AddPoint(datagram DataGramEvent) error {
 	}
 	return m.influx.WritesPoints(point)
 }
-
 
 // Connect ...
 func (m *DataGramMaster) Connect() error {
