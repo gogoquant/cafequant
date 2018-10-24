@@ -2,12 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/model"
 	"strconv"
 
 	"github.com/hprose/hprose-golang/rpc"
 	"github.com/xiyanxiyan10/samaritan/constant"
-	"github.com/xiyanxiyan10/samaritan/trader"
 )
 
 type datagram struct{}
@@ -32,7 +32,7 @@ func (datagram) List(id string, mode string, ctx rpc.Context) (resp response) {
 		resp.Message = fmt.Sprint(err)
 		return
 	}
-	master := trader.GlobalDataGram()
+	master := gobacktest.GetDataGramMaster()
 	if master == nil{
 		resp.Message = "datagram not found"
 		return
@@ -77,7 +77,7 @@ func (datagram) Delete(id string, ctx rpc.Context) (resp response) {
 		resp.Message = fmt.Sprint(err)
 		return
 	}
-	master := trader.GlobalDataGram()
+	master := gobacktest.GetDataGramMaster()
 	if master == nil{
 		resp.Message = "datagram not found"
 		return

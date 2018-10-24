@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/gobacktest"
+
 	//"log"
 
 	"github.com/hprose/hprose-golang/rpc"
@@ -126,7 +128,7 @@ func (runner) Delete(req model.Trader, ctx rpc.Context) (resp response) {
 		resp.Success = true
 	}
 
-	master := trader.GlobalDataGram()
+	master := gobacktest.GetDataGramMaster()
 	if master == nil{
 		resp.Message = "datagram not found"
 		return

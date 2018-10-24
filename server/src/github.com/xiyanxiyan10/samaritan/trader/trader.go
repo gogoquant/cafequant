@@ -21,11 +21,11 @@ var (
 		constant.Huobi:        api.NewHuobi,
 		constant.CoinBacktest: api.NewCoinBacktest,
 	}
-	globaldataGram *gobacktest.DataGramMaster
+
 )
 
 func init() {
-	globaldataGram = gobacktest.NewDataGramMaster(config.GetConfs())
+	globaldataGram := gobacktest.NewDataGramMaster(config.GetConfs())
 	err := globaldataGram.Connect()
 	if err != nil {
 		log.Errorf("DataGram connect fail (%s)", err.Error())
@@ -38,17 +38,13 @@ func init() {
 		globaldataGram = nil
 		return
 	}
-}
-
-func GlobalDataGram() *gobacktest.DataGramMaster {
-	return globaldataGram
+	gobacktest.SetDataGramMaster(globaldataGram)
 }
 
 // Global ...
 type Global struct {
 	back     *gobacktest.Backtest
 	datagram *gobacktest.DataGramMaster
-	showmode string
 
 	model.Trader
 	Logger model.Logger
@@ -58,22 +54,6 @@ type Global struct {
 	tasks     []task
 	execed    bool
 	statusLog string
-}
-
-// Datagram
-func (g *Global) Datagram() *gobacktest.DataGramMaster {
-	//@ todo bugs here, can't get dategram master
-	return GlobalDataGram()
-}
-
-// SetShowMode
-func (g *Global) SetShowMode(mode string) {
-	g.showmode = mode
-}
-
-// ShowMode
-func (g *Global) ShowMode() string {
-	return g.showmode
 }
 
 // GetTraderStatus ...
@@ -103,20 +83,20 @@ func GetTrader(id int64) (global *Global, err error) {
 
 // initialize ...
 func initialize(id int64) (trader Global, err error) {
-	//Install exchange and portfolio into backtest
-	back := gobacktest.NewBacktest(config.GetConfs())
-	portfolio := gobacktest.NewPortfolio()
-	back.SetPortfolio(portfolio)
-	exchange := gobacktest.NewExchange()
-	back.SetExchange(exchange)
-
-	//back.SetName(fmt.Sprintf("name_%d", id))
-
-	trader.back = back
 
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
 	}
+
+	//Install exchange and portfolio into backtest
+	back := gobacktest.NewBacktest(config.GetConfs())
+	back.SetId(fmt.Sprintf("%d", trader.ID))
+	portfolio := gobacktest.NewPortfolio()
+	back.SetPortfolio(portfolio)
+	exchange := gobacktest.NewExchange()
+	back.SetExchange(exchange)
+	trader.back = back
+
 	err = model.DB.First(&trader.Trader, id).Error
 	if err != nil {
 		return
@@ -280,6 +260,7 @@ func stop(id int64) (err error) {
 	//stop exchange filebeat
 	for _, e := range Executor[id].es {
 		if err = e.Stop(); err != nil {
+			log.Errorf("Exchange (%s) stop fail", e.GetName())
 			return err
 		}
 	}

@@ -53,8 +53,7 @@ func (ob *OrderBook) SetSubscribe(symbol string) error {
 func (ob *OrderBook) Subscribes() mapset.Set {
 	ob.lock.Lock()
 	defer ob.lock.Unlock()
-	ob.subscribes.Clone()
-	return nil
+	return ob.subscribes.Clone()
 }
 
 // Remove an order from the order book, append it to history.

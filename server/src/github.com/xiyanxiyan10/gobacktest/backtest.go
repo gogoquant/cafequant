@@ -34,6 +34,11 @@ type Backtest struct {
 	eventQueue []EventHandler
 }
 
+// SetId
+func (b *Backtest)SetId(id string){
+	b.Id = id
+}
+
 // NewBacktest
 func NewBacktest(m map[string]string) *Backtest {
 	return &Backtest{
@@ -248,6 +253,7 @@ func (t *Backtest) Run2Event() error {
 			return err
 		}
 		if end {
+			log.Infof("stop backtest (%s)", t.Id)
 			return nil
 		}
 		// event in queue found, add to event history
@@ -407,8 +413,6 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 	case *Order:
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
-		//@Todo move to exchange to manger the order
-		//fill, err := t.exchange.OnOrder(event, t.data)
 		t.exchange.AddOrder(event)
 		if err != nil {
 			break
