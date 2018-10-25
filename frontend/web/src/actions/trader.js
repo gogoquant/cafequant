@@ -157,7 +157,7 @@ export function TraderSwitch(req) {
     client.Trader.Switch(req, (resp) => {
       if (resp.success) {
         dispatch(traderSwitchSuccess());
-        setTimeout(()=>{dispatch(TraderList(req.algorithmId)); console.log('refresh traders list');}, 2000);
+        setTimeout(()=>{dispatch(TraderList(req.algorithmId)); console.log('refresh traders list');}, 5000);
         // dispatch(TraderList(req.algorithmId));
       } else {
         dispatch(traderSwitchFailure(resp.message));
