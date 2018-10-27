@@ -44,7 +44,7 @@ type ExchangeHandler interface {
 
 	Stop() error
 	Status() int
-	Start(back *goback.Backtest) error
+	Start() error
 }
 
 // NewCoinBacktest create a coin backtest
@@ -67,10 +67,6 @@ func NewCoinBacktest(opt Option) Exchange {
 	//back.SetMarry(&BtMarry{})
 	back.exchangeHandler = maker(opt)
 	return &back
-}
-
-func (e *BtBacktest) SetGoback(back *goback.Backtest) {
-	e.back = back
 }
 
 // StockMap ...
@@ -322,6 +318,6 @@ func (bt *BtBacktest) Status() int {
 }
 
 // Start
-func (bt *BtBacktest) Start(back *goback.Backtest) error {
-	return bt.exchangeHandler.Start(back)
+func (bt *BtBacktest) Start() error {
+	return bt.exchangeHandler.Start()
 }

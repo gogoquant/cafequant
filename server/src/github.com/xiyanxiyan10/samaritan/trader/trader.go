@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/robertkrimen/otto"
-	"github.com/xiyanxiyan10/gobacktest"
+	goback "github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/api"
 	"github.com/xiyanxiyan10/samaritan/config"
 	"github.com/xiyanxiyan10/samaritan/constant"
@@ -22,11 +22,10 @@ var (
 		constant.Huobi:        api.NewHuobi,
 		constant.CoinBacktest: api.NewCoinBacktest,
 	}
-
 )
 
 func init() {
-	globaldataGram := gobacktest.NewDataGramMaster(config.GetConfs())
+	globaldataGram := goback.NewDataGramMaster(config.GetConfs())
 	err := globaldataGram.Connect()
 	if err != nil {
 		log.Errorf("DataGram connect fail (%s)", err.Error())
@@ -39,13 +38,13 @@ func init() {
 		globaldataGram = nil
 		return
 	}
-	gobacktest.SetDataGramMaster(globaldataGram)
+	goback.SetDataGramMaster(globaldataGram)
 }
 
 // Global ...
 type Global struct {
-	back     *gobacktest.Backtest
-	datagram *gobacktest.DataGramMaster
+	back     *goback.Backtest
+	datagram *goback.DataGramMaster
 
 	model.Trader
 	Logger model.Logger
@@ -112,18 +111,18 @@ func initialize(id int64) (trader Global, err error) {
 	exchangeCheckTable := make(map[string]int)
 	for _, e := range es {
 		exchangeCheckTable[e.Type] += 1
-		if exchangeCheckTable[e.Type] > 1{
+		if exchangeCheckTable[e.Type] > 1 {
 			err = errors.New("a trader init with an exchange twice")
 			return
 		}
 	}
 
 	//Install exchange and portfolio into backtest
-	back := gobacktest.NewBacktest(config.GetConfs())
+	back := goback.NewBacktest(config.GetConfs())
 	back.SetId(fmt.Sprintf("%d", trader.ID))
-	portfolio := gobacktest.NewPortfolio()
+	portfolio := goback.NewPortfolio()
 	back.SetPortfolio(portfolio)
-	exchange := gobacktest.NewExchange()
+	exchange := goback.NewExchange()
 	back.SetExchange(exchange)
 	trader.back = back
 
@@ -137,6 +136,8 @@ func initialize(id int64) (trader Global, err error) {
 	for _, c := range constant.Consts {
 		trader.Ctx.Set(c, c)
 	}
+	//set
+	incomeing := api.NewIncomingHandler(20)
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := api.Option{
@@ -147,6 +148,9 @@ func initialize(id int64) (trader Global, err error) {
 				SecretKey: e.SecretKey,
 				Mode:      trader.Mode,
 				// Ctx:       trader.Ctx,
+				In: incomeing,
+				// share by container
+				Back: trader.back,
 			}
 
 			coinbackmaker, ok := exchangeMaker[constant.CoinBacktest]
@@ -158,15 +162,12 @@ func initialize(id int64) (trader Global, err error) {
 			switch trader.Mode {
 			case constant.MODE_ONLINE:
 				exchange := maker(opt)
-				exchange.SetGoback(trader.back)
 				trader.es = append(trader.es, exchange)
 			case constant.MODE_OFFLINE:
 				exchange := coinbackmaker(opt)
-				exchange.SetGoback(trader.back)
 				trader.es = append(trader.es, exchange)
 			case constant.MODE_HALFLINE:
 				exchange := coinbackmaker(opt)
-				exchange.SetGoback(trader.back)
 				trader.es = append(trader.es, exchange)
 			default:
 				err = fmt.Errorf("unknown mode")
@@ -211,7 +212,7 @@ func run(id int64) (err error) {
 
 	//start exchange filebeats
 	for _, e := range trader.es {
-		if err = e.Start(trader.back); err != nil {
+		if err = e.Start(); err != nil {
 			return err
 		}
 	}
@@ -259,6 +260,7 @@ func getStatus(id int64) (status string) {
 
 // stop ...
 func stop(id int64) (err error) {
+	//start gobacktest and exchange
 
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("Can not found the Trader")

@@ -15,6 +15,10 @@ type Option struct {
 	SecretKey   string //secret key
 	Mode        string //run mode
 	// Ctx       *otto.Otto
+
+	In   *IncomingHandler // get incoming data for api
+	Back *goback.Backtest // get back event support
+
 }
 
 // Exchange interface
@@ -36,10 +40,10 @@ type Exchange interface {
 	SetStockMap(m map[string]string)
 	GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
-	SetGoback(back *goback.Backtest)
 
 	Draw(map[string]interface{}) interface{}
-	Start(back *goback.Backtest) error
+
+	Start() error
 	Stop() error
 	Status() int
 }

@@ -23,7 +23,8 @@ func init() {
 
 // Huobi the exchange struct of huobi.com
 type Huobi struct {
-	back *goback.Backtest
+	back     *goback.Backtest
+	incoming *IncomingHandler
 
 	stockTypeMap     map[string]string
 	status           int
@@ -46,10 +47,14 @@ type Huobi struct {
 // NewHuobi create an exchange struct of huobi.com
 func NewHuobi(opt Option) Exchange {
 	return &Huobi{
+		back:     opt.Back,
+		incoming: opt.In,
+
 		stockTypeMap: map[string]string{
 			"datxbtc": "1",
 			"aaceth":  "1",
 		},
+
 		tradeTypeMap: map[int]string{
 			1: constant.TradeTypeBuy,
 			2: constant.TradeTypeSell,
@@ -88,11 +93,6 @@ func (e *Huobi) StockMap() map[string]string {
 // SetGoback ...
 func (e *Huobi) SetStockMap(m map[string]string) {
 	e.stockTypeMap = m
-}
-
-// SetGoback ...
-func (e *Huobi) SetGoback(back *goback.Backtest) {
-	e.back = back
 }
 
 // Log print something to console
@@ -479,25 +479,29 @@ func (bt *Huobi) Draw(val map[string]interface{}) interface{} {
 }
 
 // Start
-func (bt *Huobi) Start(back *goback.Backtest) error {
+func (bt *Huobi) Start() error {
 	if bt.status == goback.GobackRun {
 		return errors.New("already running")
 	}
 	bt.status = goback.GobackRun
 
-	go bt.Run(back)
-
+	go bt.Run()
 	return nil
 }
 
 // Run
-func (bt *Huobi) Run(back *goback.Backtest) error {
+func (bt *Huobi) Run() error {
+	back := bt.back
+	if back == nil {
+		err := errors.New("run without back")
+		bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
+	}
 	for {
 		if bt.status == goback.GobackPending || bt.status == goback.GobackStop {
 			bt.status = goback.GobackStop
 			break
 		}
-		log.Info("filebeat of huobi")
+		log.Info("Filebeat of huobi")
 		var data goback.DataEvent
 		subscribes := back.Exchange().Subscribes()
 		for _, item := range subscribes.ToSlice() {

@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/xiyanxiyan10/gobacktest"
+	goback "github.com/xiyanxiyan10/gobacktest"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -58,7 +58,7 @@ type OrderBook struct {
 
 // Ticker struct
 type Ticker struct {
-	gobacktest.Event
+	goback.Event
 
 	high   float64 // 最高价
 	mid    float64 // 中间价
@@ -177,4 +177,26 @@ func get(url string) (ret []byte, err error) {
 		err = fmt.Errorf("[GET %s] HTTP Status: %d, Info: %v", url, resp.StatusCode, err)
 	}
 	return ret, err
+}
+
+// IncomingHandler ...
+type IncomingHandler struct {
+	// incomeing data for user api
+	incoming chan goback.EventHandler
+}
+
+// NewIncomingHandler ...
+func NewIncomingHandler(len int) *IncomingHandler {
+	return &IncomingHandler{incoming: make(chan goback.EventHandler, len)}
+}
+
+// Send event
+func (h *IncomingHandler) Send(data goback.EventHandler) {
+	h.incoming <- data
+}
+
+// receiver event
+func (h *IncomingHandler) Receiver() goback.EventHandler {
+	data := <-h.incoming
+	return data
 }
