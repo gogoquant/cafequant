@@ -57,11 +57,6 @@ const (
 	TradeTypeShortClose = "SHORT_CLOSE"
 )
 
-// stock types (will useless)
-const (
-	BTC = "BTC"
-	LTC = "LTC"
-)
 
 // some variables
 var (

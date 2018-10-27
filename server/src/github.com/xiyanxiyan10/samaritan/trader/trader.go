@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"errors"
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/gobacktest"
@@ -83,19 +84,10 @@ func GetTrader(id int64) (global *Global, err error) {
 
 // initialize ...
 func initialize(id int64) (trader Global, err error) {
-
+	//stop if in running
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
 	}
-
-	//Install exchange and portfolio into backtest
-	back := gobacktest.NewBacktest(config.GetConfs())
-	back.SetId(fmt.Sprintf("%d", trader.ID))
-	portfolio := gobacktest.NewPortfolio()
-	back.SetPortfolio(portfolio)
-	exchange := gobacktest.NewExchange()
-	back.SetExchange(exchange)
-	trader.back = back
 
 	err = model.DB.First(&trader.Trader, id).Error
 	if err != nil {
@@ -117,6 +109,24 @@ func initialize(id int64) (trader Global, err error) {
 	if err != nil {
 		return
 	}
+	exchangeCheckTable := make(map[string]int)
+	for _, e := range es {
+		exchangeCheckTable[e.Type] += 1
+		if exchangeCheckTable[e.Type] > 1{
+			err = errors.New("a trader init with an exchange twice")
+			return
+		}
+	}
+
+	//Install exchange and portfolio into backtest
+	back := gobacktest.NewBacktest(config.GetConfs())
+	back.SetId(fmt.Sprintf("%d", trader.ID))
+	portfolio := gobacktest.NewPortfolio()
+	back.SetPortfolio(portfolio)
+	exchange := gobacktest.NewExchange()
+	back.SetExchange(exchange)
+	trader.back = back
+
 	trader.Logger = model.Logger{
 		TraderID:     trader.ID,
 		ExchangeType: "global",
@@ -128,7 +138,6 @@ func initialize(id int64) (trader Global, err error) {
 		trader.Ctx.Set(c, c)
 	}
 	for _, e := range es {
-
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := api.Option{
 				TraderID:  trader.ID,
@@ -146,7 +155,6 @@ func initialize(id int64) (trader Global, err error) {
 				return
 			}
 
-			//@Todo Not allowed  choose one exchange twice
 			switch trader.Mode {
 			case constant.MODE_ONLINE:
 				exchange := maker(opt)
@@ -251,7 +259,6 @@ func getStatus(id int64) (status string) {
 
 // stop ...
 func stop(id int64) (err error) {
-	//start gobacktest and exchange
 
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("Can not found the Trader")
