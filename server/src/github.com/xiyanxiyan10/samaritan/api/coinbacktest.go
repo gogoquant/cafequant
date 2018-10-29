@@ -37,7 +37,6 @@ type BtBacktest struct {
 
 // ExchangeHandler api used for backtest
 type ExchangeHandler interface {
-	GetTicker(stockType string, sizes ...interface{}) interface{}
 	SetLimit(times interface{}) float64
 	GetMinAmount(stock string) float64
 	AutoSleep()
@@ -54,6 +53,7 @@ func NewCoinBacktest(opt Option) Exchange {
 		limit:        10.0,
 		lastSleep:    time.Now().UnixNano(),
 		stockTypeMap: map[string]string{},
+		back:opt.Back,
 	}
 
 	maker, ok := constructor[opt.Type]
@@ -63,8 +63,6 @@ func NewCoinBacktest(opt Option) Exchange {
 	handler := maker(opt)
 	back.SetStockMap(handler.StockMap())
 
-	//back.SetPortfolio(goback.NewPortfolio())
-	//back.SetMarry(&BtMarry{})
 	back.exchangeHandler = maker(opt)
 	return &back
 }
@@ -282,19 +280,11 @@ func (e *BtBacktest) Draw(val map[string]interface{}) interface{} {
 	datagram := goback.NewDataGram()
 	datagram.SetTime(time.Now())
 	datagram.SetFields(val)
+	// set exchange name as the symbol
+	datagram.SetSymbol(e.GetType())
 	datagram.SetId("data_" + strconv.FormatInt(e.option.TraderID, 10))
 	e.back.AddEvent(datagram)
 	return true
-}
-
-// GetTicker get market ticker & depth
-func (e *BtBacktest) GetTicker(stockType string, sizes ...interface{}) interface{} {
-	ticker := e.exchangeHandler.GetTicker(stockType, sizes...)
-	if ticker == false {
-		return false
-	}
-
-	return ticker
 }
 
 // GetRecords get candlestick data

@@ -395,16 +395,6 @@ func (e *Huobi) getTicker(stockType string, sizes ...interface{}) (ticker Ticker
 	return
 }
 
-// GetTicker get market ticker & depth
-func (e *Huobi) GetTicker(stockType string, sizes ...interface{}) interface{} {
-	ticker, err := e.getTicker(stockType, sizes...)
-	if err != nil {
-		e.logger.Log(constant.ERROR, "", 0.0, 0.0, err)
-		return false
-	}
-	return ticker
-}
-
 // GetRecords
 func (e *Huobi) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
 	stockType = strings.ToUpper(stockType)
@@ -492,19 +482,26 @@ func (bt *Huobi) Start() error {
 // Run
 func (bt *Huobi) Run() error {
 	back := bt.back
+	in := bt.incoming
 	if back == nil {
 		err := errors.New("run without back")
 		bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
 	}
 	for {
+		time.Sleep(time.Second * 1)
 		if bt.status == goback.GobackPending || bt.status == goback.GobackStop {
+			log.Info("Filebeat of huobi stop")
 			bt.status = goback.GobackStop
 			break
 		}
 		log.Info("Filebeat of huobi")
 		var data goback.DataEvent
 		subscribes := back.Exchange().Subscribes()
-		for _, item := range subscribes.ToSlice() {
+		items := subscribes.ToSlice()
+		if len(items) <= 0{
+			continue
+		}
+		for _, item := range items {
 			stockType, _ := item.(string)
 			ticker, err := bt.getTicker(stockType)
 			if nil != err {
@@ -512,10 +509,13 @@ func (bt *Huobi) Run() error {
 			}
 			ticker.SetSymbol(stockType)
 			data = &ticker
+			if err := in.Send(data); err !=nil{
+				log.Errorf("send ticker to api fail:(%v)", err)
+			}
 			back.AddEvent(data)
 			time.Sleep(time.Second * 1)
 		}
-		time.Sleep(time.Second * 1)
+
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package trader
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/logger.v1"
 	"reflect"
 	"sync"
 	"time"
@@ -35,6 +36,18 @@ func (g *Global) Sleep(intervals ...interface{}) {
 // Log ...
 func (g *Global) Log(msgs ...interface{}) {
 	g.Logger.Log(constant.INFO, "", 0.0, 0.0, msgs...)
+}
+
+
+// GetTicker get market ticker & depth
+func (g *Global) GetTicker(sizes ...interface{}) interface{} {
+	in := g.incoming
+	if ticker, err := in.SyncReceive(); err != nil{
+		return false
+	}else{
+		log.Info("get ticker from incoming success")
+		return ticker
+	}
 }
 
 // LogProfit ...

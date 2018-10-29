@@ -45,6 +45,7 @@ func init() {
 type Global struct {
 	back     *goback.Backtest
 	datagram *goback.DataGramMaster
+	incoming *api.IncomingHandler
 
 	model.Trader
 	Logger model.Logger
@@ -117,6 +118,8 @@ func initialize(id int64) (trader Global, err error) {
 		}
 	}
 
+	//Install incoming
+	incoming := api.NewIncomingHandler(20)
 	//Install exchange and portfolio into backtest
 	back := goback.NewBacktest(config.GetConfs())
 	back.SetId(fmt.Sprintf("%d", trader.ID))
@@ -125,6 +128,7 @@ func initialize(id int64) (trader Global, err error) {
 	exchange := goback.NewExchange()
 	back.SetExchange(exchange)
 	trader.back = back
+	trader.incoming = incoming
 
 	trader.Logger = model.Logger{
 		TraderID:     trader.ID,
@@ -136,8 +140,8 @@ func initialize(id int64) (trader Global, err error) {
 	for _, c := range constant.Consts {
 		trader.Ctx.Set(c, c)
 	}
-	//set
-	incomeing := api.NewIncomingHandler(20)
+
+
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := api.Option{
@@ -148,12 +152,13 @@ func initialize(id int64) (trader Global, err error) {
 				SecretKey: e.SecretKey,
 				Mode:      trader.Mode,
 				// Ctx:       trader.Ctx,
-				In: incomeing,
-				// share by container
+
+				// shared by container
+				In: incoming,
 				Back: trader.back,
 			}
 
-			coinbackmaker, ok := exchangeMaker[constant.CoinBacktest]
+			wrapper, ok := exchangeMaker[constant.CoinBacktest]
 			if !ok {
 				err = fmt.Errorf("get backtest module fail")
 				return
@@ -164,10 +169,10 @@ func initialize(id int64) (trader Global, err error) {
 				exchange := maker(opt)
 				trader.es = append(trader.es, exchange)
 			case constant.MODE_OFFLINE:
-				exchange := coinbackmaker(opt)
+				exchange := wrapper(opt)
 				trader.es = append(trader.es, exchange)
 			case constant.MODE_HALFLINE:
-				exchange := coinbackmaker(opt)
+				exchange := wrapper(opt)
 				trader.es = append(trader.es, exchange)
 			default:
 				err = fmt.Errorf("unknown mode")

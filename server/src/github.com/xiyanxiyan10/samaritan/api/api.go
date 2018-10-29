@@ -38,7 +38,7 @@ type Exchange interface {
 	SetSubscribe(symbol string) error
 	StockMap() map[string]string
 	SetStockMap(m map[string]string)
-	GetTicker(stockType string, sizes ...interface{}) interface{}
+	//GetTicker(stockType string, sizes ...interface{}) interface{}
 	GetRecords(stockType, period string, sizes ...interface{}) interface{}
 
 	Draw(map[string]interface{}) interface{}

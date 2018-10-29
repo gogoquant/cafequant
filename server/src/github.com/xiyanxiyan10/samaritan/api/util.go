@@ -7,6 +7,8 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
+	"time"
 	"fmt"
 	goback "github.com/xiyanxiyan10/gobacktest"
 	"io/ioutil"
@@ -190,13 +192,68 @@ func NewIncomingHandler(len int) *IncomingHandler {
 	return &IncomingHandler{incoming: make(chan goback.EventHandler, len)}
 }
 
-// Send event
-func (h *IncomingHandler) Send(data goback.EventHandler) {
-	h.incoming <- data
-}
 
 // receiver event
-func (h *IncomingHandler) Receiver() goback.EventHandler {
-	data := <-h.incoming
-	return data
+func (h *IncomingHandler) SyncReceive() (data goback.EventHandler, err error) {
+	data = <-h.incoming
+	return data, nil
 }
+
+// Send event
+func (h *IncomingHandler) SyncSend(data goback.EventHandler) error {
+	h.incoming <- data
+	return nil
+}
+
+// Receive event
+func (h *IncomingHandler) Receive() (event goback.EventHandler, err error) {
+	select {
+	case event = <-h.incoming:
+		err = nil
+		return
+	default:
+		err = errors.New("nonblock receive fail")
+		return
+		}
+
+}
+
+// Send event
+func (h *IncomingHandler) Send(data goback.EventHandler) (err error){
+	select {
+		case h.incoming <- data:
+			err = nil
+			return
+		default:
+			err = errors.New("nonblock send fail")
+			return
+	}
+}
+
+
+// TimeoutReceive event
+func (h *IncomingHandler) TimeoutReceive(sec int64) (event goback.EventHandler, err error) {
+	select {
+	case event = <-h.incoming:
+		err = nil
+		return
+	case <-time.After( time.Second * time.Duration(sec)):
+		err = errors.New("timeout receive fail")
+		return
+	}
+
+}
+
+// TimeoutSend event
+func (h *IncomingHandler) TimeoutSend(data goback.EventHandler, sec int64) (err error){
+	select {
+	case h.incoming <- data:
+		err = nil
+		return
+	case <-time.After( time.Second * time.Duration(sec)):
+		err = errors.New("timeout send fail")
+		return
+	}
+}
+
+
