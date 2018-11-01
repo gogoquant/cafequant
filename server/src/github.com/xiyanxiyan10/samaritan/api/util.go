@@ -8,12 +8,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
-	"time"
 	"fmt"
 	goback "github.com/xiyanxiyan10/gobacktest"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var client = http.DefaultClient
@@ -192,7 +192,6 @@ func NewIncomingHandler(len int) *IncomingHandler {
 	return &IncomingHandler{incoming: make(chan goback.EventHandler, len)}
 }
 
-
 // receiver event
 func (h *IncomingHandler) SyncReceive() (data goback.EventHandler, err error) {
 	data = <-h.incoming
@@ -214,22 +213,21 @@ func (h *IncomingHandler) Receive() (event goback.EventHandler, err error) {
 	default:
 		err = errors.New("nonblock receive fail")
 		return
-		}
+	}
 
 }
 
 // Send event
-func (h *IncomingHandler) Send(data goback.EventHandler) (err error){
+func (h *IncomingHandler) Send(data goback.EventHandler) (err error) {
 	select {
-		case h.incoming <- data:
-			err = nil
-			return
-		default:
-			err = errors.New("nonblock send fail")
-			return
+	case h.incoming <- data:
+		err = nil
+		return
+	default:
+		err = errors.New("nonblock send fail")
+		return
 	}
 }
-
 
 // TimeoutReceive event
 func (h *IncomingHandler) TimeoutReceive(sec int64) (event goback.EventHandler, err error) {
@@ -237,7 +235,7 @@ func (h *IncomingHandler) TimeoutReceive(sec int64) (event goback.EventHandler, 
 	case event = <-h.incoming:
 		err = nil
 		return
-	case <-time.After( time.Second * time.Duration(sec)):
+	case <-time.After(time.Second * time.Duration(sec)):
 		err = errors.New("timeout receive fail")
 		return
 	}
@@ -245,15 +243,13 @@ func (h *IncomingHandler) TimeoutReceive(sec int64) (event goback.EventHandler, 
 }
 
 // TimeoutSend event
-func (h *IncomingHandler) TimeoutSend(data goback.EventHandler, sec int64) (err error){
+func (h *IncomingHandler) TimeoutSend(data goback.EventHandler, sec int64) (err error) {
 	select {
 	case h.incoming <- data:
 		err = nil
 		return
-	case <-time.After( time.Second * time.Duration(sec)):
+	case <-time.After(time.Second * time.Duration(sec)):
 		err = errors.New("timeout send fail")
 		return
 	}
 }
-
-

@@ -484,23 +484,25 @@ func (bt *Huobi) Run() error {
 	back := bt.back
 	in := bt.incoming
 	if back == nil {
-		err := errors.New("run without back")
+		err := errors.New("Run without back")
 		bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
 	}
 	for {
-		time.Sleep(time.Second * 1)
 		if bt.status == goback.GobackPending || bt.status == goback.GobackStop {
 			log.Info("Filebeat of huobi stop")
 			bt.status = goback.GobackStop
 			break
 		}
-		log.Info("Filebeat of huobi")
+		log.Debug("Filebeat of huobi")
+
 		var data goback.DataEvent
 		subscribes := back.Exchange().Subscribes()
 		items := subscribes.ToSlice()
-		if len(items) <= 0{
+		if len(items) <= 0 {
+			time.Sleep(time.Second * 1)
 			continue
 		}
+
 		for _, item := range items {
 			stockType, _ := item.(string)
 			ticker, err := bt.getTicker(stockType)
@@ -509,7 +511,7 @@ func (bt *Huobi) Run() error {
 			}
 			ticker.SetSymbol(stockType)
 			data = &ticker
-			if err := in.Send(data); err !=nil{
+			if err := in.Send(data); err != nil {
 				log.Errorf("send ticker to api fail:(%v)", err)
 			}
 			back.AddEvent(data)

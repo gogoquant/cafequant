@@ -53,7 +53,7 @@ func NewCoinBacktest(opt Option) Exchange {
 		limit:        10.0,
 		lastSleep:    time.Now().UnixNano(),
 		stockTypeMap: map[string]string{},
-		back:opt.Back,
+		back:         opt.Back,
 	}
 
 	maker, ok := constructor[opt.Type]
