@@ -16,6 +16,9 @@ class Algorithm extends React.Component {
     super(props);
 
     this.state = {
+      traderWatchInterval: 30000,
+      traderWatchKeys: [],
+      traderWatchMap: Object.create(null),
       defaultMode: 'simulation',
       messageErrorKey: '',
       selectedRowKeys: [],
@@ -31,6 +34,7 @@ class Algorithm extends React.Component {
     };
 
     this.reload = this.reload.bind(this);
+    this.handleTraderRefresh = this.handleTraderRefresh.bind(this);
     this.onSelectChange = this.onSelectChange.bind(this);
     this.handleTableChange = this.handleTableChange.bind(this);
     this.handleTableExpand = this.handleTableExpand.bind(this);
@@ -103,15 +107,53 @@ class Algorithm extends React.Component {
     }
     pagination.current = newPagination.current;
     this.setState({ pagination });
+
+    // clear time watch
+    for (let i = 0; i < this.state.traderWatchKeys.length; i++) {
+      let watch = this.state.traderWatchMap[this.state.traderWatchKeys[i]];
+      if (watch == null) {
+        continue;
+      }
+      clearInterval(watch);
+    }
+    this.state.traderWatchMap = object.create(null);
+    this.state.traderWatchKeys = [];
     this.reload();
+  }
+
+  handleTraderRefresh(id) {
+    const { dispatch } = this.props;
+    dispatch(TraderList(id));
+    console.log('refresh algorithm:' + id);
   }
 
   handleTableExpand(expanded, algorithm) {
     if (expanded) {
       const { dispatch } = this.props;
-
       dispatch(TraderList(algorithm.id));
+      // add trader watcher
+      let watcher = this.state.traderWatchMap[algorithm.id];
+      if (watcher != null) {
+        return;
+      }
+      this.state.traderWatchKeys.push(algorithm.id);
+      this.state.traderWatchMap[algorithm.id] = setInterval(this.handleTraderRefresh, this.state.traderWatchInterval, algorithm.id);
+    } else {
+      let watcher = this.state.traderWatchMap[algorithm.id];
+      if (watcher == null) {
+        return;
+      }
+
+      for (let i = 0; i < this.state.traderWatchKeys.length; i++) {
+        if (algorithm.id === this.state.traderWatchKeys[i]) {
+          clearInterval(watcher);
+          this.state.traderWatchKeys.splice(i, 1);
+          this.state.traderWatchMap[algorithm.id] = null;
+          return;
+        }
+      }
     }
+
   }
 
   handleDelete() {

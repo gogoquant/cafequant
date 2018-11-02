@@ -475,12 +475,12 @@ func (bt *Huobi) Start() error {
 	}
 	bt.status = goback.GobackRun
 
-	go bt.Run()
+	go bt.run()
 	return nil
 }
 
 // Run
-func (bt *Huobi) Run() error {
+func (bt *Huobi) run() error {
 	back := bt.back
 	in := bt.incoming
 	if back == nil {
