@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"fmt"
-	"github.com/xiyanxiyan10/gobacktest"
-
 	//"log"
-
+	"fmt"
 	"github.com/hprose/hprose-golang/rpc"
+	"github.com/xiyanxiyan10/gobacktest"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/model"
 	"github.com/xiyanxiyan10/samaritan/trader"
@@ -59,7 +57,6 @@ func (runner) Put(req model.Trader, ctx rpc.Context) (resp response) {
 	}
 
 	if self.Level == 0 && len(traders) > 0 {
-		//log.Printf("user level %d add trader fail\n", self.Level)
 		resp.Message = fmt.Sprint("Just one trader with level 0")
 		return
 	}
@@ -129,13 +126,13 @@ func (runner) Delete(req model.Trader, ctx rpc.Context) (resp response) {
 	}
 
 	master := gobacktest.GetDataGramMaster()
-	if master == nil{
+	if master == nil {
 		resp.Message = "datagram not found"
 		return
 	}
-	cmd := fmt.Sprintf("drop measurement  data_%d",req.ID)
+	cmd := fmt.Sprintf("drop measurement  data_%d", req.ID)
 	_, _, err = master.QueryDB(cmd)
-	if err != nil{
+	if err != nil {
 		resp.Message = err.Error()
 		return
 	}

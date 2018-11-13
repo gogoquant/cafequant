@@ -510,6 +510,7 @@ func (bt *Huobi) run() error {
 				bt.logger.Log(constant.ERROR, "", 0.0, 0.0, "run ticker error, ", err)
 			}
 			ticker.SetSymbol(stockType)
+			ticker.SetTime(time.Now())
 			data = &ticker
 			if err := in.Send(data); err != nil {
 				log.Errorf("send ticker to api fail:(%v)", err)

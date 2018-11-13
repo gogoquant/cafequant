@@ -11,6 +11,7 @@ import (
 	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/samaritan/constant"
 	"github.com/xiyanxiyan10/samaritan/conver"
+	goback "github.com/xiyanxiyan10/gobacktest"
 )
 
 type task struct {
@@ -38,13 +39,30 @@ func (g *Global) Log(msgs ...interface{}) {
 	g.Logger.Log(constant.INFO, "", 0.0, 0.0, msgs...)
 }
 
+// filterIncoming ...
+func (g *Global) filterIncoming(data goback.EventHandler) bool {
+	now := time.Now()
+	after := now.Sub(data.Time())
+	if after.Seconds() > 1{
+			return true
+	}
+	return false
+
+}
+
 
 // GetTicker get market ticker & depth
 func (g *Global) GetTicker(sizes ...interface{}) interface{} {
 	in := g.incoming
-	if ticker, err := in.SyncReceive(); err != nil{
-		return false
-	}else{
+	for ;; {
+		ticker, err := in.SyncReceive()
+		if err != nil {
+			return false
+		}
+		if g.filterIncoming(ticker) {
+			log.Info("Ignore timeout data")
+			continue
+		}
 		log.Info("get ticker from incoming success")
 		return ticker
 	}

@@ -84,6 +84,7 @@ class Algorithm extends React.Component {
   }
 
   componentWillUnmount() {
+    this.cleanWatch();
     notification.destroy();
   }
 
@@ -97,17 +98,7 @@ class Algorithm extends React.Component {
     this.setState({ selectedRowKeys });
   }
 
-  handleTableChange(newPagination, filters, sorter) {
-    const { pagination } = this.state;
-
-    if (sorter.field) {
-      this.order = `${sorter.field} ${sorter.order.replace('end', '')}`;
-    } else {
-      this.order = 'id';
-    }
-    pagination.current = newPagination.current;
-    this.setState({ pagination });
-
+  cleanWatch() {
     // clear time watch
     for (let i = 0; i < this.state.traderWatchKeys.length; i++) {
       let watch = this.state.traderWatchMap[this.state.traderWatchKeys[i]];
@@ -118,6 +109,20 @@ class Algorithm extends React.Component {
     }
     this.state.traderWatchMap = object.create(null);
     this.state.traderWatchKeys = [];
+  }
+
+  handleTableChange(newPagination, filters, sorter) {
+    const { pagination } = this.state;
+
+    if (sorter.field) {
+      this.order = `${sorter.field} ${sorter.order.replace('end', '')}`;
+    } else {
+      this.order = 'id';
+    }
+    pagination.current = newPagination.current;
+    this.setState({ pagination });
+    this.cleanWatch();
+
     this.reload();
   }
 
