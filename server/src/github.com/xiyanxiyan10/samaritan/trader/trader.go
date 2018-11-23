@@ -141,7 +141,6 @@ func initialize(id int64) (trader Global, err error) {
 		trader.Ctx.Set(c, c)
 	}
 
-
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := api.Option{
@@ -154,7 +153,7 @@ func initialize(id int64) (trader Global, err error) {
 				// Ctx:       trader.Ctx,
 
 				// shared by container
-				In: incoming,
+				In:   incoming,
 				Back: trader.back,
 			}
 
@@ -265,7 +264,7 @@ func getStatus(id int64) (status string) {
 
 // stop ...
 func stop(id int64) (err error) {
-	//start gobacktest and exchange
+	// stop gobacktest and exchange
 
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("Can not found the Trader")
