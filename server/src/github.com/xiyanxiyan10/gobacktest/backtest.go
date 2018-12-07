@@ -1,10 +1,33 @@
 package gobacktest
 
 import (
-	"errors"
+	"fmt"
+	"github.com/robertkrimen/otto"
 	"gopkg.in/logger.v1"
-	//"github.com/xiyanxiyan10/samaritan/api"
 )
+
+
+// Back Manager handler for back
+type Back interface {
+	Name() string
+	SetName(name string)
+	Start() (err error)
+	Status() (int64)
+	Stop() (err error)
+
+	AddEvent(e EventHandler) error
+	OrdersBySymbol(stockType string) ([]OrderEvent, bool)
+	CancelOrder(id int) error
+	Cmd(cmd string) error
+}
+
+// BackApi api for back scripts
+type BackApi interface {
+	CommitOrder(id int) (error)
+	EventActive() (err error, status string, data DataEvent)
+}
+
+var errHalt       = fmt.Errorf("HALT")
 
 // Reseter provides a resting interface.
 type Reseter interface {
@@ -18,7 +41,7 @@ type Backtest struct {
 	config map[string]string
 
 	eventCh chan EventHandler
-	status  int
+	status  int64
 	name    string
 
 	symbols []string
@@ -32,6 +55,46 @@ type Backtest struct {
 	marries   map[string]MarryHandler
 
 	eventQueue []EventHandler
+
+	Ctx    *otto.Otto
+}
+
+// initialize ...
+func (back *Backtest)initialize() (err error) {
+	back.Ctx = otto.New()
+	back.Ctx.Interrupt = make(chan func(), 1)
+	back.Ctx.Set("Exchange", BackApi(back))
+	return
+}
+
+// Start ...
+func (back *Backtest)Start() (err error) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil && err != errHalt {
+				log.Error(err)
+			}
+			if exit, err := back.Ctx.Get("exit"); err == nil && exit.IsFunction() {
+				if _, err := exit.Call(exit); err != nil {
+					log.Error(err)
+				}
+			}
+			back.status = 0
+		}()
+
+		back.status = 1
+		if _, err := back.Ctx.Run("javascripts"); err != nil {
+			log.Error(err)
+		}
+		if main, err := back.Ctx.Get("main"); err != nil || !main.IsFunction() {
+			log.Error("Can not get the main function")
+		} else {
+			if _, err := main.Call(main); err != nil {
+				log.Error(err)
+			}
+		}
+	}()
+	return
 }
 
 // SetId
@@ -39,13 +102,30 @@ func (b *Backtest)SetId(id string){
 	b.Id = id
 }
 
-// NewBacktest
-func NewBacktest(m map[string]string) *Backtest {
-	return &Backtest{
+// Status ...
+func (back *Backtest)Status() (int64) {
+	return back.status
+}
+
+// Stop ...
+func (back *Backtest)Stop() (err error) {
+	back.Ctx.Interrupt <- func() { panic(errHalt) }
+	return
+}
+
+// NewBackTest
+func NewBackTest(m map[string]string) Back {
+	bt := Backtest{
 		eventCh: make(chan EventHandler, 20),
 		marries: make(map[string]MarryHandler),
-		status:  GobackStop,
+		status:  0,
 		config:  m,
+	}
+	err := bt.initialize()
+	if err != nil{
+		return nil
+	}else{
+		return &bt
 	}
 }
 
@@ -59,29 +139,13 @@ func (e *Backtest) SetName(name string) {
 	e.name = name
 }
 
-// SetMarry
-func (t *Backtest) SetMarry(name string, handler MarryHandler) {
-	t.marries[name] = handler
-}
-
-// Marries
-func (t *Backtest) Marries() map[string]MarryHandler {
-	return t.marries
-}
-
-// Marry
-func (t *Backtest) Marry(stockType string) (MarryHandler, bool) {
-	handler, ok := t.marries[stockType]
-	return handler, ok
-}
-
 // CommitOrder ...
-func (t *Backtest) CommitOrder(id int) (*Fill, error) {
+func (t *Backtest) CommitOrder(id int) (error) {
 	fill, err := t.exchange.CommitOrder(id)
 	if err == nil && fill != nil {
 		t.AddEvent(fill)
 	}
-	return fill, err
+	return err
 }
 
 // OrdersBySymbol ...
@@ -94,32 +158,11 @@ func (t *Backtest) CancelOrder(id int) error {
 	return t.exchange.CancelOrder(id)
 }
 
-// Start
-func (t *Backtest) Start() error {
-	if t.status == GobackRun {
-		return errors.New("already running")
-	}
-	t.status = GobackRun
-
-	// start goback
-	go t.Run2Event()
-
-	return nil
-}
-
-// Stop
-func (t *Backtest) Stop() error {
-	if t.status == GobackStop || t.status == GobackPending {
-		return errors.New("already stop or pending")
-
-	}
-
-	//stop gobacktest
-	t.status = GobackPending
-	var cmd Cmd
-	cmd.SetCmd("stop")
-	t.AddEvent(&cmd)
-
+// Cmd ...
+func (t *Backtest) Cmd(cmd string) error {
+	var event Cmd
+	event.SetCmd(cmd)
+	t.AddEvent(&event)
 	return nil
 }
 
@@ -179,7 +222,7 @@ func (t *Backtest) Exchange() ExchangeHandler {
 	return t.exchange
 }
 
-// Reset the backtest into a clean state with loaded data.
+// Reset ...
 func (t *Backtest) Reset() error {
 	t.eventQueue = nil
 	t.data.Reset()
@@ -201,65 +244,10 @@ func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
 }
 
-// Run starts the backtest.
-func (t *Backtest) Run() error {
-	// setup before the backtest runs
-	err := t.setup()
-	if err != nil {
-		return err
-	}
-
-	// poll event queue
-	for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
-		// no event in the queue
-		if !ok {
-			// poll data stream
-			data, ok := t.data.Next()
-			// no more data, exit event loop
-			if !ok {
-				break
-			}
-			// found data event, add to event stream
-			t.eventQueue = append(t.eventQueue, data)
-			// start new event cycle
-			continue
-		}
-
-		// processing event
-		err := t.eventLoop(event)
-		if err != nil {
-			return err
-		}
-		// event in queue found, add to event history
-		t.statistic.TrackEvent(event)
-	}
-
-	// teardown at the end of the backtest
-	err = t.teardown()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// Run starts the backtest to get data tick
-func (t *Backtest) Run2Event() error {
-	// poll event queue
-	for {
-		event := <-t.eventCh
-		//log.Infof("Get event:")
-		err, end := t.eventLoop2Event(event)
-		if err != nil {
-			return err
-		}
-		if end {
-			log.Infof("stop backtest (%s)", t.Id)
-			return nil
-		}
-		// event in queue found, add to event history
-		//t.statistic.TrackEvent(event)
-	}
-	return nil
+// Run
+func (t *Backtest) EventActive() (err error, status string, data DataEvent){
+	event := <-t.eventCh
+	return  t.eventActive(event)
 }
 
 // setup runs at the beginning of the backtest to perfom preparing operations.
@@ -309,62 +297,14 @@ func (t *Backtest) AddEvent(e EventHandler) error {
 	return nil
 }
 
-// eventLoop directs the different events to their handler.
-func (t *Backtest) eventLoop(e EventHandler) error {
-	// type check for event type
-	/*
-		switch event := e.(type) {
-
-		case DataEvent:
-			// update portfolio to the last known price data
-			t.portfolio.Update(event)
-			// update statistics
-			t.statistic.Update(event, t.portfolio)
-			// check if any orders are filled before proceding
-			t.exchange.OnData(event)
-
-			// run strategy with this data event
-			signals, err := t.strategy.OnData(event)
-			if err != nil {
-				break
-			}
-			for _, signal := range signals {
-				t.eventQueue = append(t.eventQueue, signal)
-			}
-
-		case *Signal:
-			order, err := t.portfolio.OnSignal(event, t.data)
-			if err != nil {
-				break
-			}
-			t.eventQueue = append(t.eventQueue, order)
-
-		case *Order:
-			fill, err := t.exchange.OnOrder(event, t.data)
-			if err != nil {
-				break
-			}
-			t.eventQueue = append(t.eventQueue, fill)
-
-		case *Fill:
-			transaction, err := t.portfolio.OnFill(event, t.data)
-			if err != nil {
-				break
-			}
-			t.statistic.TrackTransaction(transaction)
-		}
-	*/
-	return nil
-
-}
-
-// eventLoop2Event directs the different events to their handler.
-func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
-	end = false
+// eventActive directs the different events to their handler.
+func (t *Backtest) eventActive(e EventHandler) (err error, status string, data DataEvent) {
+	status = "continue"
 
 	// type check for event type
 	switch event := e.(type) {
 
+	// move to samaritan
 	case DataGramEvent:
 		log.Infof("Get dataGram event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 
@@ -374,34 +314,26 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 
 		err = GetDataGramMaster().AddDataGram(event)
 		if err != nil {
-			end = true
+			status = "error"
 		}
-		end = false
+		status = "continue"
 		break
 
 	case CmdEvent:
 		log.Infof("Get cmd event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
-		t.status = GobackStop
 		err = nil
-		end = true
+		status = "end"
 		break
 
 	case DataEvent:
 		log.Infof("Get data event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+		return nil, "data", event
 		// update portfolio to the last known price data
 		//t.portfolio.Update(event)
 		// update statistics
 		//t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before proceding
 		//t.exchange.OnData(event)
-		// marry all orders by stockType
-		marry, ok := t.Marry(event.Symbol())
-		if ok {
-			_, err := marry.Marry(t, event)
-			if err != nil {
-				return err, true
-			}
-		}
 
 	case *Signal:
 		log.Infof("Get signal event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
@@ -426,7 +358,6 @@ func (t *Backtest) eventLoop2Event(e EventHandler) (err error, end bool) {
 		if err != nil {
 			break
 		}
-
 		//t.AddEvent(transaction)
 	}
 	return
