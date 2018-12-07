@@ -48,11 +48,9 @@ type Backtest struct {
 
 	data DataHandler
 
-	strategy  StrategyHandler
 	portfolio PortfolioHandler
 	exchange  ExchangeHandler
 	statistic StatisticHandler
-	marries   map[string]MarryHandler
 
 	eventQueue []EventHandler
 
