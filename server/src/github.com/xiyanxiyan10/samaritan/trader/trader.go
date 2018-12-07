@@ -8,7 +8,6 @@ import (
 	"github.com/xiyanxiyan10/samaritan/api"
 	"github.com/xiyanxiyan10/samaritan/config"
 	"github.com/xiyanxiyan10/samaritan/constant"
-	"github.com/xiyanxiyan10/samaritan/marry"
 	"github.com/xiyanxiyan10/samaritan/model"
 	"gopkg.in/logger.v1"
 	"time"
@@ -185,11 +184,6 @@ func initialize(id int64) (trader Global, err error) {
 		return
 	}
 
-	//Register marry handler
-	marryStore := marry.MarryStore()
-	for stockType, Handler := range marryStore {
-		trader.back.SetMarry(stockType, Handler)
-	}
 
 	trader.Ctx.Set("Global", &trader)
 	trader.Ctx.Set("G", &trader)
