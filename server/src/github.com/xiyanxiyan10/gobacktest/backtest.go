@@ -15,6 +15,7 @@ type Back interface {
 	Status() (int64)
 	Stop() (err error)
 
+	SetScripts(scripts string)
 	AddEvent(e EventHandler) error
 	OrdersBySymbol(stockType string) ([]OrderEvent, bool)
 	CancelOrder(id int) error
@@ -53,6 +54,7 @@ type Backtest struct {
 	statistic StatisticHandler
 
 	eventQueue []EventHandler
+	scripts string
 
 	Ctx    *otto.Otto
 }
@@ -63,6 +65,11 @@ func (back *Backtest)initialize() (err error) {
 	back.Ctx.Interrupt = make(chan func(), 1)
 	back.Ctx.Set("Exchange", BackApi(back))
 	return
+}
+
+// SetScripts ...
+func (back *Backtest)SetScripts(scripts string){
+	back.scripts = scripts
 }
 
 // Start ...
@@ -81,7 +88,7 @@ func (back *Backtest)Start() (err error) {
 		}()
 
 		back.status = 1
-		if _, err := back.Ctx.Run("javascripts"); err != nil {
+		if _, err := back.Ctx.Run(back.scripts); err != nil {
 			log.Error(err)
 		}
 		if main, err := back.Ctx.Get("main"); err != nil || !main.IsFunction() {
@@ -115,7 +122,6 @@ func (back *Backtest)Stop() (err error) {
 func NewBackTest(m map[string]string) Back {
 	bt := Backtest{
 		eventCh: make(chan EventHandler, 20),
-		marries: make(map[string]MarryHandler),
 		status:  0,
 		config:  m,
 	}
@@ -191,11 +197,6 @@ func (t *Backtest) SetData(data DataHandler) {
 	t.data = data
 }
 
-// SetStrategy sets the strategy provider to be used within the backtest.
-func (t *Backtest) SetStrategy(strategy StrategyHandler) {
-	t.strategy = strategy
-}
-
 // SetPortfolio sets the portfolio provider to be used within the backtest.
 func (t *Backtest) SetPortfolio(portfolio PortfolioHandler) {
 	t.portfolio = portfolio
@@ -252,18 +253,6 @@ func (t *Backtest) EventActive() (err error, status string, data DataEvent){
 func (t *Backtest) setup() error {
 	// before first run, set portfolio cash
 	t.portfolio.SetCash(t.portfolio.InitialCash())
-
-	// make the data known to the strategy
-	err := t.strategy.SetData(t.data)
-	if err != nil {
-		return err
-	}
-
-	// make the portfolio known to the strategy
-	err = t.strategy.SetPortfolio(t.portfolio)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
