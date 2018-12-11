@@ -54,6 +54,7 @@ type SignalEvent interface {
 	Quantifier
 }
 
+/*
 // DataGramEvent ...
 type DataGramEvent interface {
 	EventHandler
@@ -66,6 +67,7 @@ type DataGramEvent interface {
 	Fields() map[string]interface{}
 	Tags() map[string]string
 }
+*/
 
 // OrderEvent declares the order event interface.
 type OrderEvent interface {
@@ -86,8 +88,17 @@ type CmdEvent interface {
 	CmdHandler
 }
 
+type ResultEvent interface {
+	EventHandler
+	ResultHandler
+}
+
 type CmdHandler interface {
 	Cmd() string
+}
+
+type ResultHandler interface {
+	Data() interface{}
 }
 
 // Quantifier defines a qty interface.

@@ -12,6 +12,7 @@ const (
 	OrderFilled
 	OrderCanceled
 	OrderCancelPending
+	OrdersBySymbol
 	OrderInvalid
 )
 

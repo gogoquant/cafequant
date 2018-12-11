@@ -41,7 +41,9 @@ type Backtest struct {
 
 	config map[string]string
 
-	eventCh chan EventHandler
+	in chan EventHandler
+	out chan ResultEvent
+
 	status  int64
 	name    string
 
@@ -121,7 +123,8 @@ func (back *Backtest)Stop() (err error) {
 // NewBackTest
 func NewBackTest(m map[string]string) Back {
 	bt := Backtest{
-		eventCh: make(chan EventHandler, 20),
+		in: make(chan EventHandler, 50),
+		out: make(chan ResultEvent, 50),
 		status:  0,
 		config:  m,
 	}
@@ -245,7 +248,7 @@ func (t *Backtest) Stats() StatisticHandler {
 
 // GetEvent process the event before return the data event back to user' scripts
 func (t *Backtest) GetEvent() (err error, status string, data DataEvent){
-	event := <-t.eventCh
+	event := <-t.in
 	return  t.eventActive(event)
 }
 
@@ -280,7 +283,7 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 
 // AddEvent
 func (t *Backtest) AddEvent(e EventHandler) error {
-	t.eventCh <- e
+	t.in <- e
 	return nil
 }
 
@@ -317,6 +320,18 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 
 	case *Order:
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
+
+		if event.status == OrdersBySymbol{
+			orders, _ := t.exchange.OrdersBySymbol(event.symbol)
+			var result Result
+			result.SetTime(event.timestamp)
+			result.SetData(orders)
+			var rs ResultEvent
+			rs = &result
+			t.out <- ResultEvent(rs)
+			break
+		}
+
 		t.exchange.AddOrder(event)
 		if err != nil {
 			break
