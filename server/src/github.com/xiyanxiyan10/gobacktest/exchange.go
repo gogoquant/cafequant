@@ -1,7 +1,5 @@
 package gobacktest
 
-import "github.com/deckarep/golang-set"
-
 // ExecutionHandler is the basic interface for executing orders
 type ExchangeHandler interface {
 	Booker
@@ -79,12 +77,3 @@ func (p *Exchange) AddOrder(o OrderEvent) error {
 	return p.orderManager.Add(o)
 }
 
-//  SetSubscribes
-func (p *Exchange) SetSubscribe(symbol string) error {
-	return p.orderManager.SetSubscribe(symbol)
-}
-
-// Subscribes
-func (p *Exchange) Subscribes() mapset.Set {
-	return p.orderManager.Subscribes()
-}
