@@ -2,7 +2,6 @@ package gobacktest
 
 import (
 	"fmt"
-	"github.com/deckarep/golang-set"
 	"sort"
 	"sync"
 )
@@ -10,7 +9,6 @@ import (
 func NewOrderBook() OrderBook {
 	return OrderBook{
 		counter:    0,
-		subscribes: mapset.NewSet(),
 		orders:     []OrderEvent{},
 		history:    []OrderEvent{},
 	}
@@ -20,7 +18,6 @@ func NewOrderBook() OrderBook {
 type OrderBook struct {
 	lock       sync.Mutex
 	counter    int
-	subscribes mapset.Set
 	orders     []OrderEvent
 	history    []OrderEvent
 }
@@ -39,21 +36,6 @@ func (ob *OrderBook) Add(order OrderEvent) error {
 
 	//ob.EnableSubscribe(order.Symbol())
 	return nil
-}
-
-// SetSubscribes
-func (ob *OrderBook) SetSubscribe(symbol string) error {
-	ob.lock.Lock()
-	defer ob.lock.Unlock()
-	ob.subscribes.Add(symbol)
-	return nil
-}
-
-// Subscribes
-func (ob *OrderBook) Subscribes() mapset.Set {
-	ob.lock.Lock()
-	defer ob.lock.Unlock()
-	return ob.subscribes.Clone()
 }
 
 // Remove an order from the order book, append it to history.

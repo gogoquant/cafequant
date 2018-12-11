@@ -18,8 +18,6 @@ type Booker interface {
 	CommitOrder(id int) (*Fill, error)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
 	CancelOrder(id int) error
-	SetSubscribe(symbol string) error
-	Subscribes() mapset.Set
 }
 
 // Exchange is a basic execution handler implementation
