@@ -6,6 +6,7 @@ import (
 	"gopkg.in/logger.v1"
 )
 
+var errHalt       = fmt.Errorf("HALT")
 
 // Back Manager handler for back
 type Back interface {
@@ -14,21 +15,20 @@ type Back interface {
 	Start() (err error)
 	Status() (int64)
 	Stop() (err error)
-
 	SetScripts(scripts string)
+
 	AddEvent(e EventHandler) error
 	OrdersBySymbol(stockType string) ([]OrderEvent, bool)
 	CancelOrder(id int) error
 	Cmd(cmd string) error
+
 }
 
-// BackApi api for back scripts
-type BackApi interface {
+// ScriptsApi api for back scripts
+type ScriptsApi interface {
 	CommitOrder(id int) (error)
-	EventActive() (err error, status string, data DataEvent)
+	GetEvent() (err error, status string, data DataEvent)
 }
-
-var errHalt       = fmt.Errorf("HALT")
 
 // Reseter provides a resting interface.
 type Reseter interface {
@@ -63,7 +63,7 @@ type Backtest struct {
 func (back *Backtest)initialize() (err error) {
 	back.Ctx = otto.New()
 	back.Ctx.Interrupt = make(chan func(), 1)
-	back.Ctx.Set("Exchange", BackApi(back))
+	back.Ctx.Set("Exchange", ScriptsApi(back))
 	return
 }
 
@@ -243,8 +243,8 @@ func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
 }
 
-// Run
-func (t *Backtest) EventActive() (err error, status string, data DataEvent){
+// GetEvent process the event before return the data event back to user' scripts
+func (t *Backtest) GetEvent() (err error, status string, data DataEvent){
 	event := <-t.eventCh
 	return  t.eventActive(event)
 }
@@ -290,21 +290,6 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 
 	// type check for event type
 	switch event := e.(type) {
-
-	// move to samaritan
-	case DataGramEvent:
-		log.Infof("Get dataGram event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
-
-		if GetDataGramMaster() == nil {
-			log.Infof("dataGram master not found")
-		}
-
-		err = GetDataGramMaster().AddDataGram(event)
-		if err != nil {
-			status = "error"
-		}
-		status = "continue"
-		break
 
 	case CmdEvent:
 		log.Infof("Get cmd event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())

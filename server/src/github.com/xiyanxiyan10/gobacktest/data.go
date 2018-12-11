@@ -133,11 +133,11 @@ func (d *Data) updateList(event DataEvent) {
 type DataEvent interface {
 	EventHandler
 	//MetricHandler
-	Pricer
+	Price
 }
 
-// Pricer defines the handling otf the latest Price Information
-type Pricer interface {
+// Price defines the handling otf the latest Price Information
+type Price interface {
 	Mid() float64
 	Low() float64
 	High() float64
@@ -156,51 +156,3 @@ type BarEvent interface {
 	DataEvent
 }
 
-// Bar declares a data event for an OHLCV bar.
-type Bar struct {
-	Event
-	Metric
-	Open     float64
-	High     float64
-	Low      float64
-	Close    float64
-	AdjClose float64
-	Volume   int64
-}
-
-// Price returns the close price of the bar event.
-func (b Bar) Price() float64 {
-	return b.Close
-}
-
-// TickEvent declares a bar event interface.
-type TickEvent interface {
-	DataEvent
-	Spreader
-}
-
-// Spreader declares functionality to get spre spread of a tick.
-type Spreader interface {
-	Spread() float64
-}
-
-// Tick declares a data event for a price tick.
-type Tick struct {
-	Event
-	Metric
-	Bid       float64
-	Ask       float64
-	BidVolume int64
-	AskVolume int64
-}
-
-// Price returns the middle of Bid and Ask.
-func (t Tick) Price() float64 {
-	latest := (t.Bid + t.Ask) / float64(2)
-	return latest
-}
-
-// Spread returns the difference or spread of Bid and Ask.
-func (t Tick) Spread() float64 {
-	return t.Bid - t.Ask
-}
