@@ -18,7 +18,6 @@ func (c *Cmd) Cmd() string {
 	return c.cmd
 }
 
-
 func (r *Result) SetData(data interface{}) {
 	r.data = data
 }

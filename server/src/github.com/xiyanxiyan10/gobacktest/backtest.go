@@ -1,33 +1,34 @@
 package gobacktest
 
 import (
+	"errors"
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"gopkg.in/logger.v1"
+	"time"
 )
 
-var errHalt       = fmt.Errorf("HALT")
+var errHalt = fmt.Errorf("HALT")
 
 // Back Manager handler for back
 type Back interface {
 	Name() string
 	SetName(name string)
 	Start() (err error)
-	Status() (int64)
+	Status() int64
 	Stop() (err error)
 	SetScripts(scripts string)
 
 	AddEvent(e EventHandler) error
-	OrdersBySymbol(stockType string) ([]OrderEvent, bool)
-	CancelOrder(id int) error
-	Cmd(cmd string) error
+	GetEvent(e EventHandler) (ResultEvent, error)
 
+	Cmd(cmd string) error
 }
 
 // ScriptsApi api for back scripts
 type ScriptsApi interface {
-	CommitOrder(id int) (error)
-	GetEvent() (err error, status string, data DataEvent)
+	CommitOrder(id int) error
+	ProcessEvent() (err error, status string, data DataEvent)
 }
 
 // Reseter provides a resting interface.
@@ -41,11 +42,11 @@ type Backtest struct {
 
 	config map[string]string
 
-	in chan EventHandler
+	in  chan EventHandler
 	out chan ResultEvent
 
-	status  int64
-	name    string
+	status int64
+	name   string
 
 	symbols []string
 
@@ -56,13 +57,23 @@ type Backtest struct {
 	statistic StatisticHandler
 
 	eventQueue []EventHandler
-	scripts string
+	scripts    string
 
-	Ctx    *otto.Otto
+	Ctx *otto.Otto
+}
+
+func (back *Backtest) GetEvent(e EventHandler) (ResultEvent, error) {
+	select {
+	case data, _ := <-back.out:
+		return data, nil
+	case <-time.After(1 * time.Second):
+		return nil, errors.New("Timeout")
+	}
+
 }
 
 // initialize ...
-func (back *Backtest)initialize() (err error) {
+func (back *Backtest) initialize() (err error) {
 	back.Ctx = otto.New()
 	back.Ctx.Interrupt = make(chan func(), 1)
 	back.Ctx.Set("Exchange", ScriptsApi(back))
@@ -70,12 +81,12 @@ func (back *Backtest)initialize() (err error) {
 }
 
 // SetScripts ...
-func (back *Backtest)SetScripts(scripts string){
+func (back *Backtest) SetScripts(scripts string) {
 	back.scripts = scripts
 }
 
 // Start ...
-func (back *Backtest)Start() (err error) {
+func (back *Backtest) Start() (err error) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil && err != errHalt {
@@ -105,17 +116,17 @@ func (back *Backtest)Start() (err error) {
 }
 
 // SetId
-func (b *Backtest)SetId(id string){
+func (b *Backtest) SetId(id string) {
 	b.Id = id
 }
 
 // Status ...
-func (back *Backtest)Status() (int64) {
+func (back *Backtest) Status() int64 {
 	return back.status
 }
 
 // Stop ...
-func (back *Backtest)Stop() (err error) {
+func (back *Backtest) Stop() (err error) {
 	back.Ctx.Interrupt <- func() { panic(errHalt) }
 	return
 }
@@ -123,15 +134,15 @@ func (back *Backtest)Stop() (err error) {
 // NewBackTest
 func NewBackTest(m map[string]string) Back {
 	bt := Backtest{
-		in: make(chan EventHandler, 50),
-		out: make(chan ResultEvent, 50),
-		status:  0,
-		config:  m,
+		in:     make(chan EventHandler, 50),
+		out:    make(chan ResultEvent, 50),
+		status: 0,
+		config: m,
 	}
 	err := bt.initialize()
-	if err != nil{
+	if err != nil {
 		return nil
-	}else{
+	} else {
 		return &bt
 	}
 }
@@ -147,22 +158,12 @@ func (e *Backtest) SetName(name string) {
 }
 
 // CommitOrder ...
-func (t *Backtest) CommitOrder(id int) (error) {
+func (t *Backtest) CommitOrder(id int) error {
 	fill, err := t.exchange.CommitOrder(id)
 	if err == nil && fill != nil {
 		t.AddEvent(fill)
 	}
 	return err
-}
-
-// OrdersBySymbol ...
-func (t *Backtest) OrdersBySymbol(stockType string) ([]OrderEvent, bool) {
-	return t.exchange.OrdersBySymbol(stockType)
-}
-
-// CancelOneOrder ...
-func (t *Backtest) CancelOrder(id int) error {
-	return t.exchange.CancelOrder(id)
 }
 
 // Cmd ...
@@ -246,10 +247,10 @@ func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
 }
 
-// GetEvent process the event before return the data event back to user' scripts
-func (t *Backtest) GetEvent() (err error, status string, data DataEvent){
+// ProcessEvent process the event before return the data event back to user' scripts
+func (t *Backtest) ProcessEvent() (err error, status string, data DataEvent) {
 	event := <-t.in
-	return  t.eventActive(event)
+	return t.eventActive(event)
 }
 
 // setup runs at the beginning of the backtest to perfom preparing operations.
@@ -321,7 +322,7 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 	case *Order:
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 
-		if event.status == OrdersBySymbol{
+		if event.status == OrdersBySymbol {
 			orders, _ := t.exchange.OrdersBySymbol(event.symbol)
 			var result Result
 			result.SetTime(event.timestamp)
@@ -329,6 +330,11 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 			var rs ResultEvent
 			rs = &result
 			t.out <- ResultEvent(rs)
+			break
+		}
+
+		if event.status == OrderCancel {
+			t.exchange.CancelOrder(event.id)
 			break
 		}
 

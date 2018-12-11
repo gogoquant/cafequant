@@ -155,4 +155,3 @@ type Price interface {
 type BarEvent interface {
 	DataEvent
 }
-

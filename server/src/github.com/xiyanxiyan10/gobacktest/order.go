@@ -6,12 +6,15 @@ type OrderStatus int
 // different types of order status
 const (
 	OrderNone OrderStatus = iota // 0
-	OrderNew
-	OrderSubmitted
+
 	OrderPartiallyFilled
 	OrderFilled
 	OrderCanceled
 	OrderCancelPending
+
+	OrderNew
+	OrderSubmitted
+	OrderCancel
 	OrdersBySymbol
 	OrderInvalid
 )

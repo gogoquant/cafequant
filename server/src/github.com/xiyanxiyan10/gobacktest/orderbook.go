@@ -8,18 +8,18 @@ import (
 
 func NewOrderBook() OrderBook {
 	return OrderBook{
-		counter:    0,
-		orders:     []OrderEvent{},
-		history:    []OrderEvent{},
+		counter: 0,
+		orders:  []OrderEvent{},
+		history: []OrderEvent{},
 	}
 }
 
 // OrderBook represents an order book.
 type OrderBook struct {
-	lock       sync.Mutex
-	counter    int
-	orders     []OrderEvent
-	history    []OrderEvent
+	lock    sync.Mutex
+	counter int
+	orders  []OrderEvent
+	history []OrderEvent
 }
 
 // Add an order to the order book.
