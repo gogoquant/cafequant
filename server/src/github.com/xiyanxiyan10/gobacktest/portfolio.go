@@ -9,6 +9,7 @@ type PortfolioHandler interface {
 	Casher
 	Valuer
 	Reseter
+	Positioner
 }
 
 // OnSignaler is an interface for the OnSignal method
@@ -41,6 +42,11 @@ type Casher interface {
 	SetCash(float64)
 }
 
+// Positioner
+type Positioner interface{
+	Holds() map[string]Position
+}
+
 // Valuer returns the values of the portfolio
 type Valuer interface {
 	Value() float64
@@ -65,6 +71,15 @@ func NewPortfolio() *Portfolio {
 		holdings:     make(map[string]Position),
 		transactions: []FillEvent{},
 	}
+}
+
+// Holds get items holds
+func (p *Portfolio) Holds() map[string]Position{
+	m := make(map[string]Position)
+	for k, v := range p.holdings{
+		m[k] = v
+	}
+	return m
 }
 
 // SizeManager return the size manager of the portfolio.

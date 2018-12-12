@@ -21,7 +21,6 @@ type Back interface {
 
 	AddEvent(e EventHandler) error
 	GetEvent(e EventHandler) (ResultEvent, error)
-
 	Cmd(cmd string) error
 }
 
@@ -166,6 +165,18 @@ func (t *Backtest) CommitOrder(id int) error {
 	return err
 }
 
+// holds
+func (t *Backtest) holds() (error){
+	m := t.portfolio.Holds()
+	var p Position
+	p.fqty = t.Portfolio().Cash()
+	m["cash"] = p
+	var res Result
+	res.SetData(m)
+	t.out <- &res
+	return nil
+}
+
 // Cmd ...
 func (t *Backtest) Cmd(cmd string) error {
 	var event Cmd
@@ -298,8 +309,15 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 	case CmdEvent:
 		log.Infof("Get cmd event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		err = nil
-		status = "end"
-		break
+		if event.Cmd() == "end" {
+			status = "end"
+			break
+		}
+		//return the holding position
+		if event.Cmd() == "holds"{
+			t.holds()
+			break
+		}
 
 	case DataEvent:
 		log.Infof("Get data event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())

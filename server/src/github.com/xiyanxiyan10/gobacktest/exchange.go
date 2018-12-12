@@ -76,4 +76,3 @@ func (p *Exchange) CommitOrder(id int) (*Fill, error) {
 func (p *Exchange) AddOrder(o OrderEvent) error {
 	return p.orderManager.Add(o)
 }
-

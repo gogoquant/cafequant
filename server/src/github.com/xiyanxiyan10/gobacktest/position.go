@@ -10,6 +10,7 @@ import (
 type Position struct {
 	timestamp   time.Time
 	symbol      string
+	fqty        float64
 	qty         int64   // current qty of the position, positive on BOT position, negativ on SLD position
 	qtyBOT      int64   // how many BOT
 	qtySLD      int64   // how many SLD

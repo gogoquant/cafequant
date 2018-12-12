@@ -15,7 +15,6 @@ func NewOrderBook() OrderBook {
 
 // OrderBook represents an order book.
 type OrderBook struct {
-	//lock    sync.Mutex
 	counter int
 	orders  []OrderEvent
 	history []OrderEvent
@@ -23,8 +22,6 @@ type OrderBook struct {
 
 // Add an order to the order book.
 func (ob *OrderBook) Add(order OrderEvent) error {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	// increment counter
 	ob.counter++
@@ -33,7 +30,6 @@ func (ob *OrderBook) Add(order OrderEvent) error {
 
 	ob.orders = append(ob.orders, order)
 
-	//ob.EnableSubscribe(order.Symbol())
 	return nil
 }
 
@@ -42,8 +38,6 @@ func (ob *OrderBook) Remove(id int) error {
 	for i, order := range ob.orders {
 		// order found
 		if order.ID() == id {
-
-			//ob.DisableSubscribe(order.Symbol())
 
 			ob.history = append(ob.history, ob.orders[i])
 
@@ -59,16 +53,11 @@ func (ob *OrderBook) Remove(id int) error {
 
 // CancelOrder Remove an order from the order book, append it to history.
 func (ob *OrderBook) CancelOrder(id int) error {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
-
 	return ob.Remove(id)
 }
 
 // CommitOrder ...
 func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	for _, order := range ob.orders {
 		// order found
@@ -91,8 +80,6 @@ func (ob *OrderBook) CommitOrder(id int) (*Fill, error) {
 
 // Orders returns all Orders from the order book
 func (ob *OrderBook) Orders() ([]OrderEvent, bool) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 	orders := ob.deepCopyOrders(ob.orders)
 	if len(orders) == 0 {
 		return orders, false
@@ -132,8 +119,6 @@ func (ob *OrderBook) OrderBy(fn func(order OrderEvent) bool) ([]OrderEvent, bool
 
 // OrdersBySymbol returns the order of a specific symbol from the order book.
 func (ob *OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	var fn = func(order OrderEvent) bool {
 		if order.Symbol() != symbol {
@@ -148,8 +133,6 @@ func (ob *OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 
 // OrdersBidBySymbol returns all bid orders of a specific symbol from the order book.
 func (ob *OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	var fn = func(order OrderEvent) bool {
 		if (order.Symbol() != symbol) || (order.Direction() != BOT) {
@@ -195,8 +178,6 @@ func (ob *OrderBook) OrdersAskBySymbol(symbol string) ([]OrderEvent, bool) {
 
 // OrdersOpen returns all orders which are open from the order book.
 func (ob *OrderBook) OrdersOpen() ([]OrderEvent, bool) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	var fn = func(order OrderEvent) bool {
 		if (order.Status() != OrderNew) || (order.Status() != OrderSubmitted) || (order.Status() != OrderPartiallyFilled) {
@@ -211,8 +192,6 @@ func (ob *OrderBook) OrdersOpen() ([]OrderEvent, bool) {
 
 // OrdersCanceled returns all orders which are canceled from the order book.
 func (ob *OrderBook) OrdersCanceled() ([]OrderEvent, bool) {
-	//ob.lock.Lock()
-	//defer ob.lock.Unlock()
 
 	var fn = func(order OrderEvent) bool {
 		if (order.Status() == OrderCanceled) || (order.Status() == OrderCancelPending) {
