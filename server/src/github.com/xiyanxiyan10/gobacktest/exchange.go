@@ -15,7 +15,7 @@ type Booker interface {
 	Orders() ([]OrderEvent, bool)
 	CommitOrder(id int) (*Fill, error)
 	OrdersBySymbol(symbol string) ([]OrderEvent, bool)
-	CancelOrder(id int) error
+	CancelOrder(order Order) error
 }
 
 // Exchange is a basic execution handler implementation
@@ -62,8 +62,8 @@ func (p Exchange) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 }
 
 // CancelOrder ...
-func (p *Exchange) CancelOrder(id int) error {
-	p.orderManager.CancelOrder(id)
+func (p *Exchange) CancelOrder(order Order) error {
+	p.orderManager.CancelOrder(order)
 	return nil
 }
 

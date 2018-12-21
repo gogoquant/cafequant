@@ -10,24 +10,52 @@ import (
 
 var errHalt = fmt.Errorf("HALT")
 
-// Back Manager handler for back
+// Back 回测引擎对外接口
 type Back interface {
+	// 获取回测引擎名称
 	Name() string
+
+	// 设置回测引擎的名称
 	SetName(name string)
+
+	// 开始回测
 	Start() (err error)
+
+	// 运行状态
 	Status() int64
+
+	// 停止回测
 	Stop() (err error)
+
+	// 设置撮合脚本
 	SetScripts(scripts string)
 
-	AddEvent(e EventHandler) error
-	GetEvent(e EventHandler) (ResultEvent, error)
+	// 获取仓位
+	Holds() (map[string]Position, error)
+
+	// 获取某类订单
+	OrdersBySymbol(symbol string) ([]OrderEvent, error)
+
+	// 关闭订单
+	CancelOrder(order Order) error
+
+	// 新开订单
+	AddOrder(order Order) error
+
+	// 特殊命令，关闭引擎等
 	Cmd(cmd string) error
 }
 
-// ScriptsApi api for back scripts
+// ScriptsApi 撮合脚本使用的api
 type ScriptsApi interface {
+	// 提交订单
 	CommitOrder(id int) error
-	ProcessEvent() (err error, status string, data DataEvent)
+
+	// 驱动引擎并尝试获取下一份数据
+	NextEvent() (err error, status string, data DataEvent)
+
+	// 获取某类订单
+	EOrdersBySymbol(symbol string) ([]OrderEvent, error)
 }
 
 // Reseter provides a resting interface.
@@ -35,7 +63,7 @@ type Reseter interface {
 	Reset() error
 }
 
-// Backtest is the main struct which holds all back event for users
+// Backtest 回测管理
 type Backtest struct {
 	Id string
 
@@ -61,27 +89,92 @@ type Backtest struct {
 	Ctx *otto.Otto
 }
 
-func (back *Backtest) GetEvent(e EventHandler) (ResultEvent, error) {
+// SignalAdd Add signal event into event queue
+func (back *Backtest) AddSignal(signals ...SignalEvent) error {
+	for _, signal := range signals {
+		back.AddEvent(signal)
+	}
+	return nil
+}
+
+// Stats returns the statistic handler of the backtest.
+func (back *Backtest) Stats() StatisticHandler {
+	return back.statistic
+}
+
+// OrdersBySymbol get order by symbol
+func (back *Backtest) OrdersBySymbol(symbol string) ([]OrderEvent, error) {
+	var order Order
+	order.SetSymbol(symbol)
+	order.SetStatus(OrdersBySymbol)
+	back.AddEvent(&order)
+	res, err := back.getResult()
+	if err != nil {
+		return nil, err
+	}
+	orders, err := res.Data().([]OrderEvent)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+// EOrdersBySymbol used just for engine
+func (back *Backtest) EOrdersBySymbol(symbol string) ([]OrderEvent, error) {
+	orders, _ := back.exchange.OrdersBySymbol(symbol)
+	return orders, nil
+}
+
+// AddOrder
+func (back *Backtest) AddOrder(order Order) error {
+	order.SetStatus(OrderNew)
+	back.AddEvent(&order)
+	res, err := back.getResult()
+	if err != nil {
+		return err
+	}
+	err = res.Data().(error)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Holds get all position
+func (back *Backtest) Holds() (map[string]Position, error) {
+	var order Order
+	order.SetStatus(OrderFillByAll)
+	back.AddEvent(&order)
+	res, err := back.getResult()
+	if err != nil {
+		return nil, err
+	}
+	position, err := res.Data().(map[string]Position)
+	if err != nil {
+		return nil, err
+	}
+	return position, nil
+}
+
+// SetScripts ...
+func (back *Backtest) SetScripts(scripts string) {
+	back.scripts = scripts
+}
+
+// SetCash ...
+func (back *Backtest) SetCash(cash float64) {
+	back.Portfolio().SetInitialCash(cash)
+	back.Portfolio().SetCash(cash)
+}
+
+// getResult ...
+func (back *Backtest) getResult() (ResultEvent, error) {
 	select {
 	case data, _ := <-back.out:
 		return data, nil
 	case <-time.After(1 * time.Second):
 		return nil, errors.New("Timeout")
 	}
-
-}
-
-// initialize ...
-func (back *Backtest) initialize() (err error) {
-	back.Ctx = otto.New()
-	back.Ctx.Interrupt = make(chan func(), 1)
-	back.Ctx.Set("Exchange", ScriptsApi(back))
-	return
-}
-
-// SetScripts ...
-func (back *Backtest) SetScripts(scripts string) {
-	back.scripts = scripts
 }
 
 // Start ...
@@ -115,8 +208,8 @@ func (back *Backtest) Start() (err error) {
 }
 
 // SetId
-func (b *Backtest) SetId(id string) {
-	b.Id = id
+func (back *Backtest) SetId(id string) {
+	back.Id = id
 }
 
 // Status ...
@@ -147,41 +240,54 @@ func NewBackTest(m map[string]string) Back {
 }
 
 // Name ...
-func (e *Backtest) Name() string {
-	return e.name
+func (back *Backtest) Name() string {
+	return back.name
 }
 
-// Name ...
-func (e *Backtest) SetName(name string) {
-	e.name = name
+// SetName ...
+func (back *Backtest) SetName(name string) {
+	back.name = name
 }
 
 // CommitOrder ...
-func (t *Backtest) CommitOrder(id int) error {
-	fill, err := t.exchange.CommitOrder(id)
+func (back *Backtest) CommitOrder(id int) error {
+	fill, err := back.exchange.CommitOrder(id)
 	if err == nil && fill != nil {
-		t.AddEvent(fill)
+		back.AddEvent(fill)
 	}
 	return err
 }
 
-// holds
-func (t *Backtest) holds() (error){
-	m := t.portfolio.Holds()
-	var p Position
-	p.fqty = t.Portfolio().Cash()
-	m["cash"] = p
-	var res Result
-	res.SetData(m)
-	t.out <- &res
+// CancelOrder ...
+func (back *Backtest) CancelOrder(order Order) error {
+	order.SetStatus(OrderCancel)
+	back.AddEvent(&order)
 	return nil
 }
 
+// initialize ...
+func (back *Backtest) initialize() (err error) {
+	back.Ctx = otto.New()
+	back.Ctx.Interrupt = make(chan func(), 1)
+	back.Ctx.Set("Exchange", ScriptsApi(back))
+	return
+}
+
+// holds
+func (back *Backtest) holds() (res Result) {
+	m := back.portfolio.Holds()
+	var p Position
+	p.fqty = back.Portfolio().Cash()
+	m["cash"] = p
+	res.SetData(m)
+	return
+}
+
 // Cmd ...
-func (t *Backtest) Cmd(cmd string) error {
+func (back *Backtest) Cmd(cmd string) error {
 	var event Cmd
 	event.SetCmd(cmd)
-	t.AddEvent(&event)
+	back.AddEvent(&event)
 	return nil
 }
 
@@ -189,7 +295,8 @@ func (t *Backtest) Cmd(cmd string) error {
 func New() *Backtest {
 	return &Backtest{
 		portfolio: &Portfolio{
-			initialCash: 100000,
+			initialCash: 0,
+			cash:0,
 			sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
 			riskManager: &Risk{},
 		},
@@ -203,104 +310,89 @@ func New() *Backtest {
 }
 
 // SetSymbols sets the symbols to include into the backtest.
-func (t *Backtest) SetSymbols(symbols []string) {
-	t.symbols = symbols
+func (back *Backtest) SetSymbols(symbols []string) {
+	back.symbols = symbols
 }
 
 // SetData sets the data provider to be used within the backtest.
-func (t *Backtest) SetData(data DataHandler) {
-	t.data = data
+func (back *Backtest) SetData(data DataHandler) {
+	back.data = data
 }
 
 // SetPortfolio sets the portfolio provider to be used within the backtest.
-func (t *Backtest) SetPortfolio(portfolio PortfolioHandler) {
-	t.portfolio = portfolio
+func (back *Backtest) SetPortfolio(portfolio PortfolioHandler) {
+	back.portfolio = portfolio
 }
 
 // SetExchange sets the execution provider to be used within the backtest.
-func (t *Backtest) SetExchange(exchange ExchangeHandler) {
-	t.exchange = exchange
+func (back *Backtest) SetExchange(exchange ExchangeHandler) {
+	back.exchange = exchange
 }
 
 // SetStatistic sets the statistic provider to be used within the backtest.
-func (t *Backtest) SetStatistic(statistic StatisticHandler) {
-	t.statistic = statistic
+func (back *Backtest) SetStatistic(statistic StatisticHandler) {
+	back.statistic = statistic
 }
 
 // Portfolio sets the Portfolio provider to be used within the backtest.
-func (t *Backtest) Portfolio() PortfolioHandler {
-	return t.portfolio
+func (back *Backtest) Portfolio() PortfolioHandler {
+	return back.portfolio
 }
 
-func (t *Backtest) Exchange() ExchangeHandler {
-	return t.exchange
+func (back *Backtest) Exchange() ExchangeHandler {
+	return back.exchange
 }
 
 // Reset ...
-func (t *Backtest) Reset() error {
-	t.eventQueue = nil
-	t.data.Reset()
-	t.portfolio.Reset()
-	t.statistic.Reset()
+func (back *Backtest) Reset() error {
+	back.eventQueue = nil
+	back.data.Reset()
+	back.portfolio.Reset()
+	back.statistic.Reset()
 	return nil
 }
 
-// SignalAdd Add signal event into event queue
-func (t *Backtest) AddSignal(signals ...SignalEvent) error {
-	for _, signal := range signals {
-		t.AddEvent(signal)
-	}
-	return nil
-}
-
-// Stats returns the statistic handler of the backtest.
-func (t *Backtest) Stats() StatisticHandler {
-	return t.statistic
-}
-
-// ProcessEvent process the event before return the data event back to user' scripts
-func (t *Backtest) ProcessEvent() (err error, status string, data DataEvent) {
-	event := <-t.in
-	return t.eventActive(event)
+// NextEvent process the event before return the data event back to user' scripts
+func (back *Backtest) NextEvent() (err error, status string, data DataEvent) {
+	event := <-back.in
+	return back.activeEvent(event)
 }
 
 // setup runs at the beginning of the backtest to perfom preparing operations.
-func (t *Backtest) setup() error {
+func (back *Backtest) setup() error {
 	// before first run, set portfolio cash
-	t.portfolio.SetCash(t.portfolio.InitialCash())
-
+	back.portfolio.SetCash(back.portfolio.InitialCash())
 	return nil
 }
 
 // teardown performs any cleaning operations at the end of the backtest.
-func (t *Backtest) teardown() error {
+func (back *Backtest) teardown() error {
 	// no implementation yet
 	return nil
 }
 
 // nextEvent gets the next event from the events queue.
-func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
+func (back *Backtest) nextEvent() (e EventHandler, ok bool) {
 
 	// if event queue empty return false
-	if len(t.eventQueue) == 0 {
+	if len(back.eventQueue) == 0 {
 		return e, false
 	}
 
 	// return first element from the event queue
-	e = t.eventQueue[0]
-	t.eventQueue = t.eventQueue[1:]
-
+	e = back.eventQueue[0]
+	back.eventQueue = back.eventQueue[1:]
 	return e, true
 }
 
 // AddEvent
-func (t *Backtest) AddEvent(e EventHandler) error {
-	t.in <- e
+func (back *Backtest) AddEvent(e EventHandler) error {
+	back.in <- e
 	return nil
 }
 
-// eventActive directs the different events to their handler.
-func (t *Backtest) eventActive(e EventHandler) (err error, status string, data DataEvent) {
+// activeEvent directs the different events to their handler.
+func (back *Backtest) activeEvent(e EventHandler) (err error, status string, data DataEvent) {
 	status = "continue"
 
 	// type check for event type
@@ -309,15 +401,8 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 	case CmdEvent:
 		log.Infof("Get cmd event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 		err = nil
-		if event.Cmd() == "end" {
-			status = "end"
-			break
-		}
-		//return the holding position
-		if event.Cmd() == "holds"{
-			t.holds()
-			break
-		}
+		status = "end"
+		break
 
 	case DataEvent:
 		log.Infof("Get data event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
@@ -331,41 +416,61 @@ func (t *Backtest) eventActive(e EventHandler) (err error, status string, data D
 
 	case *Signal:
 		log.Infof("Get signal event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
-		order, err := t.portfolio.OnSignal(event, t.data)
+		order, err := back.portfolio.OnSignal(event, back.data)
 		if err != nil {
 			break
 		}
-		t.AddEvent(order)
+		back.AddEvent(order)
 
 	case *Order:
 		log.Infof("Get order event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
 
+		// 获取在挂的单
 		if event.status == OrdersBySymbol {
-			orders, _ := t.exchange.OrdersBySymbol(event.symbol)
+			orders, _ := back.exchange.OrdersBySymbol(event.symbol)
 			var result Result
 			result.SetTime(event.timestamp)
 			result.SetData(orders)
 			var rs ResultEvent
 			rs = &result
-			t.out <- ResultEvent(rs)
+			back.out <- ResultEvent(rs)
 			break
 		}
 
+		// 关闭订单
 		if event.status == OrderCancel {
-			t.exchange.CancelOrder(event.id)
+			back.exchange.CancelOrder(*event)
 			break
 		}
 
-		t.exchange.AddOrder(event)
-		if err != nil {
+		// 获取仓位
+		if event.status == OrderFillByAll {
+			fills := back.holds()
+			back.out <- &fills
 			break
 		}
+
+		// 下订单
+		if event.status == OrderNew {
+			// 这里需要检查卖单的仓位和买单的资金
+			back.exchange.AddOrder(event)
+			if err != nil {
+				break
+			}
+			var res Result
+			res.SetData("success")
+			back.out <- &res
+			break
+		}
+		log.Infof("Unknow order type")
+		break
 		//t.AddEvent(fill)
 
 	case *Fill:
+
 		log.Infof("Get fill event symbol (%s) timestamp (%s)", event.Symbol(), event.Time())
-		t.exchange.OnFill(event)
-		_, err := t.portfolio.OnFill(event)
+		back.exchange.OnFill(event)
+		_, err := back.portfolio.OnFill(event)
 		if err != nil {
 			break
 		}

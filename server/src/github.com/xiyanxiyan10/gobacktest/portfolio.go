@@ -43,7 +43,7 @@ type Casher interface {
 }
 
 // Positioner
-type Positioner interface{
+type Positioner interface {
 	Holds() map[string]Position
 }
 
@@ -74,9 +74,9 @@ func NewPortfolio() *Portfolio {
 }
 
 // Holds get items holds
-func (p *Portfolio) Holds() map[string]Position{
+func (p *Portfolio) Holds() map[string]Position {
 	m := make(map[string]Position)
-	for k, v := range p.holdings{
+	for k, v := range p.holdings {
 		m[k] = v
 	}
 	return m

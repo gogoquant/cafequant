@@ -8,13 +8,13 @@ const (
 	OrderNone OrderStatus = iota // 0
 
 	OrderPartiallyFilled
-	OrderFilled
 	OrderCanceled
 	OrderCancelPending
 
 	OrderNew
 	OrderSubmitted
 	OrderCancel
+	OrderFillByAll
 	OrdersBySymbol
 	OrderInvalid
 )

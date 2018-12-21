@@ -52,7 +52,8 @@ func (ob *OrderBook) Remove(id int) error {
 }
 
 // CancelOrder Remove an order from the order book, append it to history.
-func (ob *OrderBook) CancelOrder(id int) error {
+func (ob *OrderBook) CancelOrder(order Order) error {
+	id := order.ID()
 	return ob.Remove(id)
 }
 
