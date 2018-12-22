@@ -296,7 +296,7 @@ func New() *Backtest {
 	return &Backtest{
 		portfolio: &Portfolio{
 			initialCash: 0,
-			cash:0,
+			cash:        0,
 			sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
 			riskManager: &Risk{},
 		},
@@ -462,6 +462,8 @@ func (back *Backtest) activeEvent(e EventHandler) (err error, status string, dat
 			back.out <- &res
 			break
 		}
+
+		// 未知行为
 		log.Infof("Unknow order type")
 		break
 		//t.AddEvent(fill)
