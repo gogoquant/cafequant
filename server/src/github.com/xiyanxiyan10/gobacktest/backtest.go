@@ -225,17 +225,29 @@ func (back *Backtest) Stop() (err error) {
 
 // NewBackTest
 func NewBackTest(m map[string]string) Back {
-	bt := Backtest{
+	bt := &Backtest{
 		in:     make(chan EventHandler, 50),
 		out:    make(chan ResultEvent, 50),
 		status: 0,
 		config: m,
+		portfolio: &Portfolio{
+			initialCash: 0,
+			cash:        0,
+			sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
+			riskManager: &Risk{},
+		},
+		exchange: &Exchange{
+			//Symbol: "TEST",
+			//Commission:  &FixedCommission{Commission: 0},
+			//ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
+		},
+		statistic: &Statistic{},
 	}
 	err := bt.initialize()
 	if err != nil {
 		return nil
 	} else {
-		return &bt
+		return bt
 	}
 }
 
@@ -289,24 +301,6 @@ func (back *Backtest) Cmd(cmd string) error {
 	event.SetCmd(cmd)
 	back.AddEvent(&event)
 	return nil
-}
-
-// New creates a default backtest with sensible defaults ready for use.
-func New() *Backtest {
-	return &Backtest{
-		portfolio: &Portfolio{
-			initialCash: 0,
-			cash:        0,
-			sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
-			riskManager: &Risk{},
-		},
-		exchange: &Exchange{
-			//Symbol: "TEST",
-			//Commission:  &FixedCommission{Commission: 0},
-			//ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
-		},
-		statistic: &Statistic{},
-	}
 }
 
 // SetSymbols sets the symbols to include into the backtest.
