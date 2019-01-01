@@ -1,3 +1,0 @@
-# Papper
-Papper for quantpro
-
