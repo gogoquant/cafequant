@@ -10,7 +10,7 @@ import (
 
 var errHalt = fmt.Errorf("HALT")
 
-// Back 回测引擎对外接口
+// Back 回测引擎对外的调用接口
 type Back interface {
 	// 获取回测引擎名称
 	Name() string
