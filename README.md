@@ -30,15 +30,8 @@
 # 7. 产品生命周期
 
 
-# 8. 交易渠道支持
-
-- bitcoin  
-- 期货
-- 股票
-- 小众途径
-
-
-# 9. 功能
+# 8. 功能
+- 多交易渠道支持: bitcoin 期货 股票 小众途径
 - 历史数据回测
 - 在线回测
 - 实盘交易
@@ -46,7 +39,7 @@
 - 简易人工智能训练
 - 论坛交流
 
-# 10. 伪代码核心流程
+# 9. 伪代码核心流程
 ```
 // 回测: action-->waitCheck-->Backtest-->draw-->action_virtual, data from the history files
 // 在线模拟: action-->waitCheck-->Backtest-->draw-->action_virtual, data from online 
