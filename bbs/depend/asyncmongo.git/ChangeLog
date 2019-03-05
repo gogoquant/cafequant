@@ -1,0 +1,37 @@
+Version 1.2.1 1/30/2012
+  * #37 include asyncmongo.backends in setup.py
+  * #38 README.md not included in .tar.gz
+
+Version 1.2 1/25/2012
+  * #29 support for glib mainloop
+  * #35 support for hint to find()
+  * #32 close connections in unit tests
+  * #34 unittest updates
+  * #31 fix typo in example
+
+Version 1.1.1 11/8/2011
+  * fix cursor close in cases where IntegrityError is raised
+
+Version 1.1 11/8/2011
+  * #26 close cursors after find()
+
+Version 1.0.3 10/21/2011
+  * #22 fix missing README.md in MANIFEST
+  * python 2.5 compatibility
+  * #23 update TooManyConnections error wording
+
+Version 1.0 10/8/2011
+  * #12 authentication support 
+  * #14 support for slave_okay=True
+  * #6 fix port typo in example code
+  * implement command method
+
+Version 0.1.3 2/8/2011
+  * fix cleanup for connections that aren't closed cleanly
+  * #1 implement mincached
+
+Version 0.1.2 12/6/2010
+  * fixes for querying with safe=False
+ 
+Version 0.1 11/17/2010
+  * Initial release

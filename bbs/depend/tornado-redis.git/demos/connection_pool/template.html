@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>{{ title }}</title>
+    </head>
+    <body>
+        <h1>{{ title }}</h1>
+        <p>Reload this page to see the increasing number of page views.<br/>
+            A separate redis client used to increment each counter's value.<br/>
+            Redis clients share the same redis server connection using single ConnectionPool instance.</p>
+        <hr/>
+        <p style="font-size:120%">Connected clients: {{ info['connected_clients'] }}</p>
+        {% for multiplier, v in values %}
+        <p>Page views{% if multiplier > 1%} x {{ multiplier }}{% end %}: {{ v }}</p>
+        {% end %}
+    </body>
+</html>
+

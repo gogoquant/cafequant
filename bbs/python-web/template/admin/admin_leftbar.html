@@ -1,0 +1,37 @@
+{% extends "./admin_base.html" %}
+
+{% block leftbar %}
+<div class="col-sm-2 col-lg-2" align="left">
+            <div class="sidebar-nav">
+                <div class="nav-canvas">
+                    <div class="nav-sm nav nav-stacked">
+                    </div>
+                    <ul class="nav nav-pills nav-stacked main-menu">
+                        <li class="nav-header">Main</li>
+                        <li><a class="ajax-link" href="/adminweb/index"><i 
+                                class="glyphicon glyphicon-home"></i><span> 主页</span></a></li>
+                        
+                        <li><a class="ajax-link" href="/adminweb/user_list"><i
+                                class="glyphicon glyphicon-lock"></i><span> 用户管理</span></a></li>
+                        
+                        <li><a class="ajax-link" href="/adminweb/topic_list"><i
+                                class="glyphicon glyphicon-edit"></i><span> 文章管理</span></a></li>
+                        
+                        <li><a class="ajax-link" href="/adminweb/upload"><i
+                                class="glyphicon glyphicon-picture"></i><span> 上传管理</span></a></li>
+                        
+                        <li><a class="ajax-link" href="/adminweb/msg_list"><i
+                                class="glyphicon glyphicon-eye-open"></i><span> 消息管理</span></a></li>
+                        <!--
+                        <li><a class="ajax-link" href="/admin/msg_list"><i
+                                class="glyphicon glyphicon-eye-open"></i><span> 爬虫管理</span></a></li>
+                        <li><a class="ajax-link" href="/admin/msg_list"><i
+                                class="glyphicon glyphicon-eye-open"></i><span> 机器助手</span></a></li>
+                        -->
+                    </ul>
+                </div>
+        </div>
+</div>
+{% end %}
+
+

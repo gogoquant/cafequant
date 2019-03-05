@@ -1,0 +1,51 @@
+{% extends "./base.html" %}
+
+{% block head%}
+<link href="{{ static_url('css/web/index.css') }}" rel='stylesheet'>
+<link rel="stylesheet" type="text/css" href="{{static_url('BookBlock/css/default.css')}}" />
+<link rel="stylesheet" type="text/css" href="{{static_url('BookBlock/css/bookblock.css')}}" />
+{% end %}
+
+{% block body %}
+
+<div id="center_wrap">
+
+<div id="header_wrap">
+    
+    <!-- message table-->
+    <!--
+    <div id="header_board">
+        <div  id="board_logo">
+        </div>
+        <div  id="board_message">
+        </div>
+        <div id="board_input">
+            <input type="text" id = "board_blank" name="firstname">
+            </input>
+            <div id="board_button">
+                <p>留言</p>
+            </div> 
+        </div>
+    </div>
+    -->
+
+    <div id="header_publish">
+    </div>
+
+</div>
+
+<div id="home_pg">
+</div>
+    
+</div>
+{% end %}
+
+{% block script %}
+<script src="{{ static_url('BookBlock/js/modernizr.custom.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('BookBlock/js/jquerypp.custom.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('BookBlock/js/jquery.bookblock.js') }}"  type="text/javascript"></script>
+<script src="{{ static_url('masonry/dist/masonry.pkgd.min.js') }}"  type="text/javascript"></script>
+<script src="{{ static_url('imagesloaded/imagesloaded.pkgd.min.js') }}"  type="text/javascript"></script>
+<script src="{{ static_url('js/web/msgList.js') }}" type="text/javascript"></script>
+<script src="{{ static_url('js/web/index.js') }}" type="text/javascript"></script>
+{% end %}

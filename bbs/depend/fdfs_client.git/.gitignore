@@ -1,0 +1,4 @@
+*.pyc
+fdfs_client_py.egg-info
+build
+dist

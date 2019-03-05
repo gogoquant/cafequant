@@ -1,0 +1,237 @@
+@clr-primary: #468e8d;
+@clr-light: #66a09f;
+@clr-lightest: #efefef;
+@clr-dark: #105150;
+
+@body-pd: 16px;
+@font-sz: 18px;
+@yao-w: 300px;
+@yao-h: 40px;
+@yao-mg: 20px;
+@gua-half-h: @yao-h * 3 + @yao-mg * 2;
+@gua-half-mg: 40px;
+@gua-h: @gua-half-h * 2 + @gua-half-mg;
+@yin-w: 12px;
+@gua-detail-mg: 20px;
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background-color: @clr-primary;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: '微软雅黑';
+    font-size: @font-sz;
+    padding: @body-pd;
+}
+
+p {
+    margin: 8px 0;
+}
+
+#back-title {
+    position: absolute;
+    bottom: -72px;
+    right: 0;
+    font-size: 600px;
+    color: @clr-light;
+    cursor: default;
+    transition-duration: 1s;
+    
+    &.unhover {
+        opacity: 0.25;
+    }
+}
+
+#page-title {
+    color: @clr-light;
+    cursor: default;
+    transition-duration: 0.5s;
+    display: inline-block;
+    z-index: 10;
+    position: relative;
+    
+    a {
+        color: @clr-light;
+        transition-duration: 1s;
+    }
+    
+    &:hover {
+        color: @clr-lightest;
+        
+        a {
+            color: @clr-lightest;
+            
+            &:hover {
+                color: @clr-dark;
+            }
+        }
+        
+        .social {
+            opacity: 1;
+        }
+        
+        #page-title-more {
+            display: block;
+        }
+    }
+}
+
+.social {
+    background: url('../../blog/img/social.png');
+    background-color: @clr-light;
+    width: 40px;
+    height: 40px;
+    transition: 1s;
+    display: inline-block;
+    margin-right: 3px;
+    border-bottom: none;
+    border-radius: 20px;
+    opacity: 0.25;
+    
+    &:hover {
+        background-color: @clr-dark;
+        border-radius: 0;
+    }
+}
+
+.social-twitter {
+    background-position: 0 0;
+}
+
+.social-facebook {
+    background-position: -40px 0;
+}
+
+.social-google {
+    background-position: -80px 0;
+}
+
+.social-linkedin {
+    background-position: -120px 0;
+}
+
+.social-weibo {
+    background-position: -160px 0;
+}
+
+.social-digg {
+    background-position: 0 40px;
+}
+
+.social-douban {
+    background-position: -40px 40px;
+}
+
+.social-reddit {
+    background-position: -80px 40px;
+}
+
+.social-stumble {
+    background-position: -120px 40px;
+}
+
+.social-github {
+    background-position: -160px 40px;
+}
+
+#page-title-more {
+    display: none;
+    font-size: 12px;
+}
+
+#gua-title {
+    position: absolute;
+    left: @body-pd;
+    bottom: @body-pd;
+    
+    font-size: 60px;
+    color: @clr-dark;
+    cursor: default;
+    transition-duration: 0.5s;
+    
+    #gua-detail {
+        color: @clr-dark;
+        font-size: @font-sz;
+        transition-duration: 0.5s;
+    }
+    
+    &:hover {
+        color: @clr-lightest;
+        
+        #gua-detail {
+            color: @clr-lightest;
+        }
+    }
+}
+
+#gua {
+    width: @yao-w;
+    height: @gua-h;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -@gua-h / 2;
+    margin-left: -@yao-w / 2;
+    
+    .yao-split {
+        margin-bottom: @gua-half-mg;
+    }
+    
+    .yao {
+        height: @yao-h;
+        background-color: @clr-lightest;
+        cursor: pointer;
+        transition-duration: 1s;
+        
+        &.yao-mg {
+            margin: @yao-mg 0;
+        }
+        
+        &.unhover {
+            background: @clr-light;
+            
+            .yang {
+                background: @clr-light;
+            }
+        }
+        
+        .yinyang {
+            transition-duration: 1s;
+            position: relative;
+            left: 50%;
+            margin-left: -@yin-w / 2;
+            width: @yin-w;
+            height: @yao-h;
+        }
+        
+        .yang {
+            background-color: @clr-lightest;
+        }
+        
+        .yin {
+            background-color: @clr-primary;
+        }
+    }
+}
+
+#yao-detail {
+    display: none;
+    position: absolute;
+    left: 50%;
+    right: @body-pd;
+    margin-left: @yao-w / 2 + @gua-detail-mg;
+    min-height: @yao-h;
+    color: @clr-lightest;
+    padding: 4px 0;
+}

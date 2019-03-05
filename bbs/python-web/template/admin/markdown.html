@@ -1,0 +1,66 @@
+{% extends "./admin_topbar.html" %}
+
+{% block head %}
+<meta charset="utf-8" />
+<link rel="stylesheet" href="{{ static_url('markdown/examples/css/style.css') }}" />
+<link rel="stylesheet" href="{{ static_url('markdown/css/editormd.css') }}" />
+<link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+{% end %}  
+
+{% block body %}
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-edit"></i> 发布文章 </h2>
+
+                <div class="box-icon">
+                    <a href="#" class="btn btn-setting btn-round btn-default"><i
+                            class="glyphicon glyphicon-cog"></i></a>
+                    <a href="#" class="btn btn-minimize btn-round btn-default"><i
+                            class="glyphicon glyphicon-chevron-up"></i></a>
+                    <a href="#" class="btn btn-close btn-round btn-default"><i
+                            class="glyphicon glyphicon-remove"></i></a>
+                </div>
+            </div>
+            <br>
+            <div class="box-content">
+                <form role="form">
+                    <div class="form-group">
+                        <input type="email" class="form-control" id="exampleInputEmail1" placeholder="文章标题">
+                    </div>
+                    <div class="form-group">
+                        <div id="test-editormd">
+                            <textarea style="display:none;">[TOC]
+                                examples/
+                                languages/     
+                                editormd.js
+                                ...
+                            </textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--/span-->
+</div><!--/row-->
+
+        <!-- js 渲染 -->
+        <script src="{{ static_url('markdown/examples/js/jquery.min.js') }}"></script>
+        <script src="{{ static_url('markdown/editormd.min.js') }}"></script>
+        <script type="text/javascript">
+	    var testEditor;
+            $(function() {
+                testEditor = editormd("test-editormd", {
+                    width   : "100%",
+                    height  : 640,
+                    syncScrolling : "single",
+                    path    : "{{ static_url('markdown/lib/') }}"
+                });
+                
+            });
+        </script>
+{% end %}

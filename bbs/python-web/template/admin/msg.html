@@ -1,0 +1,114 @@
+{% extends "./admin_topbar.html" %}
+
+{% block head %}
+<meta charset="utf-8" />
+<link rel="stylesheet" href="{{ static_url('markdown/examples/css/style.css') }}" />
+<link rel="stylesheet" href="{{ static_url('markdown/css/editormd.css') }}" />
+<link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+{% end %}  
+
+{% block body %}
+
+
+<div id="content" class="col-lg-10 col-sm-10">
+    <div>
+        <ul class="breadcrumb" align="left">
+            <li>
+                <a href="/admin/adminHome">Home</a>
+            </li>
+            <li>
+                <a href="#">MsgPublish</a>
+            </li>
+        </ul>
+    </div>
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-edit"></i> 发布消息 </h2>
+            </div>
+            <br>
+            <div class="box-content" align="left">
+                <form role="form" id="msg_form">
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="msg_title">标题</label>
+                        <input type="text" class="form-control" id="msg_title" placeholder="标题">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="msg_brief">简介</label>
+                        <input type="text" class="form-control" id="msg_brief" placeholder="简介">
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="msg_type">消息类型</label>
+                        <input type="text" class="form-control" id="msg_type" placeholder="类型">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="user_id">发送方</label>
+                        <input type="text" class="form-control" id="user_id" placeholder="发送方">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="user_to">接收方</label>
+                        <input type="text" class="form-control" id="user_to" placeholder="接收方">
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <label class="control-label" for="img_url">图片地址</label>
+                        <input type="text" class="form-control" id="img_url" placeholder="图片地址">
+                    </div>
+
+                    <div class="form-group col-md-12">
+                        <label class="control-label" for="redir_url">链接地址</label>
+                        <input type="text" class="form-control" id="redir_url" placeholder="链接地址">
+                    </div>
+
+                    <div class="form-group">
+                        <div id="test-editormd">
+                            <textarea id="msg_content" style="display:none;">
+                            </textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-default" id="msg_submit">提交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--/span-->
+</div><!--/row-->
+</div>
+
+        <!-- js 渲染 -->
+        <script src="{{ static_url('js/admin/msg.js') }}" type="text/javascript"></script> 
+        
+        <script type="text/javascript">
+	    var testEditor;
+            $(function() {
+                testEditor = editormd("test-editormd", {
+                    width   : "100%",
+                    height  : 640,
+                    syncScrolling : "single",
+                    path    : "{{ static_url('markdown/lib/') }}",
+                    toolbar  : false             //关闭工具栏
+                });
+                
+            });
+        </script>
+        <script src="{{ static_url('markdown/editormd.min.js') }}"></script>
+{% end %}
+
+{% block script %}
+<script src="{{ static_url('js/admin/msg.js') }}" type="text/javascript"></script> 
+{% end %}
