@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miaolz123/conver"
-	"github.com/phonegapX/QuantBot/api/BigoneAPI"
-	"github.com/phonegapX/QuantBot/constant"
-	"github.com/phonegapX/QuantBot/model"
+	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/api/BigoneAPI"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/model"
 )
 
 // BigOne the exchange struct of big.one
