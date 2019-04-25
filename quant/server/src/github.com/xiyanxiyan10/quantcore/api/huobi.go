@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miaolz123/conver"
-	"github.com/phonegapX/QuantBot/api/HuobiProAPI/config"
-	"github.com/phonegapX/QuantBot/api/HuobiProAPI/models"
-	"github.com/phonegapX/QuantBot/api/HuobiProAPI/services"
-	"github.com/phonegapX/QuantBot/constant"
-	"github.com/phonegapX/QuantBot/model"
+	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/config"
+	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/models"
+	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/services"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/model"
 )
 
 // Huobi the exchange struct of huobi.com

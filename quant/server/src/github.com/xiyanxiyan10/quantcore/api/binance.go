@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miaolz123/conver"
-	"github.com/phonegapX/QuantBot/api/BinanceAPI"
-	"github.com/phonegapX/QuantBot/constant"
-	"github.com/phonegapX/QuantBot/model"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/api/BinanceAPI"
+	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/model"
 )
 
 // Binance the exchange struct of binance.com

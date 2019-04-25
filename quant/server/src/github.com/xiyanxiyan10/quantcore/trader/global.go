@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/miaolz123/conver"
-	"github.com/phonegapX/QuantBot/api"
-	"github.com/phonegapX/QuantBot/constant"
-	"github.com/phonegapX/QuantBot/model"
+	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/api"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/model"
 	"github.com/robertkrimen/otto"
 )
 

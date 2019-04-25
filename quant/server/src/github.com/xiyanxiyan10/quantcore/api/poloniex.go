@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/miaolz123/conver"
-	"github.com/phonegapX/QuantBot/constant"
-	"github.com/phonegapX/QuantBot/model"
+	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/model"
 )
 
 // Poloniex the exchange struct of poloniex
