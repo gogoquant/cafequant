@@ -19,28 +19,27 @@ RUN yum install -y git gcc wget golang sqlite autoconf automake libtool make
 
 #mkdir
 RUN mkdir /opt/app -p
-RUN mkdir /opt/gb -p 
 RUN mkdir /opt/depend -p 
+RUN mkdir /opt/bin -p 
 
 # add pkg
 WORKDIR /opt/depend 
-RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+#RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
 RUN wget https://npm.taobao.org/mirrors/node/v8.9.3/node-v8.9.3-linux-x64.tar.xz
-RUN tar xvf ta-lib-0.4.0-src.tar.gz
+#RUN tar xvf ta-lib-0.4.0-src.tar.gz
 RUN tar xvf node-v8.9.3-linux-x64.tar.xz
 
 #build ta lib
-RUN cd /opt/depend/ta-lib && ./configure --prefix=/usr LDFLAGS="-lm" && make && make install
+#RUN cd /opt/depend/ta-lib && ./configure --prefix=/usr LDFLAGS="-lm" && make && make install
 
 #add file
-COPY ./web /opt/app/web
-COPY ./src /opt/app/src
-COPY ./vendor /opt/app/vendor
-COPY ./docker/config /opt/app/config
+COPY ./web              /opt/app/web
+COPY ./server           /opt/app/server
+COPY ./docker/config    /opt/app/config
 
 #build go depended
-ENV GOPATH /opt/gb
-ENV PATH    $PATH:/opt/depend/node-v8.9.3-linux-x64/bin/:/opt/gb/bin
+ENV GOPATH /opt/app/server
+ENV PATH   $PATH:/opt/depend/node-v8.9.3-linux-x64/bin
 ENV QUANT_CONFIG /opt/app/config/config.ini
 #RUN go get github.com/constabulary/gb/... 
 
@@ -53,10 +52,12 @@ RUN env
 RUN npm install -g cnpm --registry=https://registry.npm.taobao.org && cnpm install cooking -g && cnpm install cooking-cli -g && cd /opt/app/web && cnpm install 
 
 
-#build project
-RUN cd /opt/app && gb build && cd /opt/app/web && cooking build 
+#build server
+RUN go build -o /opt/bin/quant github.com/xiyanxiyan10/quantcore
+#build web
+RUN cd /opt/app/web && cooking build 
 #追加链接库
-RUN echo "/usr/local/lib" >> /etc/ld.so.conf && ldconfig
+#RUN echo "/usr/local/lib" >> /etc/ld.so.conf && ldconfig
 
 #VOLUME 选项是将本地的目录挂在到容器中　此处要注意：当你运行-v　＜hostdir>:<Containerdir> 时要确保目录内容相同否则会出现数据丢失
 ## 对应关系如下
@@ -66,4 +67,4 @@ EXPOSE 9876
 
 WORKDIR /opt/app
 
-CMD ["./bin/samaritan"]
+CMD ["/opt/bin/quant"]
