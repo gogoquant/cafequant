@@ -14,8 +14,18 @@ ENV LC_ALL C
 # 设置环境变量，所有操作都是非交互式的
 ENV DEBIAN_FRONTEND noninteractive
 
+#update pkg
+#RUN yum -y update 
+RUN yum install wget -y 
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+RUN echo "nameserver 114.114.114.114" >> /etc/resolv.conf
+#RUN wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+RUN yum clean all && yum makecache && yum update -y
+RUN yum -y install epel-release 
+
 #install pkg
-RUN yum install -y git gcc wget golang sqlite autoconf automake libtool make
+#RUN yum install -y git gcc wget golang sqlite autoconf automake libtool make
+RUN yum install -y git wget golang sqlite 
 
 #mkdir
 RUN mkdir /opt/app -p
@@ -26,6 +36,7 @@ RUN mkdir /opt/bin -p
 WORKDIR /opt/depend 
 #RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
 RUN wget https://npm.taobao.org/mirrors/node/v8.9.3/node-v8.9.3-linux-x64.tar.xz
+#RUN wget https://studygolang.com/dl/golang/go1.12.5.linux-amd64.tar.gz
 #RUN tar xvf ta-lib-0.4.0-src.tar.gz
 RUN tar xvf node-v8.9.3-linux-x64.tar.xz
 
@@ -35,12 +46,11 @@ RUN tar xvf node-v8.9.3-linux-x64.tar.xz
 #add file
 COPY ./web              /opt/app/web
 COPY ./server           /opt/app/server
-COPY ./docker/config    /opt/app/config
 
 #build go depended
 ENV GOPATH /opt/app/server
-ENV PATH   $PATH:/opt/depend/node-v8.9.3-linux-x64/bin
-ENV QUANT_CONFIG /opt/app/config/config.ini
+ENV PATH   $PATH:/opt/depend/node-v8.9.3-linux-x64/bin:
+#ENV QUANT_CONFIG /opt/app/config/config.ini
 #RUN go get github.com/constabulary/gb/... 
 
 #RUN ls /opt/gb && ls /opt/depend && ls /opt/app
@@ -66,5 +76,9 @@ VOLUME ["/data"]
 EXPOSE 9876
 
 WORKDIR /opt/app
+
+#删除源码
+RUN rm -rf /opt/app/server
+RUN cd /opt/app/web && mv dist ../ && rm -rf * && mv ../dist ./
 
 CMD ["/opt/bin/quant"]

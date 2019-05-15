@@ -9,8 +9,19 @@ case "$1" in
     "build" )
         docker build -t quant ./ 
         ;;
-    "delete" )
-        docker rmi quant 
+    "forcebuild" )
+        docker build --no-cache -t quant ./ 
+        ;;
+    "start" )
+        docker run -d -p 9876:9876 --name quant -v $(pwd)/docker/data:/data quant
+        ;;
+    "stop" )
+        docker stop quant
+        docker rm quant
+        ;;
+    "clean" )
+        docker images|grep none|awk '{print $3}'|xargs rmi -f 
+        docker rmi -f quant 
         ;;
     "record" )
         git commit -a
