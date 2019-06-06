@@ -1,0 +1,23 @@
+{
+  "name": "drawer",
+  "description": "Flexible drawer menu using jQuery, iScroll and CSS.",
+  "keywords": [
+    "jQuery",
+    "CSS",
+    "drawer",
+    "navigation",
+    "responsive"
+  ],
+  "homepage": "http://git.blivesta.com/drawer",
+  "main": [
+    "dist/css/drawer.min.css",
+    "dist/js/drawer.min.js"
+  ],
+  "ignore": [
+    ".*"
+  ],
+  "dependencies": {
+    "jquery": ">= 1.7.0",
+    "iscroll": "~5.1.3"
+  }
+}

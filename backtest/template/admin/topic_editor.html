@@ -1,0 +1,95 @@
+{% extends "./admin_topbar.html" %}
+
+{% block head %}
+<meta charset="utf-8" />
+<link rel="stylesheet" href="{{ static_url('markdown/examples/css/style.css') }}" />
+<link rel="stylesheet" href="{{ static_url('markdown/css/editormd.css') }}" />
+<link rel="shortcut icon" href="https://pandao.github.io/editor.md/favicon.ico" type="image/x-icon" />
+{% end %}  
+
+{% block body %}
+
+
+
+<div id="content" class="col-lg-10 col-sm-10">
+    <div>
+        <ul class="breadcrumb" align="left">
+            <li>
+                <a href="/admin/adminHome">Home</a>
+            </li>
+            <li>
+                <a href="#">TopicPublish</a>
+            </li>
+        </ul>
+    </div>
+
+<div class="row">
+    <div class="box col-md-12">
+        <div class="box-inner">
+            <div class="box-header well" data-original-title="">
+                <h2><i class="glyphicon glyphicon-edit"></i> 发布文章 </h2>
+            </div>
+            <br>
+            <div class="box-content" align="left">
+                <form role="form" id="topic_form">
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="topic_title">标题</label>
+                        <input type="text" class="form-control" id="topic_title" placeholder="标题">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="topic_brief">简介</label>
+                        <input type="text" class="form-control" id="topic_brief" placeholder="简介">
+                    </div>
+
+                    <div class="form-group col-md-4">
+                        <label class="control-label" for="tag_lst">标签</label>
+                        <div id=tag_lst>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <div id="test-editormd">
+                            <textarea id="topic_content" style="display:none;">[TOC]
+                                examples/
+                                languages/     
+                                editormd.js
+                                ...
+                            </textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-default" id="topic_submit">提交</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--/span-->
+</div><!--/row-->
+</div>
+
+        <!-- js 渲染 -->
+        <script src="{{ static_url('js/admin/admin_topic_editor.js') }}" type="text/javascript"></script> 
+        
+        <script type="text/javascript">
+	    var testEditor;
+            $(function() {
+                testEditor = editormd("test-editormd", {
+                    width   : "100%",
+                    height  : 640,
+                    syncScrolling : "single",
+                    path    : "{{ static_url('markdown/lib/') }}",
+                    toolbar  : false             //关闭工具栏
+                });
+                
+            });
+        </script>
+        <script src="{{ static_url('markdown/editormd.min.js') }}"></script>
+{% end %}

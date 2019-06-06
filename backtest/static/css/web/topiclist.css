@@ -1,0 +1,228 @@
+/* ***********************************************文章列表页面 css **********************************/
+
+#center_wrap{
+    padding-top:10px;
+    width:100%;
+    height:100%;
+
+    margin-left:10px;
+    margin-right:10px;
+
+    text-align:center;
+}
+
+/*topic_warp*/
+#topic_wrap { 
+    width:700px;
+    height:100%;
+
+
+    vertical-align:top;
+
+    display:inline-block;
+}
+
+#topic_head{
+    /*
+   background:url('/static/image/web/topic_head.png') no-repeat center top;
+   background-size:100% 100%;
+    */
+   padding-top:70px; 
+   /*padding-left:60px;*/
+   padding-bottom:50px;
+   padding-right:90px;
+    
+   text-align:left;
+   width:100%;
+   height:40px;
+}
+
+#topic_head>ul>li{
+    width:150px;
+
+    vertical-align:top;
+    display:inline-block;
+}
+
+.display_list{
+    color:#9d9d9d;
+    font-size: 30px;
+    font-weight: 400;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.display_list.active{
+    /*border-bottom:2px solid #555;*/
+    text-shadow: 1px 1px 1px #000;
+    color:black; 
+}
+
+#topic_tail{
+   /*
+   background:url('/static/image/web/topic_tail.png') no-repeat center top;
+   background-size:100% 100%;
+   */ 
+
+   width:100%;
+   height:200px;
+}
+
+/*right_warp*/
+#rightbar_wrap { 
+    width:200px;
+    height:100%;
+
+    padding-left:50px;
+    padding-top:80px;
+
+    vertical-align:top;
+    
+    display:inline-block;
+}
+
+#rightbar_head{
+   background:url('/static/image/web/lifetree.png') no-repeat center top;
+   background-size:100% 100%;
+    
+   width:100%;
+   height:180px;
+}
+
+#rightbar_body{
+   /*background:url('/static/image/web/lifetree_body.png') repeat center top;
+   background-size:100% 100%;
+   */
+   /*border-top: 1px solid #ccc;*/
+   padding-top:20px;
+   padding-bottom:20px;
+
+   width:100%;
+   min-height:200px;
+}
+
+#rightbar_tail{
+   background:url('/static/image/web/lifetree_reverse.png') no-repeat center top;
+    
+   background-size:100% 100%;
+
+   width:100%;
+   height:180px;
+}
+
+#tag_lst>ul>li{
+    width:150px;
+
+    padding-left:40px;
+    margin-bottom:10px;
+
+    vertical-align:top;
+    display:inline-block;
+}
+
+.tag_button{
+    color:#9d9d9d; 
+    font-size: 20px;
+    font-weight: 100px;
+    text-align: left;
+    letter-spacing: 1px;
+}
+
+.tag_button.active{
+    color:black;
+    text-shadow: 1px 1px 1px #000;
+}
+
+/*文章列表*/
+#topic_list { 
+    /*
+    background:url('/static/image/web/topic_body.png') repeat-y center top;
+    */
+    min-height:1000px;
+}
+
+.topic_elem { 
+    width:100%;
+    height:200px;
+    text-align: right;
+
+
+    display:inline-block;
+
+    border-bottom:1px solid #ccc;
+}
+
+.topic_elem_title { 
+    width:100%;
+    height:40px;
+    margin: 3px;
+    text-align: left;
+}
+
+.topic_elem_title a{
+    color:black;
+    
+    font-size: 25px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 20px;
+    letter-spacing: 1px;
+    text-decoration:none;
+
+    text-shadow: 1px 1px 1px #000;
+}
+
+.topic_elem_brief { 
+    width:100%;
+    height:60px;
+    margin: 3px;
+    text-align: left;
+    padding-top:10px;
+
+    word-wrap:break-word;
+
+}
+
+.topic_elem_brief p{
+    color:black;
+    font-size: 20px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 20px;
+    letter-spacing: 1px;
+}
+
+
+.topic_elem_tag{ 
+    width:100%;
+    height:40px;
+    margin: 3px;
+    text-align: left;
+    padding-left:450px;
+}
+
+.topic_elem_tag p {
+    color:#615c5c;
+    font-size: 18px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 20px;
+    letter-spacing: 1px;
+}
+
+.topic_elem_ext{ 
+    width:100%;
+    height:40px;
+    margin: 3px;
+    text-align: left;
+    padding-left:450px;
+}
+
+.topic_elem_ext > p {
+    color:#555;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    line-height: 20px;
+    letter-spacing: 1px;
+}

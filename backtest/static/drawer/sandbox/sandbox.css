@@ -1,0 +1,56 @@
+body {
+  font-family: 'Avenir Next', 'Helvetica Neue', sans-serif;
+  margin: 0;
+}
+
+.item {
+  height: 2000px;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  text-align: center;
+  color: #fff;
+}
+
+.bg-red {
+  background-color: #F44336;
+}
+
+.bg-pink {
+  background-color: #E91E63;
+}
+
+.bg-purple {
+  background-color: #9C27B0;
+}
+
+.bg-indigo {
+  background-color: #3f51b5;
+}
+
+.bg-blue {
+  background-color: #2196F3;
+}
+
+.bg-cyan {
+  background-color: #00bcd4;
+}
+
+.bg-teal {
+  background-color: #009688;
+}
+
+.bg-green {
+  background-color: #4caf50;
+}
+
+.bg-lime {
+  background-color: #CDDC39;
+}
+
+.bg-amber {
+  background-color: #FFC107;
+}
+
+.bg-deepOrange {
+  background-color: #ff5722;
+}
