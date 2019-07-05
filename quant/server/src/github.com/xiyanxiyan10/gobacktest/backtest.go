@@ -38,8 +38,6 @@ type Reseter interface {
 
 // BackTest 回测管理
 type BackTest struct {
-	Id string
-
 	config map[string]string
 
 	in  chan EventHandler
