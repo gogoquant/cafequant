@@ -16,9 +16,9 @@ type BackLog interface {
 	Errorf(format string, v ...interface{})
 	Error(v ...interface{})
 
-	Fatal(v ...interface{})
 	Fatalf(format string, v ...interface{})
+	Fatal(v ...interface{})
 
-	Panic(v ...interface{})
 	Panicf(format string, v ...interface{})
+	Panic(v ...interface{})
 }
