@@ -33,9 +33,8 @@ class Application(tornado.web.Application):
             # 导入views，生成routes
             import views
 
-            import views.web.admin.admin
             import views.web.web.home
-            import views.web.phone.home
+    
 
             import views.web.api.user
             import views.web.api.topic
@@ -44,7 +43,6 @@ class Application(tornado.web.Application):
             import views.web.api.pubmsg
             import views.web.api.upload
             
-            import views.web.app.biangua
         
 
             handlers = route.get_routes()
@@ -91,13 +89,8 @@ class Application(tornado.web.Application):
 
     @property
     def mail_connection(self):
-        return EmailBackend(
-            setting.mail_smtp,
-            setting.mail_port,
-            setting.mail_mail,
-            setting.mail_passwd,
-            True
-        )
+        return True
+        
 
     @property
     def base_file_path(self):

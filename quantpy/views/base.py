@@ -44,7 +44,7 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
             use_cdn = setting.STATIC_USE_CDN_FLAG
 
         if use_cdn:
-            base = setting.YX_STATIC_CDN_URL
+            base = setting.STATIC_USE_CDN_FLAG
         else:
             base = ""
         return base + static_handler_class.make_static_url(self.settings, path)
