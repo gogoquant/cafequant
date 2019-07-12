@@ -31,11 +31,6 @@ class Application(tornado.web.Application):
             init_service.load_init_services()
             
             # 导入views，生成routes
-            import views
-
-            import views.web.web.home
-    
-
             import views.web.api.user
             import views.web.api.topic
             import views.web.api.tag
