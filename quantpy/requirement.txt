@@ -1,0 +1,14 @@
+
+pycurl
+pyquery
+pymongo
+simplejson
+tornado
+asyncmongo
+#tornadoredis
+#stormed
+#backports
+#tornadomail
+#hashlib
+backtrader
+ccxt
