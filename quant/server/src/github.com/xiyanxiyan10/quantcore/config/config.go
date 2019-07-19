@@ -10,7 +10,7 @@ import (
 var confs = make(map[string]string)
 
 func init() {
-	conf, err := ini.InsensitiveLoad("/data/config.ini")
+	conf, err := ini.InsensitiveLoad("/tmp/config.ini")
 	if err != nil {
 		conf, err = ini.InsensitiveLoad("config.ini")
 		if err != nil {

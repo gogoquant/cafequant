@@ -15,7 +15,7 @@ import (
 //------------------------------------------------------------------------------------------
 // 交易API
 
-// 获取K线数据
+// GetKLine 获取K线数据
 // strSymbol: 交易对, btcusdt, bccbtc......
 // strPeriod: K线类型, 1min, 5min, 15min......
 // nSize: 获取数量, [1-2000]
@@ -29,7 +29,7 @@ func GetKLine(strSymbol, strPeriod string, nSize int) (r models.KLineReturn, err
 	strRequestUrl := "/market/history/kline"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonKLineReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonKLineReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonKLineReturn), &r)
 
 	return
@@ -45,7 +45,7 @@ func GetTicker(strSymbol string) (r models.TickerReturn, err error) {
 	strRequestUrl := "/market/detail/merged"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonTickReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonTickReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonTickReturn), &r)
 
 	return
@@ -63,7 +63,7 @@ func GetMarketDepth(strSymbol, strType string) (r models.MarketDepthReturn, err 
 	strRequestUrl := "/market/depth"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonMarketDepthReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonMarketDepthReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonMarketDepthReturn), &r)
 
 	return
@@ -79,7 +79,7 @@ func GetTradeDetail(strSymbol string) (r models.TradeDetailReturn, err error) {
 	strRequestUrl := "/market/trade"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonTradeDetailReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonTradeDetailReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonTradeDetailReturn), &r)
 
 	return
@@ -97,7 +97,7 @@ func GetTrade(strSymbol string, nSize int) (r models.TradeReturn, err error) {
 	strRequestUrl := "/market/history/trade"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonTradeReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonTradeReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonTradeReturn), &r)
 
 	return
@@ -113,7 +113,7 @@ func GetMarketDetail(strSymbol string) (r models.MarketDetailReturn, err error) 
 	strRequestUrl := "/market/detail"
 	strUrl := config.MARKET_URL + strRequestUrl
 
-	jsonMarketDetailReturn := untils.HttpGetRequest(strUrl, mapParams)
+	jsonMarketDetailReturn := untils.HTTPGetRequest(strUrl, mapParams)
 	err = json.Unmarshal([]byte(jsonMarketDetailReturn), &r)
 
 	return
@@ -128,7 +128,7 @@ func GetSymbols() (r models.SymbolsReturn, err error) {
 	strRequestUrl := "/v1/common/symbols"
 	strUrl := config.TRADE_URL + strRequestUrl
 
-	jsonSymbolsReturn := untils.HttpGetRequest(strUrl, nil)
+	jsonSymbolsReturn := untils.HTTPGetRequest(strUrl, nil)
 	err = json.Unmarshal([]byte(jsonSymbolsReturn), &r)
 
 	return
@@ -140,7 +140,7 @@ func GetCurrencys() (r models.CurrencysReturn, err error) {
 	strRequestUrl := "/v1/common/currencys"
 	strUrl := config.TRADE_URL + strRequestUrl
 
-	jsonCurrencysReturn := untils.HttpGetRequest(strUrl, nil)
+	jsonCurrencysReturn := untils.HTTPGetRequest(strUrl, nil)
 	err = json.Unmarshal([]byte(jsonCurrencysReturn), &r)
 
 	return
@@ -152,7 +152,7 @@ func GetTimestamp() (r models.TimestampReturn, err error) {
 	strRequest := "/v1/common/timestamp"
 	strUrl := config.TRADE_URL + strRequest
 
-	jsonTimestampReturn := untils.HttpGetRequest(strUrl, nil)
+	jsonTimestampReturn := untils.HTTPGetRequest(strUrl, nil)
 	err = json.Unmarshal([]byte(jsonTimestampReturn), &r)
 
 	return
@@ -166,7 +166,7 @@ func GetTimestamp() (r models.TimestampReturn, err error) {
 func GetAccounts() (r models.AccountsReturn, err error) {
 	strRequest := "/v1/account/accounts"
 
-	jsonAccountsReturn := untils.ApiKeyGet(make(map[string]string), strRequest)
+	jsonAccountsReturn := untils.APIKeyGet(make(map[string]string), strRequest)
 	err = json.Unmarshal([]byte(jsonAccountsReturn), &r)
 
 	return
@@ -178,7 +178,7 @@ func GetAccounts() (r models.AccountsReturn, err error) {
 func GetAccountBalance(strAccountID string) (r models.BalanceReturn, err error) {
 	strRequest := fmt.Sprintf("/v1/account/accounts/%s/balance", strAccountID)
 
-	jsonBanlanceReturn := untils.ApiKeyGet(make(map[string]string), strRequest)
+	jsonBanlanceReturn := untils.APIKeyGet(make(map[string]string), strRequest)
 	err = json.Unmarshal([]byte(jsonBanlanceReturn), &r)
 
 	return
@@ -205,7 +205,7 @@ func Place(params models.PlaceRequestParams) (r models.PlaceReturn, err error) {
 
 	strRequest := "/v1/order/orders/place"
 
-	jsonPlaceReturn := untils.ApiKeyPost(mapParams, strRequest)
+	jsonPlaceReturn := untils.APIKeyPost(mapParams, strRequest)
 	err = json.Unmarshal([]byte(jsonPlaceReturn), &r)
 
 	return
@@ -217,7 +217,7 @@ func Place(params models.PlaceRequestParams) (r models.PlaceReturn, err error) {
 func SubmitCancel(strOrderID string) (r models.PlaceReturn, err error) {
 	strRequest := fmt.Sprintf("/v1/order/orders/%s/submitcancel", strOrderID)
 
-	jsonPlaceReturn := untils.ApiKeyPost(make(map[string]string), strRequest)
+	jsonPlaceReturn := untils.APIKeyPost(make(map[string]string), strRequest)
 	err = json.Unmarshal([]byte(jsonPlaceReturn), &r)
 
 	return
@@ -227,7 +227,7 @@ func SubmitCancel(strOrderID string) (r models.PlaceReturn, err error) {
 func GetOrderDetail(strOrderID string) (r models.OrderDetailReturn, err error) {
 	strRequest := fmt.Sprintf("/v1/order/orders/%s", strOrderID)
 
-	jsonOrderReturn := untils.ApiKeyGet(make(map[string]string), strRequest)
+	jsonOrderReturn := untils.APIKeyGet(make(map[string]string), strRequest)
 	err = json.Unmarshal([]byte(jsonOrderReturn), &r)
 
 	return
@@ -242,7 +242,7 @@ func GetOrders(strSymbol string) (r models.OrdersReturn, err error) {
 
 	strRequest := "/v1/order/orders"
 
-	jsonOrdersReturn := untils.ApiKeyGet(mapParams, strRequest)
+	jsonOrdersReturn := untils.APIKeyGet(mapParams, strRequest)
 	err = json.Unmarshal([]byte(jsonOrdersReturn), &r)
 
 	return
