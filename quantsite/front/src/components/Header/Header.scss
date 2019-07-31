@@ -1,0 +1,51 @@
+@import "../../styles/Base";
+
+.container {
+  width: 100%;
+  background: white;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+}
+
+.header {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  @media screen and(max-width: $screen-md) {
+    flex-direction: column;
+  }
+}
+
+.logo {
+  width: 128px;
+  height: 32px;
+  float: left;
+  margin: 16px 24px;
+  background: url("../../assets/logo.svg");
+}
+
+.menu {
+  width: 100%;
+  line-height: 64px;
+  @media screen and(max-width: $screen-md) {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+.right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.account {
+  line-height: 64px;
+}
+
+.avatar {
+  margin-right: 8px;
+}

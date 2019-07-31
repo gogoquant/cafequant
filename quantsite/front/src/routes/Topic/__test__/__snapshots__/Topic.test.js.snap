@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Topic /> should render <Exception /> 1`] = `<Exception />`;
+
+exports[`<Topic /> should render correctly 1`] = `
+<Fragment>
+  <Title
+    title="title"
+  />
+  <withRouter(Connect(TopicContentComponent)) />
+  <ConnectFunction
+    current={1}
+    onClickUp={[Function]}
+    onReplyPageChange={[Function]}
+    onReplySizeChange={[Function]}
+    pageSize={10}
+  />
+  <TopicEditor
+    loading={false}
+    onClickReply={[Function]}
+    onEditorChange={[Function]}
+    value=""
+  />
+</Fragment>
+`;
+
+exports[`<Topic /> should render default title 1`] = `
+<Fragment>
+  <Title
+    title="话题"
+  />
+  <withRouter(Connect(TopicContentComponent)) />
+  <ConnectFunction
+    current={1}
+    onClickUp={[Function]}
+    onReplyPageChange={[Function]}
+    onReplySizeChange={[Function]}
+    pageSize={10}
+  />
+  <TopicEditor
+    loading={false}
+    onClickReply={[Function]}
+    onEditorChange={[Function]}
+    value=""
+  />
+</Fragment>
+`;

@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<MarkdownEditor /> should render correctly 1`] = `
+<SimpleMDEEditor
+  events={Object {}}
+  onChange={[MockFunction]}
+  options={
+    Object {
+      "autoDownloadFontAwesome": false,
+      "placeholder": "支持 Markdown 语法",
+      "spellChecker": false,
+    }
+  }
+  value="content"
+/>
+`;
