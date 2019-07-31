@@ -1,0 +1,149 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<nz-layout>
+  <nz-sider nzCollapsible [(nzCollapsed)]="isCollapsed">
+    <div class="logo">
+      <a style="line-height: 48px;color: white">
+        <img src='/assets/img/logo.svg' style="width: 44px;vertical-align: middle" />
+        <span *ngIf="!isCollapsed" style="font-size: 14px">
+          Matrix Admin
+        </span>
+      </a>
+    </div>
+    <ul nz-menu [nzTheme]="'dark'" [nzMode]="isCollapsed?'vertical':'inline'">
+      <li nz-menu-item routerLink="/dashboard">
+        <span title>
+          <i class="anticon anticon-dashboard"></i>
+          <span class="nav-text" style="font-size: 14px">仪表盘</span>
+        </span>
+      </li>
+
+      <!-- <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-dropbox"></i>
+          <span class="nav-text" style="font-size: 14px">容器管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item>集群管理</li>
+          <li nz-menu-item>应用栈管理</li>
+          <li nz-menu-item>权限管理</li>
+        </ul>
+      </li>
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-dropbox"></i>
+          <span class="nav-text" style="font-size: 14px">微服务引擎</span>
+        </span>
+        <ul>
+          <li nz-menu-item>服务治理</li>
+          <li nz-menu-item>配置管理</li>
+          <li nz-menu-item>服务监控</li>
+        </ul>
+      </li>
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-dropbox"></i>
+          <span class="nav-text" style="font-size: 14px">对象存储管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item>存储桶管理</li>
+        </ul>
+      </li>-->
+
+      <!--
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-profile"></i>
+          <span class="nav-text" style="font-size: 14px">用例/缺陷管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item>用例管理</li>
+          <li nz-menu-item>缺陷管理</li>
+        </ul>
+      </li>
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-profile"></i>
+          <span class="nav-text" style="font-size: 14px">配置管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item>项目管理</li>
+          <li nz-menu-item>代码仓库管理</li>
+        </ul>
+      </li> -->
+
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-setting"></i>
+          <span class="nav-text" style="font-size: 14px">账号管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item routerLink="/tenant">租户管理</li>
+          <li nz-menu-item routerLink="/users">用户管理</li>
+          <li nz-menu-item routerLink="/usersgroup">用户组管理</li>
+          <li nz-menu-item>权限管理</li>
+        </ul>
+      </li>
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-profile"></i>
+          <span class="nav-text" style="font-size: 14px">敏捷管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item routerLink="/mds/products">产品列表</li>
+          <li nz-menu-item routerLink="/mds/projects">项目列表</li>
+        </ul>
+      </li>
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-profile"></i>
+          <span class="nav-text" style="font-size: 14px">测试管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item routerLink="/mds/test/tmp">测试平台</li>
+          <li nz-menu-item routerLink="/mds/test/tta">工具自动化</li>
+        </ul>
+      </li>
+
+      <li nz-submenu>
+        <span title>
+          <i class="anticon anticon-setting"></i>
+          <span class="nav-text" style="font-size: 14px">容器管理</span>
+        </span>
+        <ul>
+          <li nz-menu-item routerLink="/mce">服务列表</li>
+        </ul>
+        <ul>
+            <li nz-menu-item routerLink="/cluster">集群管理</li>
+          </ul>
+      </li>
+
+
+      <li nz-menu-item routerLink="/mse">
+        <span title>
+          <i class="anticon anticon-setting"></i>
+          <span class="nav-text" style="font-size: 14px">配置文件中心</span>
+        </span>
+      </li>
+      <li nz-menu-item routerLink="/logging">
+        <span title>
+          <i class="anticon anticon-setting"></i>
+          <span class="nav-text" style="font-size: 14px">日志审计</span>
+        </span>
+      </li>
+    </ul>
+  </nz-sider>
+  <nz-layout>
+    <nz-header style="padding:0;">
+      <i class="anticon trigger" [class.anticon-menu-fold]="!isCollapsed" [class.anticon-menu-unfold]="isCollapsed" (click)="isCollapsed=!isCollapsed"
+        style="color: #fff"></i>
+    </nz-header>
+    <nz-content style="margin:0 16px;">
+
+      <div class="maitrx-content">
+        <router-outlet></router-outlet>
+        <!-- <app-messages></app-messages> -->
+      </div>
+    </nz-content>
+    <nz-footer>Matrix Cloud ©2018</nz-footer>
+  </nz-layout>
+</nz-layout>

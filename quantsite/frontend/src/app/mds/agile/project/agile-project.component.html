@@ -1,0 +1,213 @@
+<div *ngIf="showProject">
+  <nz-breadcrumb style="margin:12px 0;">
+    <nz-breadcrumb-item>
+      <a routerLink="/agile/projects" style="color: #1890ff;">
+        <i class="anticon anticon-home"></i>
+      </a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <a style="color: #1890ff;">
+        <span>敏捷管理</span>
+      </a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>项目列表
+    </nz-breadcrumb-item>
+  </nz-breadcrumb>
+  <div nz-row>
+    <div nz-col nzSpan="24">
+        <app-selectuser (handleOk)="handleUserOk($event)"></app-selectuser>
+      <nz-input-group style="width: 200px;margin:12px 0;margin-left: 12px;" nzSuffixIcon="anticon anticon-search">
+        <input nz-input (blur)="onblur($event)" (keyup.enter)="onblur($event)" [(ngModel)]="name" nz-input placeholder="输入RTC用户名或选择用户">
+      </nz-input-group>
+      <input nz-input (blur)="productNameBlur($event)" (keyup.enter)="productNameBlur($event)" placeholder="产品名称" [(ngModel)]="productName" style="width: 200px;margin:12px 0;margin-left: 12px;">
+      <input nz-input (blur)="projectNameBlur($event)" (keyup.enter)="projectNameBlur($event)" placeholder="项目名称" [(ngModel)]="projectName" style="width: 200px;margin:12px 0;margin-left: 12px;">
+    </div>
+  </div>
+  <div nz-row style="margin-top: 20px;">
+    <nz-table #groupTable nzShowSizeChanger [nzFrontPagination]="false" [nzData]="groupData" [nzLoading]="loading" [nzTotal]="total"
+      [(nzPageIndex)]="pageNum" [(nzPageSize)]="pageSize" (nzPageIndexChange)="searchData()" (nzPageSizeChange)="searchData(true)">
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>产品</th>
+          <th>创建者</th>
+          <th>创建时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let data of groupTable.data">
+          <td title={{data.title}}><a (click)="getProjectDetail(data.projectId)">{{data.title}}</a></td>
+          <td title={{data.productName}}>{{data.productName}}</td>
+          <td>{{data.creatorName}}</td>
+          <td>{{data.createTime}}</td>
+          <td><a (click)="projectConfigModal(data.title, data.projectId, tplContent)">配置</a>&nbsp;&nbsp;
+              <a (click)="projectMemberModal(data.title, data.projectId, tmlMemberContent)">成员</a></td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </div>
+</div>
+
+
+<!-- 项目详情页面 -->
+<div *ngIf="showDetail">
+  <nz-breadcrumb style="margin:12px 0;">
+    <nz-breadcrumb-item>
+      <a routerLink="/agile/projects" style="color: #1890ff;">
+        <i class="anticon anticon-home"></i>
+      </a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>
+      <a style="color: #1890ff;">
+        <span>敏捷管理</span>
+      </a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item><a (click)="clickList()">项目列表</a>
+    </nz-breadcrumb-item>
+    <nz-breadcrumb-item>{{projectDetail.title}}
+    </nz-breadcrumb-item>
+  </nz-breadcrumb>
+  <div nz-row>
+    <div nz-col nzSpan="24">
+
+    </div>
+  </div>
+  <div nz-row style="margin-top: 20px;">
+    <form nz-form [formGroup]="validateForm">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="projectId">项目编号</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectDetail.projectId}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="title">项目名称</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectDetail.title}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="description">项目描述</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectDetail.description}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="title">计划时间</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <nz-range-picker formControlName="dateRange" nzDisabled></nz-range-picker>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </div>
+</div>
+
+
+<ng-template #tplContent >
+  <div nz-row style="margin-top: 20px;">
+    <form nz-form [formGroup]="projectConfigForm">
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="projectId">项目编号</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectConfig.projectId}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="registryHost">服务器域名</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectConfig.registryHost}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label [nzSpan]="4" nzFor="registryId">镜像仓库ID</nz-form-label>
+        <nz-form-control [nzSpan]="16">
+          <input type="text" nz-input value="{{projectConfig.registryId}}" readonly="readonly">
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="registryProjectId">镜像仓库项目ID</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.registryProjectId}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="registryProjectName">镜像仓库项目名称</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.registryProjectName}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="codeGitRepo">代码仓库</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.codeGitRepo}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="pkgArchivePath">归档路径</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.pkgArchivePath}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="namespace">命名空间</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.namespace}}"  readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="appstack">应用栈</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.appstack}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="sendMailStatus">发送邮件</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.sendMailStatus}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="timesheetProjectId">报工系统项目ID</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.timesheetProjectId}}" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="timesheetWebhookUrl">报工系统URL</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <input type="text" nz-input value="{{projectConfig.timesheetWebhookUrl}}" nzDisabled="true" readonly="readonly">
+          </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+          <nz-form-label [nzSpan]="4" nzFor="updateTime">更新时间</nz-form-label>
+          <nz-form-control [nzSpan]="16">
+            <nz-date-picker formControlName="updateTime" nzShowTime nzDisabled></nz-date-picker>
+          </nz-form-control>
+        </nz-form-item>
+    </form>
+  </div>
+</ng-template>
+
+<ng-template #tmlMemberContent>
+  <nz-table #memberTable  [nzData]="projectMembers.roleUserRelationDTOList" [nzLoading]="loading" >
+  <thead>
+    <tr>
+      <th>编号</th>
+      <th>姓名</th>
+      <th>角色</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let data of memberTable.data">
+      <td>{{data.userId}}</td>
+      <td>{{data.name}}</td>
+      <td>
+        <nz-select style="width: 150px;" [(ngModel)]="data.roleId" [nzSize]="size" [nzDisabled]="true">
+          <nz-option *ngFor="let option of projectMembers.roleDTOList" [nzLabel]="option.roleName" [nzValue]="option.roleId"></nz-option>
+        </nz-select>
+      </td>
+    </tr>
+  </tbody>
+</nz-table>
+</ng-template>

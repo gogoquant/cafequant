@@ -1,0 +1,57 @@
+<nz-breadcrumb style="margin:12px 0;">
+  <nz-breadcrumb-item>
+    <a routerLink="/users">
+      <i class="anticon anticon-home"></i>
+    </a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>
+    <a>
+      <span>账号管理</span>
+    </a>
+  </nz-breadcrumb-item>
+  <nz-breadcrumb-item>用户管理
+  </nz-breadcrumb-item>
+</nz-breadcrumb>
+<div nz-row>
+  <div nz-col nzSpan="4">
+    <nz-input-group style="width:200px" nzSearch [nzSuffix]="suffixIconButton">
+      <input type="text" #searchBox [(ngModel)]="keywords" nz-input placeholder="输入姓名" (keyup)="searchData(keywords)">
+    </nz-input-group>
+    <div style="margin-bottom: 15px;">
+      <ng-template #suffixIconButton>
+        <button nz-button nzType="primary" (click)="searchData(keywords)" [nzLoading]="isLoading" nzSearch>
+          <i class="anticon anticon-search"></i>
+        </button>
+      </ng-template>
+    </div>
+  </div>
+  <div nz-col nz-col nzSpan="4" style="margin-left:10px">
+    <button nz-button nzType="primary" (click)="syncUsers()" [nzLoading]="syncUserLoading">同步用户</button>
+  </div>
+  <!-- <app-selectuser (handleOk)="handleUserOk($event)"></app-selectuser> -->
+</div>
+<!-- <div style="min-height: 100%">
+  <nz-spin class="matrix-loading" [nzDelay]="500"></nz-spin>
+</div> -->
+<nz-table #ajaxTable nzShowSizeChanger [nzFrontPagination]="false" [nzData]="accounts" [nzLoading]="loading" [nzTotal]="total"
+  [(nzPageIndex)]="pageIndex" [nzShowTotal]="totalTemplate" [(nzPageSize)]="pageSize" (nzPageIndexChange)="searchData()" (nzPageSizeChange)="searchData(true)">
+  <thead>
+    <tr>
+      <th>姓名</th>
+      <th></th>
+      <th>用户ID</th>
+      <th>邮箱</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let data of ajaxTable.data">
+      <td>{{data.name}}</td>
+      <td>{{data.username}}</td>
+      <td>{{data.user_id}}</td>
+      <td>{{data.email}}</td>
+    </tr>
+  </tbody>
+</nz-table>
+<ng-template #totalTemplate let-total>
+    共 {{total}} 条
+</ng-template>

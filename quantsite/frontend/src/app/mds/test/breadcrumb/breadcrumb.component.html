@@ -1,0 +1,10 @@
+<nz-breadcrumb style="margin:12px 0;">  
+  <nz-breadcrumb-item>
+    <a routerLink="" style="color: #1890ff;">
+      <i class="anticon anticon-home"></i>
+    </a>
+  </nz-breadcrumb-item>  
+  <nz-breadcrumb-item *ngFor="let breadcrumb of breadcrumbObservable | async as breadcrumbs">
+    <a [routerLink]="[breadcrumb.url]" [queryParams]="breadcrumb.params">{{ breadcrumb.label }}</a>
+  </nz-breadcrumb-item>
+</nz-breadcrumb>

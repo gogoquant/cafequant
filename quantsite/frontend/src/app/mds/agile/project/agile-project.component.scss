@@ -1,0 +1,10 @@
+/**:host 表示组件自身 ::ng-deep 表示强制侵入子组件 */
+:host ::ng-deep table {
+    table-layout: fixed;
+}
+    
+td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

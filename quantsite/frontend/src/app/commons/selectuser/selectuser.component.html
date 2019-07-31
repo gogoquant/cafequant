@@ -1,0 +1,23 @@
+<button nz-button nzType="primary" (click)="showUserModal()">选择用户</button>
+<nz-modal nzWidth=650 [(nzVisible)]="isUserVisible" nzTitle="选择用户" (nzOnCancel)="handleUserCancel()" (nzOnOk)="handleUserOk()">
+  <form nz-form [nzLayout]="vertical" [formGroup]="validateUserForm">
+    <nz-form-item>
+      <nz-form-label nzFor="user_id">请选择用户</nz-form-label>
+      <nz-form-control style="margin-left: 4.5%;">
+        <nz-transfer
+          [nzDataSource]="list"
+          nzShowSearch
+          [nzOperations]="['', '']"
+          [nzListStyle]="{'width.px': 250, 'height.px': 300}"
+          (nzSearchChange)="search($event)"
+          (nzSelectChange)="select($event)"
+          (nzChange)="change($event)">
+          <ng-template #render let-item>
+            {{ item.name }}-{{ item.username }}
+          </ng-template>
+        </nz-transfer>
+        <nz-form-explain *ngIf="validateUserForm.get('user_id').dirty && validateUserForm.get('user_id').errors">请选择用户</nz-form-explain>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</nz-modal>

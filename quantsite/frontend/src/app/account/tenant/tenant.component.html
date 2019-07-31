@@ -1,0 +1,137 @@
+<div *ngIf="showTenant">
+    <nz-breadcrumb style="margin:12px 0;">
+      <nz-breadcrumb-item>
+        <a routerLink="/tenant" style="color: #1890ff;">
+          <i class="anticon anticon-home"></i>
+        </a>
+      </nz-breadcrumb-item>
+      <nz-breadcrumb-item>
+        <a style="color: #1890ff;">
+          <span>账号管理</span>
+        </a>
+      </nz-breadcrumb-item>
+      <nz-breadcrumb-item><a (click)="clickList()">租户管理</a>
+      </nz-breadcrumb-item>
+    </nz-breadcrumb>
+    <div nz-row>
+      <div nz-col nzSpan="24">
+        <nz-input-group style="width: 200px;margin:12px 0;margin-left: 12px;" nzSuffixIcon="anticon anticon-search">
+          <input nz-input (blur)="queryTenantByName($event)" (keyup.enter)="queryTenantByName($event)" nz-input placeholder="租户名">
+        </nz-input-group>
+        <button nz-button nzType="primary" style="float:right;" (click)="showAddTenantView()">添加租户</button>
+      </div>
+    </div>
+    <div nz-row style="margin-top: 20px;">
+      <nz-table #groupTable nzShowSizeChanger [nzFrontPagination]="false" [nzData]="groupData" [nzLoading]="loading" [nzTotal]="total"
+        [(nzPageIndex)]="pageNum" [(nzPageSize)]="pageSize" (nzPageIndexChange)="searchData()" (nzPageSizeChange)="searchData(true)">
+        <thead>
+          <tr>
+            <th>租户ID</th>
+            <th>租户名称</th>
+            <th>租户管理员</th>
+            <th>备注</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let data of groupTable.data">
+            <td title={{data.tenant_id}}>{{data.tenant_id}}</td>
+            <td title={{data.name}}>{{data.name}}</td>
+            <td>{{data.manager}}</td>
+            <td>{{data.comment}}</td>
+            <td>{{data.create_time | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+            <td><a (click)="tenantEditModal(data.name, data.uuid, tplContent)">编辑</a>&nbsp;&nbsp;
+                <a (click)="delTenantConfirm(data.name, data.uuid)">删除</a></td>
+          </tr>
+        </tbody>
+      </nz-table>
+    </div>
+</div>
+
+<div *ngIf="showAddTenant">
+    <nz-breadcrumb style="margin:12px 0;">
+        <nz-breadcrumb-item>
+          <a routerLink="/tenant" style="color: #1890ff;">
+            <i class="anticon anticon-home"></i>
+          </a>
+        </nz-breadcrumb-item>
+        <nz-breadcrumb-item>
+          <a style="color: #1890ff;">
+            <span>账号管理</span>
+          </a>
+        </nz-breadcrumb-item>
+        <nz-breadcrumb-item><a (click)="clickList()">租户管理</a>
+        </nz-breadcrumb-item>
+        <nz-breadcrumb-item>新增租户
+        </nz-breadcrumb-item>
+      </nz-breadcrumb>
+      <div nz-row style="margin-top: 50px;">
+        <div nz-col nzSpan="24">
+          <form nz-form [formGroup]="validateForm" (ngSubmit)="submitForm($event,validateForm.value)">
+            <nz-form-item>
+              <nz-form-label [nzSpan]="7" nzRequired>租户ID</nz-form-label>
+              <nz-form-control [nzSpan]="12" nzHasFeedback>
+                <input nz-input formControlName="tenant_id" placeholder="租户ID">
+                <nz-form-explain *ngIf="validateForm.get('tenant_id').dirty && validateForm.get('tenant_id').errors">
+                  <ng-container *ngIf="validateForm.get('tenant_id').hasError('required')">
+                    请输入租户ID!
+                  </ng-container>
+                  <ng-container *ngIf="validateForm.get('tenant_id').hasError('maxlength')">
+                    请输入15个长度字符内的租户ID!
+                  </ng-container>
+                  <ng-container *ngIf="validateForm.get('tenant_id').hasError('tenant_id')">
+                    租户ID只能包含小写字母、数字及中横线("-")，且必须以小写字母开头，数字或小写字母结尾！
+                  </ng-container>
+                </nz-form-explain>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="7" nzRequired>租户名称</nz-form-label>
+              <nz-form-control [nzSpan]="12" nzHasFeedback>
+                <input nz-input formControlName="name" maxlength="30" placeholder="租户名称,30长度字符" >
+                <nz-form-explain *ngIf="validateForm.get('name').dirty&&validateForm.get('name').errors">
+                  <ng-container *ngIf="validateForm.get('name').hasError('name')">
+                    该租户名称输入不正确!
+                  </ng-container>
+                  <ng-container *ngIf="validateForm.get('name').hasError('required')">
+                    请输入租户名称!
+                  </ng-container>
+                  <ng-container *ngIf="validateForm.get('name').hasError('maxlength')">
+                    请输入30个字符长度内的租户名称!
+                  </ng-container>
+                </nz-form-explain>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="7" nzRequired>租户管理员</nz-form-label>
+              <nz-form-control [nzSpan]="12" nzHasFeedback>
+                <app-selectuser (handleOk)="handleUserOk($event)"></app-selectuser>
+                <input nz-input formControlName="manager" readonly placeholder="请选择租户管理员" style="width: 70%;" >
+                <nz-form-explain *ngIf="validateForm.get('manager').dirty&&validateForm.get('manager').errors">
+                  <ng-container *ngIf="validateForm.get('manager').hasError('manager')">
+                    该租户管理员输入不正确!
+                  </ng-container>
+                  <ng-container *ngIf="validateForm.get('name').hasError('required')">
+                    请输入租户管理员!
+                  </ng-container>
+                </nz-form-explain>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-label [nzSpan]="7">备注</nz-form-label>
+              <nz-form-control [nzSpan]="12" >
+                <textarea formControlName="comment" nz-input rows="2" maxlength="50" placeholder="输入备注"></textarea>
+                <nz-form-explain *ngIf="validateForm.get('comment').dirty&&validateForm.get('comment').hasError('maxlength')">请输入50个长度以内字符!</nz-form-explain>
+              </nz-form-control>
+            </nz-form-item>
+            <nz-form-item>
+              <nz-form-control [nzOffset]="7" [nzSpan]="12">
+                <button nz-button nzType="primary" (click)="addTenant($event)" [disabled]="!validateForm.valid">Submit</button>
+                <button nz-button (click)="resetForm($event)">Reset</button>
+              </nz-form-control>
+            </nz-form-item>
+          </form>
+        </div>
+      </div>
+</div>
