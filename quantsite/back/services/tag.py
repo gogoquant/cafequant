@@ -20,9 +20,9 @@ from models.user.tag_model import Tag
 from services.base import BaseService 
 
 from util.time_common import DAY_PATTERN, timestamp_to_string, FULL_PATTERN, week_seconds, day_seconds, month_seconds
-from util.oauth2 import *
+#from util.oauth2 import *
 
-__all__ = ['EditorService', 'AdminService', 'SdkAdminService']
+__all__ = ['TagService']
 
 
 '''文章管理'''

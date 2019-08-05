@@ -13,6 +13,7 @@ import tornado.httpclient
 import random
 import uuid
 import pdb
+import setting
 
 from models.user.user_model import User, ResetPasswd
 from models.user.message_model import ChatMessage
@@ -20,9 +21,9 @@ from models.user.message_model import ChatMessage
 from services.base import BaseService 
 
 from util.time_common import DAY_PATTERN, timestamp_to_string, FULL_PATTERN, week_seconds, day_seconds, month_seconds
-from util.oauth2 import *
+#from util.oauth2 import *
 
-__all__ = ['EditorService', 'AdminService', 'SdkAdminService']
+__all__ = ['ChatMsgService']
 
 
 '''留言板管理'''

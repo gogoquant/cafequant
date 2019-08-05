@@ -76,7 +76,8 @@ class BaseService(dict):
     
     def _(self, text):
         ''' Localisation shortcut '''
-        return self.locale.translate(text).encode("utf-8")
+        return text
+        #return self.locale.translate(text).encode("utf-8")
     
     def get_fields(self,model_cls):
         fields = {}

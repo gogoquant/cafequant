@@ -1,19 +1,19 @@
 #-*- coding: UTF-8 -*-
 '''
-Xiaolin.Dai
+hongwei.mei
 history model
 '''
 import logging
 
-from models.base_model import *
+from iseecore.models import AsyncBaseModel
 
-class History(BaseModel):
+class History(AsyncBaseModel):
     
     def __init__(self):
-        BaseModel.__init__(self)
-        self.db  = self.connection.user
-        self.dao = self.db.history
-        self.key = "history_id"
+        AsyncBaseModel.__init__(self)
+        
+        table           = "history"
+        key             = "history_id"
     
     def field(self):
         return {

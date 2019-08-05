@@ -9,6 +9,7 @@
 import hashlib
 import tornado.gen
 import time
+import logging
 import tornado.httpclient
 import random
 import uuid
@@ -19,9 +20,8 @@ from models.user.user_model import User, ResetPasswd
 from services.base import BaseService 
 
 from util.time_common import DAY_PATTERN, timestamp_to_string, FULL_PATTERN, week_seconds, day_seconds, month_seconds
-from util.oauth2 import *
 
-__all__ = ['EditorService', 'AdminService', 'SdkAdminService']
+__all__ = ['UserService']
 
 NoUserException = -1
 PasswdErrorException = -2
@@ -36,7 +36,7 @@ MES_PAGE_COUNT = 20
 ACTIVE_USER_TIME = day_seconds * 3
 
 
-'''普通用户管理接口'''
+'''UserService 普通用户管理接口'''
 class UserService(BaseService):
     
     user_m = User()
@@ -57,9 +57,10 @@ class UserService(BaseService):
 
     @tornado.gen.engine
     def login(self, email, password, token, token_from, openid=None, app_id=None, callback=None):
-
+        '''用户登陆'''
         third_id = None
         
+        '''
         if token:
             third_user = yield tornado.gen.Task(self._get_data_from_social, token, token_from, openid=openid)
             if third_user:
@@ -67,6 +68,7 @@ class UserService(BaseService):
             else:
                 callback((None, None))
                 return
+        '''
         
         if third_id:
             query = {
@@ -91,21 +93,23 @@ class UserService(BaseService):
                 return
 
         # update third user image and recommend follows
-        if third_id:
-            yield tornado.gen.Task(self._update_logo_if_have_not_custom, user)
+        # if third_id:
+        #    yield tornado.gen.Task(self._update_logo_if_have_not_custom, user)
 
         user_info = yield tornado.gen.Task(self.info, user, None, None)
 
         if third_id:
-            user_info['third_name'] = third_user['name']
+            # user_info['third_name'] = third_user['name']
+            user_info['third_name'] = "3rd"
         else:
             user_info['third_name'] = ""
 
         callback((user['user_id'], user_info))
 
+    '''
     @tornado.gen.engine
     def login_from_wechat_webview(self, code, callback=None):
-        '''第三方登录'''
+        """第三方登录"""
         wc_api = OAuth2.instance(WEBCHAT_T)
         if hasattr(setting, "proxy_host"):
             wc_api.set_proxy(setting.proxy_host, setting.proxy_port)
@@ -119,29 +123,14 @@ class UserService(BaseService):
             user_id, user_info = yield tornado.gen.Task(self.register, None, None, token_info["access_token"], WEBCHAT_T, token_info["openid"], allow_random_name=1)
 
         callback((user_id, user_info))
-
-    @tornado.gen.engine
-    def login_from_weibo_webview(self, code, callback=None):
-        '''第三方登录'''
-        weibo_api = OAuth2.instance(WEIBO_T)
-        if hasattr(setting, "proxy_host"):
-            weibo_api.set_proxy(setting.proxy_host, setting.proxy_port)
-        token_info = yield tornado.gen.Task(weibo_api.get_token_info_from_code, code)
-        if not "access_token" in token_info:
-            callback((None, None))
-            return
-
-        user_id, user_info = yield tornado.gen.Task(self.login, None, None, token_info["access_token"], WEIBO_T)
-        if not user_id:
-            user_id, user_info = yield tornado.gen.Task(self.register, None, None, token_info["access_token"], WEIBO_T, allow_random_name=1)
-
-        callback((user_id, user_info))
-
+    '''    
 
     @tornado.gen.engine
     def register(self, email, passwd, token, token_from, openid=None, extra={}, app_id=None, allow_random_name=None, callback=None):
+        '''用户注册'''
         third_id = None
-        #第三方登录的支持
+        #第三方登录注册支持
+        '''
         if token:
             third_user = yield tornado.gen.Task(self._get_data_from_social, token, token_from, openid=openid)
             if third_user:
@@ -149,7 +138,7 @@ class UserService(BaseService):
             else:
                 callback((None, None))
                 return
-
+        '''
         query = {"email": email}
 
         #第三方登录的支持
@@ -166,7 +155,8 @@ class UserService(BaseService):
 
         #第三方登录的支持
         if token:
-            user = third_user.copy()
+            pass
+            #user = third_user.copy()
         else:
             try:
                 name = email.split('@')[0]
@@ -199,20 +189,21 @@ class UserService(BaseService):
                 else:
                     data = {
                         'name': same_name_user['name'],
-                        'photo': self._get_user_photo(user, size=USER_IMAGE_SMALL)
+                        #'photo': self._get_user_photo(user, size=USER_IMAGE_SMALL)
                     }
                     callback((data, UserSameNameException))
                     return
 
         new_user_id = yield tornado.gen.Task(self.user_m.insert, user, upsert=True, safe=True)
-        ext_data = {
-            'user_id': new_user_id
-        }
+        #ext_data = {
+        #    'user_id': new_user_id
+        #}
 
         new_user = yield tornado.gen.Task(self.info, None, new_user_id, None)
 
         if third_id:
-            new_user['third_name'] = third_user['name']
+            new_user['third_name'] = ""
+            #new_user['third_name'] = third_user['name']
         else:
             new_user['third_name'] = ""
 
@@ -374,7 +365,7 @@ class UserService(BaseService):
             'description': user.get('description', '')
         }
         callback(result)
-
+    '''
     @tornado.gen.engine
     def _get_data_from_social(self, token, token_from, openid=None, callback=None):
         logging.error('from 3rd %s %s' % (token_from, token))
@@ -462,4 +453,4 @@ class UserService(BaseService):
             callback(user_data)
         else:
             callback(None)
-
+    '''
