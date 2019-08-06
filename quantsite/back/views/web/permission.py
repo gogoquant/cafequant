@@ -8,14 +8,14 @@
 
 import logging
 import simplejson
-from services.defines import MisakaPriv
+from services.defines import PRIV_DEFAULT, PRIV_MAX
 
 class Permission(object):
 
-    def _init_(self):
-        '''传入字符串初始化权限句柄'''
-        self.msize = self.MisakaPriv.MAX
-        self.permissionInit(self.MisakaPriv.OrgPermisson())
+    def _init_(self, pstr = PRIV_DEFAULT):
+        self.msize = PRIV_MAX
+        self.permissionInit(pstr)
+      
 
     def permissionInit(self, pstr):
         '''设置权限'''
@@ -61,7 +61,7 @@ class Permission(object):
         '''获取权限串'''
         return self.pstr, self.size
 
-    def permissionCheck(p):
+    def permissionCheck(self, p):
         lftSize = self.permissionSize()
         rhtSize = p.permissionSize()
 

@@ -7,6 +7,7 @@
 '''
 
 import time
+from permission import Permission
 import simplejson
 import urlparse
 import tornado.web
@@ -37,7 +38,7 @@ KEEP_LOGIN_SECONDS = 60 * 60
 class WebHandler(RequestHandler):
 
     def static_url(self, path, use_cdn=None):
-        '''获取真实链接'''
+        '''get real address, Cdn maybe used'''
         
         self.require_setting("static_path", "static_url")
         
@@ -45,17 +46,17 @@ class WebHandler(RequestHandler):
             "static_handler_class", tornado.web.StaticFileHandler)
 
         if use_cdn is None:
-            use_cdn = setting.WEB_STATIC_USE_CDN_FLAG
+            use_cdn = setting.IS_CDN
 
         if use_cdn:
-            base = setting.MISAKA_STATIC_CDN_URL
+            base = setting.STATIC_CDN_URL
         else:
             base = ""
 
         return base + static_handler_class.make_static_url(self.settings, path)
 
     def set_default_headers(self):
-        '''设置默认http头'''
+        '''set http header'''
         
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
@@ -71,11 +72,10 @@ class WebHandler(RequestHandler):
         '''响应封装'''
 
         #设置导航栏信息
-        nav_active = self.__class__.nav_active if hasattr(self.__class__, 'nav_active') else None
-        kwargs['navbar_list'] = self.navbar_list
-        kwargs['nav_active'] = nav_active
-        
-        self.response.update(kwargs)
+        #nav_active = self.__class__.nav_active if hasattr(self.__class__, 'nav_active') else None
+        #kwargs['navbar_list'] = self.navbar_list
+        #kwargs['nav_active'] = nav_active
+        #self.response.update(kwargs)
 
         RequestHandler.render(self, **self.response)
 
@@ -122,13 +122,11 @@ class WebHandler(RequestHandler):
 
     @property
     def navbar_list(self):
-        '''头部导航列表'''
-        
+        '''头部导航列表'''     
         nav_list = [
             {"name": "index", "title": self._("topic list"), "href": "/web/resource"},
             {"name": "infoview", "title": self._("Statics"), "href": "/web/infoview/group"},
         ]
-
         return nav_list
 
 class WebAsyncAuthHandler(WebHandler):
@@ -144,6 +142,15 @@ class WebAsyncAuthHandler(WebHandler):
         需要加上的原因是子类可能也需要执行异步阻塞，
         如果父类调用sele.finish()则子类将不能使用connection
     """
+    def permissionCheck(self, permission): 
+        if self.view_permission is None:
+            permission_pass = True
+        else:
+            view_permission = Permission(self.view_permission)
+            user_permission = Permission(permission)
+            #user_permission = Permission(self.editorinfo['permissions'])
+            permission_pass  = user_permission.permissionCheck(view_permission)
+        return permission_pass   
 
     @tornado.web.asynchronous
     @tornado.gen.engine
@@ -168,26 +175,11 @@ class WebAsyncAuthHandler(WebHandler):
         if not has_priv:
             if self.request.method in ('GET', 'HEAD'):
                 url = self.get_login_url()
-                if '?' not in url:
-                    if urlparse.urlsplit(url).scheme:
-                        next_url = self.request.full_url()
-                    else:
-                        next_url = self.request.uri
-                    self.redirect(url)
-                    return
-
-        #鉴定权限, 
-        if self.view_permission is None:
-            #没有权限壁障则直接放过
-            checkTat = True
-        else:
-            checkTat = permission.permissionCheck(self.view_permission)
+                self.redirect(url)
+                return
         
-        if checkTat is None:
-            logging.error("check permission error")
-
         #权限不够，重定向
-        if not checkTat:
+        if not self.permissionCheck(self.editorinfo['permissions']):
             info = {}
             info["msg"] = self._('Not permitted to visit')
             info["url"] = "/"
@@ -198,10 +190,7 @@ class WebAsyncAuthHandler(WebHandler):
 
     @tornado.web.asynchronous
     @tornado.gen.engine
-    def post(self, *args, **kwargs):
-        #pdb.set_trace()
-
-
+    def post(self, *args, **kwargs): 
         if not hasattr(self, '_post_'):
             raise tornado.web.HTTPError(405)
 
@@ -215,11 +204,9 @@ class WebAsyncAuthHandler(WebHandler):
         if not has_priv:
             raise tornado.web.HTTPError(403)
 
-        if not self.edit_permission is None:
-            if not self.checkPermission(self.edit_permission):
+        if not self.permissionCheck(self.editorinfo['permissions']):
                 raise tornado.web.HTTPError(403)
-                return
-
+        
         self._post_(*args, **kwargs)
 
     @tornado.web.asynchronous
@@ -237,10 +224,8 @@ class WebAsyncAuthHandler(WebHandler):
         if not has_priv:
             raise tornado.web.HTTPError(403)
 
-        if not self.edit_permission is None:
-            if not self.checkPermission(self.edit_permission):
+        if not self.permissionCheck(self.editorinfo['permissions']):        
                 raise tornado.web.HTTPError(403)
-                return
 
         self._put_(*args, **kwargs)
 
@@ -261,10 +246,8 @@ class WebAsyncAuthHandler(WebHandler):
         if not has_priv:
             raise tornado.web.HTTPError(403)
 
-        if not self.edit_permission is None:
-            if not self.checkPermission(self.edit_permission):
+        if not self.permissionCheck(self.editorinfo['permissions']):
                 raise tornado.web.HTTPError(403)
-                return
 
         self._delete_(*args, **kwargs)
 
@@ -291,7 +274,6 @@ class WebAsyncAuthHandler(WebHandler):
 
     @tornado.gen.engine
     def is_session_expired(self, callback=None):  
-
         
         '''后台审计'''
         login_time = self.get_cookie(EDITOR_LOGIN_TIME_COOKIE_KEY)
@@ -355,7 +337,7 @@ class WebAsyncAuthHandler(WebHandler):
                     has_priv = False
                 else:
                     #获取用户服务
-                    from services.user import UserService, NoUserException, PasswdErrorException, NoAppException
+                    #from services.user import UserService, NoUserException, PasswdErrorException, NoAppException
                     
                     #尝试获取用户信息
                     editor_service = UserService()

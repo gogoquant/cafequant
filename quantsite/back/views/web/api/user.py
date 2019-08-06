@@ -1,14 +1,16 @@
 #-*- coding: UTF-8 -*-
 
 '''
-    Created on 2016-12-26
+    @brief 文章管理
     @author: xiyan
+    @data 2019-08-06
 '''
 
 import logging
 import tornado.gen
 import tornado.web
 import pdb
+import setting
 
 from tornado.options import define, options
 from iseecore.routes  import route
@@ -117,7 +119,8 @@ class UserModifyHandler(WebAsyncAuthHandler):
         age = self.get_argument("age", None)
         address = self.get_argument("address", None)
         description = self.get_argument("description", None)
-        user_id = self.api_user["user_id"]
+        #user_id = self.api_user["user_id"]
+        user_id = ''
 
         update_values = {}
 
@@ -167,7 +170,7 @@ class LogoutHandler(WebAsyncAuthHandler):
     def _post_(self):
         self._get_()
 
-
+'''
 @route(r"/api/user/check_login", name="api.user.check_login")
 class CheckLoginHandler(WebAsyncAuthHandler):
     user_s = UserService()
@@ -185,8 +188,9 @@ class CheckLoginHandler(WebAsyncAuthHandler):
 
         yield tornado.gen.Task(self.user_s.refresh_last_online, user_id)
         self.finish()
+'''
 
-
+'''
 @route(r"/api/user/forget_passwd", name="api.user.forget_passwd")
 class ForgetPasswdHandler(WebAsyncAuthHandler):
     user_service = UserService()
@@ -238,7 +242,7 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _post_(self):
         self._get_()
-
+'''
 
 @route(r"/api/user/change_passwd/(.*)", name="api.user.change_passwd")
 class ForgetPasswdHandler(WebAsyncAuthHandler):
@@ -331,7 +335,7 @@ class UserSearchHandler(WebHandler):
 
 
 @route(r"/api/user/tot", name="api.user.tot")
-class UserSearchHandler(WebHandler):
+class UserTotHandler(WebHandler):
     user_s = UserService()
 
     @tornado.gen.engine

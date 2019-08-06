@@ -3,7 +3,6 @@
     @brief 文章管理
     @author: xiyan
     @data 2016-12-26
-
 '''
 
 import logging

@@ -15,6 +15,7 @@ MEDIA_BASE_URL = "http://10.0.1.125:9000"
 ELA_LOGGING_URL = 'http://10.0.1.120:8080/api/v1/proxy/namespaces/kube-system/services/elasticsearch-logging/'
 CDN_URL = "http://7xi53e.com1.z0.glb.clouddn.com"
 LOCAL_SITE_URL = "127.0.0.1"
+
 #该网站跳转的域名
 MISAKA_DNS = "www.lancelot.top"
 
@@ -71,10 +72,9 @@ MONGO_USER = "admin"
 MONGO_PASS = "password"
 
 #CDN
-STATIC_USE_CDN_FLAG = False
-WEB_STATIC_USE_CDN_FLAG = False 
-MISAKA_STATIC_CDN_URL = "http://www.baidu.com"
-MISAkA_STATIC_URL = "http://www.lancelot.top"
+IS_CDN = False
+STATIC_CDN_URL = "http://www.baidu.com"
+STATIC_URL = "http://www.lancelot.top"
 
 #静态文件路径
 MISAKA_STATIC_DIR = "/home/ubuntu/project/misakaWeb/python-web/static"

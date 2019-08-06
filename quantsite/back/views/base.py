@@ -18,10 +18,19 @@ from iseecore.routes import route
 import setting
 
 class RequestHandler(tornado.web.RequestHandler, SessionMixin):
+    def __init__(self):
+        self.initialize()
+        
+    def tileSet(self, title):
+        self.title = title
+        
+    def ttemplateSet(self, template):
+        self.template = template
 
     def initialize(self):
+        self.title = ""
+        self.template = ""
         self.response = {}
-
         self.ch = options.group_dict('ch')
         self.fastdfs_client = options.group_dict('fastdfs_client')
         self.redis_client = options.group_dict('redis_client')
@@ -35,41 +44,26 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
         if not self.redis_client:
             logging.error('need redis_client in tornado.options')
 
-    def static_url(self, path, use_cdn=None):
-        self.require_setting("static_path", "static_url")
-        static_handler_class = self.settings.get(
-            "static_handler_class", tornado.web.StaticFileHandler)
-
-        if use_cdn is None:
-            use_cdn = setting.STATIC_USE_CDN_FLAG
-
-        if use_cdn:
-            base = setting.STATIC_USE_CDN_FLAG
-        else:
-            base = ""
-        return base + static_handler_class.make_static_url(self.settings, path)
-
-    def make_yx_static_url(self, path, use_cdn=None):
-        self.require_setting("static_path", "static_url")
-        static_handler_class = self.settings.get(
-            "static_handler_class", tornado.web.StaticFileHandler)
-
-        if use_cdn is None:
-            use_cdn = setting.STATIC_USE_CDN_FLAG
-
-        if use_cdn:
-            base = setting.YX_STATIC_CDN_URL
-        else:
-            base = ""
-        return base + static_handler_class.make_static_url(self.settings, path)
-
     def prepare(self):
-        self.view_permission = None
-        self.edit_permission = None
+        self.view_permission = "00000"
+        #self.edit_permission = None
+        
+
+    def _get_(self, *args, **kwargs):
+        raise tornado.web.HTTPError(405)
+
+    def _post_(self, *args, **kwargs):
+        raise tornado.web.HTTPError(405)  
+    
+    def _put_(self, *args, **kwargs):
+        raise tornado.web.HTTPError(405) 
+    
+    def _delete_(self, *args, **kwargs):
+        raise tornado.web.HTTPError(405)          
 
     def get_user_locale(self):
         if hasattr(self, "lan_form_arg"):
-            lan = self.lan_form_arg
+            lan = ''#self.lan_form_arg
         else:
             lan = self.get_secure_cookie("user_locale")
         self.__locale = lan
@@ -103,12 +97,11 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
         return self.locale.translate(text)
 
     def render(self, **kwargs):
-        title = self.title if hasattr(self, 'title') else ''
         
-        template = self.template if hasattr(self, 'template') else (
-            self.__class__.template if hasattr(self.__class__, 'template') else "")
-
-        # 增加公共参数
+        title = self.title
+        template = self.template
+        
+        # add public env 
         kwargs['site_url'] = setting.SITE_URL
         kwargs['isset'] = self.isset
         kwargs['make_url'] = self.make_url
@@ -186,6 +179,6 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
 @route(r"/(.*)", name="error")
 class ErrorHandler(RequestHandler):
     def prepare(self):
-        super(RequestHandler, self).prepare()
+        super().prepare()
         self.set_status(404)
         raise tornado.web.HTTPError(404)
