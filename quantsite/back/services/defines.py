@@ -1,8 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-__author__ = 'anti-moth'
-
 import inspect
 
 ERROR_JSON_STATUS = -1
