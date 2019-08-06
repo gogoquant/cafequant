@@ -31,7 +31,7 @@ from pycket.driver import Driver
     发送消息
 '''
 @route(r"/api/pub/add", name="api.pub.add")
-class TagAddHandler(WebAsyncAuthHandler):
+class PubAddHandler(WebAsyncAuthHandler):
 
     @tornado.gen.engine
     def _post_(self):
@@ -72,7 +72,7 @@ class TagAddHandler(WebAsyncAuthHandler):
     获取消息集合
 '''
 @route(r"/api/pub/search", name="api.pub.search")
-class TagListHandler(WebHandler):
+class PubSearchHandler(WebHandler):
 
     @tornado.gen.engine
     def _post_(self):
@@ -102,7 +102,7 @@ class TagListHandler(WebHandler):
     获取留言数量
 '''
 @route(r"/api/pub/count", name="api.pub.count")
-class TagListHandler(WebHandler):
+class PubCountHandler(WebHandler):
     pub_s = PubMsgService()
 
     @tornado.gen.engine
@@ -122,7 +122,7 @@ class TagListHandler(WebHandler):
     删除动态
 '''
 @route(r"/api/pub/delete", name="api.pub.delete")
-class TagListHandler(WebAsyncAuthHandler):
+class PubDeleteHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _post_(self):
         self.pub_s = PubMsgService()
@@ -136,7 +136,7 @@ class TagListHandler(WebAsyncAuthHandler):
     获取某个
 '''
 @route(r"/api/pub/get", name="api.pub.get")
-class TagListHandler(WebHandler):
+class PubGetHandler(WebHandler):
     
     @tornado.gen.engine
     def _post_(self):
@@ -151,7 +151,7 @@ class TagListHandler(WebHandler):
     更新动态
 '''
 @route(r"/api/pub/update", name="api.pub.update")
-class TagListHandler(WebAsyncAuthHandler):
+class PubUpdateHandler(WebAsyncAuthHandler):
     
     @tornado.gen.engine
     def _post_(self):

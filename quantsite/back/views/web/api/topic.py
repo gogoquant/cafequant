@@ -181,8 +181,6 @@ class TopicGetHandler(WebHandler):
 
     @tornado.gen.engine
     def _post_(self):
-        
-        import pdb
 
         #获取用户数据
         topic_id = self.get_argument("topic_id", None)
@@ -211,7 +209,7 @@ class TopicGetHandler(WebHandler):
     获取用户文章总数
 '''
 @route(r"/api/topic/tot", name="api.topic.tot")
-class TopicGetHandler(WebHandler):
+class TopicTotHandler(WebHandler):
     topic_s = TopicService()
 
     @tornado.gen.engine

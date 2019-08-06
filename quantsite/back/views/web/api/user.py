@@ -14,7 +14,7 @@ import setting
 
 from tornado.options import define, options
 from iseecore.routes  import route
-from views.web.base import *
+#from views.web.base import *
 
 from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
 
