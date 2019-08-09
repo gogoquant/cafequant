@@ -6,7 +6,7 @@ from tornado import ioloop
 from tornado.options import options
 import tornado.gen
 import cPickle
-import Image
+#import Image
 
 import logging
 import simplejson
@@ -71,7 +71,7 @@ def dict_to_object(
 
 @tornado.gen.engine
 def sync_data_receive(response, callback=None):
-    global db_conn
+    #global db_conn
     if not response:
         logging.error("callback response is None!")
         response.ack()
@@ -110,9 +110,6 @@ def sync_data_receive(response, callback=None):
         if method == METHOD_DELETE:
             yield tornado.gen.Task(sync_delete, module, className, args)
 
-        if className == "Instance":
-            yield tornado.gen.Task(operate_cate_group, method, args)
-
     response.ack()
     if callback:
         callback(None)
@@ -126,7 +123,7 @@ upload_file_tmp = "upload_file.tmp"
 @tornado.gen.engine
 def upload_file(response, callback=None):
     md5 = response.headers["md5"]
-    file_type = response.headers["file_type"]
+    #file_type = response.headers["file_type"]
     binary_content = response.body
     # need_narrow = response.headers["need_narrow"]
     ext = response.headers["ext"]
@@ -138,6 +135,7 @@ def upload_file(response, callback=None):
     # in the process, do not need to do any image_resize, video_compress
     # and unity generate etc, only need to save file to local module.
     # in addition, this only need to get width and height for image search
+    '''
     if file_type == FILE_IMAGE:
         with open("upload_file.tmp", "w+") as file_data:
             file_data.write(binary_content)
@@ -149,6 +147,7 @@ def upload_file(response, callback=None):
         except IOError, e:
             logging.error(e.message)
             pass
+    '''
     """ upload to local dfs """
     file_id = None
     try:
@@ -333,35 +332,6 @@ def sync_delete(module, className, args, callback=None):
         logging.error(e.message)
         exc_msg = traceback.format_exc()
         logging.error(exc_msg)
-    if callback:
-        callback(None)
-
-
-@tornado.gen.engine
-def operate_cate_group(method, args, callback=None):
-    logging.error("instance sync ok")
-    from services.instance import InstanceService
-    instance_class = InstanceService()
-    if method == METHOD_INSERT:
-        groupname = args["groupname"]
-        search_instance_count = args["search_instance_count"]
-        training_instance_count = args["training_instance_count"]
-        yield tornado.gen.Task(instance_class.handle_instance, ch, "new",
-                               groupname, search_instance_count,
-                               training_instance_count)
-    elif method == METHOD_UPDATE:
-        groupname = args[0]["groupname"]
-        update_set = args[1].get('$set')
-        search_instance_count = update_set["search_instance_count"]
-        training_instance_count = update_set["training_instance_count"]
-        yield tornado.gen.Task(instance_class.handle_instance, ch, "modify",
-                               groupname, search_instance_count,
-                               training_instance_count)
-    else:
-        groupname = args["groupname"]
-        yield tornado.gen.Task(instance_class.handle_instance, ch, "del",
-                               groupname, 0, 0)
-
     if callback:
         callback(None)
 
