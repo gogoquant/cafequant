@@ -13,53 +13,52 @@ import traceback
 
 from iseecore.models import AsyncBaseModel
 
+
 #文章
 class Topic(AsyncBaseModel):
-    
-    title            = False    #文章标题
-    
-    brief            = False    #文章简介
 
-    content          = False    #文章内容
+    title = False  #文章标题
 
-    tag_id           = False    #文章类型
-    
-    file_type        = False    #文章格式类型
-    
-    user_id          = False    #用户id
+    brief = False  #文章简介
 
-    
-    published        = False    #是否发表
+    content = False  #文章内容
 
-    reader           = False    #阅读次数
+    tag_id = False  #文章类型
 
-    star             = False    #关注次数 
+    file_type = False  #文章格式类型
 
-    mark             = False    #特殊标记,预留
+    user_id = False  #用户id
 
+    published = False  #是否发表
 
-    ctime            = False    #创建时间
+    reader = False  #阅读次数
 
-    mtime            = False    #最后编辑时间
+    star = False  #关注次数
+
+    mark = False  #特殊标记,预留
+
+    ctime = False  #创建时间
+
+    mtime = False  #最后编辑时间
 
     # meta
-    table           = "topic"
-    key             = "topic_id"
+    table = "topic"
+    key = "topic_id"
 
 
 #文章评论
 class TopicDis(AsyncBaseModel):
 
-    topic_id        = False     #文章ID
-    
-    user_id         =  False    #用户ID
+    topic_id = False  #文章ID
 
-    content         = False     #评论内容
+    user_id = False  #用户ID
 
-    father_id       = False     #被引用的评论
+    content = False  #评论内容
 
-    ctime            = False    #创建时间
-    
+    father_id = False  #被引用的评论
+
+    ctime = False  #创建时间
+
     # meta
-    table           = "topicdis"
-    key             = "topicdis_id"
+    table = "topicdis"
+    key = "topicdis_id"

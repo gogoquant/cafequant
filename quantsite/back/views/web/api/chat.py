@@ -12,7 +12,7 @@ import tornado.web
 import pdb
 
 from tornado.options import define, options
-from iseecore.routes  import route
+from iseecore.routes import route
 from views.web.base import *
 
 from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
@@ -25,11 +25,11 @@ import hashlib
 
 import setting
 from pycket.driver import Driver
-
-
 '''
     添加留言
 '''
+
+
 @route(r"/api/chat/add", name="api.chat.add")
 class TagAddHandler(WebAsyncAuthHandler):
     chat_s = ChatMsgService()
@@ -43,24 +43,28 @@ class TagAddHandler(WebAsyncAuthHandler):
 
         if len(title) > 9:
             title = title[0:9]
-        
+
         if not hasattr(self, 'editorinfo'):
             user_id = None
         else:
             user_id = self.editorinfo["user_id"]
-        
+
         if title is None:
             self.render(msg="参数不足")
             return
-        
-        chat_id = yield tornado.gen.Task(self.chat_s.add, title=title, user_id=user_id)
-        
+
+        chat_id = yield tornado.gen.Task(
+            self.chat_s.add, title=title, user_id=user_id)
+
         self.render_success(msg=chat_id)
         return
+
 
 '''
     获取留言列表
 '''
+
+
 @route(r"/api/chat/search", name="api.chat.search")
 class TagListHandler(WebHandler):
     chat_s = ChatMsgService()
@@ -72,16 +76,20 @@ class TagListHandler(WebHandler):
         pos = 0
         count = self.get_argument("count", 0)
 
-        chats = yield tornado.gen.Task(self.chat_s.get_list_desc, pos=pos, count=count)
-        
-        logging.info("chat count %d" % len(chats) )
-        
+        chats = yield tornado.gen.Task(
+            self.chat_s.get_list_desc, pos=pos, count=count)
+
+        logging.info("chat count %d" % len(chats))
+
         self.render_success(msg=chats)
         return
+
 
 '''
     获取留言数量
 '''
+
+
 @route(r"/api/chat/count", name="api.chat.count")
 class TagListHandler(WebHandler):
     chat_s = ChatMsgService()

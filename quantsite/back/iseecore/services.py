@@ -3,19 +3,24 @@
 import logging
 import setting
 
-SERVICE_TOOL        = 'tool'
-SERVICE_TYPE_INIT   = 0
+SERVICE_TOOL = 'tool'
+SERVICE_TYPE_INIT = 0
+
 
 class Service:
-    def __init__(self, name,service):
-        self.name   = name
+
+    def __init__(self, name, service):
+        self.name = name
         self.service = service
+
     def __str__(self):
         return self.name + self.service
 
+
 class NoServiceException(Exception):
     pass
-        
+
+
 class init_service(object):
     """
     Example
@@ -31,20 +36,19 @@ class init_service(object):
     """
     _init_service_list = []
 
-    def __init__(self,name = None,type = SERVICE_TYPE_INIT):
-        self.name  = name
+    def __init__(self, name=None, type=SERVICE_TYPE_INIT):
+        self.name = name
         self._type = type
-    
-    def __call__(self,_service):
+
+    def __call__(self, _service):
         """gets called when we class decorate"""
         name = self.name and self.name or _service.__name__
         name = name.lower()
-        
-        self._init_service_list.append( {"name":name,"service":_service} )
+
+        self._init_service_list.append({"name": name, "service": _service})
         return _service
-    
+
     @classmethod
     def load_init_services(cls):
         for init_service in cls._init_service_list:
-            init_service['service']() # class __init__
-
+            init_service['service']()  # class __init__

@@ -38,11 +38,7 @@ ACTION_CODE = {
     'page': '10'
 }
 
-SHARE_TYPE = {
-    'pic_share': 0,
-    'h5_share': 1,
-    'video_share': 2
-}
+SHARE_TYPE = {'pic_share': 0, 'h5_share': 1, 'video_share': 2}
 
 TIME_ZONE = {
     0: "0-9",
@@ -58,16 +54,16 @@ TIME_ZONE = {
 }
 
 NEW_TIME_ZONE = {
-    0 : "0-5",
-    1 : "5-10",
-    2 : "10-15",
-    3 : "15-20",
-    4 : "20-25",
-    5 : "25-30",
-    6 : "30-35",
-    7 : "35-40",
-    8 : "40-45",
-    9 : "45-50",
+    0: "0-5",
+    1: "5-10",
+    2: "10-15",
+    3: "15-20",
+    4: "20-25",
+    5: "25-30",
+    6: "30-35",
+    7: "35-40",
+    8: "40-45",
+    9: "45-50",
     10: "50-55",
     11: "55-60",
     12: "60-65",
@@ -93,7 +89,11 @@ class YiXinClientlogSync(object):
         mq_username = setting.MQ_USERNAME
         mq_password = setting.MQ_PASSWORD
         global mq_conn
-        mq_conn = StormedConnection(host=mq_host, username=mq_username, password=mq_password, heartbeat=mq_heartbeat)
+        mq_conn = StormedConnection(
+            host=mq_host,
+            username=mq_username,
+            password=mq_password,
+            heartbeat=mq_heartbeat)
 
         mq_conn.connect(self.run)
         mq_conn.on_disconnect = self.on_amqp_disconnect
@@ -113,29 +113,40 @@ class YiXinClientlogSync(object):
         self.systems = ['ios', 'android']
 
         # todo timezone except record
-        batch_start_time = time_common.string_to_timestamp(self.day_s, time_common.FULL_PATTERN)
-        batch_end_time = time_common.string_to_timestamp(self.day_e, time_common.FULL_PATTERN)
+        batch_start_time = time_common.string_to_timestamp(
+            self.day_s, time_common.FULL_PATTERN)
+        batch_end_time = time_common.string_to_timestamp(
+            self.day_e, time_common.FULL_PATTERN)
 
         # 原始数据
         query = {
-            'date': {"$gte": batch_start_time, "$lt": batch_end_time},
+            'date': {
+                "$gte": batch_start_time,
+                "$lt": batch_end_time
+            },
             'app_id': self.app_id
         }
 
         # 获取符合条件的客户端日志
-        behaviors = yield tornado.gen.Task(self.behavior_log_class.get_list, query)
+        behaviors = yield tornado.gen.Task(self.behavior_log_class.get_list,
+                                           query)
         logging.error("get client record is %d" % len(behaviors))
 
         # 把原始数据读取成用户数据
-        res_action_data, imei_action_data = yield tornado.gen.Task(self.make_data_from_log, behaviors)
+        res_action_data, imei_action_data = yield tornado.gen.Task(
+            self.make_data_from_log, behaviors)
 
         # 分析主题统计相关的用户数据
-        res_stats_records = yield tornado.gen.Task(self.make_res_action_data_to_record, res_action_data)
+        res_stats_records = yield tornado.gen.Task(
+            self.make_res_action_data_to_record, res_action_data)
 
         # 将统计数据整理成记录列表
-        res_stats_lists = yield tornado.gen.Task(self.make_record_to_list, res_stats_records)
+        res_stats_lists = yield tornado.gen.Task(self.make_record_to_list,
+                                                 res_stats_records)
 
-        yield tornado.gen.Task(self.res_statistics_service.client_insert_or_update_list, res_stats_lists)
+        yield tornado.gen.Task(
+            self.res_statistics_service.client_insert_or_update_list,
+            res_stats_lists)
         doc = simplejson.dumps(res_stats_lists)
 
         logging.error("[*] sync_info send doc:%s" % (doc))
@@ -210,7 +221,8 @@ class YiXinClientlogSync(object):
                 logging.error('log error not imei sn')
                 continue
 
-            app_launch_time = time_common.string_to_timestamp(self.day_s, time_common.FULL_PATTERN) * 1000
+            app_launch_time = time_common.string_to_timestamp(
+                self.day_s, time_common.FULL_PATTERN) * 1000
 
             timezone_count_flag = 0
             timezone_count_time = 0
@@ -237,10 +249,13 @@ class YiXinClientlogSync(object):
                     record_list = record.split(',')
 
                     # 不是统计log记录，继续
-                    if (not record_list[0].isdigit()) or (not record_list[1].isdigit()) or (not record_list[2].isdigit()):
+                    if (not record_list[0].isdigit()) or (
+                            not record_list[1].isdigit()) or (
+                                not record_list[2].isdigit()):
                         continue
 
-                    record_time = time_common.timestamp_to_string(app_launch_time / 1000, time_common.DAY_PATTERN)
+                    record_time = time_common.timestamp_to_string(
+                        app_launch_time / 1000, time_common.DAY_PATTERN)
 
                     res_record_map = res_action_data.get(record_time, {})
                     res_imei_map = res_record_map.get(imei, {})
@@ -255,8 +270,9 @@ class YiXinClientlogSync(object):
                         'h5_share_num': 0,
                         'video_share_num': 0
                     }
-                    if record_list[1].strip() == ACTION_CODE['get_animation'] and record_list[2].strip() == '1' and len(
-                            record_list) > 3:
+                    if record_list[1].strip(
+                    ) == ACTION_CODE['get_animation'] and record_list[2].strip(
+                    ) == '1' and len(record_list) > 3:
                         md5 = record_list[3]
                         md5_map = res_imei_map.get(md5, init_map)
                         md5_map['read_num'] += 1
@@ -267,7 +283,8 @@ class YiXinClientlogSync(object):
                         timezone_count_time = int(record_list[0])
                         timezone_count_md5 = md5
 
-                    elif record_list[1].strip() == ACTION_CODE['share'] and len(record_list) > 4:
+                    elif record_list[1].strip(
+                    ) == ACTION_CODE['share'] and len(record_list) > 4:
 
                         share_type = 0
                         if len(record_list) > 5:
@@ -285,11 +302,16 @@ class YiXinClientlogSync(object):
                         res_imei_map[md5] = md5_map
 
                     elif record_list[1].strip() == ACTION_CODE['clear']:
-                        if timezone_count_flag and timezone_count_md5 and res_imei_map.get(timezone_count_md5, None) and (int(record_list[0]) > timezone_count_time):
+                        if timezone_count_flag and timezone_count_md5 and res_imei_map.get(
+                                timezone_count_md5, None) and (int(
+                                    record_list[0]) > timezone_count_time):
                             md5_map = res_imei_map.get(timezone_count_md5)
-                            read_time = (int(record_list[0]) - timezone_count_time) / 1000
+                            read_time = (int(record_list[0]) -
+                                         timezone_count_time) / 1000
                             timezone = self.change_time_to_timezone(read_time)
-                            md5_map['read_time'][timezone] = md5_map['read_time'][timezone] + 1 if md5_map['read_time'].get(timezone) else 1
+                            md5_map['read_time'][timezone] = md5_map[
+                                'read_time'][timezone] + 1 if md5_map[
+                                    'read_time'].get(timezone) else 1
                             res_imei_map[timezone_count_md5] = md5_map
 
                             timezone_count_flag = 0
@@ -337,7 +359,8 @@ class YiXinClientlogSync(object):
         for activetime, activetime_map in log_data.items():
             if not activetime_map:
                 continue
-            stats_date = time_common.string_to_timestamp(activetime, time_common.DAY_PATTERN)
+            stats_date = time_common.string_to_timestamp(
+                activetime, time_common.DAY_PATTERN)
 
             for imei, imei_map in activetime_map.items():
                 if not imei_map:
@@ -367,20 +390,25 @@ class YiXinClientlogSync(object):
                     count_map = res_stats_records.get(stats_md5, init_map)
 
                     count_map['uv_read'] += md5_map['read_num']
-                    count_map['pv_read'] += 1 if md5_map.get('read_num') else 0     # 同个用户当天访问同个主题多次，pv都记为1次
+                    count_map['pv_read'] += 1 if md5_map.get(
+                        'read_num') else 0  # 同个用户当天访问同个主题多次，pv都记为1次
 
                     count_map['uv_share'] += md5_map['share_num']
-                    count_map['pv_share'] += 1 if md5_map.get('share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
+                    count_map['pv_share'] += 1 if md5_map.get(
+                        'share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
 
                     count_map['uv_h5_share'] += md5_map['h5_share_num']
-                    count_map['pv_h5_share'] += 1 if md5_map.get('h5_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
+                    count_map['pv_h5_share'] += 1 if md5_map.get(
+                        'h5_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
 
                     count_map['uv_video_share'] += md5_map['video_share_num']
-                    count_map['pv_video_share'] += 1 if md5_map.get('video_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
+                    count_map['pv_video_share'] += 1 if md5_map.get(
+                        'video_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
 
                     count_map['imei_user'].append(imei)
 
-                    for timezone, time_count in md5_map.get('read_time', {}).items():
+                    for timezone, time_count in md5_map.get('read_time',
+                                                            {}).items():
                         if timezone in count_map['read_time']:
                             count_map['read_time'][timezone] += time_count
                         else:
@@ -405,7 +433,8 @@ class YiXinClientlogSync(object):
         for activetime, activetime_map in log_data.items():
             if not activetime_map:
                 continue
-            statistics_datetime = time_common.string_to_timestamp(activetime, time_common.DAY_PATTERN)
+            statistics_datetime = time_common.string_to_timestamp(
+                activetime, time_common.DAY_PATTERN)
 
             for imei, imei_map in activetime_map.items():
                 if not imei_map:
@@ -433,17 +462,21 @@ class YiXinClientlogSync(object):
                     count_map = statistics_record.get(statistics_md5, init_map)
 
                     count_map['uv_read_num'] += md5_map['read_num']
-                    count_map['pv_read_num'] += 1 if md5_map.get('read_num') else 0     # 同个用户当天访问同个主题多次，pv都记为1次
+                    count_map['pv_read_num'] += 1 if md5_map.get(
+                        'read_num') else 0  # 同个用户当天访问同个主题多次，pv都记为1次
 
                     count_map['uv_share_num'] += md5_map['share_num']
-                    count_map['pv_share_num'] += 1 if md5_map.get('share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
+                    count_map['pv_share_num'] += 1 if md5_map.get(
+                        'share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
 
                     count_map['uv_h5_share_num'] += md5_map['h5_share_num']
-                    count_map['pv_h5_share_num'] += 1 if md5_map.get('h5_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
+                    count_map['pv_h5_share_num'] += 1 if md5_map.get(
+                        'h5_share_num') else 0  # 同个用户当天分享同个主题多次，pv都记为1次
 
                     count_map['imei_user'].append(imei)
 
-                    for timezone, time_count in md5_map.get('read_time', {}).items():
+                    for timezone, time_count in md5_map.get('read_time',
+                                                            {}).items():
                         if timezone in count_map['read_time']:
                             count_map['read_time'][timezone] += time_count
                         else:
@@ -464,7 +497,7 @@ class YiXinClientlogSync(object):
     def change_time_to_timezone(self, read_time):
 
         read_time = int(read_time)
-        time_key = read_time/5
+        time_key = read_time / 5
         timezone = NEW_TIME_ZONE.get(time_key, "90-")
 
         return timezone
@@ -474,7 +507,8 @@ class YiXinClientlogSync(object):
         res_statistics_record_list = []
 
         for k, v in records.items():
-            res_pic = yield tornado.gen.Task(self.res_pic_service.one, md5=v.get('md5'))
+            res_pic = yield tornado.gen.Task(
+                self.res_pic_service.one, md5=v.get('md5'))
             if res_pic:
                 v['resource_id'] = res_pic['resource_id']
                 v['resource_picture_id'] = res_pic['resource_picture_id']
@@ -501,8 +535,11 @@ def usage():
     print "-t '2015-01-02 08:00' '2015-01-01 08:00'"
     print "-z '2'"
 
+
 if __name__ == '__main__':
-    logging.basicConfig(format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s', level=logging.ERROR)
+    logging.basicConfig(
+        format='[%(asctime)s %(filename)s:%(lineno)d %(levelname)s] %(message)s',
+        level=logging.ERROR)
     options.logging = 'debug'
     opts, args = getopt.getopt(sys.argv[1:], "htz")
 
@@ -519,11 +556,18 @@ if __name__ == '__main__':
 
             elif op == "-z":
                 if len(sys.argv) != 3:
-                    day_end = time_common.timestamp_to_string(int(time.time()), time_common.FULL_PATTERN)
-                    day_start = time_common.timestamp_to_string(int(time.time()) - time_common.hour_seconds*2, time_common.FULL_PATTERN)
+                    day_end = time_common.timestamp_to_string(
+                        int(time.time()), time_common.FULL_PATTERN)
+                    day_start = time_common.timestamp_to_string(
+                        int(time.time()) - time_common.hour_seconds * 2,
+                        time_common.FULL_PATTERN)
                 else:
-                    day_end = time_common.timestamp_to_string(int(time.time()), time_common.FULL_PATTERN)
-                    day_start = time_common.timestamp_to_string(int(time.time()) - time_common.hour_seconds*int(sys.argv[-1]), time_common.FULL_PATTERN)
+                    day_end = time_common.timestamp_to_string(
+                        int(time.time()), time_common.FULL_PATTERN)
+                    day_start = time_common.timestamp_to_string(
+                        int(time.time()) -
+                        time_common.hour_seconds * int(sys.argv[-1]),
+                        time_common.FULL_PATTERN)
 
             elif op == "-h":
                 usage()
@@ -534,8 +578,10 @@ if __name__ == '__main__':
         start_time = int(time.time()) - time_common.day_seconds
         end_time = int(time.time())
 
-        day_start = time_common.timestamp_to_string(start_time, time_common.FULL_PATTERN)
-        day_end = time_common.timestamp_to_string(end_time, time_common.FULL_PATTERN)
+        day_start = time_common.timestamp_to_string(start_time,
+                                                    time_common.FULL_PATTERN)
+        day_end = time_common.timestamp_to_string(end_time,
+                                                  time_common.FULL_PATTERN)
     p = r"\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}"
 
     app_id = setting.DEFAULT_APP_ID

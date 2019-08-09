@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-
 '''
     @brief service for topic
     @author: xiyan
@@ -25,11 +24,11 @@ from util.time_common import DAY_PATTERN, timestamp_to_string, FULL_PATTERN, wee
 #from util.oauth2 import *
 
 __all__ = ['TopicService']
-
-
 '''文章管理'''
+
+
 class TopicService(BaseService):
-    
+
     topic_m = Topic()
 
     @tornado.gen.engine
@@ -44,34 +43,38 @@ class TopicService(BaseService):
     def count(self, query, callback):
         "查询用户总数"
         #@TODO
-        query = {
-        
-        }
+        query = {}
         c = yield tornado.gen.Task(self.topic_m.count, query)
         callback(c)
 
     @tornado.gen.engine
-    def get_list(self, user_id=None, tag_id=None,title=None, file_format=None, pos=None, count=None, sort_key=None, callback=None):
+    def get_list(self,
+                 user_id=None,
+                 tag_id=None,
+                 title=None,
+                 file_format=None,
+                 pos=None,
+                 count=None,
+                 sort_key=None,
+                 callback=None):
         '''检索文章分页列表, 根据时间排序'''
-        
+
         #pdb.set_trace()
 
         args = {
             "pos": string.atoi(pos),
             "count": string.atoi(count),
-            'sorts': [
-                [sort_key, setting.DESC],
-            ]
+            'sorts': [[sort_key, setting.DESC],]
         }
 
         #设置过滤条件
         conditions = {}
-    
+
         #设置过滤
         if user_id:
             conditions['user_id'] = user_id
         if title:
-            conditions['title'] = {"$regex":title}
+            conditions['title'] = {"$regex": title}
         if file_format:
             conditions['file_format'] = file_format
         if tag_id:
@@ -83,49 +86,69 @@ class TopicService(BaseService):
         callback(topics)
 
     @tornado.gen.engine
-    def add(self, title, content, brief, tag=None, user_id=None, file_format=None, callback=None):
-        topic = {'title':title, "brief":brief, "content":content, "user_id":user_id}
-        
+    def add(self,
+            title,
+            content,
+            brief,
+            tag=None,
+            user_id=None,
+            file_format=None,
+            callback=None):
+        topic = {
+            'title': title,
+            "brief": brief,
+            "content": content,
+            "user_id": user_id
+        }
+
         if tag:
             topic['tag'] = tag
         if file_format:
             topic['file_format'] = file_format
 
-        
         topic['ctime'] = time.time()
         topic['mtime'] = time.time()
 
-        new_topic_id = yield tornado.gen.Task(self.topic_m.insert, topic, upsert=True, safe=True)
+        new_topic_id = yield tornado.gen.Task(
+            self.topic_m.insert, topic, upsert=True, safe=True)
         callback(new_topic_id)
 
     @tornado.gen.engine
-    def update(self, topic_id, user_id=None, title = None, brief=None, content= None, tag=None, file_format=None, callback=None):
+    def update(self,
+               topic_id,
+               user_id=None,
+               title=None,
+               brief=None,
+               content=None,
+               tag=None,
+               file_format=None,
+               callback=None):
         #pdb.set_trace()
-        
-        query = {"topic_id":topic_id}
+
+        query = {"topic_id": topic_id}
         args = {}
 
         if not title is None:
-            args['title']= title
+            args['title'] = title
 
         if not content is None:
-            args['content']= content
+            args['content'] = content
 
         if not tag is None:
-            args['tag_id']= tag
+            args['tag_id'] = tag
 
         if not file_format is None:
-            args['file_format']= file_format
+            args['file_format'] = file_format
 
         if not brief is None:
-            args['brief']= brief
+            args['brief'] = brief
 
         args['mtime'] = time.time()
 
         update_set = {'$set': args}
 
         yield tornado.gen.Task(self.topic_m.update, query, update_set)
-        
+
         callback(None)
 
     @tornado.gen.engine
@@ -135,4 +158,3 @@ class TopicService(BaseService):
         query = {"topic_id": topic_id}
         yield tornado.gen.Task(self.topic_m.delete, query)
         callback(topic_id)
-

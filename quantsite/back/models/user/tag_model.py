@@ -12,13 +12,13 @@ import traceback
 
 from iseecore.models import AsyncBaseModel
 
+
 #文章标签
 class Tag(AsyncBaseModel):
     #TODO 不能有一样的标签
-    title            = True    #tag 简介
-    user_id          = False   #创建tag的用户id 
-    
-    # meta
-    table           = "tag"
-    key             = "tag_id"
+    title = True  #tag 简介
+    user_id = False  #创建tag的用户id
 
+    # meta
+    table = "tag"
+    key = "tag_id"

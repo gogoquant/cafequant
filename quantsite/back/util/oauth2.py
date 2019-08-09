@@ -25,7 +25,7 @@ import logging
 from functools import wraps
 from urllib import urlencode
 from new import classobj
-from tornado.httpclient import AsyncHTTPClient,HTTPRequest,HTTPError
+from tornado.httpclient import AsyncHTTPClient, HTTPRequest, HTTPError
 from tornado.httputil import HTTPHeaders
 
 import sys
@@ -37,7 +37,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 WEIBO_T = "weibo"
-QQ_T    = "qq"
+QQ_T = "qq"
 WEBCHAT_T = "wechat"
 
 # yowo.idealsee.com APP_ID
@@ -45,11 +45,12 @@ WEBCHAT_OPEN_APP_ID = "wx79124388947c0897"
 WEBCHAT_OPEN_SECRET = "07b12843a0c78c514104754c3d10e4d0"
 
 # yowo.idealsee.com APP_ID
-WEIBO_APPKEY    = "453970566"
+WEIBO_APPKEY = "453970566"
 WEIBO_SECRETKEY = "fea32b2ee419b4a7c0d955ab5861aad1"
 WEIBO_DEFAULT_REDIRECT_URI = "http://yowo.idealsee.com"
 
 AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient")
+
 
 def encode_multipart_formdata(fields, files):
     """
@@ -67,7 +68,8 @@ def encode_multipart_formdata(fields, files):
         L.append(value)
     for (key, filename, value) in files:
         L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' %
+                 (key, filename))
         L.append('Content-Type: %s' % get_content_type(filename))
         L.append('')
         L.append(value)
@@ -77,17 +79,23 @@ def encode_multipart_formdata(fields, files):
     content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
     return content_type, body
 
+
 def get_content_type(filename):
     return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
+
 class Oauth2Error(Exception):
     """Occurred when doing API call"""
+
     def __init__(self, site_name, url, error_msg, *args):
         self.site_name = site_name
         self.url = url
         self.error_msg = error_msg
         Exception.__init__(self, error_msg, *args)
+
+
 def _http_error_handler(func):
+
     @wraps(func)
     def deco(self, *args, **kwargs):
         try:
@@ -102,7 +110,10 @@ def _http_error_handler(func):
             raise Oauth2Error(self.site_name, args[0], res)
 
         return res
+
     return deco
+
+
 class OAuth2(object):
     """Base OAuth2 class, Sub class must define the following settings:
 
@@ -128,30 +139,38 @@ class OAuth2(object):
     build_api_data(self, **kwargs)
     parse_token_response(self, res)
     """
+
     def __init__(self):
         self.proxy_host = None
         self.proxy_port = None
+
     @classmethod
-    def instance(cls,social_type):
+    def instance(cls, social_type):
         if social_type == WEIBO_T:
             return Weibo()
         elif social_type == QQ_T:
             return QQ()
         elif social_type == WEBCHAT_T:
             return Webchat()
-    def set_proxy(self,host,port):
+
+    def set_proxy(self, host, port):
         self.proxy_host = host
         self.proxy_port = port
+
     @tornado.gen.engine
     @_http_error_handler
-    def http_get(self, url, data="",parse=True,callback=None):
+    def http_get(self, url, data="", parse=True, callback=None):
         http_client = AsyncHTTPClient()
         headers = self.get_headers()
-        http_request = HTTPRequest('%s?%s' % (url, urlencode(data)),headers=headers,proxy_host=self.proxy_host, proxy_port=self.proxy_port)
-        response = yield tornado.gen.Task(http_client.fetch,http_request)
+        http_request = HTTPRequest(
+            '%s?%s' % (url, urlencode(data)),
+            headers=headers,
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
+        response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
-            logging.error("Error:%s",response.error)
-            logging.error("Error_body:%s",response.body)
+            logging.error("Error:%s", response.error)
+            logging.error("Error_body:%s", response.body)
             callback(None)
         else:
             response = response.body
@@ -164,14 +183,20 @@ class OAuth2(object):
 
     @tornado.gen.engine
     @_http_error_handler
-    def http_post(self, url, data="",parse=True,callback=None):
+    def http_post(self, url, data="", parse=True, callback=None):
         http_client = AsyncHTTPClient()
         headers = self.get_headers()
-        http_request = HTTPRequest(url,method="POST",headers=headers,body=urlencode(data),proxy_host=self.proxy_host, proxy_port=self.proxy_port)
-        response = yield tornado.gen.Task(http_client.fetch,http_request)
+        http_request = HTTPRequest(
+            url,
+            method="POST",
+            headers=headers,
+            body=urlencode(data),
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
+        response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
-            logging.error("Error:%s",response.error)
-            logging.error("Error_body:%s",response.body)
+            logging.error("Error:%s", response.error)
+            logging.error("Error_body:%s", response.body)
             callback(None)
         else:
             response = response.body
@@ -184,7 +209,7 @@ class OAuth2(object):
 
     @tornado.gen.engine
     @_http_error_handler
-    def http_upload_post(self, url, data="",parse=True,callback=None):
+    def http_upload_post(self, url, data="", parse=True, callback=None):
         http_client = AsyncHTTPClient()
 
         fields = []
@@ -195,14 +220,20 @@ class OAuth2(object):
             else:
                 fields.append([key, value])
         content_type, body = encode_multipart_formdata(fields, files)
-        headers = HTTPHeaders({"content-type":content_type})
-        
-        http_request = HTTPRequest(url,method="POST",headers=headers,body=body,proxy_host=self.proxy_host, proxy_port=self.proxy_port)
+        headers = HTTPHeaders({"content-type": content_type})
+
+        http_request = HTTPRequest(
+            url,
+            method="POST",
+            headers=headers,
+            body=body,
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
         print http_request
-        response = yield tornado.gen.Task(http_client.fetch,http_request)
+        response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
-            logging.error("Error:%s",response.error)
-            logging.error("Error_body:%s",response.body)
+            logging.error("Error:%s", response.error)
+            logging.error("Error_body:%s", response.body)
             callback(None)
         else:
             response = response.body
@@ -217,6 +248,7 @@ class OAuth2(object):
         """Sub class rewiter this function If it's necessary to add headers"""
         return None
 
+
 class Weibo(OAuth2):
     GET_TOKEN_INFO_URL = "https://api.weibo.com/oauth2/get_token_info"
     GET_USER_INFO_URL = "https://api.weibo.com/2/users/show.json"
@@ -225,7 +257,6 @@ class Weibo(OAuth2):
     # POST_WEIBO_URL = "https://api.weibo.com/2/statuses/update.json"
     # POST_WEIBO_URL = "https://api.weibo.com/2/statuses/upload_url_text.json"
     GET_TOKEN_FROM_CODE_URL = "https://api.weibo.com/oauth2/access_token"
-
     """
     http://open.weibo.com/wiki/Oauth2/get_token_info
 
@@ -253,12 +284,12 @@ class Weibo(OAuth2):
     create_at   string  access_token的创建时间，从1970年到创建时间的秒数。
     expire_in   string  access_token的剩余时间，单位是秒数。
     """
+
     @tornado.gen.engine
-    def get_token_info(self,access_token,callback):
-        post_data = {
-            'access_token':access_token
-        }
-        token_info = yield tornado.gen.Task(self.http_post,self.GET_TOKEN_INFO_URL,post_data)
+    def get_token_info(self, access_token, callback):
+        post_data = {'access_token': access_token}
+        token_info = yield tornado.gen.Task(self.http_post,
+                                            self.GET_TOKEN_INFO_URL, post_data)
         callback(token_info)
 
     """
@@ -374,13 +405,12 @@ class Weibo(OAuth2):
     bi_followers_count  int 用户的互粉数
     lang    string  用户当前的语言版本，zh-cn：简体中文，zh-tw：繁体中文，en：英语
     """
+
     @tornado.gen.engine
-    def get_user_info(self,access_token,uid,callback):
-        post_data = {
-            'access_token':access_token,
-            'uid':uid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get,self.GET_USER_INFO_URL,post_data)
+    def get_user_info(self, access_token, uid, callback):
+        post_data = {'access_token': access_token, 'uid': uid}
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
 
     """
@@ -453,24 +483,24 @@ class Weibo(OAuth2):
     }
 
     """
+
     @tornado.gen.engine
-    def get_user_follow(self,access_token,uid,callback):
-        post_data = {
-            'access_token':access_token,
-            'uid':uid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get,self.GET_USER_FOLLOW_URL,post_data)
+    def get_user_follow(self, access_token, uid, callback):
+        post_data = {'access_token': access_token, 'uid': uid}
+        userinfo = yield tornado.gen.Task(self.http_get,
+                                          self.GET_USER_FOLLOW_URL, post_data)
         callback(userinfo)
 
     @tornado.gen.engine
-    def post_weibo_with_pic(self,access_token, text, file_tmp, callback):
+    def post_weibo_with_pic(self, access_token, text, file_tmp, callback):
         f = open(file_tmp)
         post_data = {
             'access_token': str(access_token),
             'status': text,
-            'pic' : f
+            'pic': f
         }
-        userinfo = yield tornado.gen.Task(self.http_upload_post,self.POST_WEIBO_URL,post_data)
+        userinfo = yield tornado.gen.Task(self.http_upload_post,
+                                          self.POST_WEIBO_URL, post_data)
         f.close()
         callback(userinfo)
 
@@ -506,23 +536,25 @@ class Weibo(OAuth2):
     remind_in   string  access_token的生命周期（该参数即将废弃，开发者请使用expires_in）。
     uid string  当前授权用户的UID。
     """
+
     @tornado.gen.engine
-    def get_token_info_from_code(self,code,callback):
+    def get_token_info_from_code(self, code, callback):
         post_data = {
-            "client_id"         : WEIBO_APPKEY,
-            "client_secret"     : WEIBO_SECRETKEY,
-            "code"              : code,
-            "grant_type"        : "authorization_code",
-            "redirect_uri"      : WEIBO_DEFAULT_REDIRECT_URI
+            "client_id": WEIBO_APPKEY,
+            "client_secret": WEIBO_SECRETKEY,
+            "code": code,
+            "grant_type": "authorization_code",
+            "redirect_uri": WEIBO_DEFAULT_REDIRECT_URI
         }
-        token_info = yield tornado.gen.Task(self.http_post,self.GET_TOKEN_FROM_CODE_URL,post_data)
+        token_info = yield tornado.gen.Task(self.http_post,
+                                            self.GET_TOKEN_FROM_CODE_URL,
+                                            post_data)
         callback(token_info)
+
 
 class QQ(OAuth2):
     GET_TOKEN_INFO_URL = "https://graph.qq.com/oauth2.0/me"
     GET_USER_INFO_URL = "https://graph.qq.com/user/get_user_info"
-
-
     """
     http://wiki.connect.qq.com/%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7openid_oauth2-0
     1 请求地址
@@ -544,14 +576,15 @@ class QQ(OAuth2):
     1
     callback( {"client_id":"YOUR_APPID","openid":"YOUR_OPENID"} );
     """
+
     @tornado.gen.engine
-    def get_token_info(self,access_token,callback):
-        post_data = {
-            'access_token':access_token
-        }
-        token_info = yield tornado.gen.Task(self.http_get,self.GET_TOKEN_INFO_URL,post_data,parse=False)
+    def get_token_info(self, access_token, callback):
+        post_data = {'access_token': access_token}
+        token_info = yield tornado.gen.Task(
+            self.http_get, self.GET_TOKEN_INFO_URL, post_data, parse=False)
         if 'callback(' in token_info:
-            token_info = token_info[token_info.index('(')+1:token_info.rindex(')')]
+            token_info = token_info[token_info.index('(') +
+                                    1:token_info.rindex(')')]
             token_info = simplejson.loads(token_info)
         else:
             token_info = token_info.split('&')
@@ -586,21 +619,23 @@ class QQ(OAuth2):
         level   黄钻等级
         is_yellow_year_vip  标识是否为年费黄钻用户（0：不是； 1：是）
     """
+
     @tornado.gen.engine
-    def get_user_info(self,access_token,oauth_consumer_key,openid,callback):
+    def get_user_info(self, access_token, oauth_consumer_key, openid, callback):
         post_data = {
-            'access_token':access_token,
-            'oauth_consumer_key':oauth_consumer_key,
-            'openid':openid
+            'access_token': access_token,
+            'oauth_consumer_key': oauth_consumer_key,
+            'openid': openid
         }
-        userinfo = yield tornado.gen.Task(self.http_get,self.GET_USER_INFO_URL,post_data)
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
+
 
 class Webchat(OAuth2):
     # GET_TOKEN_INFO_URL = "https://graph.qq.com/oauth2.0/me"
     GET_USER_INFO_URL = "https://api.weixin.qq.com/sns/userinfo"
     GET_TOKEN_FROM_CODE_URL = "https://api.weixin.qq.com/sns/oauth2/access_token"
-
     """
     https://open.weixin.qq.com/cgi-bin/frame?t=resource/res_main_tmpl
     参数  含义
@@ -633,13 +668,12 @@ class Webchat(OAuth2):
         }
 
     """
+
     @tornado.gen.engine
-    def get_user_info(self,access_token,openid,callback):
-        post_data = {
-            'access_token':access_token,
-            'openid':openid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get,self.GET_USER_INFO_URL,post_data)
+    def get_user_info(self, access_token, openid, callback):
+        post_data = {'access_token': access_token, 'openid': openid}
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
 
     """
@@ -675,19 +709,25 @@ class Webchat(OAuth2):
     "errcode":40029,"errmsg":"invalid code"
     }
     """
+
     @tornado.gen.engine
-    def get_token_info(self,code,callback):
+    def get_token_info(self, code, callback):
         post_data = {
-            "appid" : WEBCHAT_OPEN_APP_ID,
-            "secret" : WEBCHAT_OPEN_SECRET,
-            "code" : code,
-            "grant_type" : "authorization_code"
+            "appid": WEBCHAT_OPEN_APP_ID,
+            "secret": WEBCHAT_OPEN_SECRET,
+            "code": code,
+            "grant_type": "authorization_code"
         }
-        token_info = yield tornado.gen.Task(self.http_get,self.GET_TOKEN_FROM_CODE_URL,post_data)
+        token_info = yield tornado.gen.Task(self.http_get,
+                                            self.GET_TOKEN_FROM_CODE_URL,
+                                            post_data)
         callback(token_info)
 
+
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s %(filename)s:%(lineno)d %(levelname)s %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s %(filename)s:%(lineno)d %(levelname)s %(message)s',
+        level=logging.INFO)
     import tornado.ioloop
 
     # oauth2 = OAuth2.instance('qq')
@@ -704,14 +744,17 @@ if __name__ == '__main__':
     # access_token = '3DC1C24331F6468C20D0F808AAB5A652'
 
     oauth2 = OAuth2.instance('weibo')
-    if hasattr(setting,"proxy_host"):
-        oauth2.set_proxy("10.0.1.32",31287)
+    if hasattr(setting, "proxy_host"):
+        oauth2.set_proxy("10.0.1.32", 31287)
+
     def get_user_info_response(response):
         logging.info(response)
+
     def callback(response):
         logging.info(response)
         # uid = response.get('uid', '')
         # oauth2.get_user_info(access_token, uid,get_user_info_response)
+
     access_token = "2.003Xt_pCanOfgCd6dcf0a39efEYWCE"
     # access_token = "OezXcEiiBSKSxW0eoylIeAtwmYQypM5splLYSpYTUbOtIR7ftwsTo5O2axcSedADT7igkMZf8UicDKQirp4TIgaPUYopGN267v3YY0KUdvyk4Ri31YIeV285rtuBxRbDNKlkV2ENzbS5i_sF7c19GA"
     # openid = "oIK-pjmHPT4Jd-1p0V6lTqTfoHQY"

@@ -3,6 +3,7 @@
 
 import tornado.web
 
+
 class route(object):
     """
     decorates RequestHandlers and builds up a list of routables handlers
@@ -37,7 +38,7 @@ class route(object):
         """gets called when we class decorate"""
         name = self.name and self.name or _handler.__name__
         if name == "error":
-            self._error_route = tornado.web.url(self._uri,_handler,name=name)
+            self._error_route = tornado.web.url(self._uri, _handler, name=name)
             return _handler
         self._routes.append(tornado.web.url(self._uri, _handler, name=name))
         return _handler

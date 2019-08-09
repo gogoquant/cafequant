@@ -9,26 +9,29 @@ import common
 import re
 import simplejson
 
+
 def SearchSohuVideoUrl(v_url, useragent=None):
-    req = re.compile(r"vid=([^&\?]*)") #匹配出vid
+    req = re.compile(r"vid=([^&\?]*)")  #匹配出vid
     vids = req.findall(v_url)
     if not vids:
         return v_url
     vid = vids[0]
-    html = common.get_html(v_url) #匹配出playlistid，用于发送请求
+    html = common.get_html(v_url)  #匹配出playlistid，用于发送请求
     req = re.compile(r"var PLAYLIST_ID = ([^;]*)")
     play_list_ids = req.findall(html)
     if not play_list_ids:
         return v_url
     play_list_id = play_list_ids[0]
-    request_url = "http://pl.hd.sohu.com/videolist?callback=newest&playlistid=%s"%play_list_id
+    request_url = "http://pl.hd.sohu.com/videolist?callback=newest&playlistid=%s" % play_list_id
     response = common.get_html(request_url, encoding='GBK')
     try:
-        json_obj = simplejson.loads(response[response.find('{') : response.rfind('}') + 1])
-        videos =json_obj.get('videos', [])
+        json_obj = simplejson.loads(
+            response[response.find('{'):response.rfind('}') + 1])
+        videos = json_obj.get('videos', [])
         for video in videos:
             cur_vid = str(video.get('vid', ''))
-            if vid != cur_vid: continue
+            if vid != cur_vid:
+                continue
             cur_url = video.get('pageUrl', '')
             if not cur_url:
                 return v_url
@@ -50,6 +53,4 @@ if __name__ == '__main__':
         v_url = sys.argv[1]
     except Exception:
         v_url = "http://tv.sohu.com/s2015/newslist/?vid=2534613"
-    print "url=%s, v_url="%v_url,sohu_download(v_url, useragent)
-
-
+    print "url=%s, v_url=" % v_url, sohu_download(v_url, useragent)

@@ -31,16 +31,15 @@ from models.files.file_model import File
 
 from services.tool.db import Mongodb
 
-
 import tornadoredis
-CONNECTION_POOL = tornadoredis.ConnectionPool(max_connections=100,
-                                              wait_for_available=True,
-                                              host=setting.REDIS_HOST,
-                                              port=setting.REDIS_PORT)
+CONNECTION_POOL = tornadoredis.ConnectionPool(
+    max_connections=100,
+    wait_for_available=True,
+    host=setting.REDIS_HOST,
+    port=setting.REDIS_PORT)
 logging.error("redis_client init")
 redis_client = tornadoredis.Client(connection_pool=CONNECTION_POOL)
 logging.error('[init]redis_client init success')
-
 
 base_file_path = os.path.dirname(__file__)
 
@@ -48,7 +47,8 @@ if not base_file_path == "":
     os.chdir(base_file_path)
 
 
-def dict_to_object(d):  # for simplejson loads user-defined objects. anti-moth 20160226
+def dict_to_object(
+        d):  # for simplejson loads user-defined objects. anti-moth 20160226
     if '__class__' in d:
         class_name = d.pop('__class__')
         module_name = d.pop('__module__')
@@ -58,7 +58,9 @@ def dict_to_object(d):  # for simplejson loads user-defined objects. anti-moth 2
             inst = cPickle.loads(str(d.pop('__data__')))
 
         except AttributeError:
-            logging.error('[*] dict_to_object error. class_name = %s, module_name = %s ' % (class_name, module_name))
+            logging.error(
+                '[*] dict_to_object error. class_name = %s, module_name = %s ' %
+                (class_name, module_name))
             inst = d
 
     else:
@@ -82,7 +84,6 @@ def sync_data_receive(response, callback=None):
             if callback:
                 callback(None)
             return
-
         """ if module is clear_cache"""
         if module == "clear_cache":
             yield tornado.gen.Task(clear_cache, response)
@@ -102,10 +103,10 @@ def sync_data_receive(response, callback=None):
 
         if method == METHOD_INSERT:
             yield tornado.gen.Task(sync_insert, module, className, args)
-        
+
         if method == METHOD_UPDATE:
-            yield tornado.gen.Task(sync_update, response, module,
-                                   className, args)
+            yield tornado.gen.Task(sync_update, response, module, className,
+                                   args)
         if method == METHOD_DELETE:
             yield tornado.gen.Task(sync_delete, module, className, args)
 
@@ -115,6 +116,7 @@ def sync_data_receive(response, callback=None):
     response.ack()
     if callback:
         callback(None)
+
 
 FILE_IMAGE = "image"
 FILE_VIDEO = "video"
@@ -147,7 +149,6 @@ def upload_file(response, callback=None):
         except IOError, e:
             logging.error(e.message)
             pass
-
     """ upload to local dfs """
     file_id = None
     try:
@@ -157,7 +158,6 @@ def upload_file(response, callback=None):
         logging.error(e.message)
     if not file_id:
         return
-
     ''' Insert file to local file'model '''
     file_model = File()
     file_model.need_sync = False
@@ -175,13 +175,12 @@ def upload_file(response, callback=None):
         "$set": f,
     }
     try:
-        yield tornado.gen.Task(file_model.update, query, update_set,
-                               upsert=True, safe=True)
+        yield tornado.gen.Task(
+            file_model.update, query, update_set, upsert=True, safe=True)
     except Exception, e:
         logging.error(e.message)
         exc_msg = traceback.format_exc()
         logging.error(exc_msg)
-
     """ image resize
     msg = Message(
         "resize",
@@ -212,16 +211,20 @@ def clear_cache(response, callback=None):
         md5 = clear_data["md5"]
         h5_md5 = clear_data["h5_md5"]
 
-        logging.error("clear_resource_pages_cache clear_data:%s" % str(clear_data))
+        logging.error("clear_resource_pages_cache clear_data:%s" %
+                      str(clear_data))
 
         result = yield tornado.gen.Task(redis_client.exists, md5)
         if result:
-            logging.info("clear_resource_pages_cache basic info (md5:%s) success!" % md5)
+            logging.info(
+                "clear_resource_pages_cache basic info (md5:%s) success!" % md5)
             yield tornado.gen.Task(redis_client.delete, md5)
 
         h5_result = yield tornado.gen.Task(redis_client.exists, h5_md5)
         if h5_result:
-            logging.info("clear_resource_pages_cache h5 info (h5_md5:%s) success!" % h5_md5)
+            logging.info(
+                "clear_resource_pages_cache h5 info (h5_md5:%s) success!" %
+                h5_md5)
             yield tornado.gen.Task(redis_client.delete, h5_md5)
 
     if callback:
@@ -233,14 +236,16 @@ def sync_insert(module, className, args, callback=None):
     if args:
         method = METHOD_INSERT
 
-        logging.error("sync_insert module:%s,className:%s,args:%s" % (
-            module, className, str(args)))
+        logging.error("sync_insert module:%s,className:%s,args:%s" %
+                      (module, className, str(args)))
         try:
             import sys
             sys.path.append("models")
             model = __import__(module, fromlist=[className])
         except (ImportError, Exception), e:
-            logging.error('[*] sync_insert import. e = %s, class_name = %s, module_name = %s ' % (e, className, module))
+            logging.error(
+                '[*] sync_insert import. e = %s, class_name = %s, module_name = %s '
+                % (e, className, module))
             model = __import__(module.split(".")[-1], fromlist=[className])
 
         model_class = getattr(model, className)()
@@ -263,8 +268,8 @@ def sync_update(response, module, className, args, callback=None):
     method = METHOD_UPDATE
 
     args = tuple(args)
-    logging.error("sync_update module:%s,className:%s,args:%s" % (
-        module, className, str(args)))
+    logging.error("sync_update module:%s,className:%s,args:%s" %
+                  (module, className, str(args)))
 
     upsert = False
     safe = True
@@ -280,7 +285,9 @@ def sync_update(response, module, className, args, callback=None):
         sys.path.append("models")
         model = __import__(module, fromlist=[className])
     except (ImportError, Exception), e:
-        logging.error('[*] sync_update import. e = %s, class_name = %s, module_name = %s ' % (e, className, module))
+        logging.error(
+            '[*] sync_update import. e = %s, class_name = %s, module_name = %s '
+            % (e, className, module))
         model = __import__(module.split(".")[-1], fromlist=[className])
 
     model_class = getattr(model, className)()
@@ -289,8 +296,8 @@ def sync_update(response, module, className, args, callback=None):
     method = getattr(model_class, method)
 
     try:
-        yield tornado.gen.Task(method, args[0], args[1],
-                               upsert=upsert, safe=safe)
+        yield tornado.gen.Task(
+            method, args[0], args[1], upsert=upsert, safe=safe)
     except Exception, e:
         logging.error(e.message)
         exc_msg = traceback.format_exc()
@@ -303,14 +310,16 @@ def sync_update(response, module, className, args, callback=None):
 def sync_delete(module, className, args, callback=None):
     method = METHOD_DELETE
 
-    logging.error("sync_delete module:%s,className:%s,args:%s" % (
-        module, className, str(args)))
+    logging.error("sync_delete module:%s,className:%s,args:%s" %
+                  (module, className, str(args)))
     try:
         import sys
         sys.path.append("models")
         model = __import__(module, fromlist=[className])
     except (ImportError, Exception), e:
-        logging.error('[*] sync_delete import. e = %s, class_name = %s, module_name = %s ' % (e, className, module))
+        logging.error(
+            '[*] sync_delete import. e = %s, class_name = %s, module_name = %s '
+            % (e, className, module))
         model = __import__(module.split(".")[-1], fromlist=[className])
 
     model_class = getattr(model, className)()
@@ -337,37 +346,21 @@ def operate_cate_group(method, args, callback=None):
         groupname = args["groupname"]
         search_instance_count = args["search_instance_count"]
         training_instance_count = args["training_instance_count"]
-        yield tornado.gen.Task(
-            instance_class.handle_instance,
-            ch,
-            "new",
-            groupname,
-            search_instance_count,
-            training_instance_count
-        )
+        yield tornado.gen.Task(instance_class.handle_instance, ch, "new",
+                               groupname, search_instance_count,
+                               training_instance_count)
     elif method == METHOD_UPDATE:
         groupname = args[0]["groupname"]
         update_set = args[1].get('$set')
         search_instance_count = update_set["search_instance_count"]
         training_instance_count = update_set["training_instance_count"]
-        yield tornado.gen.Task(
-            instance_class.handle_instance,
-            ch,
-            "modify",
-            groupname,
-            search_instance_count,
-            training_instance_count
-        )
+        yield tornado.gen.Task(instance_class.handle_instance, ch, "modify",
+                               groupname, search_instance_count,
+                               training_instance_count)
     else:
         groupname = args["groupname"]
-        yield tornado.gen.Task(
-            instance_class.handle_instance,
-            ch,
-            "del",
-            groupname,
-            0,
-            0
-        )
+        yield tornado.gen.Task(instance_class.handle_instance, ch, "del",
+                               groupname, 0, 0)
 
     if callback:
         callback(None)
@@ -376,7 +369,6 @@ def operate_cate_group(method, args, callback=None):
 def on_amqp_connection():
     global ch
     ch = conn.channel()
-
     """" declare sync receive data queue and exchange """
 
     ch.queue_declare(queue=options.Sync_Receive_Data_Queue, durable=True)
@@ -405,6 +397,7 @@ def on_amqp_disconnect():
     finally:
         exit(1)
 
+
 ch = None
 options.log_to_stderr = True
 options.parse_command_line()
@@ -418,8 +411,11 @@ mq_password = setting.MQ_PASSWORD
 mq_heartbeat = setting.MQ_HEARTBEAT
 
 global conn
-conn = StormedConnection(host=mq_host, username=mq_username,
-                         password=mq_password, heartbeat=mq_heartbeat)
+conn = StormedConnection(
+    host=mq_host,
+    username=mq_username,
+    password=mq_password,
+    heartbeat=mq_heartbeat)
 conn.connect(on_amqp_connection)
 conn.on_disconnect = on_amqp_disconnect
 

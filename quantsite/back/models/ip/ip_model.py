@@ -18,17 +18,17 @@ class IpIndexModles(AsyncBaseModel):
 
 
 class IpAreaModles(AsyncBaseModel):
-    country = True      # 国家
-    province = False    # 省份
-    city = True         # 城市
-    address = True      # 地址
-    isp = True          # 网络提供商
-    Longitude = True    # 经度
-    Latitude = True     # 纬度
-    timezone = True     # 时区
-    uct = True          # 时区
-    index = True        # ip索引
-    info = True         # 原始ip信息
+    country = True  # 国家
+    province = False  # 省份
+    city = True  # 城市
+    address = True  # 地址
+    isp = True  # 网络提供商
+    Longitude = True  # 经度
+    Latitude = True  # 纬度
+    timezone = True  # 时区
+    uct = True  # 时区
+    index = True  # ip索引
+    info = True  # 原始ip信息
 
     table = "ip_area"
     key = "ip_area_id"

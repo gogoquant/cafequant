@@ -13,11 +13,14 @@ except ImportError:
 
 import setting
 
-class DfsUtils():
-    def __init__(self, conf_name=None):
-        base_file_path =  os.path.dirname(__file__)
 
-        fastdfs_client_conf_path = os.path.join(base_file_path, "../fastdfs_client.conf")
+class DfsUtils():
+
+    def __init__(self, conf_name=None):
+        base_file_path = os.path.dirname(__file__)
+
+        fastdfs_client_conf_path = os.path.join(base_file_path,
+                                                "../fastdfs_client.conf")
         self.mongo_host = setting.MONGO_HOST
         self.mongo_port = setting.MONGO_PORT
 
@@ -27,6 +30,7 @@ class DfsUtils():
             self.client = Fdfs_client(fastdfs_client_conf_path)
 
     """ check_file_exists: return fileid """
+
     def check_file_exists(self, file_md5):
         return None
         """
@@ -40,8 +44,8 @@ class DfsUtils():
             return None
         """
 
-
     """ add file check data """
+
     def add_file_check_data(self, file_md5, fileid):
         return
         """
@@ -52,6 +56,7 @@ class DfsUtils():
         """
 
     """ delete file check data """
+
     def del_file_check_data(self, file_md5):
         return
         """
@@ -64,6 +69,7 @@ class DfsUtils():
     """
     delele_by_filename
     """
+
     def delete_by_filename(self, file_md5, remote_fileid):
         return
         self.del_file_check_data(file_md5)
@@ -87,6 +93,7 @@ class DfsUtils():
             'file_size' : '128KB'
         }
     """
+
     def upload_by_filename(self, file_md5, local_filename, meta_dict=None):
         fileid = self.check_file_exists(file_md5)
         if fileid == None:
@@ -119,10 +126,16 @@ class DfsUtils():
             'height' : '256'
         }
     """
-    def upload_by_buffer(self, file_md5, file_buffer, ext_name=None, meta_buffer=None):
+
+    def upload_by_buffer(self,
+                         file_md5,
+                         file_buffer,
+                         ext_name=None,
+                         meta_buffer=None):
         fileid = self.check_file_exists(file_md5)
         if fileid == None:
-            ret_dict = self.client.upload_by_buffer(file_buffer, ext_name, meta_buffer)
+            ret_dict = self.client.upload_by_buffer(file_buffer, ext_name,
+                                                    meta_buffer)
             if ret_dict:
                 """ for test """
                 for key in ret_dict:
@@ -142,6 +155,7 @@ class DfsUtils():
     @local_filename string -- local filepath
     @remote_fileid string -- file identifier
     """
+
     def download_to_file(self, local_filename, remote_fileid):
         ret_dict = self.client.download_to_file(local_filename, remote_fileid)
         """ for test """
@@ -153,6 +167,7 @@ class DfsUtils():
     @remote_fileid string -- file identifier
     @return buffer -- file buffer
     """
+
     def download_to_buffer(self, remote_fileid):
         ret_dict = self.client.download_to_buffer(remote_fileid)
         return ret_dict['Content']
@@ -181,7 +196,8 @@ class DfsUtils():
                     for key in ret_dict:
                         logging.debug('[+] %s : %s' % (key, ret_dict[key]))
                     """ add file check data """
-                    self.add_file_check_data(file_md5, ret_dict["Remote file_id"])
+                    self.add_file_check_data(file_md5,
+                                             ret_dict["Remote file_id"])
                     return ret_dict["Remote file_id"]
                 else:
                     return None
@@ -191,7 +207,8 @@ class DfsUtils():
                 logging.error("slave file exists!")
                 remote_file_array = remote_file_id.split(".")
                 if len(remote_file_array) > 1:
-                    remote_file_id = remote_file_array[0] + prefix_name + "." + remote_file_array[1]
+                    remote_file_id = remote_file_array[
+                        0] + prefix_name + "." + remote_file_array[1]
                 self.add_file_check_data(file_md5, remote_file_id)
                 return remote_file_id
         else:
@@ -239,17 +256,18 @@ class DfsUtils():
                     for key in ret_dict:
                         logging.debug('[+] %s : %s' % (key, ret_dict[key]))
                     """ add file check data """
-                    self.add_file_check_data(file_md5, ret_dict["Remote file_id"])
+                    self.add_file_check_data(file_md5,
+                                             ret_dict["Remote file_id"])
                     return ret_dict["Remote file_id"]
                 else:
                     return None
             except Exception as inst:
-
                 """ for test """
-                logging.error("slave file exists:%s"%inst.args)
+                logging.error("slave file exists:%s" % inst.args)
                 remote_file_array = remote_file_id.split(".")
                 if len(remote_file_array) > 1:
-                    remote_file_id = remote_file_array[0] + prefix_name + "." + remote_file_array[1]
+                    remote_file_id = remote_file_array[
+                        0] + prefix_name + "." + remote_file_array[1]
                 self.add_file_check_data(file_md5, remote_file_id)
                 return remote_file_id + prefix_name
         else:

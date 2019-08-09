@@ -4,11 +4,15 @@
 __author__ = 'anti-moth'
 from iseecore.models import MessageAsyncBaseModel
 
-_all_ = ['IseeMessage', 'ExpiredDeliverMessage', 'DeliverMessage', 'ExpiredIseeMessage', ]
+_all_ = [
+    'IseeMessage',
+    'ExpiredDeliverMessage',
+    'DeliverMessage',
+    'ExpiredIseeMessage',
+]
 
 
 class DeliverMessage(MessageAsyncBaseModel):
-    
     """用户级消息存储"""
     msg_id = True
     msg_type = True  # 整数。 消息发起者和消息获取者的一种约定方式，方便解析消息(msg_data)
@@ -31,7 +35,6 @@ class DeliverMessage(MessageAsyncBaseModel):
 
 
 class ExpiredDeliverMessage(MessageAsyncBaseModel):
-    
     """用户级过期消息存储"""
     msg_id = True
     msg_type = True
@@ -59,7 +62,6 @@ class IseeMessage(MessageAsyncBaseModel):
     msg_deliver = {  # 多用户筛选条件，得到的是一个用户组。
         'vip_level': '',
         'app_id': '',
-
     }
 
     table = 'isee_message'
@@ -77,5 +79,3 @@ class ExpiredIseeMessage(MessageAsyncBaseModel):
 
     table = 'expired_isee_message'
     key = 'msg_id'
-
-

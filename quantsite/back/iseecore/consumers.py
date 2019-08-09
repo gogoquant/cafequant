@@ -5,23 +5,24 @@ import logging
 import traceback
 import simplejson
 
+
 class consumer:
     _method_dict_ = {}
-    
+
     @classmethod
-    def add_method(cls,req_id , method):
+    def add_method(cls, req_id, method):
         cls._method_dict_[req_id] = method
-    
+
     @classmethod
-    def consume(cls,msg):
+    def consume(cls, msg):
         try:
             cls._consume_(msg)
-        except (Exception, IndexError), e:
+        except (Exception, IndexError):
             exc_msg = traceback.format_exc()
             logging.error(exc_msg)
-    
+
     @classmethod
-    def _consume_(cls,msg):
+    def _consume_(cls, msg):
         headers = msg.headers
         req_id = None
         if 'request_id' in headers:
@@ -38,7 +39,7 @@ class consumer:
             if req_id in cls._method_dict_:
                 method = cls._method_dict_.pop(req_id)
                 method(msg)
+
     @classmethod
     def reset(cls):
         cls._method_dict_ = {}
-

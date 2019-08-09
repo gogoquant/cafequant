@@ -75,7 +75,8 @@ def parse_query_param(url, param):
 
 
 def unicodize(text):
-    return re.sub(r'\\u([0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])', lambda x: chr(int(x.group(0)[2:], 16)), text)
+    return re.sub(r'\\u([0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])',
+                  lambda x: chr(int(x.group(0)[2:], 16)), text)
 
 
 def r1_of(patterns, text):
@@ -134,15 +135,24 @@ def get_html(url, encoding=None, useragent=None, Referer=None, **kwargs):
 def get_videojj_response(url, appkey_b64):
 
     headers = {
-        "Host": "videojj.com",
-        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0",
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "Accept-Language": "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3",
-        "Accept-Encoding": "gzip, deflate",
-        "Appkey": appkey_b64,
-        "Referer": "http://www.baidu.com",
-        "If-None-Match": 'W/"207e-112555361"',
-        "Connection": "keep-alive"
+        "Host":
+            "videojj.com",
+        "User-Agent":
+            "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101 Firefox/45.0",
+        "Accept":
+            "application/json, text/javascript, */*; q=0.01",
+        "Accept-Language":
+            "zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3",
+        "Accept-Encoding":
+            "gzip, deflate",
+        "Appkey":
+            appkey_b64,
+        "Referer":
+            "http://www.baidu.com",
+        "If-None-Match":
+            'W/"207e-112555361"',
+        "Connection":
+            "keep-alive"
     }
 
     request = urllib2.Request(url, headers=headers)
@@ -237,8 +247,8 @@ def print_info(site_info, title, type, size):
     print("Video Site:", site_info)
     print("Title:     ", tr(title))
     print("Type:      ", type_info)
-    print("Size:      ", round(size / 1048576, 2),
-          "MiB (" + str(size) + " Bytes)")
+    print("Size:      ", round(size / 1048576,
+                               2), "MiB (" + str(size) + " Bytes)")
     print()
 
 
@@ -272,8 +282,9 @@ def url_save(url, filepath, bar, refer=None):
             output.write(buffer)
             if bar:
                 bar.update_received(len(buffer))
-    assert received == file_size == os.path.getsize(filepath), '%s == %s == %s' % (
-        received, file_size, os.path.getsize(filepath))
+    assert received == file_size == os.path.getsize(
+        filepath), '%s == %s == %s' % (received, file_size,
+                                       os.path.getsize(filepath))
 
 
 def url_size(url):
@@ -392,8 +403,9 @@ class SimpleProgressBar:
         else:
             plus = ''
         bar = '=' * dots + plus
-        bar = '{0:>3.0f}% [{1:<40}] {2}/{3}'.format(
-            percent, bar, self.current_piece, self.total_pieces)
+        bar = '{0:>3.0f}% [{1:<40}] {2}/{3}'.format(percent, bar,
+                                                    self.current_piece,
+                                                    self.total_pieces)
         sys.stdout.write('\r' + bar)
         sys.stdout.flush()
 
@@ -421,8 +433,9 @@ class PiecesProgressBar:
 
     def update(self):
         self.displayed = True
-        bar = '{0:>3}%[{1:<40}] {2}/{3}'.format(
-            '?', '?' * 40, self.current_piece, self.total_pieces)
+        bar = '{0:>3}%[{1:<40}] {2}/{3}'.format('?', '?' * 40,
+                                                self.current_piece,
+                                                self.total_pieces)
         sys.stdout.write('\r' + bar)
         sys.stdout.flush()
 
@@ -462,7 +475,13 @@ def escape_file_path(path):
     return path
 
 
-def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merge=True):
+def download_urls(urls,
+                  title,
+                  ext,
+                  total_size,
+                  output_dir='.',
+                  refer=None,
+                  merge=True):
     assert urls
     assert ext in ('flv', 'mp4')
     if not total_size:
@@ -479,7 +498,8 @@ def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merg
     filename = "test.mp4"
     filepath = os.path.join(output_dir, filename)
     if total_size:
-        if os.path.exists(filepath) and os.path.getsize(filepath) >= total_size * 0.9:
+        if os.path.exists(
+                filepath) and os.path.getsize(filepath) >= total_size * 0.9:
             print 'Skip %s: file already exists' % filepath
             return
         bar = SimpleProgressBar(total_size, len(urls))
@@ -518,8 +538,10 @@ def download_urls(urls, title, ext, total_size, output_dir='.', refer=None, merg
 
 
 def playlist_not_supported(name):
+
     def f(*args, **kwargs):
         raise NotImplementedError('Play list is not supported for ' + name)
+
     return f
 
 

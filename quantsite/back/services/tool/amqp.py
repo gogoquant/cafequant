@@ -16,11 +16,10 @@ import setting
 
 
 class Rabbitmq(object):
-
     """docstring for Rabbitmq"""
     conn = None
     ch = None
-    
+
     # 是否准备好（是否已经初始化）
     is_ready = False
 
@@ -40,10 +39,10 @@ class Rabbitmq(object):
             #self.conn.connect(self._on_amqp_connection_)
             #self.conn.on_disconnect = self._on_amqp_disconnect_
             #self.is_ready = True
-            
+
             # @TODO disable rabbitmq
             self._on_amqp_connection_()
-    
+
     def add_consume(self, queue):
         '''追加回掉消费者'''
         self.ch.consume(queue, consumer.consume, no_ack=True)
@@ -58,33 +57,33 @@ class Rabbitmq(object):
 
     def _on_amqp_connection_(self):
         '''初始化本地的rabbitmq'''
-        
+
         def build():
             self.ch = self.conn.channel()
-            
+
             #通知消息同步用的exchange
             self.ch.exchange_declare(
                 exchange=options.Sync_Send_Data_Exchange,
-                type="topic", durable=True)
+                type="topic",
+                durable=True)
 
             options["ch"] = self.ch
             SyncData.configure(self.ch)
             self._consume_queues_()
             logging.error('[init]Rabbitmq init success')
-        
+
         #初始化rabbitmq queue
         #disable rabbitmq
         #build()
-        
 
         #self.ch.on_error = build
-        
+
         if self.back:
             self.back()
 
     def _consume_queues_(self):
         consume_queues = [
-                #注册回掉队列
+            #注册回掉队列
         ]
         for consume_queue in consume_queues:
             self.ch.consume(consume_queue, consumer.consume, no_ack=True)
@@ -102,8 +101,6 @@ class Rabbitmq(object):
 
     def _get_ip_address_(self, ifname):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-            s.fileno(),
-            0x8915,
-            struct.pack('256s', ifname[:15])
-        )[20:24])
+        return socket.inet_ntoa(
+            fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s',
+                                                        ifname[:15]))[20:24])

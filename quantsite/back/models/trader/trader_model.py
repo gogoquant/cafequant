@@ -7,56 +7,58 @@ import traceback
 
 from iseecore.models import AsyncBaseModel
 
+
 #交易所
 class Exchange(AsyncBaseModel):
 
-    exchange_id    = False     #ID
-    
-    name            = False    #交易所名
-    
-    brief            = False    #交易所简介
+    exchange_id = False  #ID
 
-    content          = False    #文章内容
+    name = False  #交易所名
 
-    accessKey        = False    #通行key
+    brief = False  #交易所简介
 
-    secretKey        = False    #secret key
+    content = False  #文章内容
 
-    ctime            = False    #创建时间
+    accessKey = False  #通行key
 
-    mtime            = False    #最后编辑时间
+    secretKey = False  #secret key
+
+    ctime = False  #创建时间
+
+    mtime = False  #最后编辑时间
 
     # meta
-    table           = "exchange"
-    key             = "exchange_id"    
+    table = "exchange"
+    key = "exchange_id"
+
 
 #策略
-class Stragey (AsyncBaseModel):
+class Stragey(AsyncBaseModel):
 
-    stragey_id       = False    #ID
+    stragey_id = False  #ID
 
-    text             = False    #策略
+    text = False  #策略
 
-    ctime            = False    #创建时间
+    ctime = False  #创建时间
 
-    mtime            = False    #最后编辑时间
-    
+    mtime = False  #最后编辑时间
+
     # meta
-    table           = "stragey"
-    key             = "stragey_id"
+    table = "stragey"
+    key = "stragey_id"
+
 
 #交易
 class Trader(AsyncBaseModel):
 
-    trader_id        = False    #ID
-    
-    name             = False    #标题
-    
+    trader_id = False  #ID
 
-    ctime            = False    #创建时间
+    name = False  #标题
 
-    mtime            = False    #最后编辑时间
+    ctime = False  #创建时间
+
+    mtime = False  #最后编辑时间
 
     # meta
-    table           = "trader"
-    key             = "trader_id"    
+    table = "trader"
+    key = "trader_id"

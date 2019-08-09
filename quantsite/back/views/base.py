@@ -17,13 +17,15 @@ from iseecore.routes import route
 
 import setting
 
+
 class RequestHandler(tornado.web.RequestHandler, SessionMixin):
+
     def __init__(self):
         self.initialize()
-        
+
     def tileSet(self, title):
         self.title = title
-        
+
     def templateSet(self, template):
         self.template = template
 
@@ -37,7 +39,7 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
 
         if not self.ch:
             logging.error('need channel in tornado.options')
-        
+
         if not self.fastdfs_client:
             logging.error('need fastdfs_client in tornado.options')
 
@@ -47,27 +49,26 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
     def prepare(self):
         self.view_permission = "00000"
         #self.edit_permission = None
-        
 
     def _get_(self, *args, **kwargs):
         raise tornado.web.HTTPError(405)
 
     def _post_(self, *args, **kwargs):
-        raise tornado.web.HTTPError(405)  
-    
+        raise tornado.web.HTTPError(405)
+
     def _put_(self, *args, **kwargs):
-        raise tornado.web.HTTPError(405) 
-    
+        raise tornado.web.HTTPError(405)
+
     def _delete_(self, *args, **kwargs):
-        raise tornado.web.HTTPError(405)          
+        raise tornado.web.HTTPError(405)
 
     def get_user_locale(self):
         if hasattr(self, "lan_form_arg"):
-            lan = ''#self.lan_form_arg
+            lan = ''  #self.lan_form_arg
         else:
             lan = self.get_secure_cookie("user_locale")
         self.__locale = lan
-        
+
         print lan
         if not lan:
             bl = self.get_browser_locale()
@@ -78,13 +79,13 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
             self.set_secure_cookie("user_locale", bl_code)
             return bl
         return locale.get(lan)
-    
+
     def init_locale(self):
-         lan = self.get_secure_cookie("user_locale")
-         if not lan:
-             lan = 'zh_CN'
-             self.set_secure_cookie("user_locale", lan)
-         self.__locale = lan
+        lan = self.get_secure_cookie("user_locale")
+        if not lan:
+            lan = 'zh_CN'
+            self.set_secure_cookie("user_locale", lan)
+        self.__locale = lan
 
     def get_lan(self):
         return self.__locale
@@ -97,18 +98,19 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
         return self.locale.translate(text)
 
     def render(self, **kwargs):
-        
+
         title = self.title
         template = self.template
-        
-        # add public env 
+
+        # add public env
         kwargs['site_url'] = setting.SITE_URL
         kwargs['isset'] = self.isset
         kwargs['make_url'] = self.make_url
         kwargs['get_comma'] = self.get_comma
 
         self.namespace = kwargs
-        tornado.web.RequestHandler.render(self, template, title=title, lan=self.__locale, **kwargs)
+        tornado.web.RequestHandler.render(
+            self, template, title=title, lan=self.__locale, **kwargs)
 
     def isset(self, v):
         return self.namespace.has_key(v)
@@ -176,8 +178,10 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
         else:
             return code
 
+
 @route(r"/(.*)", name="error")
 class ErrorHandler(RequestHandler):
+
     def prepare(self):
         super().prepare()
         self.set_status(404)

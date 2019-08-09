@@ -62,8 +62,11 @@ class TrainTemplate(object):
         mq_password = setting.MQ_PASSWORD
 
         global conn
-        conn = StormedConnection(host=mq_host, username=mq_username,
-                                 password=mq_password, heartbeat=mq_heartbeat)
+        conn = StormedConnection(
+            host=mq_host,
+            username=mq_username,
+            password=mq_password,
+            heartbeat=mq_heartbeat)
         conn.connect(self.on_ampq_connection)
         conn.on_disconnect = self.on_amqp_disconnect
 
@@ -144,7 +147,8 @@ class TrainTemplate(object):
             # ios 2.2 template modify, only one zip file. anti-moth 20160126
             zip_file_dic = self.fastdfs_client.upload_by_buffer(data, 'zip')
             if not zip_file_dic:
-                logging.error("TrainTemplate.on_train_finish: upload zip file error!!")
+                logging.error(
+                    "TrainTemplate.on_train_finish: upload zip file error!!")
                 msg.ack()
                 return
 
@@ -156,7 +160,8 @@ class TrainTemplate(object):
         if old_file and old_file.get("qn_key", "") == qiniu_md5:
             pass
         else:
-            yield tornado.gen.Task(self.upload_to_qiniu, temp_file_path, qiniu_md5, temp_zip_md5)
+            yield tornado.gen.Task(self.upload_to_qiniu, temp_file_path,
+                                   qiniu_md5, temp_zip_md5)
 
         os.remove(temp_file_path)
 
@@ -199,16 +204,22 @@ class TrainTemplate(object):
 
         if is_single:  # query exists template first. anti-moth 20160127
             query_tem = {"md5": targetId}
-            cur_tem_data = yield tornado.gen.Task(self.single_template_class.get_list, query_tem)
+            cur_tem_data = yield tornado.gen.Task(
+                self.single_template_class.get_list, query_tem)
             has_tem = False
             for tem_data in cur_tem_data:
                 tem_id = tem_data["template_id"]
-                yield tornado.gen.Task(self.template_class.update, {"template_id": tem_id}, {"$set": template})
+                yield tornado.gen.Task(self.template_class.update,
+                                       {"template_id": tem_id},
+                                       {"$set": template})
                 has_tem = True
-                logging.error("update new template, template_id = %s, temp_zip_md5 = %s" % (tem_id, temp_zip_md5))
+                logging.error(
+                    "update new template, template_id = %s, temp_zip_md5 = %s" %
+                    (tem_id, temp_zip_md5))
 
             if not has_tem:
-                template_id = yield tornado.gen.Task(self.template_class.insert, template)
+                template_id = yield tornado.gen.Task(self.template_class.insert,
+                                                     template)
                 single_template = {
                     'md5': targetId,
                     'template_id': template_id,
@@ -232,15 +243,12 @@ class TrainTemplate(object):
                                    query, update_set, multi=True)
             """
         else:
-            template_id = yield tornado.gen.Task(self.template_class.insert, template)
+            template_id = yield tornado.gen.Task(self.template_class.insert,
+                                                 template)
             query = {'local_group_template_id': targetId}
-            update_set = {
-                '$set': {
-                    'template_id': template_id,
-                }
-            }
-            yield tornado.gen.Task(self.group_template_class.update,
-                                   query, update_set)
+            update_set = {'$set': {'template_id': template_id,}}
+            yield tornado.gen.Task(self.group_template_class.update, query,
+                                   update_set)
 
         msg.ack()
 
@@ -255,24 +263,27 @@ class TrainTemplate(object):
                 "file_type": "zip",
                 "need_narrow": "0",
                 "ext": "zip",
-            }
-        )
+            })
         global ch
         ch.publish(
             request,
             exchange=options.Sync_Send_Data_Exchange,
-            routing_key=options.Sync_Send_Data_Routing_Key
-        )
-        logging.info("[*] sync_data upload_ar_template_file md5: %s " % file_md5)
+            routing_key=options.Sync_Send_Data_Routing_Key)
+        logging.info("[*] sync_data upload_ar_template_file md5: %s " %
+                     file_md5)
 
     @tornado.gen.engine
-    def upload_to_qiniu(self, file_path, file_name, temp_zip_md5, callback=None):
+    def upload_to_qiniu(self, file_path, file_name, temp_zip_md5,
+                        callback=None):
 
-        qn_token = qiniu_util.get_upload_token(file_name, setting.YIXUN_DEFAULT_FILE_BACKET)
+        qn_token = qiniu_util.get_upload_token(
+            file_name, setting.YIXUN_DEFAULT_FILE_BACKET)
         ret, info = qiniu_util.upload_by_path(qn_token, file_path, file_name)
 
         if ret.get("key", None) != file_name:
-            logging.error('[*] train_template_local upload to qiniu error. file_name = %s ' % file_name)
+            logging.error(
+                '[*] train_template_local upload to qiniu error. file_name = %s '
+                % file_name)
             return
 
         # _db_df = QiNiuFilesDefine
@@ -282,20 +293,17 @@ class TrainTemplate(object):
         # }
         # yield tornado.gen.Task(self.db_qiniu_files.update, _document, {"$set": _document}, upsert=True)
 
-        query = {
-            "md5": temp_zip_md5
-        }
+        query = {"md5": temp_zip_md5}
 
-        f = {
-            "qn_key": file_name
-        }
+        f = {"qn_key": file_name}
 
         update_set = {
             "$set": f,
         }
 
         self.file_class.need_sync = False
-        yield tornado.gen.Task(self.file_class.update, query, update_set, upsert=True, safe=True)
+        yield tornado.gen.Task(
+            self.file_class.update, query, update_set, upsert=True, safe=True)
 
         callback((ret, info))
 
@@ -311,17 +319,15 @@ class TrainTemplate(object):
         update_set = {
             "$set": f,
         }
-        yield tornado.gen.Task(self.file_class.update, query,
-                               update_set, upsert=True, safe=True)
+        yield tornado.gen.Task(
+            self.file_class.update, query, update_set, upsert=True, safe=True)
         logging.error("update file data")
         logging.error('md5: %s, file_id: %s ' % (file_md5, file_id))
         callback(None)
 
     @tornado.gen.engine
     def find_file_one(self, file_md5, callback=None):
-        query = {
-            "md5": file_md5
-        }
+        query = {"md5": file_md5}
 
         file_obj = yield tornado.gen.Task(self.file_class.find_one, query)
         callback(file_obj)
@@ -330,6 +336,7 @@ class TrainTemplate(object):
         logging.error("done")
         ioloop.IOLoop.instance().stop()
         conn.close()
+
 
 if __name__ == '__main__':
     options.log_to_stderr = True

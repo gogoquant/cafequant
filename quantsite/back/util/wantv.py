@@ -33,15 +33,27 @@ USER_AGENT = "Mozilla/5.0 (Linux; U; Android 4.3; en-us; SM-N900T Build/JSS15J) 
 # tudou "Mobile-MP4-SD" "Mobile-m3u8-SD" "SD"
 # sohu  "HD" "SD" "SuperHD"
 MAP_SITES_TO_VIDEO_TYPES = {
-    'youku': ('MP4-HD', '3GP-HD', 'Mobile-m3u8-MP4-HD', ),
-    'qq': ('SD', 'HD', '720P', ),
-    'tudou': ('Mobile-MP4-SD', 'HD',),
+    'youku': (
+        'MP4-HD',
+        '3GP-HD',
+        'Mobile-m3u8-MP4-HD',
+    ),
+    'qq': (
+        'SD',
+        'HD',
+        '720P',
+    ),
+    'tudou': (
+        'Mobile-MP4-SD',
+        'HD',
+    ),
     'sohu': ('SD', 'HD', 'SuperHD', 'Orignal'),
 }
 
 URL_TIMEOUT = 1 * 60 * 60
 
-pool = redis.ConnectionPool(host=setting.REDIS_HOST, port=setting.REDIS_PORT,db=0)
+pool = redis.ConnectionPool(
+    host=setting.REDIS_HOST, port=setting.REDIS_PORT, db=0)
 r = redis.Redis(connection_pool=pool)
 
 
@@ -58,12 +70,12 @@ def get_video_url_by_html(base64_url, useragent=None):
     # html_response = get_html(html_url,useragent=useragent,Referer=referer_url)
     response = get_videojj_response(html_url, appkey_b64)
     # response = simplejson.loads(html_response)
-    assert response.get("status",-1) == 0,"error status"
-    segs = response.get("msg",{}).get("segs",{})
-    assert segs,"none video"
+    assert response.get("status", -1) == 0, "error status"
+    segs = response.get("msg", {}).get("segs", {})
+    assert segs, "none video"
     site = response.get("msg", {}).get("site", "")
     for v_type in MAP_SITES_TO_VIDEO_TYPES.get(site, []):
-        videos = segs.get(v_type,[])
+        videos = segs.get(v_type, [])
         if videos:
             video_url = videos[0].get('url')
             break
@@ -75,6 +87,8 @@ def get_video_url_by_html(base64_url, useragent=None):
 
 def get_video_url_by_cache(url):
     return r.get(url)
+
+
 """
 删除cache 中的video_url
 """
@@ -86,8 +100,8 @@ def del_video_url_in_cache(url):
 
 
 def save_video_url(url, video_url):
-    r.set(url,video_url)
-    r.expire(url,URL_TIMEOUT)
+    r.set(url, video_url)
+    r.expire(url, URL_TIMEOUT)
 
 
 def get_video_url(url, useragent=None):
@@ -111,6 +125,7 @@ def encode_url(url):
     base64_url = base64.encodestring(url).replace("\n", "")
     return base64_url
 
+
 if __name__ == '__main__':
     try:
         html_url = sys.argv[1]
@@ -120,4 +135,3 @@ if __name__ == '__main__':
     assert html_url
 
     print html_url, "==>", get_video_url(html_url)
-

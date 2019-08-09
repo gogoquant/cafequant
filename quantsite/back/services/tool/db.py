@@ -15,7 +15,6 @@ import setting
 
 @init_service()
 class Mongodb():
-
     """docstring for Mongodb"""
 
     def __init__(self):
@@ -30,7 +29,7 @@ class Mongodb():
             maxconnections=150,
         )
         connection = MongoClient(setting.MONGO_HOST, setting.MONGO_PORT)
-        
+
         define("async_client", default=asyn_client, help="async connection")
         #options["asyn_client"] = asyn_client
         AsyncBaseModel.configure(asyn_client)

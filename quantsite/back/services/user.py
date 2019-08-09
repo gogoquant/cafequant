@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-
 '''
     @brief service for user
     @author: xiyan
@@ -17,7 +16,7 @@ import pdb
 
 from models.user.user_model import User, ResetPasswd
 
-from services.base import BaseService 
+from services.base import BaseService
 
 from util.time_common import DAY_PATTERN, timestamp_to_string, FULL_PATTERN, week_seconds, day_seconds, month_seconds
 
@@ -34,11 +33,11 @@ CHECK_TIMEOUT = -12
 PASSWD_TIMEOUT = 60
 MES_PAGE_COUNT = 20
 ACTIVE_USER_TIME = day_seconds * 3
-
-
 '''UserService 用户管理接口'''
+
+
 class UserService(BaseService):
-    
+
     user_m = User()
     reset_passwd_m = ResetPasswd()
 
@@ -56,10 +55,16 @@ class UserService(BaseService):
         callback(user)
 
     @tornado.gen.engine
-    def login(self, email, password, token, token_from, openid=None, app_id=None, callback=None):
+    def login(self,
+              email,
+              password,
+              token,
+              token_from,
+              openid=None,
+              app_id=None,
+              callback=None):
         '''用户登陆'''
         third_id = None
-        
         '''
         if token:
             third_user = yield tornado.gen.Task(self._get_data_from_social, token, token_from, openid=openid)
@@ -69,16 +74,14 @@ class UserService(BaseService):
                 callback((None, None))
                 return
         '''
-        
+
         if third_id:
             query = {
                 "social_uid": third_id,
                 "source": token_from,
             }
         else:
-            query = {
-                'email': email
-            }
+            query = {'email': email}
 
         user = yield tornado.gen.Task(self.user_m.find_one, query)
         if not user:
@@ -86,8 +89,10 @@ class UserService(BaseService):
             return
 
         if not third_id:
-            password = hashlib.md5("%s_%s" % (PASSWD_SALT, password)).hexdigest()
-            logging.error("password: %s, db_passwd: %s" % (password, user["passwd"]))
+            password = hashlib.md5("%s_%s" %
+                                   (PASSWD_SALT, password)).hexdigest()
+            logging.error("password: %s, db_passwd: %s" %
+                          (password, user["passwd"]))
             if user["passwd"] != password:
                 callback((None, PasswdErrorException))
                 return
@@ -123,10 +128,19 @@ class UserService(BaseService):
             user_id, user_info = yield tornado.gen.Task(self.register, None, None, token_info["access_token"], WEBCHAT_T, token_info["openid"], allow_random_name=1)
 
         callback((user_id, user_info))
-    '''    
+    '''
 
     @tornado.gen.engine
-    def register(self, email, passwd, token, token_from, openid=None, extra={}, app_id=None, allow_random_name=None, callback=None):
+    def register(self,
+                 email,
+                 passwd,
+                 token,
+                 token_from,
+                 openid=None,
+                 extra={},
+                 app_id=None,
+                 allow_random_name=None,
+                 callback=None):
         '''user register'''
         third_id = None
         #第三方登录注册支持
@@ -148,7 +162,7 @@ class UserService(BaseService):
         user = yield tornado.gen.Task(self.user_m.find_one, query)
 
         #pdb.set_trace()
-        
+
         if user:
             callback((None, UserExistsException))
             return
@@ -178,13 +192,12 @@ class UserService(BaseService):
 
         # check same name
         if user.get('name', ''):
-            query = {
-                'name': user['name']
-            }
+            query = {'name': user['name']}
             same_name_user = yield tornado.gen.Task(self.user_m.find_one, query)
             if same_name_user:
                 if allow_random_name:
-                    newname = yield tornado.gen.Task(self._user_name_random_int, user['name'])
+                    newname = yield tornado.gen.Task(self._user_name_random_int,
+                                                     user['name'])
                     user['name'] = newname
                 else:
                     data = {
@@ -194,7 +207,8 @@ class UserService(BaseService):
                     callback((data, UserSameNameException))
                     return
 
-        new_user_id = yield tornado.gen.Task(self.user_m.insert, user, upsert=True, safe=True)
+        new_user_id = yield tornado.gen.Task(
+            self.user_m.insert, user, upsert=True, safe=True)
         #ext_data = {
         #    'user_id': new_user_id
         #}
@@ -215,9 +229,7 @@ class UserService(BaseService):
         newname = oldname + "#" + str(token)
         checksame = False
         while not checksame:
-            query = {
-                'name': newname
-            }
+            query = {'name': newname}
             same_name_user = yield tornado.gen.Task(self.user_m.find_one, query)
             if not same_name_user:
                 checksame = True
@@ -232,12 +244,10 @@ class UserService(BaseService):
         query = {
             'pos': (page - 1) * pagesize,
             'count': pagesize,
-            'conditions':{}
+            'conditions': {}
         }
         if not token is None:
-            conditions = {
-                'name': {"$regex": token}
-            }
+            conditions = {'name': {"$regex": token}}
             query['conditions'] = conditions
 
         user_list = yield tornado.gen.Task(self.user_m.get_list, query)
@@ -247,10 +257,7 @@ class UserService(BaseService):
     def get_all_ids(self, callback=None):
         "获取所有用户的id"
         conditions = {}
-        query = {
-            'conditions': conditions,
-            "fields": {"user_id": 1}
-        }
+        query = {'conditions': conditions, "fields": {"user_id": 1}}
         user_list = yield tornado.gen.Task(self.user_m.get_list, query)
 
         results = [u['user_id'] for u in user_list]
@@ -269,9 +276,7 @@ class UserService(BaseService):
     def count(self, token, callback):
         "查询用户总数"
         #@TODO
-        query = {
-        
-        }
+        query = {}
         c = yield tornado.gen.Task(self.user_m.count, query)
         callback(c)
 
@@ -284,35 +289,29 @@ class UserService(BaseService):
 
         yield tornado.gen.Task(self.reset_passwd_m.delete, query)
 
-        reset_passwd_id = yield tornado.gen.Task(self.reset_passwd_m.insert, data)
+        reset_passwd_id = yield tornado.gen.Task(self.reset_passwd_m.insert,
+                                                 data)
         callback(reset_passwd_id)
 
     @tornado.gen.engine
     def get_reset_passwd_by_id(self, reset_passwd_id, callback):
-        reset_passwd = yield tornado.gen.Task(self.reset_passwd_m.get_by_id, reset_passwd_id)
+        reset_passwd = yield tornado.gen.Task(self.reset_passwd_m.get_by_id,
+                                              reset_passwd_id)
         callback(reset_passwd)
 
     @tornado.gen.engine
     def update_user_passwd(self, reset_passwd_id, email, passwd, callback):
 
-        query = {
-            "email": email
-        }
+        query = {"email": email}
         # user_password_md5 = hashlib.md5(user_password).hexdigest()
         # user_password_md5 = hashlib.md5(user_password_md5 + app_secret).hexdigest()
-        
+
         new_passwd = hashlib.md5("%s_%s" % (PASSWD_SALT, passwd)).hexdigest()
 
-        update_set = {
-            "$set": {
-                "passwd": new_passwd
-            }
-        }
+        update_set = {"$set": {"passwd": new_passwd}}
         yield tornado.gen.Task(self.user_m.update, query, update_set)
 
-        query = {
-            'reset_passwd_id': reset_passwd_id
-        }
+        query = {'reset_passwd_id': reset_passwd_id}
         yield tornado.gen.Task(self.reset_passwd_m.delete, query)
         callback(None)
 
@@ -329,10 +328,9 @@ class UserService(BaseService):
     def modify(self, user_id, update_values, callback=None):
         name = update_values.get('name', '')
         if name:
-            query = {
-                'name': name
-            }
-            exists_name_user = yield tornado.gen.Task(self.user_m.find_one, query)
+            query = {'name': name}
+            exists_name_user = yield tornado.gen.Task(self.user_m.find_one,
+                                                      query)
             if exists_name_user:
                 callback(UserExistsException)
                 return
@@ -347,7 +345,12 @@ class UserService(BaseService):
         callback(new_info)
 
     @tornado.gen.engine
-    def info(self, finded_user, user_id, self_user_id, viewMore=False, callback=None):
+    def info(self,
+             finded_user,
+             user_id,
+             self_user_id,
+             viewMore=False,
+             callback=None):
         if not finded_user:
             user = yield tornado.gen.Task(self.user_m.get_by_id, user_id)
         else:
@@ -365,6 +368,7 @@ class UserService(BaseService):
             'description': user.get('description', '')
         }
         callback(result)
+
     '''
     @tornado.gen.engine
     def _get_data_from_social(self, token, token_from, openid=None, callback=None):

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 发送短信
 
@@ -17,9 +16,7 @@ from stormed import Message, Connection
 import setting
 from services.tool.db import Mongodb
 from iseecore.models import SyncData
-
-
-# 一些变量
+'''
 Sms_Exchange = "_yixin_sms_send"
 Sms_Queue = "_yixin_sms_send"
 
@@ -117,3 +114,4 @@ if __name__ == '__main__':
         ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
         conn.close()
+'''

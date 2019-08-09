@@ -4,7 +4,8 @@ import logging
 
 import IP
 
-def process_data(jsondata):    
+
+def process_data(jsondata):
     strs = jsondata.split('\t')
     country = ""
     province = ""
@@ -20,9 +21,11 @@ def process_data(jsondata):
 
     return (country, "", province, city, "", isp)
 
+
 def parse_ip(ip):
     result = IP.find(ip)
     return process_data(result)
+
 
 if __name__ == '__main__':
     address = parse_ip('111.222.233.123')

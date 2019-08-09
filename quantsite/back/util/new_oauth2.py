@@ -55,7 +55,6 @@ WEBCHAT_OPEN_SECRET = "f1e54b2d0da8ea5ac5bcb6a8c7a8cf79"
 WECHAT_MP_APP_ID = "wxd52fc71566fe39bb"
 WECHAT_MP_SECRET = "f7cdd30163d360f354614238e57c7809"
 
-
 WECHAT_MP_ACCESS_TOKEN_KEY = "wechat_access_token"
 WECHAT_MP_JSAPI_TICKET_KEY = "wechat_jsapi_ticket"
 
@@ -86,7 +85,8 @@ def encode_multipart_formdata(fields, files):
         L.append(value)
     for (key, filename, value) in files:
         L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' %
+                 (key, filename))
         L.append('Content-Type: %s' % get_content_type(filename))
         L.append('')
         L.append(value)
@@ -112,6 +112,7 @@ class Oauth2Error(Exception):
 
 
 def _http_error_handler(func):
+
     @wraps(func)
     def deco(self, *args, **kwargs):
         try:
@@ -192,8 +193,11 @@ class OAuth2(object):
     def http_get(self, url, data="", parse=True, callback=None):
         http_client = AsyncHTTPClient()
         headers = self.get_headers()
-        http_request = HTTPRequest('%s?%s' % (url, urlencode(data)), headers=headers, proxy_host=self.proxy_host,
-                                   proxy_port=self.proxy_port)
+        http_request = HTTPRequest(
+            '%s?%s' % (url, urlencode(data)),
+            headers=headers,
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
         response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
             logging.error("Error:%s", response.error)
@@ -213,8 +217,13 @@ class OAuth2(object):
     def http_post(self, url, data="", parse=True, callback=None):
         http_client = AsyncHTTPClient()
         headers = self.get_headers()
-        http_request = HTTPRequest(url, method="POST", headers=headers, body=urlencode(data),
-                                   proxy_host=self.proxy_host, proxy_port=self.proxy_port)
+        http_request = HTTPRequest(
+            url,
+            method="POST",
+            headers=headers,
+            body=urlencode(data),
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
         response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
             logging.error("Error:%s", response.error)
@@ -244,8 +253,13 @@ class OAuth2(object):
         content_type, body = encode_multipart_formdata(fields, files)
         headers = HTTPHeaders({"content-type": content_type})
 
-        http_request = HTTPRequest(url, method="POST", headers=headers, body=body, proxy_host=self.proxy_host,
-                                   proxy_port=self.proxy_port)
+        http_request = HTTPRequest(
+            url,
+            method="POST",
+            headers=headers,
+            body=body,
+            proxy_host=self.proxy_host,
+            proxy_port=self.proxy_port)
         print http_request
         response = yield tornado.gen.Task(http_client.fetch, http_request)
         if response.error:
@@ -274,7 +288,6 @@ class Weibo(OAuth2):
     # POST_WEIBO_URL = "https://api.weibo.com/2/statuses/update.json"
     # POST_WEIBO_URL = "https://api.weibo.com/2/statuses/upload_url_text.json"
     GET_TOKEN_FROM_CODE_URL = "https://api.weibo.com/oauth2/access_token"
-
     """
     http://open.weibo.com/wiki/Oauth2/get_token_info
 
@@ -305,10 +318,9 @@ class Weibo(OAuth2):
 
     @tornado.gen.engine
     def get_token_info(self, access_token, callback):
-        post_data = {
-            'access_token': access_token
-        }
-        token_info = yield tornado.gen.Task(self.http_post, self.GET_TOKEN_INFO_URL, post_data)
+        post_data = {'access_token': access_token}
+        token_info = yield tornado.gen.Task(self.http_post,
+                                            self.GET_TOKEN_INFO_URL, post_data)
         callback(token_info)
 
     """
@@ -427,11 +439,9 @@ class Weibo(OAuth2):
 
     @tornado.gen.engine
     def get_user_info(self, access_token, uid, callback):
-        post_data = {
-            'access_token': access_token,
-            'uid': uid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL, post_data)
+        post_data = {'access_token': access_token, 'uid': uid}
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
 
     """
@@ -507,11 +517,9 @@ class Weibo(OAuth2):
 
     @tornado.gen.engine
     def get_user_follow(self, access_token, uid, callback):
-        post_data = {
-            'access_token': access_token,
-            'uid': uid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_FOLLOW_URL, post_data)
+        post_data = {'access_token': access_token, 'uid': uid}
+        userinfo = yield tornado.gen.Task(self.http_get,
+                                          self.GET_USER_FOLLOW_URL, post_data)
         callback(userinfo)
 
     @tornado.gen.engine
@@ -522,7 +530,8 @@ class Weibo(OAuth2):
             'status': text,
             'pic': f
         }
-        userinfo = yield tornado.gen.Task(self.http_upload_post, self.POST_WEIBO_URL, post_data)
+        userinfo = yield tornado.gen.Task(self.http_upload_post,
+                                          self.POST_WEIBO_URL, post_data)
         f.close()
         callback(userinfo)
 
@@ -568,14 +577,15 @@ class Weibo(OAuth2):
             "grant_type": "authorization_code",
             "redirect_uri": WEIBO_DEFAULT_REDIRECT_URI
         }
-        token_info = yield tornado.gen.Task(self.http_post, self.GET_TOKEN_FROM_CODE_URL, post_data)
+        token_info = yield tornado.gen.Task(self.http_post,
+                                            self.GET_TOKEN_FROM_CODE_URL,
+                                            post_data)
         callback(token_info)
 
 
 class QQ(OAuth2):
     GET_TOKEN_INFO_URL = "https://graph.qq.com/oauth2.0/me"
     GET_USER_INFO_URL = "https://graph.qq.com/user/get_user_info"
-
     """
     http://wiki.connect.qq.com/%E8%8E%B7%E5%8F%96%E7%94%A8%E6%88%B7openid_oauth2-0
     1 请求地址
@@ -600,12 +610,12 @@ class QQ(OAuth2):
 
     @tornado.gen.engine
     def get_token_info(self, access_token, callback):
-        post_data = {
-            'access_token': access_token
-        }
-        token_info = yield tornado.gen.Task(self.http_get, self.GET_TOKEN_INFO_URL, post_data, parse=False)
+        post_data = {'access_token': access_token}
+        token_info = yield tornado.gen.Task(
+            self.http_get, self.GET_TOKEN_INFO_URL, post_data, parse=False)
         if 'callback(' in token_info:
-            token_info = token_info[token_info.index('(') + 1:token_info.rindex(')')]
+            token_info = token_info[token_info.index('(') +
+                                    1:token_info.rindex(')')]
             token_info = simplejson.loads(token_info)
         else:
             token_info = token_info.split('&')
@@ -648,7 +658,8 @@ class QQ(OAuth2):
             'oauth_consumer_key': oauth_consumer_key,
             'openid': openid
         }
-        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL, post_data)
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
 
 
@@ -659,7 +670,6 @@ class Webchat(OAuth2):
 
     GET_MP_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token"
     GET_MP_TICKET_URL = "https://api.weixin.qq.com/cgi-bin/ticket/getticket"
-
     """
     https://open.weixin.qq.com/cgi-bin/frame?t=resource/res_main_tmpl
     参数  含义
@@ -695,11 +705,9 @@ class Webchat(OAuth2):
 
     @tornado.gen.engine
     def get_user_info(self, access_token, openid, callback):
-        post_data = {
-            'access_token': access_token,
-            'openid': openid
-        }
-        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL, post_data)
+        post_data = {'access_token': access_token, 'openid': openid}
+        userinfo = yield tornado.gen.Task(self.http_get, self.GET_USER_INFO_URL,
+                                          post_data)
         callback(userinfo)
 
     """
@@ -744,13 +752,16 @@ class Webchat(OAuth2):
             "code": code,
             "grant_type": "authorization_code"
         }
-        token_info = yield tornado.gen.Task(self.http_get, self.GET_TOKEN_FROM_CODE_URL, post_data)
+        token_info = yield tornado.gen.Task(self.http_get,
+                                            self.GET_TOKEN_FROM_CODE_URL,
+                                            post_data)
         callback(token_info)
 
     @tornado.gen.engine
     def get_token_for_jsapi(self, callback):
         redis = options.get('redis_client')
-        current_access_token = yield tornado.gen.Task(redis.get, WECHAT_MP_ACCESS_TOKEN_KEY)
+        current_access_token = yield tornado.gen.Task(
+            redis.get, WECHAT_MP_ACCESS_TOKEN_KEY)
         if current_access_token:
             callback(current_access_token)
         else:
@@ -759,11 +770,15 @@ class Webchat(OAuth2):
                 "secret": WECHAT_MP_SECRET,
                 "grant_type": "client_credential"
             }
-            token_info = yield tornado.gen.Task(self.http_get, self.GET_MP_ACCESS_TOKEN_URL, post_data)
+            token_info = yield tornado.gen.Task(self.http_get,
+                                                self.GET_MP_ACCESS_TOKEN_URL,
+                                                post_data)
             new_access_token = token_info.get("access_token", "")
             if new_access_token:
-                yield tornado.gen.Task(redis.set, WECHAT_MP_ACCESS_TOKEN_KEY, new_access_token)
-                yield tornado.gen.Task(redis.expire, WECHAT_MP_ACCESS_TOKEN_KEY, WECHAT_EXPIRE)
+                yield tornado.gen.Task(redis.set, WECHAT_MP_ACCESS_TOKEN_KEY,
+                                       new_access_token)
+                yield tornado.gen.Task(redis.expire, WECHAT_MP_ACCESS_TOKEN_KEY,
+                                       WECHAT_EXPIRE)
                 callback(new_access_token)
             else:
                 logging.error("cant get jsapi access_token from wechat")
@@ -772,20 +787,22 @@ class Webchat(OAuth2):
     @tornado.gen.engine
     def get_apiticket_for_jsapi(self, callback):
         redis = options.get('redis_client')
-        current_ticket = yield tornado.gen.Task(redis.get, WECHAT_MP_JSAPI_TICKET_KEY)
+        current_ticket = yield tornado.gen.Task(redis.get,
+                                                WECHAT_MP_JSAPI_TICKET_KEY)
         if current_ticket:
             callback(current_ticket)
         else:
             access_token = yield tornado.gen.Task(self.get_token_for_jsapi)
-            post_data = {
-                "access_token": access_token,
-                "type": "jsapi"
-            }
-            ticket_info = yield tornado.gen.Task(self.http_get, self.GET_MP_TICKET_URL, post_data)
+            post_data = {"access_token": access_token, "type": "jsapi"}
+            ticket_info = yield tornado.gen.Task(self.http_get,
+                                                 self.GET_MP_TICKET_URL,
+                                                 post_data)
             new_ticket = ticket_info.get("ticket", "")
             if new_ticket:
-                yield tornado.gen.Task(redis.set, WECHAT_MP_JSAPI_TICKET_KEY, new_ticket)
-                yield tornado.gen.Task(redis.expire, WECHAT_MP_JSAPI_TICKET_KEY, WECHAT_EXPIRE)
+                yield tornado.gen.Task(redis.set, WECHAT_MP_JSAPI_TICKET_KEY,
+                                       new_ticket)
+                yield tornado.gen.Task(redis.expire, WECHAT_MP_JSAPI_TICKET_KEY,
+                                       WECHAT_EXPIRE)
                 callback(new_ticket)
             else:
                 logging.error("cant get jsapi ticket from wechat")
@@ -808,7 +825,9 @@ class Webchat(OAuth2):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(format='%(asctime)s %(filename)s:%(lineno)d %(levelname)s %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        format='%(asctime)s %(filename)s:%(lineno)d %(levelname)s %(message)s',
+        level=logging.INFO)
     import tornado.ioloop
 
     # oauth2 = OAuth2.instance('qq')
@@ -840,19 +859,21 @@ if __name__ == '__main__':
 
     import tornadoredis
 
-    CONNECTION_POOL = tornadoredis.ConnectionPool(max_connections=100,
-                                                  wait_for_available=True,
-                                                  host=setting.REDIS_HOST, port=setting.REDIS_PORT)
-    options['redis_client'] = tornadoredis.Client(connection_pool=CONNECTION_POOL)
+    CONNECTION_POOL = tornadoredis.ConnectionPool(
+        max_connections=100,
+        wait_for_available=True,
+        host=setting.REDIS_HOST,
+        port=setting.REDIS_PORT)
+    options['redis_client'] = tornadoredis.Client(
+        connection_pool=CONNECTION_POOL)
 
     oauth2 = OAuth2.instance('wechat')
     oauth2.set_proxy("10.0.1.71", 3128)
 
-
     def callback(response):
         logging.info(response)
 
-
-    oauth2.get_signature_for_jsapi("http://yowo.idealsee.com/e10/home", callback)
+    oauth2.get_signature_for_jsapi("http://yowo.idealsee.com/e10/home",
+                                   callback)
 
     tornado.ioloop.IOLoop.instance().start()

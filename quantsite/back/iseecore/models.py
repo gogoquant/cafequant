@@ -18,7 +18,7 @@ from stormed import Message
 
 import traceback
 
-__all__ = ['AsyncBaseModel', ModelException]
+__all__ = ['AsyncBaseModel', 'ModelException']
 
 MONGODB_ID = "_id"
 DELETE_FLAG = 'delete_flag'  # '1' 已经删除，'0'或者没有该字段表示没有删除
@@ -41,17 +41,17 @@ class AsyncBaseModel(object):
         self.className = self.__class__.__name__
         self.module = self.__module__
         if hasattr(self, 'db'):
-            db = self.db
+            db = getattr(self, 'db')
         else:
             db = self.module.split('.')[1]
 
         if hasattr(self, 'table'):
-            table = self.table
+            table = getattr(self, 'table')
         else:
             table = self.className.lower()
 
         if hasattr(self, 'key'):
-            key = self.key
+            key = getattr(self, 'key')
         else:
             key = table + '_id'
 
@@ -100,7 +100,9 @@ class AsyncBaseModel(object):
         # date_sort_flg = False
         # add conditon delete_flag is not 1
         conditions[DELETE_FLAG] = {'$ne': '1'}
-        sorts = [[x if x != self._key_ else MONGODB_ID for x in y] for y in sorts]
+        sorts = [
+            [x if x != self._key_ else MONGODB_ID for x in y] for y in sorts
+        ]
         if not sorts:
             sorts.append([MONGODB_ID, pymongo.DESCENDING])
         if self._key_ in conditions:
@@ -111,8 +113,15 @@ class AsyncBaseModel(object):
             del fields[self._key_]
         if not fields.keys():
             fields = None
-        result_list, error = yield tornado.gen.Task(self.dao.find, spec=conditions,
-                                                    fields=fields, sort=sorts, limit=count)
+        result_list, error = yield tornado.gen.Task(
+            self.dao.find,
+            spec=conditions,
+            fields=fields,
+            sort=sorts,
+            limit=count)
+        if error is None:
+            logging.error(error)
+
         result_list = result_list[0]
         for result in result_list:
             if MONGODB_ID in result:
@@ -143,7 +152,9 @@ class AsyncBaseModel(object):
         if 'conditions' not in query:
             conditions = query
 
-        sorts = [[x if x != self._key_ else MONGODB_ID for x in y] for y in sorts]
+        sorts = [
+            [x if x != self._key_ else MONGODB_ID for x in y] for y in sorts
+        ]
         if not sorts:
             sorts.append([MONGODB_ID, pymongo.DESCENDING])
 
@@ -157,8 +168,13 @@ class AsyncBaseModel(object):
             del fields[self._key_]
         if not fields.keys():
             fields = None
-        result_list, _ = yield tornado.gen.Task(self.dao.find, spec=conditions,
-                                                    fields=fields, limit=count, skip=pos, sort=sorts)
+        result_list, _ = yield tornado.gen.Task(
+            self.dao.find,
+            spec=conditions,
+            fields=fields,
+            limit=count,
+            skip=pos,
+            sort=sorts)
         result_list = result_list[0]
         for result in result_list:
             try:
@@ -168,7 +184,8 @@ class AsyncBaseModel(object):
                 response_list.append(result)
             except Exception, e:
                 logging.error(e.message)
-                logging.error("result: %s, self._key_: %s " % (str(result), self._key_))
+                logging.error("result: %s, self._key_: %s " %
+                              (str(result), self._key_))
 
         callback(response_list)
 
@@ -195,7 +212,9 @@ class AsyncBaseModel(object):
         # add conditon delete_flag is not 1
         conditions[DELETE_FLAG] = {'$ne': '1'}
 
-        sorts = [[x if x != self._key_ else MONGODB_ID for x in y] for y in sorts]
+        sorts = [
+            [x if x != self._key_ else MONGODB_ID for x in y] for y in sorts
+        ]
         if not sorts:
             sorts.append([MONGODB_ID, pymongo.DESCENDING])
 
@@ -209,8 +228,16 @@ class AsyncBaseModel(object):
             del fields[self._key_]
         if not fields.keys():
             fields = None
-        result_list, error = yield tornado.gen.Task(self.dao.find, spec=conditions,
-                                                    fields=fields, limit=count, skip=pos, sort=sorts)
+        result_list, error = yield tornado.gen.Task(
+            self.dao.find,
+            spec=conditions,
+            fields=fields,
+            limit=count,
+            skip=pos,
+            sort=sorts)
+        if error is None:
+            logging.error(error)
+
         result_list = result_list[0]
         for result in result_list:
             try:
@@ -220,7 +247,8 @@ class AsyncBaseModel(object):
                 response_list.append(result)
             except Exception, e:
                 logging.error(e.message)
-                logging.error("result: %s, self._key_: %s " % (str(result), self._key_))
+                logging.error("result: %s, self._key_: %s " %
+                              (str(result), self._key_))
 
         del conditions[DELETE_FLAG]
         callback(response_list)
@@ -235,11 +263,14 @@ class AsyncBaseModel(object):
             del spec[self._key_]
         # add conditon delete_flag is not 1
         spec[DELETE_FLAG] = {'$ne': '1'}
-        model, error = yield tornado.gen.Task(self.dao.find_one, spec, fields=fields)
-        
+        model, error = yield tornado.gen.Task(
+            self.dao.find_one, spec, fields=fields)
+
+        if error is None:
+            logging.error(error)
         #import pdb
         #pdb.set_trace()
-        
+
         model = model[0]
         if type(model) == tuple and len(model) > 0:
             model = model[0]
@@ -266,8 +297,13 @@ class AsyncBaseModel(object):
             if delete_flag:
                 query[DELETE_FLAG] = {'$ne': '1'}
 
-            responses, error = yield tornado.gen.Task(self.dao.find, spec=query,
-                                                      fields={self._key_: 1}, sort=[[self._key_, 1]])
+            responses, error = yield tornado.gen.Task(
+                self.dao.find,
+                spec=query,
+                fields={self._key_: 1},
+                sort=[[self._key_, 1]])
+            if error is None:
+                logging.error(error)
 
             del query[DELETE_FLAG]
             callback(len(responses[0]))
@@ -277,7 +313,13 @@ class AsyncBaseModel(object):
             raise ModelException("count error:%s,e:%s" % (str(query), str(e)))
 
     @tornado.gen.engine
-    def insert(self, doc, manipulate=True, safe=True, check_keys=True, callback=None, **kwargs):
+    def insert(self,
+               doc,
+               manipulate=True,
+               safe=True,
+               check_keys=True,
+               callback=None,
+               **kwargs):
 
         send_time = int(time.time())
         doc["date"] = send_time
@@ -308,7 +350,13 @@ class AsyncBaseModel(object):
             if self._key_ in doc:
                 del doc[self._key_]
         doc[MONGODB_ID] = key_value
-        yield tornado.gen.Task(self.dao.insert, doc, manipulate=manipulate, safe=safe, check_keys=check_keys, **kwargs)
+        yield tornado.gen.Task(
+            self.dao.insert,
+            doc,
+            manipulate=manipulate,
+            safe=safe,
+            check_keys=check_keys,
+            **kwargs)
 
         # sync data
         if self.need_sync:
@@ -318,7 +366,15 @@ class AsyncBaseModel(object):
             callback(key_value)
 
     @tornado.gen.engine
-    def update(self, spec, document, upsert=False, manipulate=False, safe=True, multi=False, callback=None, **kwargs):
+    def update(self,
+               spec,
+               document,
+               upsert=False,
+               manipulate=False,
+               safe=True,
+               multi=False,
+               callback=None,
+               **kwargs):
 
         if self._key_ in spec:
             spec[MONGODB_ID] = spec[self._key_]
@@ -336,8 +392,15 @@ class AsyncBaseModel(object):
         if unset_data and DELETE_FLAG in unset_data:
             del spec[DELETE_FLAG]
 
-        result = yield tornado.gen.Task(self.dao.update, spec, document, upsert=upsert,
-                                        manipulate=manipulate, safe=safe, multi=multi, **kwargs)
+        result = yield tornado.gen.Task(
+            self.dao.update,
+            spec,
+            document,
+            upsert=upsert,
+            manipulate=manipulate,
+            safe=safe,
+            multi=multi,
+            **kwargs)
 
         if self.need_sync:
             self.sync_update_data(spec, document, upsert, safe)
@@ -354,13 +417,10 @@ class AsyncBaseModel(object):
 
         # add conditon delete_flag is not 1
         spec[DELETE_FLAG] = {'$ne': '1'}
-        update_set = {
-            '$set': {
-                DELETE_FLAG: '1'
-            }
-        }
+        update_set = {'$set': {DELETE_FLAG: '1'}}
 
-        result = yield tornado.gen.Task(self.dao.update, spec, update_set, multi=True)
+        result = yield tornado.gen.Task(
+            self.dao.update, spec, update_set, multi=True)
 
         if self.need_sync:
             self.sync_delete_data(spec)
@@ -369,8 +429,15 @@ class AsyncBaseModel(object):
             callback(result)
 
     @tornado.gen.engine
-    def find_and_modify(self, spec, document, upsert=False,
-                        manipulate=False, safe=True, multi=False, callback=None, **kwargs):
+    def find_and_modify(self,
+                        spec,
+                        document,
+                        upsert=False,
+                        manipulate=False,
+                        safe=True,
+                        multi=False,
+                        callback=None,
+                        **kwargs):
 
         if self._key_ in spec:
             spec[MONGODB_ID] = spec[self._key_]
@@ -384,22 +451,28 @@ class AsyncBaseModel(object):
 
         from bson.son import SON
 
-        command = SON([('findAndModify', self._table_), ('query', spec), ('update', document), ('upsert', False), ('new', True)])
+        command = SON([('findAndModify', self._table_), ('query', spec),
+                       ('update', document), ('upsert', False), ('new', True)])
 
         command.update(kwargs)
 
-        result = yield tornado.gen.Task( self.async_client.connection("$cmd", self._db_).find_one, command, _must_use_master=True, _is_command=True)
+        result = yield tornado.gen.Task(
+            self.async_client.connection("$cmd", self._db_).find_one,
+            command,
+            _must_use_master=True,
+            _is_command=True)
 
         flag = result[0][0]['value']
         if flag and self.need_sync:
-            self.sync_update_data(spec,document)
+            self.sync_update_data(spec, document)
 
         callback(flag)
 
     def get_id(self):
         return str(ObjectId())
 
-    def sync_insert_data(self, doc):  # for mongodb $ operator anti-moth 20160226
+    def sync_insert_data(self,
+                         doc):  # for mongodb $ operator anti-moth 20160226
         if MONGODB_ID in doc and isinstance(doc[MONGODB_ID], ObjectId):
             doc[MONGODB_ID] = str(doc[MONGODB_ID])
         #self.sync_class.send_insert(self.module, self.className, doc)
@@ -417,12 +490,14 @@ class AsyncBaseModel(object):
         #self.sync_class.send_delete(self.module, self.className, spec)
         pass
 
+
 METHOD_INSERT = "insert"
 METHOD_UPDATE = "update"
 METHOD_DELETE = "delete"
 
 
-def convert_to_builtin_type(obj):  # for simplejson dumps user-defined objects. anti-moth 20160226
+def convert_to_builtin_type(
+        obj):  # for simplejson dumps user-defined objects. anti-moth 20160226
     # Convert objects to a dictionary of their representation
     class_name = obj.__class__.__name__
     module_name = obj.__module__
@@ -440,8 +515,9 @@ def convert_to_builtin_type(obj):  # for simplejson dumps user-defined objects. 
 
 # sync data by message queue
 class SyncData(object):
+
     def __init__(self):
-        if not hasattr(self,"channel"):
+        if not hasattr(self, "channel"):
             raise NotImplementedError("Must configure an channel.")
 
     @classmethod
@@ -460,64 +536,68 @@ class SyncData(object):
                 "module": module,
                 "className": className,
                 "method": method,
-            }
-        )
+            })
         self.channel.publish(
             request,
-            exchange    = options.Sync_Send_Data_Exchange,
-            routing_key = options.Sync_Send_Data_Routing_Key
-        )
-        logging.info("[*] sync_data insert module:%s,className:%s,doc:%s" %(module,className,doc))
+            exchange=options.Sync_Send_Data_Exchange,
+            routing_key=options.Sync_Send_Data_Routing_Key)
+        logging.info("[*] sync_data insert module:%s,className:%s,doc:%s" %
+                     (module, className, doc))
 
-    def send_update(self,module,className,spec,doc,upsert = False,safe = False):
+    def send_update(self,
+                    module,
+                    className,
+                    spec,
+                    doc,
+                    upsert=False,
+                    safe=False):
         method = METHOD_UPDATE
 
         args = simplejson.dumps((spec, doc), default=convert_to_builtin_type)
         _upsert_ = "0"
-        _safe_   = "0"
+        _safe_ = "0"
         if upsert:
             _upsert_ = "1"
         if safe:
-            _safe_   = "1"
+            _safe_ = "1"
 
         request = Message(
             args,
-            delivery_mode = 2,
-            reply_to      = options.Sync_Receive_Data_Queue,
-            headers       = {
-                "module"    : module,
-                "className" : className,
-                "method"    : method,
-                "upsert"    : _upsert_,
-                "safe"      : _safe_
-            }
-        )
+            delivery_mode=2,
+            reply_to=options.Sync_Receive_Data_Queue,
+            headers={
+                "module": module,
+                "className": className,
+                "method": method,
+                "upsert": _upsert_,
+                "safe": _safe_
+            })
         self.channel.publish(
             request,
-            exchange    = options.Sync_Send_Data_Exchange,
-            routing_key = options.Sync_Send_Data_Routing_Key
-        )
-        logging.info("[*] sync_data update module:%s,className:%s,spec:%s,doc:%s,upsert:%s,safe:%s" %(module,className,spec,doc,upsert,safe))
+            exchange=options.Sync_Send_Data_Exchange,
+            routing_key=options.Sync_Send_Data_Routing_Key)
+        logging.info(
+            "[*] sync_data update module:%s,className:%s,spec:%s,doc:%s,upsert:%s,safe:%s"
+            % (module, className, spec, doc, upsert, safe))
 
-    def send_delete(self,module,className,spec):
+    def send_delete(self, module, className, spec):
         method = METHOD_DELETE
         spec = simplejson.dumps(spec, default=convert_to_builtin_type)
         request = Message(
             spec,
-            delivery_mode = 2,
-            reply_to      = options.Sync_Receive_Data_Queue,
-            headers       = {
-                "module"    : module,
-                "className" : className,
-                "method"    : method,
-            }
-        )
+            delivery_mode=2,
+            reply_to=options.Sync_Receive_Data_Queue,
+            headers={
+                "module": module,
+                "className": className,
+                "method": method,
+            })
         self.channel.publish(
             request,
-            exchange    = options.Sync_Send_Data_Exchange,
-            routing_key = options.Sync_Send_Data_Routing_Key
-        )
-        logging.info("[*] sync_data delete module:%s,className:%s,spec:%s" %(module,className,spec))
+            exchange=options.Sync_Send_Data_Exchange,
+            routing_key=options.Sync_Send_Data_Routing_Key)
+        logging.info("[*] sync_data delete module:%s,className:%s,spec:%s" %
+                     (module, className, spec))
 
 
 class MessageAsyncBaseModel(AsyncBaseModel):  # anti-moth 20160223
@@ -533,7 +613,7 @@ class MessageAsyncBaseModel(AsyncBaseModel):  # anti-moth 20160223
     def sync_update_data(self, spec, doc, upsert=False, safe=False):
         #self.sync_class.send_update(self.module, self.className, spec, doc, upsert, safe)
         pass
-    
+
     def sync_delete_data(self, spec):
         #self.sync_class.send_delete(self.module, self.className, spec)
         pass

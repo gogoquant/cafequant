@@ -6,7 +6,7 @@ history model
 import logging
 
 from iseecore.models import AsyncBaseModel
-
+'''
 class History(AsyncBaseModel):
     
     def __init__(self):
@@ -23,3 +23,4 @@ class History(AsyncBaseModel):
             "user_id"            : 1,
             "date"               : 1
         }
+'''

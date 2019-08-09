@@ -7,6 +7,7 @@ from iseecore.services import init_service
 
 @init_service()
 class DFS():
+
     def __init__(self):
         #TODO ignore dfs
         #options["fastdfs_client"] = DfsUtils()

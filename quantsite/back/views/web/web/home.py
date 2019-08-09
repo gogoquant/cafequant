@@ -1,5 +1,4 @@
 #-*- coding: UTF-8 -*-
-
 '''
     @普通用户的
     @author: lancelot
@@ -13,7 +12,7 @@ import tornado.web
 import pdb
 
 from tornado.options import define, options
-from iseecore.routes  import route
+from iseecore.routes import route
 from views.web.base import WebHandler
 
 from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
@@ -25,20 +24,20 @@ import hashlib
 
 import setting
 from pycket.driver import Driver
-
-
 '''
     主页
 '''
+
+
 @route(r"/", name="web.web.home")
 class IndexHandler(WebHandler):
 
     @tornado.gen.engine
     def _get_(self):
-        self.title      = '用户主页'
-        self.template   = 'web/index.html'  
+        self.title = '用户主页'
+        self.template = 'web/index.html'
         self.nav_active = 'home'
-        
+
         data = {}
         self.render(**data)
 
@@ -46,15 +45,17 @@ class IndexHandler(WebHandler):
 '''
     文章列表
 '''
+
+
 @route(r"/web/topicList", name="web.web.topiclist")
 class TopicListHandler(WebHandler):
 
     @tornado.gen.engine
     def _get_(self):
-        self.title      = '文章列表主页'
-        self.template   = 'web/topicList.html'  
+        self.title = '文章列表主页'
+        self.template = 'web/topicList.html'
         self.nav_active = 'topiclist'
-        
+
         data = {}
         self.render(**data)
 
@@ -62,14 +63,16 @@ class TopicListHandler(WebHandler):
 '''
     单文章详情
 '''
+
+
 @route(r"/web/topic", name="web.web.topic")
 class TopicHandler(WebHandler):
 
     @tornado.gen.engine
     def _get_(self):
-        self.title      = '文章列表主页'
-        self.template   = 'web/topic.html'  
+        self.title = '文章列表主页'
+        self.template = 'web/topic.html'
         self.nav_active = 'topic'
-        
+
         data = {}
         self.render(**data)

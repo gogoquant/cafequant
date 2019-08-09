@@ -3,6 +3,7 @@
 
 from iseecore.models import AsyncBaseModel
 
+
 class VideoTag(AsyncBaseModel):
     tag_id = True
     thumb_md5 = True  # 缩列图md

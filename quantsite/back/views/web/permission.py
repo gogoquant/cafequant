@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 """
 权限定义
 每一个元素用一个二进制位控制。
@@ -10,17 +9,16 @@ import logging
 import simplejson
 from services.defines import PRIV_DEFAULT, PRIV_MAX
 
+
 class Permission(object):
 
-    def _init_(self, pstr = PRIV_DEFAULT):
+    def _init_(self, pstr=PRIV_DEFAULT):
         self.msize = PRIV_MAX
         self.permissionInit(pstr)
-      
 
     def permissionInit(self, pstr):
         '''设置权限'''
         self.size = len(pstr)
-
         '''过长的串重设长度'''
         if self.size > self.msize:
             self.size = self.msize
@@ -67,7 +65,7 @@ class Permission(object):
 
         if lftSize != rhtSize:
             return None
-        
+
         for i in range(rhtSize):
             if p.permissionCheckOne(i):
                 if not self.permissionCheckOne(i):

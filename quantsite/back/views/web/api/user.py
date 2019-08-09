@@ -1,5 +1,4 @@
 #-*- coding: UTF-8 -*-
-
 '''
     @brief topic manager 
     @author: snack
@@ -13,7 +12,7 @@ import pdb
 import setting
 
 from tornado.options import define, options
-from iseecore.routes  import route
+from iseecore.routes import route
 from views.web.base import WebHandler, WebAsyncAuthHandler
 #from views.web.base import *
 
@@ -26,11 +25,11 @@ import hashlib
 
 import setting
 from util.time_common import month_seconds
-
-
 '''
     用户注册句柄
 '''
+
+
 @route(r"/api/user/register", name="api.user.register")
 class RegisterHandler(WebHandler):
     user_s = UserService()
@@ -43,15 +42,15 @@ class RegisterHandler(WebHandler):
         passwd = self.get_argument("passwd", None)
         token = self.get_argument("access_token", None)
         token_from = self.get_argument("source", None)
-        
+
         #获取用户的第三方认证id
         openid = self.get_argument("openid", None)
-        
+
         #额外信息
         extra = {}
         extra['sex'] = self.get_argument("sex", 0)
         extra['name'] = self.get_argument("name", "")
-        
+
         #是否允许随机名
         allow_random_name = self.get_argument("allow_same", None)
 
@@ -68,7 +67,7 @@ class RegisterHandler(WebHandler):
         user_id, return_status = yield tornado.gen.Task(self.user_s.register,\
                 email, passwd, token, token_from, extra=extra, app_id=None, \
                 openid=openid, allow_random_name=allow_random_name)
-        
+
         #检查返回值，失败则作错误告警
         if not return_status:
             logging.error('no social data')
@@ -92,6 +91,7 @@ class RegisterHandler(WebHandler):
         self.set_secure_cookie("user_id", user_id)
         self.set_secure_cookie("user_name", return_status.get("name", ""))
         self.finish()
+
 
 @route(r"/api/user/update", name="user.update")
 class UserModifyHandler(WebAsyncAuthHandler):
@@ -124,7 +124,8 @@ class UserModifyHandler(WebAsyncAuthHandler):
             self.render_error(status=400, code=400, msg='update none')
             return
 
-        result = yield tornado.gen.Task(self.user_s.modify, user_id, update_values)
+        result = yield tornado.gen.Task(self.user_s.modify, user_id,
+                                        update_values)
 
         if result == UserExistsException:
             self.render_error(status=400, code=400, msg='exists name')
@@ -136,6 +137,7 @@ class UserModifyHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _get_(self):
         self._post_()
+
 
 @route(r"/api/user/logout", name="api.user.logout")
 class LogoutHandler(WebAsyncAuthHandler):
@@ -154,6 +156,7 @@ class LogoutHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _post_(self):
         self._get_()
+
 
 '''
 @route(r"/api/user/check_login", name="api.user.check_login")
@@ -174,7 +177,6 @@ class CheckLoginHandler(WebAsyncAuthHandler):
         yield tornado.gen.Task(self.user_s.refresh_last_online, user_id)
         self.finish()
 '''
-
 '''
 @route(r"/api/user/forget_passwd", name="api.user.forget_passwd")
 class ForgetPasswdHandler(WebAsyncAuthHandler):
@@ -229,6 +231,7 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
         self._get_()
 '''
 
+
 @route(r"/api/user/change_passwd/(.*)", name="api.user.change_passwd")
 class ForgetPasswdHandler(WebAsyncAuthHandler):
     user_service = UserService()
@@ -237,9 +240,10 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _get_(self, reset_passwd_id):
 
-        reset_passwd = yield tornado.gen.Task(self.user_service.get_reset_passwd_by_id, reset_passwd_id)
-        # if not reset_passwd:
-        #     raise tornado.web.HTTPError(400)
+        reset_passwd = yield tornado.gen.Task(
+            self.user_service.get_reset_passwd_by_id, reset_passwd_id)
+        if not reset_passwd:
+            raise tornado.web.HTTPError(400)
         response = {'reset_passwd_id': reset_passwd_id}
         response["flg"] = self.get_argument('success', 0)
         self.render(**response)
@@ -247,7 +251,8 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _post_(self, reset_passwd_id):
 
-        reset_passwd = yield tornado.gen.Task(self.user_service.get_reset_passwd_by_id, reset_passwd_id)
+        reset_passwd = yield tornado.gen.Task(
+            self.user_service.get_reset_passwd_by_id, reset_passwd_id)
         if not reset_passwd:
             self.render_error(msg=self._('No reset passwd session'), status=203)
             return
@@ -266,9 +271,11 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
                 msg=self._('Confirm password is different from new password!'), status=203)
             return
 
-        yield tornado.gen.Task(self.user_service.update_user_passwd, reset_passwd_id, email, user_password)
+        yield tornado.gen.Task(self.user_service.update_user_passwd,
+                               reset_passwd_id, email, user_password)
 
         self.finish()
+
 
 @route(r"/api/user/info/(.+)", name="api.user.info")
 class UserInfoHandler(WebAsyncAuthHandler):
@@ -277,7 +284,8 @@ class UserInfoHandler(WebAsyncAuthHandler):
     @tornado.gen.engine
     def _get_(self, user_id):
         self_user_id = self.get_secure_cookie("user_id")
-        user_info = yield tornado.gen.Task(self.user_s.info, None, user_id, self_user_id, viewMore=True)
+        user_info = yield tornado.gen.Task(
+            self.user_s.info, None, user_id, self_user_id, viewMore=True)
 
         if not user_info:
             logging.error('no user')
@@ -305,14 +313,14 @@ class UserSearchHandler(WebHandler):
         else:
             page_num = int(page)
 
-
         if pagesize is None:
             pagesize_num = int(0)
         else:
             pagesize_num = int(pagesize)
 
-        users = yield tornado.gen.Task(self.user_s.search, page_num, pagesize_num, token)
-        
+        users = yield tornado.gen.Task(self.user_s.search, page_num,
+                                       pagesize_num, token)
+
         #pdb.set_trace()
 
         self.render_success(msg=users)
@@ -330,7 +338,7 @@ class UserTotHandler(WebHandler):
         token = self.get_argument("token", None)
 
         users = yield tornado.gen.Task(self.user_s.count, token)
-        
+
         self.render_success(msg=users)
         return
 
@@ -346,7 +354,6 @@ class UserDeleteHandler(WebAsyncAuthHandler):
         user_id = self.get_argument("user_id", "")
 
         yield tornado.gen.Task(self.user_s.delete, user_id)
-        
+
         self.render_success(msg="success")
         return
-

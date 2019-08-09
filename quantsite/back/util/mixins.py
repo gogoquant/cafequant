@@ -54,18 +54,25 @@ class LogMixin(object):
 
             if (self.request.uri.find("/resource/init") >= 0):
                 user_data = {}
-                save_keys = ["software", "imei", "system",
-                             "market", "device", "os", "network", "appkey"]
+                save_keys = [
+                    "software", "imei", "system", "market", "device", "os",
+                    "network", "appkey"
+                ]
                 for key in save_keys:
                     user_data[key] = self.get_argument(key, "")
 
                 imei_class = Imei()
-                old_data = yield tornado.gen.Task(imei_class.find_one, {"imei": user_data["imei"]})
+                old_data = yield tornado.gen.Task(imei_class.find_one,
+                                                  {"imei": user_data["imei"]})
                 if old_data:
                     system = user_data.get("system", "")
                     if system != "":
-                        yield tornado.gen.Task(imei_class.update, {"imei": user_data["imei"]}, {"$set": user_data})
+                        yield tornado.gen.Task(imei_class.update,
+                                               {"imei": user_data["imei"]},
+                                               {"$set": user_data})
                     else:
-                        yield tornado.gen.Task(imei_class.update, {"imei": user_data["imei"]}, {"$set": {}})
+                        yield tornado.gen.Task(imei_class.update,
+                                               {"imei": user_data["imei"]},
+                                               {"$set": {}})
                 else:
                     yield tornado.gen.Task(imei_class.insert, user_data)

@@ -2,14 +2,13 @@
 # _*_ coding: UTF-8 _*_
 
 ###
- # 本文件百度云服务PHP版本SDK的公共网络交互功能
- # 
- # @author 百度移动.云事业部
- # @copyright Copyright (c) 2012-2020 百度在线网络技术(北京)有限公司
- # @version 1.0.0
- # @package
+# 本文件百度云服务PHP版本SDK的公共网络交互功能
+#
+# @author 百度移动.云事业部
+# @copyright Copyright (c) 2012-2020 百度在线网络技术(北京)有限公司
+# @version 1.0.0
+# @package
 ##
-
 
 import urlparse
 
@@ -22,7 +21,7 @@ class RequestCore(object):
     """封装curl，提供网络交互功能,组网络请求包，并保存返回结果"""
     #类常量
     HTTP_GET = 'GET'
-    
+
     HTTP_POST = 'POST'
 
     HTTP_PUT = 'PUT'
@@ -31,8 +30,7 @@ class RequestCore(object):
 
     HTTP_HEAD = 'HEAD'
 
-
-    def __init__(self, url = None, proxy = None, helpers = None):       
+    def __init__(self, url=None, proxy=None, helpers=None):
         self.request_url = url
         self.method = RequestCore.HTTP_POST
         self.request_headers = dict()
@@ -51,14 +49,14 @@ class RequestCore(object):
         self.request_class = 'RequestCore'
         self.response_class = 'ResponseCore'
         self.useragent = 'RequestCore/1.4.2'
-        if(isinstance(helpers, dict)):
-            if(helpers.has_key() and helpers['request'] is not None):
+        if (isinstance(helpers, dict)):
+            if (helpers.has_key() and helpers['request'] is not None):
                 self.request_class = helpers['request']
-            if(helpers.has_key() and helpers['response'] is not None):
+            if (helpers.has_key() and helpers['response'] is not None):
                 self.response_class = helpers['response']
-        if(proxy is not None):
+        if (proxy is not None):
             self.set_proxy(proxy)
-        
+
     def set_credentials(self, username, password):
         self.username = username
         self.password = password
@@ -67,7 +65,7 @@ class RequestCore(object):
         self.request_headers[key] = value
 
     def remove_header(self, key):
-        if(self.request_headers.has_key(key)):
+        if (self.request_headers.has_key(key)):
             del self.request_headers[key]
 
     def set_method(self, method):
@@ -81,7 +79,7 @@ class RequestCore(object):
 
     def set_request_url(self, url):
         self.request_url = url
-    
+
     def set_curlopts(self, curlopts):
         self.curlopts = curlopts
 
@@ -97,12 +95,12 @@ class RequestCore(object):
         curl_handle.setopt(pycurl.TIMEOUT, 5184000)
         curl_handle.setopt(pycurl.CONNECTTIMEOUT, 120)
         curl_handle.setopt(pycurl.HEADER, True)
-    #   curl_handle.setopt(pycurl.VERBOSE, 1)
+        #   curl_handle.setopt(pycurl.VERBOSE, 1)
         curl_handle.setopt(pycurl.FOLLOWLOCATION, 1)
         curl_handle.setopt(pycurl.MAXREDIRS, 5)
-        if(self.request_headers and len(self.request_headers) > 0):
+        if (self.request_headers and len(self.request_headers) > 0):
             tmplist = list()
-            for(key, value) in self.request_headers.items():
+            for (key, value) in self.request_headers.items():
                 tmplist.append(key + ':' + value)
             curl_handle.setopt(pycurl.HTTPHEADER, tmplist)
         #目前只需支持POST
@@ -114,22 +112,21 @@ class RequestCore(object):
         response = StringIO.StringIO()
         curl_handle.setopt(pycurl.WRITEFUNCTION, response.write)
 
-        # print 
+        # print
 
         curl_handle.perform()
 
         self.response_code = curl_handle.getinfo(curl_handle.HTTP_CODE)
         header_size = curl_handle.getinfo(curl_handle.HEADER_SIZE)
         resp_str = response.getvalue()
-        self.response_headers = resp_str[0 : header_size]
-        self.response_body = resp_str[header_size : ]
-    
+        self.response_headers = resp_str[0:header_size]
+        self.response_body = resp_str[header_size:]
+
         response.close()
         curl_handle.close()
 
-    
-    def get_response_header(self, header = None):
-        if(header is not None):
+    def get_response_header(self, header=None):
+        if (header is not None):
             return self.response_headers[header]
         return self.response_headers
 
@@ -141,23 +138,20 @@ class RequestCore(object):
 
 
 #
-#   Container for all response-related methods 
+#   Container for all response-related methods
 #
 
+
 class ResponseCore(object):
-    
-    def __init__(self, header, body, status = None):
+
+    def __init__(self, header, body, status=None):
         self.header = header
         self.body = body
         self.status = status
 
-    def isOK(self, codes = None):
-        if(codes == None):
+    def isOK(self, codes=None):
+        if (codes == None):
             codes = [200, 201, 204, 206]
             return self.status in codes
         else:
             return self == codes
-
-
-
-        

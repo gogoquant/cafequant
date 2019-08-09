@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-
 '''
 Created on 2017-3-11
 @author: lancelot
@@ -27,32 +26,31 @@ define("port", default=8080, help="Run server on a specific port", type=int)
 class Application(tornado.web.Application):
 
     def __init__(self):
+
         def init():
             init_service.load_init_services()
-            
+
             # 导入views，生成routes
-            import views.web.api.user
-            import views.web.api.topic
-            import views.web.api.tag
-            import views.web.api.chat
-            import views.web.api.pubmsg
-            import views.web.api.upload
-            
-        
+            #import views.web.api.user
+            #import views.web.api.topic
+            #import views.web.api.tag
+            #import views.web.api.chat
+            #import views.web.api.pubmsg
+            #import views.web.api.upload
 
             handlers = route.get_routes()
 
             # 定义setting，对tornado.web.Application进行设置
             settings = dict(
-                
                 blog_title=u"misaka",
-                
+
                 #设置模板文件路径
-                template_path=os.path.join(os.path.dirname(__file__), setting.MISAKA_TEMPLATE_DIR),
+                template_path=os.path.join(
+                    os.path.dirname(__file__), setting.MISAKA_TEMPLATE_DIR),
 
                 #设置static文件路径
-                static_path=os.path.join(os.path.dirname(__file__), setting.MISAKA_STATIC_DIR),
-
+                static_path=os.path.join(
+                    os.path.dirname(__file__), setting.MISAKA_STATIC_DIR),
                 debug=True,
                 cookie_secret="NyM8vWu0Slec0GLonsdI3ebBX0VEqU3Vm8MsHiN5rrc=",
                 app_secret="XOJOwYhNTgOTJqnrszG3hWuAsTmVz0GisOCY6R5d1E8=",
@@ -69,13 +67,10 @@ class Application(tornado.web.Application):
             }
 
             # session配置为redis存储
-            settings['session'] = {
-                'engine': 'redis',
-                'storage': redis_setting
-            }
+            settings['session'] = {'engine': 'redis', 'storage': redis_setting}
 
             tornado.web.Application.__init__(self, handlers, **settings)
-        
+
         # init amqp
         from services.tool.amqp import Rabbitmq
 
@@ -85,7 +80,6 @@ class Application(tornado.web.Application):
     @property
     def mail_connection(self):
         return True
-        
 
     @property
     def base_file_path(self):
@@ -102,10 +96,10 @@ def main():
     # 设置本地化
     tornado.locale.set_default_locale("zh_CN")
     tornado.locale.load_translations(
-        os.path.join(os.path.dirname(__file__), "translations")
-    )
+        os.path.join(os.path.dirname(__file__), "translations"))
     # 启动ioloop
     tornado.ioloop.IOLoop.instance().start()
+
 
 if __name__ == '__main__':
     main()
