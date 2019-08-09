@@ -27,7 +27,7 @@ class Application(tornado.web.Application):
             init_service.load_init_services()
             
             # 导入views，生成routes
-            import views
+            #import views
             handlers = route.get_routes()
             
             # 定义setting，对tornado.web.Application进行设置

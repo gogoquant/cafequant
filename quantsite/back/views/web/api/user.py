@@ -1,9 +1,9 @@
 #-*- coding: UTF-8 -*-
 
 '''
-    @brief 文章管理
-    @author: xiyan
-    @data 2019-08-06
+    @brief topic manager 
+    @author: snack
+    @data 2019-08-09
 '''
 
 import logging
@@ -14,6 +14,7 @@ import setting
 
 from tornado.options import define, options
 from iseecore.routes  import route
+from views.web.base import WebHandler, WebAsyncAuthHandler
 #from views.web.base import *
 
 from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
@@ -35,23 +36,7 @@ class RegisterHandler(WebHandler):
     user_s = UserService()
 
     @tornado.gen.engine
-    def _get_(self):
-        self.title      = 'user register'
-        self.template   = 'register.html'  
-        self.nav_active = 'index'
-        
-        data = {}
-
-        self.render(**data)
-
-    @tornado.gen.engine
     def _post_(self):
-        #pdb.set_trace()
-
-        #@TODO
-        #self.render_error()
-        return 
-
 
         #获取用户的基本信息
         email = self.get_argument("email", None)

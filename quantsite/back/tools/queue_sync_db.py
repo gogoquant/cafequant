@@ -6,12 +6,12 @@ from tornado import ioloop
 from tornado.options import options
 import tornado.gen
 import cPickle
+import Image
 
 import logging
 import simplejson
 
 from stormed import Connection as StormedConnection
-import Image
 import traceback
 import setting
 

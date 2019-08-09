@@ -18,7 +18,7 @@ from stormed import Message
 
 import traceback
 
-__all__ = ['exist', 'unique', 'get', 'get_list', "get_list_all", 'find_one', 'count', 'insert', 'delete']
+__all__ = ['AsyncBaseModel', ModelException]
 
 MONGODB_ID = "_id"
 DELETE_FLAG = 'delete_flag'  # '1' 已经删除，'0'或者没有该字段表示没有删除
@@ -157,7 +157,7 @@ class AsyncBaseModel(object):
             del fields[self._key_]
         if not fields.keys():
             fields = None
-        result_list, error = yield tornado.gen.Task(self.dao.find, spec=conditions,
+        result_list, _ = yield tornado.gen.Task(self.dao.find, spec=conditions,
                                                     fields=fields, limit=count, skip=pos, sort=sorts)
         result_list = result_list[0]
         for result in result_list:
@@ -284,7 +284,7 @@ class AsyncBaseModel(object):
         doc["last_modify"] = send_time
 
         # 如果doc中有数组，并且数组中是dict,则向其中加入date和id
-        for (key, value) in doc.iteritems():
+        for (_, value) in doc.iteritems():
             if not type(value) == list:
                 continue
             if not len(value):

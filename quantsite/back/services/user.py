@@ -36,7 +36,7 @@ MES_PAGE_COUNT = 20
 ACTIVE_USER_TIME = day_seconds * 3
 
 
-'''UserService 普通用户管理接口'''
+'''UserService 用户管理接口'''
 class UserService(BaseService):
     
     user_m = User()
@@ -127,7 +127,7 @@ class UserService(BaseService):
 
     @tornado.gen.engine
     def register(self, email, passwd, token, token_from, openid=None, extra={}, app_id=None, allow_random_name=None, callback=None):
-        '''用户注册'''
+        '''user register'''
         third_id = None
         #第三方登录注册支持
         '''
@@ -160,7 +160,7 @@ class UserService(BaseService):
         else:
             try:
                 name = email.split('@')[0]
-            except Exception, e:
+            except Exception:
                 name = ""
             user = {'name': name}
             user["email"] = email

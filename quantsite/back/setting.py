@@ -4,6 +4,7 @@ import pymongo
 from tornado.options import define
 
 
+
 DEFAULT_APP_ID  = 'misaka'
 DEFAULT_GROUP_NAME = 'xiyanxiyan10'
 APPS_BASE_PATH = 'apps'
@@ -18,6 +19,9 @@ LOCAL_SITE_URL = "127.0.0.1"
 
 #该网站跳转的域名
 MISAKA_DNS = "www.lancelot.top"
+
+LOGIN_URL = '/admin/adminLogin'
+ADMINLOGIN_URL = '/user/Login'
 
 #@TODO
 YIXUN_DEFAULT_FILE_BACKET = ""
@@ -70,6 +74,8 @@ MONGO_HOST = "127.0.0.1"
 MONGO_PORT = int(27017)
 MONGO_USER = "admin"
 MONGO_PASS = "password"
+MONGO_DB = "mysite"
+MONGO_ID = "my_id"
 
 #CDN
 IS_CDN = False

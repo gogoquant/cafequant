@@ -14,7 +14,6 @@ import tornado.web
 import tornado.gen
 import logging
 import datetime
-import pdb
 
 from iseecore.mixins import ExceptionMixin
 from views.base import RequestHandler
@@ -63,10 +62,6 @@ class WebHandler(RequestHandler):
         self.set_header('Access-Control-Max-Age', 1000)
         self.set_header('Access-Control-Allow-Headers', '*')
         #self.set_header('Content-type', 'application/json')
-
-    def get_login_url(self):
-        '''获取登录地址'''
-        return '/web/user/login'
 
     def render(self, **kwargs):
         '''响应封装'''
@@ -142,22 +137,22 @@ class WebAsyncAuthHandler(WebHandler):
         需要加上的原因是子类可能也需要执行异步阻塞，
         如果父类调用sele.finish()则子类将不能使用connection
     """
+    def permissionSet(self, permission): 
+        self.view_permission = permission
+        
+    
     def permissionCheck(self, permission): 
         if self.view_permission is None:
             permission_pass = True
         else:
             view_permission = Permission(self.view_permission)
             user_permission = Permission(permission)
-            #user_permission = Permission(self.editorinfo['permissions'])
             permission_pass  = user_permission.permissionCheck(view_permission)
         return permission_pass   
 
     @tornado.web.asynchronous
     @tornado.gen.engine
     def get(self, *args, **kwargs):
-        
-        #pdb.set_trace()
-
         if not hasattr(self, '_get_'):
             raise tornado.web.HTTPError(405)
         
@@ -174,7 +169,7 @@ class WebAsyncAuthHandler(WebHandler):
 
         if not has_priv:
             if self.request.method in ('GET', 'HEAD'):
-                url = self.get_login_url()
+                url = setting.LOGIN_URL
                 self.redirect(url)
                 return
         
@@ -281,8 +276,6 @@ class WebAsyncAuthHandler(WebHandler):
         user_id = self.get_secure_cookie("user_id")
         user_session = yield tornado.gen.Task(self.session.get, 'editorinfo')
 
-        #pdb.set_trace()
-
         #通过审计则更新cookie生存时间
         if user_id and user_session and user_id == user_session.get("user_id", ''):
                 #update old time
@@ -298,7 +291,7 @@ class WebAsyncAuthHandler(WebHandler):
                 return
         else:
                 #后台审计不通过则重定向
-                redirect_url = '/user/adminLogin'
+                redirect_url = setting.LOGIN_URL
                 self.redirect(redirect_url)
                 callback(True)
                 return
@@ -306,7 +299,7 @@ class WebAsyncAuthHandler(WebHandler):
         #cookie生存期耗尽将重定向
         if login_time is None:
             self.clear_cookie(EDITOR_SESSION_COOKIE_KEY)
-            redirect_url = '/admin/adminLogin'
+            redirect_url = setting.LOGIN_URL
             callback(True)
             return
 
@@ -365,7 +358,6 @@ class WebAsyncAuthHandler(WebHandler):
                         logging.info('--INFO-- WebAsyncAuthHandler.check_priv recreate session')
             
             except Exception, e:
-                
                 #异常处理
                 import traceback
                 traceback.print_exc()

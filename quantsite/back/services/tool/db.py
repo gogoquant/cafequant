@@ -20,12 +20,12 @@ class Mongodb():
 
     def __init__(self):
         asyn_client = asyncmongo.Client(
-            pool_id='mydb',
-            host=setting.MONGO_HOST,
-            port=setting.MONGO_PORT,
             #dbuser=setting.MONGO_USER,
             #dbpass=setting.MONGO_PASS,
-            dbname='misakaweb',
+            pool_id=setting.MONGO_ID,
+            host=setting.MONGO_HOST,
+            port=setting.MONGO_PORT,
+            dbname=setting.MONGO_DB,
             maxcached=150,
             maxconnections=150,
         )

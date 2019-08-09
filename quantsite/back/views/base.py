@@ -24,7 +24,7 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
     def tileSet(self, title):
         self.title = title
         
-    def ttemplateSet(self, template):
+    def templateSet(self, template):
         self.template = template
 
     def initialize(self):

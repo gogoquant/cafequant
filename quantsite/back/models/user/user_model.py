@@ -36,10 +36,6 @@ class User(AsyncBaseModel):
     social_full_logo = False    #全屏幕logo 
     permission       = False    #用户权限
 
-    editor_type     = False     #正在编辑的数据类型
-    editor_id       = False     #正在编辑的数据id
-    editor_data     = False     #正在编辑数据的少量额外信息
-
     # meta
     table = 'user'
     key   = 'user_id'
