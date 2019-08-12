@@ -84,7 +84,7 @@ class TopicAddHandler(WebAsyncAuthHandler):
 '''
 
 
-@route(r"/api/topic/search", name="api.topic.search")
+@route(r"/api/topic/list", name="api.topic.list")
 class TopicListHandler(WebHandler):
     topic_s = TopicService()
     user_s = UserService()

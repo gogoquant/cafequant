@@ -62,7 +62,7 @@ class TagAddHandler(WebAsyncAuthHandler):
 '''
 
 
-@route(r"/api/tag/search", name="api.tag.search")
+@route(r"/api/tag/list", name="api.tag.list")
 class TagListHandler(WebHandler):
     tag_s = TagService()
 

@@ -296,7 +296,7 @@ class UserInfoHandler(WebAsyncAuthHandler):
         self.finish()
 
 
-@route(r"/api/user/search", name="api.user.search")
+@route(r"/api/user/list", name="api.user.list")
 class UserSearchHandler(WebHandler):
     user_s = UserService()
 
