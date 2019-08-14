@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  bottom: 64px;
+  right: 24px;
+  z-index: 10;
+}
+
+.user {
+  margin-bottom: 8px;
+}
+
+.post {
+  margin-bottom: 8px;
+}
