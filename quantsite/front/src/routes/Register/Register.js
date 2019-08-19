@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { Form } from 'antd';
 import classNames from 'classnames';
 import Title from 'components/Title';
-import { RegisterToken, RegisterSetting, RegisterSubmit } from './components';
+import { RegisterToken } from './components';
 import { register } from './RegisterRedux';
 import styles from './Register.scss';
 
@@ -29,18 +29,17 @@ export class RegisterComponent extends React.Component {
   render() {
     return (
       <Fragment>
-        <Title title="用户登录" />
+        <Title title="用户注册" />
         <RegisterToken />
       </Fragment>
     );
   }
 }
-/*
+
 RegisterComponent.propTypes = {
   history: PropTypes.shape({
     push: PropTypes.func,
   }),
-
   form: PropTypes.object,
   loading: PropTypes.bool,
   userRegister: PropTypes.func,
@@ -49,13 +48,10 @@ RegisterComponent.propTypes = {
 export default withRouter(
   Form.create()(
     connect(
-      state => ({
-        loading: state.getIn(['register', 'loading']),
-      }),
+      state => ({}),
       {
         userRegister: register,
       },
     )(RegisterComponent),
   ),
 );
-*/

@@ -1,6 +1,23 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, Input, Icon } from 'antd';
+
+import {
+  Form,
+  Input,
+  Tooltip,
+  Icon,
+  Cascader,
+  Select,
+  Row,
+  Col,
+  Checkbox,
+  Button,
+  AutoComplete,
+} from 'antd';
+
+const { Option } = Select;
+const AutoCompleteOption = AutoComplete.Option;
+
 import { regexUtils } from 'utils';
 import styles from './RegisterToken.scss';
 
@@ -27,7 +44,25 @@ class RegisterToken extends React.Component {
     this.setState({ confirmDirty: this.state.confirmDirty || !!value });
   };
 
+  compareToFirstPassword = (rule, value, callback) => {
+    const { form } = this.props;
+    if (value && value !== form.getFieldValue('password')) {
+      callback('Two passwords that you enter is inconsistent!');
+    } else {
+      callback();
+    }
+  };
+
+  validateToNextPassword = (rule, value, callback) => {
+    const { form } = this.props;
+    if (value && this.state.confirmDirty) {
+      form.validateFields(['confirm'], { force: true });
+    }
+    callback();
+  };
+
   render() {
+    console.log(this.props);
     const { getFieldDecorator } = this.props.form;
     const { autoCompleteResult } = this.state;
 
@@ -41,6 +76,7 @@ class RegisterToken extends React.Component {
         sm: { span: 16 },
       },
     };
+
     const tailFormItemLayout = {
       wrapperCol: {
         xs: {
@@ -127,4 +163,4 @@ class RegisterToken extends React.Component {
   }
 }
 
-export default LoginToken;
+export default RegisterToken;

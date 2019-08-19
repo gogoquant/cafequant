@@ -21,6 +21,9 @@ const Topic = asyncRender(() =>
 const User = asyncRender(() =>
   import(/* webpackChunkName: "user" */ './routes/User'),
 );
+const Register = asyncRender(() =>
+  import(/* webpackChunkName: "register" */ './routes/Register'),
+);
 const Login = asyncRender(() =>
   import(/* webpackChunkName: "login" */ './routes/Login'),
 );
@@ -58,6 +61,10 @@ const routerConfig = [
       {
         path: '/login',
         component: Login,
+      },
+      {
+        path: '/register',
+        component: Register,
       },
     ],
   },
