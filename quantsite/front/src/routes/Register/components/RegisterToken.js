@@ -30,14 +30,17 @@ class RegisterToken extends React.Component {
     };
   }
 
+  /*
   handleSubmit = e => {
     e.preventDefault();
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         console.log('Received values of form: ', values);
+        this.setState({ values: values })
       }
     });
   };
+  */
 
   handleConfirmBlur = e => {
     const { value } = e.target;
@@ -62,7 +65,7 @@ class RegisterToken extends React.Component {
   };
 
   render() {
-    console.log(this.props);
+    //console.log(this.props);
     const { getFieldDecorator } = this.props.form;
     const { autoCompleteResult } = this.state;
 
@@ -91,7 +94,7 @@ class RegisterToken extends React.Component {
     };
 
     return (
-      <Form {...formItemLayout} onSubmit={this.handleSubmit}>
+      <Form {...formItemLayout} onSubmit={this.props.handleSubmit}>
         <Form.Item label="E-mail">
           {getFieldDecorator('email', {
             rules: [

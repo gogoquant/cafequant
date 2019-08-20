@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import Title from 'components/Title';
 import { RegisterToken } from './components';
 import { register } from './RegisterRedux';
+import { UserService } from 'services';
 import styles from './Register.scss';
 
 const cls = classNames(styles.container, styles.xsContainer);
@@ -26,11 +27,23 @@ export class RegisterComponent extends React.Component {
     };
   }
 
+  handleSubmit = e => {
+    e.preventDefault();
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        console.log('Received values of form: ', values);
+        //try to call register
+        UserService.createUser(values.email, values.password, values.name);
+        this.setState({ values: values });
+      }
+    });
+  };
+
   render() {
     return (
       <Fragment>
         <Title title="用户注册" />
-        <RegisterToken {...this.props} />
+        <RegisterToken {...this.props} handleSubmit={this.handleSubmit} />
       </Fragment>
     );
   }

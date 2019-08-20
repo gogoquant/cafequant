@@ -23,3 +23,21 @@ export const verifyAccessToken = token => {
   const params = { accesstoken: token };
   return post(UserApi.accessToken, params);
 };
+
+/**
+ * create user
+ * get: /register
+ *
+ * @param {string} email - email
+ * @param {string} passwd - passwd
+ * @param {string} name - name
+ * @returns {Promise<*>}
+ */
+export const createUser = (email, passwd, name) => {
+  const params = {
+    email: email,
+    passwd: passwd,
+    name: name,
+  };
+  return post(UserApi.register, params);
+};

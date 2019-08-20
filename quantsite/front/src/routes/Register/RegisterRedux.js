@@ -3,11 +3,10 @@ import { createAction, handleActions } from 'redux-actions';
 import { UserService } from 'services';
 import { toastUtils, userUtils } from 'utils';
 
-const POST_ACCESS_TOKEN = 'routes/Register/POST_ACCESS_TOKEN';
-const POST_ACCESS_TOKEN_SUCCESS = 'routes/Register/POST_ACCESS_TOKEN_SUCCESS';
-const POST_ACCESS_TOKEN_ERROR = 'routes/Register/POST_ACCESS_TOKEN_ERROR';
-const POST_LOGOUT = 'routes/Register/POST_LOGOUT';
-const GET_USER = 'routes/Register/GET_USER';
+const POST_REGISTER_TOKEN = 'routes/Register/POST_REGISTER_TOKEN';
+const POST_REGISTER_TOKEN_SUCCESS =
+  'routes/Register/POST_REGISTER_TOKEN_SUCCESS';
+const POST_REGISTER_TOKEN_ERROR = 'routes/Register/POST_REGISTER_TOKEN_ERROR';
 
 const initialState = Map({
   loading: false,
@@ -17,62 +16,35 @@ const initialState = Map({
 
 const reducer = handleActions(
   {
-    [POST_ACCESS_TOKEN]: state =>
+    [POST_REGISTER_TOKEN]: state =>
       state
         .set('loading', true)
         .set('error', false)
         .set('userData', {}),
 
-    [POST_ACCESS_TOKEN_SUCCESS]: (state, { payload }) =>
+    [POST_REGISTER_TOKEN_SUCCESS]: (state, { payload }) =>
       state.set('loading', false).set('userData', payload),
 
-    [POST_ACCESS_TOKEN_ERROR]: state =>
+    [POST_REGISTER_TOKEN_ERROR]: state =>
       state.set('loading', false).set('error', true),
-
-    [POST_LOGOUT]: state => state.set('userData', {}),
-
-    [GET_USER]: (state, { payload }) => state.set('userData', payload),
   },
   initialState,
 );
 
-export const postAccessToken = createAction(POST_ACCESS_TOKEN);
-export const postAccessTokenSuccess = createAction(POST_ACCESS_TOKEN_SUCCESS);
-export const postAccessTokenError = createAction(POST_ACCESS_TOKEN_ERROR);
-export const postLogout = createAction(POST_LOGOUT);
-export const getUser = createAction(GET_USER);
+export const postAccessToken = createAction(POST_REGISTER_TOKEN);
+export const postAccessTokenSuccess = createAction(POST_REGISTER_TOKEN_SUCCESS);
+export const postAccessTokenError = createAction(POST_REGISTER_TOKEN_ERROR);
 
-export const register = (token, remember, callback) => async dispatch => {
+export const register = (email, passwd, name, callback) => async dispatch => {
   dispatch(postAccessToken());
   try {
-    const { data } = await UserService.verifyAccessToken(token);
-    const user = {
-      name: data.registername,
-      avatar: data.avatar_url,
-      id: data.id,
-      token,
-    };
-    if (remember) {
-      userUtils.saveUserLocal(user);
-    } else {
-      userUtils.saveUserSession(user);
-    }
-    toastUtils.success('登录成功');
-    dispatch(postAccessTokenSuccess(user));
+    data = await UserService.register(email, passwd, name);
+    toastUtils.success('注册成功');
+    dispatch(postAccessTokenSuccess(email));
     callback();
   } catch (e) {
     dispatch(postAccessTokenError());
   }
-};
-
-export const logout = () => dispatch => {
-  userUtils.removeUser();
-  dispatch(postLogout());
-};
-
-export const getCurrentUser = () => dispatch => {
-  const user = userUtils.getUser() || {};
-  dispatch(getUser(user));
 };
 
 export default reducer;
