@@ -30,7 +30,7 @@ export class RegisterComponent extends React.Component {
     return (
       <Fragment>
         <Title title="用户注册" />
-        <RegisterToken />
+        <RegisterToken {...this.props} />
       </Fragment>
     );
   }
