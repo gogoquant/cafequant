@@ -33,7 +33,7 @@ export class RegisterComponent extends React.Component {
       if (!err) {
         console.log('Received values of form: ', values);
         //try to call register
-        //UserService.createUser(values.email, values.password, values.nickname);
+        UserService.createUser(values.email, values.password, values.nickname);
         //this.setState({ values: values });
       }
     });

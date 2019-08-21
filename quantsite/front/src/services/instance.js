@@ -32,10 +32,14 @@ export const get = async (url, params) => {
 };
 
 export const post = async (url, params) => {
+  console.log('post:%s', url);
+  console.log(params);
   try {
     const res = await instance.post(url, params);
+    console.log('post->res:%s', res);
     return checkStatus(res);
   } catch (e) {
+    console.log('post->err:%s', e);
     return checkStatus(e.response);
   }
 };
