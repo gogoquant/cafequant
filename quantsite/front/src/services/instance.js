@@ -1,10 +1,11 @@
 import axios from 'axios';
 import { notification } from 'antd';
-import { BASE_URL } from './api';
+import { BASE_URL, CORS } from './api';
 
 export const instance = axios.create({
   baseURL: BASE_URL,
   timeout: 6000,
+  withCredentials: CORS,
 });
 
 const checkStatus = response => {
