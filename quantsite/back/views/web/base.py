@@ -35,6 +35,11 @@ EDITOR_NAME_COOKIE_KEY = "login_name"
 KEEP_LOGIN_SECONDS = 60 * 60
 
 
+"""
+    WebHandler
+    with cdn support 
+    with get post pkg 
+"""
 class WebHandler(RequestHandler):
 
     def static_url(self, path, use_cdn=None):
@@ -57,7 +62,6 @@ class WebHandler(RequestHandler):
 
     def set_default_headers(self):
         '''set http header'''
-
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         self.set_header('Access-Control-Max-Age', 1000)

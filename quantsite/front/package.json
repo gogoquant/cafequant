@@ -24,6 +24,7 @@
     "immutable": "^4.0.0-rc.12",
     "moment": "^2.22.1",
     "prop-types": "^15.6.1",
+    "qs": "^6.8.0",
     "react": "16.8.6",
     "react-dom": "16.8.6",
     "react-helmet": "^5.2.1",

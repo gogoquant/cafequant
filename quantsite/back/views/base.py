@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
-    @brief handler base
-    @author: xiyanxiyan10
-    @note  base class for web handler
+    @file  base.py 
+    @brief web handler base
+    @author: snack
+    @note base class for web handler
+    @date 2019/08/22 13:22
 '''
 
 import os
@@ -17,11 +19,16 @@ from iseecore.routes import route
 
 import setting
 
-
+"""
+    RequestHandler
+    with fastdfs redis mq link 
+    with language support 
+"""
 class RequestHandler(tornado.web.RequestHandler, SessionMixin):
 
-    def __init__(self):
-        self.initialize()
+    def __init__(self, application, request, **kwargs):
+        super(RequestHandler, self).__init__(application, request, **kwargs) 
+        self.initialize_connect()
 
     def tileSet(self, title):
         self.title = title
@@ -29,7 +36,7 @@ class RequestHandler(tornado.web.RequestHandler, SessionMixin):
     def templateSet(self, template):
         self.template = template
 
-    def initialize(self):
+    def initialize_connect(self):
         self.title = ""
         self.template = ""
         self.response = {}
