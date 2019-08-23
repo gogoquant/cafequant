@@ -21,11 +21,5 @@ class Mongodb():
     def __init__(self):
 
         asyn_client= motor_tornado.MotorClient(setting.MONGO_HOST, setting.MONGO_PORT)
-
-        define("async_client", default=asyn_client, help="async connection")
-        #options["asyn_client"] = asyn_client
         AsyncBaseModel.configure(asyn_client)
-
-        #define("mono_conn", default=connection, help="mongo connection")
-        #options["mono_conn"] = connection
         logging.error('[init]Mongodb init success')

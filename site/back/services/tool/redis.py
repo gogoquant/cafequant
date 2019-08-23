@@ -20,7 +20,6 @@ CONNECTION_POOL = tornadoredis.ConnectionPool(
 class Redis():
 
     def __init__(self):
-        logging.error("redis_client init")
         define(
             "redis_client",
             tornadoredis.Client(connection_pool=CONNECTION_POOL),

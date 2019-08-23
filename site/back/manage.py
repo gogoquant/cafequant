@@ -30,8 +30,9 @@ class Application(tornado.web.Application):
         def init():
             init_service.load_init_services()
 
-            # 导入views，生成routes
+            logging.info("register all route")
             import views.web.api.user
+            logging.info("register route->%s", views.web.api.user.__package__)
             #import views.web.api.topic
             #import views.web.api.tag
             #import views.web.api.chat
