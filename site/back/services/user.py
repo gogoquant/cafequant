@@ -160,10 +160,8 @@ class UserService(BaseService):
             query = {"social_uid": third_id, "source": token_from}
 
         user = yield tornado.gen.Task(self.user_m.find_one, query)
-
-        #pdb.set_trace()
-
-        if user:
+        
+        if user is not None:
             callback((None, UserExistsException))
             return
 

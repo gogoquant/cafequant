@@ -29,7 +29,7 @@ class ModelException(Exception):
 
 
 class AsyncBaseModel(object):
-    need_sync = True
+    need_sync = False
 
     @classmethod
     def configure(cls, client):
@@ -58,7 +58,7 @@ class AsyncBaseModel(object):
         self._db_ = db
         self._table_ = table
 
-        self.dao = self.async_client.connection(table, db)
+        self.dao = self.async_client[table][db]
         self._key_ = key
 
         #self.sync_class = SyncData()
@@ -255,30 +255,18 @@ class AsyncBaseModel(object):
 
     @tornado.gen.engine
     def find_one(self, spec, fields=None, callback=None):
-        #import pdb
-        #pdb.set_trace()
-
         if self._key_ in spec:
             spec[MONGODB_ID] = spec[self._key_]
             del spec[self._key_]
         # add conditon delete_flag is not 1
         spec[DELETE_FLAG] = {'$ne': '1'}
-        model, error = yield tornado.gen.Task(
-            self.dao.find_one, spec, fields=fields)
+        
+        model = yield self.dao.find_one(spec)
+        
+        if model is  None:
+            callback(None)
+            return
 
-        if error is None:
-            logging.error(error)
-        #import pdb
-        #pdb.set_trace()
-
-        model = model[0]
-        if type(model) == tuple and len(model) > 0:
-            model = model[0]
-        if type(model) == list and len(model) > 0:
-            model = model[0]
-        if model:
-            model[self._key_] = str(model[MONGODB_ID])
-            del model[MONGODB_ID]
         del spec[DELETE_FLAG]
         callback(model)
 
@@ -350,14 +338,11 @@ class AsyncBaseModel(object):
             if self._key_ in doc:
                 del doc[self._key_]
         doc[MONGODB_ID] = key_value
-        yield tornado.gen.Task(
-            self.dao.insert,
-            doc,
-            manipulate=manipulate,
-            safe=safe,
-            check_keys=check_keys,
-            **kwargs)
-
+        
+        res = yield self.dao.insert_one(doc)
+        if res is None:
+            callback(None)
+            
         # sync data
         if self.need_sync:
             self.sync_insert_data(doc)

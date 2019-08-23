@@ -71,7 +71,7 @@ MQ_PASSWORD = os.getenv("MQ_PASSWORD", "lancelot")
 # mongo
 MONGO_HOST = "127.0.0.1"
 MONGO_PORT = int(27017)
-MONGO_USER = "admin"
+MONGO_USER = "mysite"
 MONGO_PASS = "password"
 MONGO_DB = "mysite"
 MONGO_ID = "my_id"
