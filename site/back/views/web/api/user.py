@@ -36,23 +36,26 @@ class RegisterHandler(WebHandler):
 
     @tornado.gen.engine
     def _post_(self):
+        
+        body = self.request.body
+        js = simplejson.loads(body, encoding='utf-8')
 
-        #获取用户的基本信息
-        email = self.get_argument("email", None)
-        passwd = self.get_argument("passwd", None)
-        token = self.get_argument("access_token", None)
-        token_from = self.get_argument("source", None)
+        #获取用户数据
+        email = js.get("email", None)
+        passwd = js.get("passwd", None)
+        token = js.get("access_token", None)
+        token_from = js.get("source", None)
 
         #获取用户的第三方认证id
-        openid = self.get_argument("openid", None)
+        openid = js.get("openid", None)
 
         #额外信息
         extra = {}
-        extra['sex'] = self.get_argument("sex", 0)
-        extra['name'] = self.get_argument("name", "")
+        extra['sex'] = js.get("sex", 0)
+        extra['name'] = js.get("name", "")
 
         #是否允许随机名
-        allow_random_name = self.get_argument("allow_same", None)
+        allow_random_name = js.get("allow_same", None)
 
         #没有必要信息直接保存
         if (not email or not passwd) and (not token or not token_from):
