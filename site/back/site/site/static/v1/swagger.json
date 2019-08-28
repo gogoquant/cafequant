@@ -1,0 +1,149 @@
+{
+  "info": {
+    "version": "1.0.0", 
+    "license": {
+      "name": "MIT"
+    }, 
+    "title": "Swagger Petstore"
+  }, 
+  "paths": {
+    "/pets": {
+      "post": {
+        "operationId": "createPets", 
+        "summary": "Create a pet", 
+        "responses": {
+          "201": {
+            "description": "Null response"
+          }, 
+          "default": {
+            "description": "unexpected error", 
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }, 
+        "tags": [
+          "pets"
+        ]
+      }, 
+      "get": {
+        "operationId": "listPets", 
+        "summary": "List all pets", 
+        "responses": {
+          "default": {
+            "description": "unexpected error", 
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }, 
+          "200": {
+            "headers": {
+              "x-next": {
+                "type": "string", 
+                "description": "A link to the next page of responses"
+              }
+            }, 
+            "description": "An paged array of pets", 
+            "schema": {
+              "$ref": "#/definitions/Pets"
+            }
+          }
+        }, 
+        "parameters": [
+          {
+            "description": "How many items to return at one time (max 100)", 
+            "format": "int32", 
+            "required": false, 
+            "in": "query", 
+            "type": "integer", 
+            "name": "limit"
+          }
+        ], 
+        "tags": [
+          "pets"
+        ]
+      }
+    }, 
+    "/pets/{petId}": {
+      "get": {
+        "operationId": "showPetById", 
+        "summary": "Info for a specific pet", 
+        "responses": {
+          "default": {
+            "description": "unexpected error", 
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }, 
+          "200": {
+            "description": "Expected response to a valid request", 
+            "schema": {
+              "$ref": "#/definitions/Pets"
+            }
+          }
+        }, 
+        "parameters": [
+          {
+            "required": true, 
+            "type": "string", 
+            "description": "The id of the pet to retrieve", 
+            "name": "petId", 
+            "in": "path"
+          }
+        ], 
+        "tags": [
+          "pets"
+        ]
+      }
+    }
+  }, 
+  "produces": [
+    "application/json"
+  ], 
+  "basePath": "/v1", 
+  "definitions": {
+    "Pet": {
+      "required": [
+        "id", 
+        "name"
+      ], 
+      "properties": {
+        "tag": {
+          "type": "string"
+        }, 
+        "id": {
+          "type": "integer", 
+          "format": "int64"
+        }, 
+        "name": {
+          "type": "string"
+        }
+      }
+    }, 
+    "Pets": {
+      "items": {
+        "$ref": "#/definitions/Pet"
+      }, 
+      "type": "array"
+    }, 
+    "Error": {
+      "required": [
+        "code", 
+        "message"
+      ], 
+      "properties": {
+        "message": {
+          "type": "string"
+        }, 
+        "code": {
+          "type": "integer", 
+          "format": "int32"
+        }
+      }
+    }
+  }, 
+  "swagger": "2.0", 
+  "consumes": [
+    "application/json"
+  ]
+}
