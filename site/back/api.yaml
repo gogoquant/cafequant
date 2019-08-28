@@ -2,16 +2,16 @@ openapi: 3.0.0
 # Added by API Auto Mocking Plugin
 servers:
 # Added by API Auto Mocking Plugin
-  - description: Matrix Cloud AppStack API
+  - description: Quant API
     url: "http://127.0.0.1:8080/v1"
 info:
   description: This is a simple API
   version: "1.1.0"
-  title: Matrix Cloud AppStack API [非网关]
+  title: Quant API
   contact:
-    email: "hongwei.mei@changhong.com"
+    email: "xiyanxiyan10@hotmail.com"
   license:
-    name: Changhong SSC 2.0
+    name: xiyanxiyan10
     url: ""
 paths:
   /users/register:
