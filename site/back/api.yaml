@@ -3,7 +3,7 @@ openapi: 3.0.0
 servers:
 # Added by API Auto Mocking Plugin
   - description: Matrix Cloud AppStack API
-    url: "https://account.matrixcloud.io"
+    url: "http://127.0.0.1:8080"
 info:
   description: This is a simple API
   version: "1.1.0"
@@ -13,9 +13,7 @@ info:
   license:
     name: Changhong SSC 2.0
     url: ""
-tags:
-  - name: templates
-    description: "应用模版管理"
+basePath: /v1
 paths:
   /pets:
     get:
@@ -76,7 +74,7 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
-  /users:
+  /users/register:
     post:
       summary: Create an user
       operationId: createUsers
