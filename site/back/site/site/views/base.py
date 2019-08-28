@@ -16,6 +16,7 @@ from tornado.options import define, options
 from tornado import locale
 from pycket.session import SessionMixin
 from iseecore.routes import route
+from v1.api import ApiHandler
 
 import setting
 
@@ -24,7 +25,7 @@ import setting
     with fastdfs redis mq link 
     with language support 
 """
-class RequestHandler(tornado.web.RequestHandler, SessionMixin):
+class RequestHandler(ApiHandler, SessionMixin):
 
     def __init__(self, application, request, **kwargs):
         super(RequestHandler, self).__init__(application, request, **kwargs) 

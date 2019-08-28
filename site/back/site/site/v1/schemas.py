@@ -50,7 +50,7 @@ class RefNode(object):
 
 base_path = '/v1'
 
-definitions = {'definitions': {'Pet': {'required': ['id', 'name'], 'properties': {'tag': {'type': 'string'}, 'id': {'type': 'integer', 'format': 'int64'}, 'name': {'type': 'string'}}}, 'Pets': {'items': {'$ref': '#/definitions/Pet'}, 'type': 'array'}, 'Error': {'required': ['code', 'message'], 'properties': {'message': {'type': 'string'}, 'code': {'type': 'integer', 'format': 'int32'}}}}, 'parameters': {}}
+definitions = {'definitions': {'Pet': {'required': ['id', 'name'], 'properties': {'tag': {'type': 'string'}, 'id': {'type': 'integer', 'format': 'int64'}, 'name': {'type': 'string'}}}, 'Error': {'required': ['code', 'message'], 'properties': {'message': {'type': 'string'}, 'code': {'type': 'integer', 'format': 'int32'}}}, 'Users': {'items': {'$ref': '#/definitions/User'}, 'type': 'array'}, 'Pets': {'items': {'$ref': '#/definitions/Pet'}, 'type': 'array'}, 'User': {'required': ['email', 'name', 'passwd'], 'type': 'object', 'properties': {'passwd': {'type': 'string'}, 'email': {'type': 'string'}, 'name': {'type': 'string'}}}}, 'parameters': {}}
 
 validators = {
     ('pets', 'GET'): {'args': {'required': [], 'properties': {'limit': {'description': 'How many items to return at one time (max 100)', 'format': 'int32', 'required': False, 'type': 'integer'}}}},
@@ -60,6 +60,7 @@ filters = {
     ('pets', 'POST'): {201: {'headers': None, 'schema': None}},
     ('pets', 'GET'): {200: {'headers': {'x-next': {'type': 'string', 'description': 'A link to the next page of responses'}}, 'schema': {'$ref': '#/definitions/Pets'}}},
     ('pets_petId', 'GET'): {200: {'headers': None, 'schema': {'$ref': '#/definitions/Pets'}}},
+    ('users', 'POST'): {201: {'headers': None, 'schema': None}},
 }
 
 scopes = {

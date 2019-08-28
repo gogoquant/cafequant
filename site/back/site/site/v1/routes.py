@@ -10,6 +10,7 @@ from __future__ import absolute_import
 
 from .api.pets import Pets
 from .api.pets_petId import PetsPetid
+from .api.users import Users
 
 
 url_prefix = 'v1'
@@ -17,6 +18,7 @@ url_prefix = 'v1'
 routes = [
     dict(resource=Pets, urls=[r"/pets"], endpoint='pets'),
     dict(resource=PetsPetid, urls=[r"/pets/(?P<petId>[^/]+?)"], endpoint='pets_petId'),
+    dict(resource=Users, urls=[r"/users"], endpoint='users'),
 ]
 
 def load_uris(config):

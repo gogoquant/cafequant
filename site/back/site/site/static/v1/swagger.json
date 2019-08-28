@@ -1,10 +1,15 @@
 {
   "info": {
-    "version": "1.0.0", 
-    "license": {
-      "name": "MIT"
+    "version": "1.1.0", 
+    "contact": {
+      "email": "hongwei.mei@changhong.com"
     }, 
-    "title": "Swagger Petstore"
+    "description": "This is a simple API", 
+    "license": {
+      "url": "", 
+      "name": "Changhong SSC 2.0"
+    }, 
+    "title": "Matrix Cloud AppStack API [\u975e\u7f51\u5173]"
   }, 
   "paths": {
     "/pets": {
@@ -64,6 +69,36 @@
         ]
       }
     }, 
+    "/users": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }, 
+          "description": "add user"
+        }, 
+        "operationId": "createUsers", 
+        "summary": "Create an user", 
+        "responses": {
+          "201": {
+            "description": "Null response"
+          }, 
+          "default": {
+            "description": "unexpected error", 
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }, 
+        "tags": [
+          "users"
+        ]
+      }
+    }, 
     "/pets/{petId}": {
       "get": {
         "operationId": "showPetById", 
@@ -97,10 +132,12 @@
       }
     }
   }, 
-  "produces": [
-    "application/json"
+  "tags": [
+    {
+      "name": "templates", 
+      "description": "\u5e94\u7528\u6a21\u7248\u7ba1\u7406"
+    }
   ], 
-  "basePath": "/v1", 
   "definitions": {
     "Pet": {
       "required": [
@@ -120,12 +157,6 @@
         }
       }
     }, 
-    "Pets": {
-      "items": {
-        "$ref": "#/definitions/Pet"
-      }, 
-      "type": "array"
-    }, 
     "Error": {
       "required": [
         "code", 
@@ -140,10 +171,44 @@
           "format": "int32"
         }
       }
+    }, 
+    "Users": {
+      "items": {
+        "$ref": "#/definitions/User"
+      }, 
+      "type": "array"
+    }, 
+    "Pets": {
+      "items": {
+        "$ref": "#/definitions/Pet"
+      }, 
+      "type": "array"
+    }, 
+    "User": {
+      "required": [
+        "email", 
+        "name", 
+        "passwd"
+      ], 
+      "type": "object", 
+      "properties": {
+        "passwd": {
+          "type": "string"
+        }, 
+        "email": {
+          "type": "string"
+        }, 
+        "name": {
+          "type": "string"
+        }
+      }
     }
   }, 
-  "swagger": "2.0", 
-  "consumes": [
-    "application/json"
-  ]
+  "servers": [
+    {
+      "url": "https://account.matrixcloud.io", 
+      "description": "Matrix Cloud AppStack API"
+    }
+  ], 
+  "openapi": "3.0.0"
 }

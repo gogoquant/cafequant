@@ -1,17 +1,21 @@
-swagger: "2.0"
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+servers:
+# Added by API Auto Mocking Plugin
+  - description: Matrix Cloud AppStack API
+    url: "https://account.matrixcloud.io"
 info:
-  version: 1.0.0
-  title: Swagger Petstore
+  description: This is a simple API
+  version: "1.1.0"
+  title: Matrix Cloud AppStack API [非网关]
+  contact:
+    email: "hongwei.mei@changhong.com"
   license:
-    name: MIT
-host: petstore.swagger.io
-basePath: /v1
-schemes:
-  - http
-consumes:
-  - application/json
-produces:
-  - application/json
+    name: Changhong SSC 2.0
+    url: ""
+tags:
+  - name: templates
+    description: "应用模版管理"
 paths:
   /pets:
     get:
@@ -72,7 +76,43 @@ paths:
           description: unexpected error
           schema:
             $ref: '#/definitions/Error'
+  /users:
+    post:
+      summary: Create an user
+      operationId: createUsers
+      tags:
+        - users
+      requestBody:
+        description: "add user"
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/User"   
+      responses:
+        "201":
+          description: Null response
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 definitions:
+  User:
+    type: object
+    required:
+      - email
+      - name
+      - passwd
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      passwd:
+        type: string
+  Users:
+     type: array
+     items:
+      $ref: '#/definitions/User'    
   Pet:
     required:
       - id
