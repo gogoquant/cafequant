@@ -63,7 +63,8 @@ case "$1" in
         ${2} | xargs perl -pi -e \'${3}\'
         ;;
     "apidocs")
-        swagger_py_codegen -s api.yaml site -p site -tlp=tornado --ui --spec    
+        swagger_py_codegen -s api.yaml site -p site -tlp=tornado --ui --spec  
+        rm -rf site
         ;;
     * ) 
         echo "Help"

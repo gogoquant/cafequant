@@ -53,15 +53,13 @@ class Application(tornado.web.Application):
 
             # 定义setting，对tornado.web.Application进行设置
             settings = dict(
-                blog_title=u"misaka",
+                blog_title=u"quant",
 
                 #设置模板文件路径
                 #template_path=os.path.join(
                 #   os.path.dirname(__file__), setting.MISAKA_TEMPLATE_DIR),
 
                 #设置static文件路径, swaggar 使用
-                #static_path=os.path.join(
-                #    os.path.dirname(__file__), setting.STATIC_DIR),
                 static_path = os.path.join(os.path.dirname(__file__), "site/site/static"),
                 
                 debug=True,
