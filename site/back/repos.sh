@@ -46,6 +46,7 @@ case "$1" in
         git push git@github.com:${2}/${3}.git --tag
         ;;
     "clean" )
+        rm -rf site
         find -name '*.so'  |xargs rm 
         find -name '*.o'   |xargs rm 
         find -name '*.a'   |xargs rm 
@@ -64,7 +65,6 @@ case "$1" in
         ;;
     "apidocs")
         swagger_py_codegen -s api.yaml site -p site -tlp=tornado --ui --spec  
-        rm -rf site
         ;;
     * ) 
         echo "Help"
