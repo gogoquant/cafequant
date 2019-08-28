@@ -94,7 +94,7 @@ class Rabbitmq(object):
         try:
             tornado.ioloop.IOLoop.instance().stop()
         except AttributeError, e:
-            logging.eror("ioloop stop error! %s" % e.message)
+            logging.error("ioloop stop error! %s" % e.message)
             pass
         finally:
             exit(1)

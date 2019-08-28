@@ -13,3 +13,7 @@ asyncmongo
 backtrader
 ccxt
 qiniu
+#tornado
+jsonschema
+six
+#werkzeug

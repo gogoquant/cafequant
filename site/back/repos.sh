@@ -62,8 +62,12 @@ case "$1" in
     "replace")
         ${2} | xargs perl -pi -e \'${3}\'
         ;;
+    "apidocs")
+        swagger_py_codegen -s api.yaml swaggar -p site -tlp=tornado --ui --spec    
+        ;;
     * ) 
         echo "Help"
+        echo "./repos.sh apidocs                                => build swaggar api files"
         echo "./repos.sh pyformat                               => format project python files"
         echo "./repos.sh record                                 => record patch"
         echo "./repos.sh pull                                   => pull patch"

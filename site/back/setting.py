@@ -82,8 +82,8 @@ STATIC_CDN_URL = "http://www.baidu.com"
 STATIC_URL = "http://www.lancelot.top"
 
 #静态文件路径
-MISAKA_STATIC_DIR = "/home/ubuntu/project/misakaWeb/python-web/static"
-MISAKA_TEMPLATE_DIR = "/home/ubuntu/project/misakaWeb/python-web/template"
+STATIC_DIR = "swaggar/site/static"
+TEMPLATE_DIR = "swaggar/site/static"
 MISAKA_DEFAULT_FILE_BACKET = "test"
 
 #检索回调rpc
