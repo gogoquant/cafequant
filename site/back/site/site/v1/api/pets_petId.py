@@ -8,5 +8,5 @@ from .. import schemas
 class PetsPetid(ApiHandler):
 
     def get(self, petId):
-
+        print("get")
         return [], 200, None

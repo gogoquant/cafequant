@@ -19,7 +19,10 @@ from iseecore.routes import route
 from iseecore.services import init_service
 import setting
 import pdb 
+from core import load_tornado_settings
 
+modules = ['v1']
+config = load_tornado_settings(*modules)
 
 #from tornadomail.backends.smtp import EmailBackend
 
@@ -32,7 +35,7 @@ class Application(tornado.web.Application):
     def __init__(self):
     #def __init__(self, url_list, **app_settings):
         #tornado.web.Application.__init__(self, url_list, **app_settings)
-        #self.config = config
+        self.config = config
 
         def init():
             init_service.load_init_services()
@@ -59,6 +62,7 @@ class Application(tornado.web.Application):
                 #设置static文件路径, swaggar 使用
                 #static_path=os.path.join(
                 #    os.path.dirname(__file__), setting.STATIC_DIR),
+                static_path = os.path.join(os.path.dirname(__file__), "static"),
                 
                 debug=True,
                 cookie_secret="NyM8vWu0Slec0GLonsdI3ebBX0VEqU3Vm8MsHiN5rrc=",
@@ -79,6 +83,7 @@ class Application(tornado.web.Application):
             settings['session'] = {'engine': 'redis', 'storage': redis_setting}
 
             url_list = []
+            url_list.extend(config.URIS)
             url_list.extend(handlers)
             
             tornado.web.Application.__init__(self, url_list, **settings)
