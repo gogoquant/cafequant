@@ -359,7 +359,7 @@ class UserService(BaseService):
         result = {
             'email': user.get('email', ''),
             'name': user.get('name', ''),
-            'user_id': user['user_id'],
+            'user_id': user.get('name', ''),
             'sex': user.get('sex', 0),
             'age': user.get('age', 0),
             'address': user.get('address', ''),
