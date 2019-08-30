@@ -16,8 +16,8 @@ info:
 paths:
   /users/register:
     post:
-      summary: Create an user
-      operationId: createUsers
+      summary: User create
+      operationId: usersRegister
       tags:
         - users
       requestBody:
@@ -28,8 +28,33 @@ paths:
               $ref: "#/definitions/User" 
       responses:
         "201":
-          description: "add user success"  
+          description: "add a user success"  
+  /users/login:
+    post:
+      summary: User login
+      operationId: usersLogins
+      tags:
+        - users
+      requestBody:
+        description: "login user"
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/UserLogin" 
+      responses:
+        "201":
+          description: "login user success"                  
 definitions:
+  UserLogin:
+    type: object
+    required:
+      - name
+      - passwd
+    properties:
+      name:
+        type: string
+      passwd:
+        type: string
   User:
     type: object
     required:

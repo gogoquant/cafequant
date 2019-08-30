@@ -5,32 +5,104 @@
     @data 2019-08-09
 '''
 
-import logging
-import tornado.gen
-import tornado.web
-import pdb
+import logging, time, datetime, pdb, simplejson, hashlib
+
 import setting
 
 from tornado.options import define, options
-from iseecore.routes import route
-from views.web.base import WebHandler, WebAsyncAuthHandler
-#from views.web.base import *
+from pycket.driver import Driver
 
-from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
-
+import tornado.gen
+import tornado.web
 from stormed import Connection
 from tornadomail.message import EmailMessage, EmailMultiAlternatives
-import simplejson
-import hashlib
 
-import setting
 from util.time_common import month_seconds
+from iseecore.routes import route
+from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
+from views.web.base import WebHandler, WebAsyncAuthHandler, EDITOR_NAME_REMEMBER_COOKIE_KEY, \
+    EDITOR_NAME_COOKIE_KEY, EDITOR_LOGIN_TIME_COOKIE_KEY, EDITOR_SESSION_COOKIE_KEY, KEEP_LOGIN_SECONDS
+    
+#from views.web.base import *
+
 '''
-    用户注册句柄
+    用户登录
 '''
+@route(r"/v1/users/login", name="v1.users.login")
+class AdminLoginHandler(WebHandler):
+    user_s = UserService()
+
+    @tornado.gen.engine
+    def _post_(self):
+
+        #获取用户基本信息
+        email = self.get_argument("email", None)
+        passwd = self.get_argument("passwd", "")
+        token = self.get_argument("access_token", None)
+        token_from = self.get_argument("source", None)
+        openid = self.get_argument("openid", None)
+        #remember        = int(self.get_argument('remember',0))
+        
+        #必要信息缺失则直接错误
+        if (not email or not passwd) and (not token or not token_from):
+            #self.render_error(status=400, code=400, msg='no email or token')
+            self.redirect('/adminweb/adminError', permanent=True)
+            return
+
+        
+        Driver.EXPIRE_SECONDS = 1 * 24 * 60 * 60   
+        self.clear_cookie(EDITOR_NAME_REMEMBER_COOKIE_KEY)
+        self.clear_cookie(EDITOR_NAME_COOKIE_KEY)
+
+        user_id, editorinfo = yield tornado.gen.Task(self.user_s.login, email, passwd, token, token_from, openid=openid, app_id=None)
+        
+        #pdb.set_trace()
+
+        #根据返回值作处理
+        if not editorinfo:
+            self.render_error(status=400, code=400, msg='no social data')
+            return
+
+        if editorinfo == NoUserException:
+            self.render_error(status=404, code=404, msg='no user')
+            return
+
+        if editorinfo == PasswdErrorException:
+            self.render_error(status=403, code=403, msg='passwd error')
+            return
+
+        else:
+            #self.write(simplejson.dumps(editorinfo))
+            #self.set_secure_cookie("user_name", editorinfo.get("name", ""))
+        
+            #record session
+            yield tornado.gen.Task( self.session.set,'editorinfo', editorinfo )
+        
+
+            #pdb.set_trace()
+            
+            #set expires cookie
+            login_time = time.time()
+            login_expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=KEEP_LOGIN_SECONDS)
+            
+            #set time cookie
+            self.set_cookie(EDITOR_LOGIN_TIME_COOKIE_KEY, "%d" % login_time, expires=login_expires)
+            
+            #set auth cookie and session rebuilder
+            login_session = "%d|%s|%s " % (login_time, email, editorinfo.get('passwd', ''))
+            self.set_secure_cookie(EDITOR_SESSION_COOKIE_KEY, login_session, expires_days=None)
+
+            #user id cookie
+            self.set_secure_cookie("user_id", user_id)
+        
+        #self.finish()
+        self.redirect('/adminweb/index', permanent=True)
 
 
-@route(r"/v1/users/register", name="api.users.register")
+'''
+    用户注册
+'''
+@route(r"/v1/users/register", name="v1.users.register")
 class RegisterHandler(WebHandler):
     user_s = UserService()
 
@@ -95,8 +167,10 @@ class RegisterHandler(WebHandler):
         self.set_secure_cookie("user_name", return_status.get("name", ""))
         self.finish()
 
-
-@route(r"/api/user/update", name="user.update")
+'''
+    用户更新
+'''
+@route(r"/v1/users/update", name="v1.users.update")
 class UserModifyHandler(WebAsyncAuthHandler):
     user_s = UserService()
 
@@ -141,8 +215,10 @@ class UserModifyHandler(WebAsyncAuthHandler):
     def _get_(self):
         self._post_()
 
-
-@route(r"/api/user/logout", name="api.user.logout")
+'''
+    用户登出
+'''
+@route(r"/v1/users/logout", name="v1.users.logout")
 class LogoutHandler(WebAsyncAuthHandler):
 
     @tornado.gen.engine
@@ -235,7 +311,7 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
 '''
 
 
-@route(r"/api/user/change_passwd/(.*)", name="api.user.change_passwd")
+@route(r"/v1/users/change_passwd/(.*)", name="v1.users.change_passwd")
 class ForgetPasswdHandler(WebAsyncAuthHandler):
     user_service = UserService()
     template = "web/user/user_reset_passwd.html"
@@ -279,8 +355,10 @@ class ForgetPasswdHandler(WebAsyncAuthHandler):
 
         self.finish()
 
-
-@route(r"/api/user/info/(.+)", name="api.user.info")
+'''
+    用户信息
+'''
+@route(r"/v1/users/info/(.+)", name="v1.users.info")
 class UserInfoHandler(WebAsyncAuthHandler):
     user_s = UserService()
 
@@ -299,7 +377,10 @@ class UserInfoHandler(WebAsyncAuthHandler):
         self.finish()
 
 
-@route(r"/api/user/list", name="api.user.list")
+'''
+    用户列表
+'''
+@route(r"/v1/users/list", name="v1.users.list")
 class UserSearchHandler(WebHandler):
     user_s = UserService()
 
@@ -330,7 +411,7 @@ class UserSearchHandler(WebHandler):
         return
 
 
-@route(r"/api/user/tot", name="api.user.tot")
+@route(r"/v1/users/tot", name="v1.users.tot")
 class UserTotHandler(WebHandler):
     user_s = UserService()
 
@@ -346,7 +427,7 @@ class UserTotHandler(WebHandler):
         return
 
 
-@route(r"/api/user/delete", name="api.user.delete")
+@route(r"/v1/users/delete", name="v1.users.delete")
 class UserDeleteHandler(WebAsyncAuthHandler):
     user_s = UserService()
 
