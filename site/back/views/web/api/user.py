@@ -45,8 +45,7 @@ class AdminLoginHandler(WebHandler):
         
         #必要信息缺失则直接错误
         if (not email or not passwd) and (not token or not token_from):
-            #self.render_error(status=400, code=400, msg='no email or token')
-            self.redirect('/adminweb/adminError', permanent=True)
+            self.render_error(status=400, code=400, msg='no email or token')
             return
 
         
