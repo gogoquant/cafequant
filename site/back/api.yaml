@@ -48,7 +48,7 @@ definitions:
   UserLogin:
     type: object
     required:
-      - name
+      - email
       - passwd
     properties:
       name:

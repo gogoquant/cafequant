@@ -22,8 +22,6 @@ from iseecore.routes import route
 from services.user import UserService, NoUserException, PasswdErrorException, UserExistsException, UserSameNameException
 from views.web.base import WebHandler, WebAsyncAuthHandler, EDITOR_NAME_REMEMBER_COOKIE_KEY, \
     EDITOR_NAME_COOKIE_KEY, EDITOR_LOGIN_TIME_COOKIE_KEY, EDITOR_SESSION_COOKIE_KEY, KEEP_LOGIN_SECONDS
-    
-#from views.web.base import *
 
 '''
     用户登录
@@ -41,7 +39,7 @@ class AdminLoginHandler(WebHandler):
         token = self.get_argument("access_token", None)
         token_from = self.get_argument("source", None)
         openid = self.get_argument("openid", None)
-        #remember        = int(self.get_argument('remember',0))
+        #remember = int(self.get_argument('remember',0))
         
         #必要信息缺失则直接错误
         if (not email or not passwd) and (not token or not token_from):
@@ -95,7 +93,7 @@ class AdminLoginHandler(WebHandler):
             self.set_secure_cookie("user_id", user_id)
         
         #self.finish()
-        self.redirect('/adminweb/index', permanent=True)
+        self.redirect('/', permanent=True)
 
 
 '''
