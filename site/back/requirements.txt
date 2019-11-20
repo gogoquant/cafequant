@@ -1,4 +1,0 @@
-tornado
-jsonschema
-six
-werkzeug
