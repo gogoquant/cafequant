@@ -1,5 +1,5 @@
 ############################################
-# version : xiyanxiyan10/samaritan
+# version : xiyanxiyan10/quant
 ############################################
 
 # 设置继承自centos官方镜像
@@ -35,11 +35,10 @@ RUN mkdir /opt/bin -p
 # add pkg
 WORKDIR /opt/depend 
 #RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
-RUN wget https://npm.taobao.org/mirrors/node/v8.9.3/node-v8.9.3-linux-x64.tar.xz
+RUN wget https://npm.taobao.org/mirrors/node/v12.13.0/node-v12.13.0-linux-x64.tar.xz
 #RUN wget https://studygolang.com/dl/golang/go1.12.5.linux-amd64.tar.gz
 #RUN tar xvf ta-lib-0.4.0-src.tar.gz
-RUN tar xvf node-v8.9.3-linux-x64.tar.xz
-
+RUN tar xvf node-v12.13.0-linux-x64.tar.xz
 #build ta lib
 #RUN cd /opt/depend/ta-lib && ./configure --prefix=/usr LDFLAGS="-lm" && make && make install
 
@@ -49,14 +48,16 @@ COPY ./server           /opt/app/server
 
 #build go depended
 ENV GOPATH /opt/app/server
-ENV PATH   $PATH:/opt/depend/node-v8.9.3-linux-x64/bin:
+ENV PATH   $PATH:/opt/depend/node-v12.13.0-linux-x64/bin:
 #ENV QUANT_CONFIG /opt/app/config/config.ini
 #RUN go get github.com/constabulary/gb/... 
 
 #RUN ls /opt/gb && ls /opt/depend && ls /opt/app
 RUN rm -rf /root/.cooking/node_modules
-RUN npm install -g cnpm --registry=https://registry.npm.taobao.org && cnpm install cooking -g && cnpm install cooking-cli -g 
-RUN cd /opt/app/web && npm update && npm install 
+RUN yum install jq -y
+
+#RUN npm install -g cnpm --registry=https://registry.npm.taobao.org 
+RUN cd /opt/app/web && npm update --save && npm install webpack -g && npm install cooking@1.5.5 -g && npm install cooking-cli@1.5.5 -g 
 RUN env
 
 #RUN cd /opt/app && gb vendor restore && mkdir vendor/src/golang.org/x -p && cd vendor/src/golang.org/x && git clone https://github.com/golang/text && git clone https://github.com/golang/tools && git clone https://github.com/golang/net 
