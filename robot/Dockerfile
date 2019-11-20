@@ -1,9 +1,11 @@
 ############################################
 # version : xiyanxiyan10/quant
+# quant 编译后台
+# dist  编译前台
 ############################################
 
-# 设置继承自centos官方镜像
-FROM centos
+# 设置继承自alpine官方镜像
+FROM alpine
 
 # 下面是一些创建者的基本信息
 MAINTAINER xiyanxiyan10 (xiyanxiyan10@hotmail.com)
@@ -14,75 +16,21 @@ ENV LC_ALL C
 # 设置环境变量，所有操作都是非交互式的
 ENV DEBIAN_FRONTEND noninteractive
 
-#update pkg
-#RUN yum -y update 
-RUN yum install wget -y 
 RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
 RUN echo "nameserver 114.114.114.114" >> /etc/resolv.conf
-#RUN wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
-RUN yum clean all && yum makecache && yum update -y
-RUN yum -y install epel-release 
-
-#install pkg
-#RUN yum install -y git gcc wget golang sqlite autoconf automake libtool make
-RUN yum install -y git wget golang sqlite 
+RUN yum install -y sqlite 
 
 #mkdir
-RUN mkdir /opt/app -p
-RUN mkdir /opt/depend -p 
-RUN mkdir /opt/bin -p 
-
-# add pkg
-WORKDIR /opt/depend 
-#RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
-RUN wget https://npm.taobao.org/mirrors/node/v12.13.0/node-v12.13.0-linux-x64.tar.xz
-#RUN wget https://studygolang.com/dl/golang/go1.12.5.linux-amd64.tar.gz
-#RUN tar xvf ta-lib-0.4.0-src.tar.gz
-RUN tar xvf node-v12.13.0-linux-x64.tar.xz
-#build ta lib
-#RUN cd /opt/depend/ta-lib && ./configure --prefix=/usr LDFLAGS="-lm" && make && make install
+RUN mkdir /opt/app -p 
 
 #add file
-COPY ./web              /opt/app/web
-COPY ./server           /opt/app/server
+COPY /tmp/quant     /opt/app/quant
+COPY /tmp/dist      /opt/app/dist
 
-#build go depended
-ENV GOPATH /opt/app/server
-ENV PATH   $PATH:/opt/depend/node-v12.13.0-linux-x64/bin:
-#ENV QUANT_CONFIG /opt/app/config/config.ini
-#RUN go get github.com/constabulary/gb/... 
-
-#RUN ls /opt/gb && ls /opt/depend && ls /opt/app
-RUN rm -rf /root/.cooking/node_modules
-RUN yum install jq -y
-
-#RUN npm install -g cnpm --registry=https://registry.npm.taobao.org 
-RUN cd /opt/app/web && npm update --save && npm install webpack -g && npm install cooking@1.5.5 -g && npm install cooking-cli@1.5.5 -g 
-RUN env
-
-#RUN cd /opt/app && gb vendor restore && mkdir vendor/src/golang.org/x -p && cd vendor/src/golang.org/x && git clone https://github.com/golang/text && git clone https://github.com/golang/tools && git clone https://github.com/golang/net 
-
-#build web depended
-#cnpm rebuild node-sass 
-
-
-#build server
-RUN go build -o /opt/bin/quant github.com/xiyanxiyan10/quantcore
-#build web
-RUN cd /opt/app/web && cooking build 
-#追加链接库
-#RUN echo "/usr/local/lib" >> /etc/ld.so.conf && ldconfig
-
-#VOLUME 选项是将本地的目录挂在到容器中　此处要注意：当你运行-v　＜hostdir>:<Containerdir> 时要确保目录内容相同否则会出现数据丢失
-## 对应关系如下
 VOLUME ["/data"]
 
 EXPOSE 9876
 
 WORKDIR /opt/app
 
-#删除源码
-RUN rm -rf /opt/app/server
-RUN cd /opt/app/web && mv dist ../ && rm -rf * && mv ../dist ./
-
-CMD ["/opt/bin/quant"]
+CMD ["/opt/app/quant"]
