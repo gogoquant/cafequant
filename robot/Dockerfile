@@ -5,11 +5,11 @@
 ############################################
 
 # 设置继承自alpine官方镜像
-FROM alpine
+# depend https://github.com/xiyanxiyan10/docker-alpine-glibc
+FROM registry.cn-hangzhou.aliyuncs.com/misaka/alpine-go:alpine-go
 
 # 下面是一些创建者的基本信息
 MAINTAINER xiyanxiyan10 (xiyanxiyan10@hotmail.com)
-
 # set env
 ENV LC_ALL C
 
@@ -18,19 +18,22 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
 RUN echo "nameserver 114.114.114.114" >> /etc/resolv.conf
-RUN yum install -y sqlite 
+
+ENV LANG=C.UTF-8
 
 #mkdir
 RUN mkdir /opt/app -p 
+RUN mkdir /opt/app/web -p 
 
 #add file
-COPY /tmp/quant     /opt/app/quant
-COPY /tmp/dist      /opt/app/dist
+COPY ./quant     /opt/app/quant
+COPY ./dist      /opt/app/web/dist
 
 VOLUME ["/data"]
 
 EXPOSE 9876
 
 WORKDIR /opt/app
+RUN chmod 777 /opt/app/quant
 
 CMD ["/opt/app/quant"]
