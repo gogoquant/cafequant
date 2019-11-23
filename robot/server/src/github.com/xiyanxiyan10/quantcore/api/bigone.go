@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xiyanxiyan10/quantcore/util"
 	"github.com/xiyanxiyan10/quantcore/api/BigoneAPI"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
+	"github.com/xiyanxiyan10/quantcore/util"
 )
 
 // BigOne the exchange struct of big.one

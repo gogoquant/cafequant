@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 var client = http.DefaultClient
@@ -26,6 +27,21 @@ type Position struct {
 	ContractType  string  //合约类型
 	TradeType     string  //交易类型
 	StockType     string  //货币类型
+}
+
+type DepthRecord struct {
+	Price  float64
+	Amount float64
+}
+
+type DepthRecords []DepthRecord
+
+type Depth struct {
+	ContractType string //for future
+	StockType    string
+	UTime        time.Time
+	AskList      DepthRecords // Descending order
+	BidList      DepthRecords // Descending order
 }
 
 // Order struct

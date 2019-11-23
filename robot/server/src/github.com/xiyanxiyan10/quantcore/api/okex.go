@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/bitly/go-simplejson"
-	"github.com/xiyanxiyan10/quantcore/util"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
+	"github.com/xiyanxiyan10/quantcore/util"
 )
 
 // OKEX the exchange struct of okex.com

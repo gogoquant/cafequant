@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xiyanxiyan10/quantcore/util"
 	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/config"
 	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/models"
 	"github.com/xiyanxiyan10/quantcore/api/HuobiProAPI/services"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
+	"github.com/xiyanxiyan10/quantcore/util"
 )
 
 // Huobi the exchange struct of huobi.com

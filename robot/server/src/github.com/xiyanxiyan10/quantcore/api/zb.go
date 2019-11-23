@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xiyanxiyan10/quantcore/util"
 	"github.com/xiyanxiyan10/quantcore/api/ZbAPI"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
+	"github.com/xiyanxiyan10/quantcore/util"
 )
 
 // Zb the exchange struct of zb.com

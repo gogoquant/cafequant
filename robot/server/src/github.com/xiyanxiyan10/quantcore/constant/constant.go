@@ -18,6 +18,7 @@ const (
 	Poloniex   = "poloniex"
 	OkexFuture = "okex.future"
 	BigOne     = "big.one"
+	Fmex       = "fmex"
 )
 
 // log types
@@ -47,5 +48,5 @@ const (
 // some variables
 var (
 	Consts        = []string{"M", "M5", "M15", "M30", "H", "D", "W"}
-	ExchangeTypes = []string{Zb, Okex, Huobi, Binance, GateIo, Poloniex, OkexFuture, BigOne}
+	ExchangeTypes = []string{Zb, Okex, Huobi, Binance, GateIo, Poloniex, OkexFuture, BigOne, Fmex}
 )
