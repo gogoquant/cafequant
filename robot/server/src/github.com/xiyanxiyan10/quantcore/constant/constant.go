@@ -10,43 +10,39 @@ const (
 
 // exchange types
 const (
-	Zb         = "zb"
-	Okex       = "okex"
-	Huobi      = "huobi"
-	Binance    = "binance"
-	GateIo     = "gateio"
-	Poloniex   = "poloniex"
-	OkexFuture = "okex.future"
-	BigOne     = "big.one"
-	Fmex       = "fmex"
+	HuobiDm = "huobidm"
+	Fmex    = "fmex"
 )
 
 // log types
 const (
-	ERROR      = "ERROR"
-	INFO       = "INFO"
-	PROFIT     = "PROFIT"
-	BUY        = "BUY"
-	SELL       = "SELL"
-	LONG       = "LONG"
-	SHORT      = "SHORT"
-	LONGCLOSE  = "LONG_CLOSE"
-	SHORTCLOSE = "SHORT_CLOSE"
-	CANCEL     = "CANCEL"
+	ERROR = "ERROR"
+	INFO  = "INFO"
 )
 
 // trade types
 const (
-	TradeTypeBuy        = "BUY"
-	TradeTypeSell       = "SELL"
-	TradeTypeLong       = "LONG"
-	TradeTypeShort      = "SHORT"
-	TradeTypeLongClose  = "LONG_CLOSE"
-	TradeTypeShortClose = "SHORT_CLOSE"
+	TradeTypeBuy         = "buy"
+	TradeTypeSell        = "sell"
+	TradeTypeLong        = "buy"
+	TradeTypeShort       = "sell"
+	TradeTypeLongClose   = "closebuy"
+	TradeTypeShortClose  = "closesell"
+	TradeTypeCancelOrder = "cancel"
 )
 
 // some variables
 var (
 	Consts        = []string{"M", "M5", "M15", "M30", "H", "D", "W"}
-	ExchangeTypes = []string{Zb, Okex, Huobi, Binance, GateIo, Poloniex, OkexFuture, BigOne, Fmex}
+	ExchangeTypes = []string{HuobiDm, Fmex}
+)
+
+// future userinfo string
+const (
+	Currency      = "Currency"
+	AccountRights = "AccountRights" //账户权益
+	KeepDeposit   = "KeepDeposit"   //保证金
+	ProfitReal    = "ProfitReal"    //已实现盈亏
+	ProfitUnreal  = "ProfitUnreal"
+	RiskRate      = "RiskRate" //保证金率
 )

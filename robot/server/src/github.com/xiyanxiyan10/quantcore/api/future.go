@@ -6,16 +6,14 @@ import (
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
 	"github.com/xiyanxiyan10/quantcore/util"
-	"strconv"
-
-	"strings"
 	"time"
 )
 
 // FMEX the exchange struct of fmex.com
 type FMEX struct {
+	BaseExchange
 	stockTypeMap     map[string]goex.CurrencyPair
-	tradeTypeMap     map[goex.TradeSide]string
+	tradeTypeMap     map[int]string
 	recordsPeriodMap map[string]string
 	minAmountMap     map[string]float64
 	records          map[string][]Record
@@ -28,7 +26,7 @@ type FMEX struct {
 	lastTimes int64
 
 	apiBuilder *builder.APIBuilder
-	api        goex.API
+	api        goex.FutureRestAPI
 }
 
 // NewFMEX create an exchange struct of fmex.com
@@ -37,11 +35,11 @@ func NewFMEX(opt Option) Exchange {
 		stockTypeMap: map[string]goex.CurrencyPair{
 			"BTC/USD": goex.BTC_USD,
 		},
-		tradeTypeMap: map[goex.TradeSide]string{
-			goex.BUY:         constant.TradeTypeBuy,
-			goex.SELL:        constant.TradeTypeSell,
-			goex.BUY_MARKET:  constant.TradeTypeBuy,
-			goex.SELL_MARKET: constant.TradeTypeSell,
+		tradeTypeMap: map[int]string{
+			goex.OPEN_BUY:   constant.TradeTypeLong,
+			goex.OPEN_SELL:  constant.TradeTypeShort,
+			goex.CLOSE_BUY:  constant.TradeTypeLongClose,
+			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
 		recordsPeriodMap: map[string]string{
 			"M":   "1min",
@@ -64,7 +62,7 @@ func NewFMEX(opt Option) Exchange {
 		apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	if fmex.apiBuilder != nil {
-		fmex.api = fmex.apiBuilder.APIKey(opt.AccessKey).APISecretkey(opt.SecretKey).Build(goex.FMEX)
+		fmex.api = fmex.apiBuilder.APIKey(opt.AccessKey).APISecretkey(opt.SecretKey).BuildFuture(goex.FMEX)
 	}
 	return &fmex
 }
@@ -85,7 +83,11 @@ func (e *FMEX) GetName() string {
 }
 
 func (e *FMEX) GetDepth(size int, stockType string) interface{} {
-	depth, err := e.api.GetDepth(size, goex.BTC_USD)
+	exchangeStockType, ok := e.stockTypeMap[stockType]
+	if !ok {
+		return false
+	}
+	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
 	if err != nil {
 		return false
 	}
@@ -116,78 +118,94 @@ func (e *FMEX) GetMinAmount(stock string) float64 {
 
 // GetAccount get the account detail of this exchange
 func (e *FMEX) GetAccount() interface{} {
-	account, err := e.api.GetAccount()
+	userInfo := make(map[string]float64)
+	account, err := e.api.GetFutureUserinfo()
 	if err != nil {
 		return false
 	}
-	btcAccount, ok := account.SubAccounts[goex.BTC]
+
+	for k, v := range account.FutureSubAccounts {
+		stockType := k.Symbol
+		userInfo[stockType+"_"+constant.AccountRights] = v.AccountRights
+		userInfo[stockType+"_"+constant.KeepDeposit] = v.KeepDeposit
+		userInfo[stockType+"_"+constant.ProfitReal] = v.ProfitReal
+		userInfo[stockType+"_"+constant.ProfitUnreal] = v.ProfitUnreal
+		userInfo[stockType+"_"+constant.RiskRate] = v.RiskRate
+	}
+	return userInfo
+}
+
+func (e *FMEX) Buy(price, amount string, msg ...interface{}) interface{} {
+	var err error
+	var openType int
+	stockType := e.GetStockType()
+	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
 	}
-	return map[string]float64{
-		"BTC":       conver.Float64Must(btcAccount.Amount),
-		"FrozenBTC": conver.Float64Must(btcAccount.ForzenAmount),
+	level := e.GetMarginLevel()
+	var matchPrice = 0
+	if price == "0" {
+		matchPrice = 1
 	}
-}
-
-// Trade place an order
-func (e *FMEX) Trade(tradeType string, stockType string, _price, _amount interface{}, msgs ...interface{}) interface{} {
-	stockType = strings.ToUpper(stockType)
-	tradeType = strings.ToUpper(tradeType)
-	price := conver.Float64Must(_price)
-	amount := conver.Float64Must(_amount)
-	if _, ok := e.stockTypeMap[stockType]; !ok {
-		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized stockType: ", stockType)
-		return false
-	}
-	switch tradeType {
-	case constant.TradeTypeBuy:
-		return e.buy(stockType, price, amount, msgs...)
-	case constant.TradeTypeSell:
-		return e.sell(stockType, price, amount, msgs...)
-	default:
-		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "Trade() error, unrecognized tradeType: ", tradeType)
-		return false
-	}
-}
-
-func (e *FMEX) buy(stockType string, price, amount float64, msgs ...interface{}) interface{} {
-	var order *goex.Order
-	var err error
-	amountStr := strconv.FormatFloat(amount, 'E', -1, 64)
-	priceStr := strconv.FormatFloat(price, 'E', -1, 64)
-	if amount <= 0 {
-		order, err = e.api.MarketBuy(amountStr, "0", goex.BTC_USDT)
+	if e.direction == constant.TradeTypeLong {
+		openType = goex.OPEN_BUY
+	} else if e.direction == constant.TradeTypeShortClose {
+		openType = goex.CLOSE_SELL
 	} else {
-		order, err = e.api.MarketBuy(amountStr, priceStr, goex.BTC_USDT)
+		return false
 	}
+	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+		price, amount, openType, matchPrice, level)
+
 	if err != nil {
 		return false
 	}
-	e.logger.Log(constant.BUY, stockType, price, amount, msgs...)
-	return order.OrderID2
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	return orderId
 }
 
-func (e *FMEX) sell(stockType string, price, amount float64, msgs ...interface{}) interface{} {
-	var order *goex.Order
+func (e *FMEX) Sell(price, amount string, msg ...interface{}) interface{} {
 	var err error
-	amountStr := strconv.FormatFloat(amount, 'E', -1, 64)
-	priceStr := strconv.FormatFloat(price, 'E', -1, 64)
-	if amount <= 0 {
-		order, err = e.api.MarketSell(amountStr, "0", goex.BTC_USDT)
-	} else {
-		order, err = e.api.MarketSell(amountStr, priceStr, goex.BTC_USDT)
+	var openType int
+	stockType := e.GetStockType()
+	exchangeStockType, ok := e.stockTypeMap[stockType]
+	if !ok {
+		return false
 	}
+	level := e.GetMarginLevel()
+	var matchPrice = 0
+	if price == "0" {
+		matchPrice = 1
+	}
+	if e.direction == constant.TradeTypeShort {
+		openType = goex.OPEN_SELL
+	} else if e.direction == constant.TradeTypeLongClose {
+		openType = goex.CLOSE_BUY
+	} else {
+		return false
+	}
+	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+		price, amount, openType, matchPrice, level)
+
 	if err != nil {
 		return false
 	}
-	e.logger.Log(constant.SELL, stockType, price, amount, msgs...)
-	return order.OrderID2
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	return orderId
 }
 
 // GetOrder get details of an order
-func (e *FMEX) GetOrder(stockType, id string) interface{} {
-	order, err := e.api.GetOneOrder(id, goex.BTC_USD)
+func (e *FMEX) GetOrder(id string) interface{} {
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	if !ok {
+		return false
+	}
+	order, err := e.api.GetFutureOrder(id, exchangeStockType, e.GetContractType())
 	if err != nil {
 		return false
 	}
@@ -196,14 +214,18 @@ func (e *FMEX) GetOrder(stockType, id string) interface{} {
 		Price:      order.Price,
 		Amount:     order.Amount,
 		DealAmount: order.DealAmount,
-		TradeType:  e.tradeTypeMap[order.Side],
-		StockType:  stockType,
+		TradeType:  e.tradeTypeMap[order.OrderType],
+		StockType:  e.GetStockType(),
 	}
 }
 
 // GetOrders get all unfilled orders
-func (e *FMEX) GetOrders(stockType string) interface{} {
-	orders, err := e.api.GetUnfinishOrders(goex.BTC_USD)
+func (e *FMEX) GetOrders() interface{} {
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	if !ok {
+		return false
+	}
+	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.contractType)
 	if err != nil {
 		return false
 	}
@@ -214,8 +236,8 @@ func (e *FMEX) GetOrders(stockType string) interface{} {
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.Side],
-			StockType:  stockType,
+			TradeType:  e.tradeTypeMap[order.OrderType],
+			StockType:  e.GetStockType(),
 		}
 		resOrders = append(resOrders, resOrder)
 	}
@@ -223,13 +245,17 @@ func (e *FMEX) GetOrders(stockType string) interface{} {
 }
 
 // GetTrades get all filled orders recently
-func (e *FMEX) GetTrades(stockType string) interface{} {
+func (e *FMEX) GetTrades() interface{} {
 	return false
 }
 
 // CancelOrder cancel an order
-func (e *FMEX) CancelOrder(order Order) bool {
-	result, err := e.api.CancelOrder(order.ID, goex.BTC_USD)
+func (e *FMEX) CancelOrder(orderID string) bool {
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	if !ok {
+		return false
+	}
+	result, err := e.api.FutureCancelOrder(exchangeStockType, e.GetContractType(), orderID)
 	if err != nil {
 		e.logger.Log(constant.ERROR, "", 0.0, 0.0, "CancelOrder() error, the error number is ", err.Error())
 		return false
@@ -237,21 +263,21 @@ func (e *FMEX) CancelOrder(order Order) bool {
 	if !result {
 		return false
 	}
-	e.logger.Log(constant.CANCEL, order.StockType, order.Price, order.Amount-order.DealAmount, order)
+	e.logger.Log(constant.TradeTypeCancelOrder, e.GetStockType(), 0, 0, orderID)
 	return true
 }
 
 // getTicker get market ticker & depth
-func (e *FMEX) getTicker(stockType string, sizes ...interface{}) (ticker Ticker, err error) {
+func (e *FMEX) getTicker(sizes ...interface{}) (ticker Ticker, err error) {
 	return Ticker{}, nil
 }
 
 // GetTicker get market ticker & depth
-func (e *FMEX) GetTicker(stockType string, sizes ...interface{}) interface{} {
+func (e *FMEX) GetTicker(sizes ...interface{}) interface{} {
 	return false
 }
 
 // GetRecords get candlestick data
-func (e *FMEX) GetRecords(stockType, period string, sizes ...interface{}) interface{} {
+func (e *FMEX) GetRecords(period string, sizes ...interface{}) interface{} {
 	return false
 }
