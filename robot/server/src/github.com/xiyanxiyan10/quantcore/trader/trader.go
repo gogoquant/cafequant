@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/quantcore/api"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
-	"github.com/robertkrimen/otto"
 )
 
 // Trader Variable
@@ -15,14 +15,8 @@ var (
 	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
 	errHalt       = fmt.Errorf("HALT")
 	exchangeMaker = map[string]func(api.Option) api.Exchange{ //保存所有交易所的构造函数
-		constant.Zb:         api.NewZb,
-		constant.Okex:       api.NewOKEX,
-		constant.Huobi:      api.NewHuobi,
-		constant.Binance:    api.NewBinance,
-		constant.GateIo:     api.NewGateIo,
-		constant.Poloniex:   api.NewPoloniex,
-		constant.OkexFuture: api.NewOkexFuture,
-		constant.BigOne:     api.NewBigOne,
+		constant.HuobiDm: api.NewHuobiDmExchange,
+		constant.Fmex:    api.NewFmexExchange,
 	}
 )
 
@@ -90,7 +84,7 @@ func initialize(id int64) (trader Global, err error) {
 		}
 	}
 	if len(trader.es) == 0 {
-		err = fmt.Errorf("Please add at least one exchange")
+		err = fmt.Errorf("please add at least one exchange")
 		return
 	}
 	trader.ctx.Set("Global", &trader)
@@ -148,7 +142,7 @@ func run(id int64) (err error) {
 // stop ...
 func stop(id int64) (err error) {
 	if t, ok := Executor[id]; !ok || t == nil {
-		return fmt.Errorf("Can not found the Trader")
+		return fmt.Errorf("can not found the Trader")
 	}
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
 	return

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	goex "github.com/nntaoli-project/GoEx"
 	"github.com/nntaoli-project/GoEx/builder"
 	"github.com/xiyanxiyan10/quantcore/constant"
@@ -9,17 +10,19 @@ import (
 	"time"
 )
 
-// FMEX the exchange struct of fmex.com
-type FMEX struct {
+// FutureExchange the exchange struct of futureExchange.com
+type FutureExchange struct {
 	BaseExchange
 	stockTypeMap     map[string]goex.CurrencyPair
 	tradeTypeMap     map[int]string
-	recordsPeriodMap map[string]string
+	exchangeTypeMap  map[string]string
+	recordsPeriodMap map[string]int
 	minAmountMap     map[string]float64
-	records          map[string][]Record
-	host             string
-	logger           model.Logger
-	option           Option
+
+	records map[string][]Record
+	host    string
+	logger  model.Logger
+	option  Option
 
 	limit     float64
 	lastSleep int64
@@ -29,9 +32,9 @@ type FMEX struct {
 	api        goex.FutureRestAPI
 }
 
-// NewFMEX create an exchange struct of fmex.com
-func NewFMEX(opt Option) Exchange {
-	fmex := FMEX{
+// NewFutureExchange create an exchange struct of futureExchange.com
+func NewFutureExchange(opt Option) *FutureExchange {
+	futureExchange := FutureExchange{
 		stockTypeMap: map[string]goex.CurrencyPair{
 			"BTC/USD": goex.BTC_USD,
 		},
@@ -41,48 +44,87 @@ func NewFMEX(opt Option) Exchange {
 			goex.CLOSE_BUY:  constant.TradeTypeLongClose,
 			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
-		recordsPeriodMap: map[string]string{
-			"M":   "1min",
-			"M5":  "5min",
-			"M15": "15min",
-			"M30": "30min",
-			"H":   "1hour",
-			"D":   "1day",
-			"W":   "1week",
+
+		exchangeTypeMap: map[string]string{
+			constant.Fmex:    goex.FMEX,
+			constant.HuobiDm: goex.HBDM,
+		},
+
+		recordsPeriodMap: map[string]int{
+			"M1":   goex.KLINE_PERIOD_1MIN,
+			"M5":   goex.KLINE_PERIOD_5MIN,
+			"M15":  goex.KLINE_PERIOD_15MIN,
+			"M30":  goex.KLINE_PERIOD_30MIN,
+			"H1":   goex.KLINE_PERIOD_1H,
+			"H2":	goex.KLINE_PERIOD_4H,
+			"H4":	goex.KLINE_PERIOD_4H,
+			"D1":   goex.KLINE_PERIOD_1DAY,
+			"W1":   goex.KLINE_PERIOD_1WEEK,
 		},
 		minAmountMap: map[string]float64{
 			"BTC/USD": 0.001,
 		},
-		records:    make(map[string][]Record),
-		host:       "https://www.fmex.com/api/v1/",
-		logger:     model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
-		option:     opt,
-		limit:      10.0,
-		lastSleep:  time.Now().UnixNano(),
-		apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
+		records:   make(map[string][]Record),
+		host:      "https://www.futureExchange.com/api/v1/",
+		logger:    model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
+		option:    opt,
+		limit:     10.0,
+		lastSleep: time.Now().UnixNano(),
+		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
-	if fmex.apiBuilder != nil {
-		fmex.api = fmex.apiBuilder.APIKey(opt.AccessKey).APISecretkey(opt.SecretKey).BuildFuture(goex.FMEX)
+	return &futureExchange
+}
+
+// GetType get the type of this exchange
+func (e *FutureExchange) Init() error {
+	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(5 * time.Second)
+	if e.apiBuilder == nil {
+		return errors.New("api builder fail")
 	}
-	return &fmex
+	exchangeName := e.exchangeTypeMap[e.option.Name]
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
+	return nil
+}
+
+func (e *FutureExchange) SetMinAmountMap(m map[string]float64) {
+	e.minAmountMap = m
+}
+
+func (e *FutureExchange) GetMinAmountMap() map[string]float64 {
+	return e.minAmountMap
+}
+func (e *FutureExchange) SetRecordsPeriodMap(m map[string]int) {
+	e.recordsPeriodMap = m
+}
+
+func (e *FutureExchange) GetRecordsPeriodMap() map[string]int {
+	return e.recordsPeriodMap
+}
+
+func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
+	e.stockTypeMap = m
+}
+
+func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
+	return e.stockTypeMap
 }
 
 // Log print something to console
-func (e *FMEX) Log(msgs ...interface{}) {
+func (e *FutureExchange) Log(msgs ...interface{}) {
 	e.logger.Log(constant.INFO, "", 0.0, 0.0, msgs...)
 }
 
 // GetType get the type of this exchange
-func (e *FMEX) GetType() string {
+func (e *FutureExchange) GetType() string {
 	return e.option.Type
 }
 
 // GetName get the name of this exchange
-func (e *FMEX) GetName() string {
+func (e *FutureExchange) GetName() string {
 	return e.option.Name
 }
 
-func (e *FMEX) GetDepth(size int, stockType string) interface{} {
+func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
@@ -95,13 +137,13 @@ func (e *FMEX) GetDepth(size int, stockType string) interface{} {
 }
 
 // SetLimit set the limit calls amount per second of this exchange
-func (e *FMEX) SetLimit(times interface{}) float64 {
+func (e *FutureExchange) SetLimit(times interface{}) float64 {
 	e.limit = conver.Float64Must(times)
 	return e.limit
 }
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
-func (e *FMEX) AutoSleep() {
+func (e *FutureExchange) AutoSleep() {
 	now := time.Now().UnixNano()
 	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
@@ -112,12 +154,12 @@ func (e *FMEX) AutoSleep() {
 }
 
 // GetMinAmount get the min trade amonut of this exchange
-func (e *FMEX) GetMinAmount(stock string) float64 {
+func (e *FutureExchange) GetMinAmount(stock string) float64 {
 	return e.minAmountMap[stock]
 }
 
 // GetAccount get the account detail of this exchange
-func (e *FMEX) GetAccount() interface{} {
+func (e *FutureExchange) GetAccount() interface{} {
 	userInfo := make(map[string]float64)
 	account, err := e.api.GetFutureUserinfo()
 	if err != nil {
@@ -135,7 +177,7 @@ func (e *FMEX) GetAccount() interface{} {
 	return userInfo
 }
 
-func (e *FMEX) Buy(price, amount string, msg ...interface{}) interface{} {
+func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -167,7 +209,7 @@ func (e *FMEX) Buy(price, amount string, msg ...interface{}) interface{} {
 	return orderId
 }
 
-func (e *FMEX) Sell(price, amount string, msg ...interface{}) interface{} {
+func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -200,7 +242,7 @@ func (e *FMEX) Sell(price, amount string, msg ...interface{}) interface{} {
 }
 
 // GetOrder get details of an order
-func (e *FMEX) GetOrder(id string) interface{} {
+func (e *FutureExchange) GetOrder(id string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		return false
@@ -220,7 +262,7 @@ func (e *FMEX) GetOrder(id string) interface{} {
 }
 
 // GetOrders get all unfilled orders
-func (e *FMEX) GetOrders() interface{} {
+func (e *FutureExchange) GetOrders() interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		return false
@@ -245,12 +287,12 @@ func (e *FMEX) GetOrders() interface{} {
 }
 
 // GetTrades get all filled orders recently
-func (e *FMEX) GetTrades() interface{} {
+func (e *FutureExchange) GetTrades() interface{} {
 	return false
 }
 
 // CancelOrder cancel an order
-func (e *FMEX) CancelOrder(orderID string) bool {
+func (e *FutureExchange) CancelOrder(orderID string) bool {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		return false
@@ -267,17 +309,93 @@ func (e *FMEX) CancelOrder(orderID string) bool {
 	return true
 }
 
-// getTicker get market ticker & depth
-func (e *FMEX) getTicker(sizes ...interface{}) (ticker Ticker, err error) {
-	return Ticker{}, nil
-}
-
-// GetTicker get market ticker & depth
-func (e *FMEX) GetTicker(sizes ...interface{}) interface{} {
-	return false
+// GetTicker get market ticker
+func (e *FutureExchange) GetTicker() interface{} {
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	if !ok {
+		return false
+	}
+	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
+	if err != nil{
+		return nil
+	}
+	ticker := Ticker{
+		Last:exTicker.Last,
+		Buy:exTicker.Buy,
+		Sell:exTicker.Sell,
+		High:exTicker.High,
+		Low:exTicker.Low,
+		Vol:exTicker.Vol,
+		Time:exTicker.Date,
+	}
+	return ticker
 }
 
 // GetRecords get candlestick data
-func (e *FMEX) GetRecords(period string, sizes ...interface{}) interface{} {
-	return false
+// params[0] period
+// params[1] size
+// params[2] since
+func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	var period = -1
+	var size = 0
+	var since = 0
+	var periodStr = "M15"
+
+	if len(params) > 1 && conver.StringMust(params[0]) != ""{
+		periodStr = conver.StringMust(params[0])
+	}
+
+	period, ok = e.recordsPeriodMap[periodStr]
+	if !ok {
+		return false
+	}
+
+	if len(params) > 2 && conver.IntMust(params[1]) > 0 {
+		size = conver.IntMust(params[1])
+	}
+
+	if len(params) > 3 && conver.IntMust(params[2]) > 0{
+		since = conver.IntMust(params[2])
+	}
+
+	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, period, size, since)
+	if err != nil{
+		return nil
+	}
+	timeLast := int64(0)
+	if len(e.records[periodStr]) > 0 {
+		timeLast = e.records[periodStr][len(e.records[periodStr])-1].Time
+	}
+	var recordsNew []Record
+	for i := len(klineVec); i > 0; i-- {
+		kline := klineVec[i - 1]
+		recordTime := kline.Timestamp
+		if recordTime > timeLast {
+			recordsNew = append([]Record{{
+				Time:   recordTime,
+				Open:   kline.Open,
+				High:   kline.High,
+				Low:    kline.Low,
+				Close:  kline.Close,
+				Volume: kline.Vol2,
+			}}, recordsNew...)
+		} else if timeLast > 0 && recordTime == timeLast {
+			e.records[periodStr][len(e.records[periodStr])-1] = Record{
+				Time:   recordTime,
+				Open:   kline.Open,
+				High:   kline.High,
+				Low:    kline.Low,
+				Close:  kline.Close,
+				Volume: kline.Vol2,
+			}
+		} else {
+			break
+		}
+	}
+	e.records[periodStr] = append(e.records[periodStr], recordsNew...)
+	if len(e.records[periodStr]) > size {
+		e.records[periodStr] = e.records[periodStr][len(e.records[periodStr])-size : len(e.records[periodStr])]
+	}
+	return e.records[periodStr]
 }

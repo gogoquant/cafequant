@@ -71,7 +71,18 @@ type OrderBook struct {
 	Amount float64 //市场深度量
 }
 
+type Ticker struct {
+	Last float64 `json:"last,string"`
+	Buy  float64 `json:"buy,string"`
+	Sell float64 `json:"sell,string"`
+	High float64 `json:"high,string"`
+	Low  float64 `json:"low,string"`
+	Vol  float64 `json:"vol,string"`
+	Time uint64  `json:"date"` // 单位:ms
+}
+
 // Ticker struct
+/*
 type Ticker struct {
 	Bids []OrderBook //买单市场深度列表
 	Buy  float64     //买一价, Bids[0].Price
@@ -79,6 +90,7 @@ type Ticker struct {
 	Sell float64     //卖一价, Asks[0].Price
 	Asks []OrderBook //卖单市场深度列表
 }
+*/
 
 func base64Encode(data string) string {
 	return base64.StdEncoding.EncodeToString([]byte(data))
