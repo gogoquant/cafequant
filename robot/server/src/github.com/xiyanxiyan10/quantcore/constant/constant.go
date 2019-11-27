@@ -16,8 +16,9 @@ const (
 
 // log types
 const (
-	ERROR = "ERROR"
-	INFO  = "INFO"
+	ERROR  = "ERROR"
+	INFO   = "INFO"
+	PROFIT = "PROFIT"
 )
 
 // trade types

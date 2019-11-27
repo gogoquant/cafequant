@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	goex "github.com/nntaoli-project/GoEx"
 	"github.com/nntaoli-project/GoEx/builder"
 	"github.com/xiyanxiyan10/quantcore/constant"
@@ -13,8 +14,12 @@ import (
 // FutureExchange the exchange struct of futureExchange.com
 type FutureExchange struct {
 	BaseExchange
-	stockTypeMap     map[string]goex.CurrencyPair
-	tradeTypeMap     map[int]string
+	stockTypeMap        map[string]goex.CurrencyPair
+	stockTypeMapReverse map[goex.CurrencyPair]string
+
+	tradeTypeMap        map[int]string
+	tradeTypeMapReverse map[string]int
+
 	exchangeTypeMap  map[string]string
 	recordsPeriodMap map[string]int
 	minAmountMap     map[string]float64
@@ -51,15 +56,15 @@ func NewFutureExchange(opt Option) *FutureExchange {
 		},
 
 		recordsPeriodMap: map[string]int{
-			"M1":   goex.KLINE_PERIOD_1MIN,
-			"M5":   goex.KLINE_PERIOD_5MIN,
-			"M15":  goex.KLINE_PERIOD_15MIN,
-			"M30":  goex.KLINE_PERIOD_30MIN,
-			"H1":   goex.KLINE_PERIOD_1H,
-			"H2":	goex.KLINE_PERIOD_4H,
-			"H4":	goex.KLINE_PERIOD_4H,
-			"D1":   goex.KLINE_PERIOD_1DAY,
-			"W1":   goex.KLINE_PERIOD_1WEEK,
+			"M1":  goex.KLINE_PERIOD_1MIN,
+			"M5":  goex.KLINE_PERIOD_5MIN,
+			"M15": goex.KLINE_PERIOD_15MIN,
+			"M30": goex.KLINE_PERIOD_30MIN,
+			"H1":  goex.KLINE_PERIOD_1H,
+			"H2":  goex.KLINE_PERIOD_4H,
+			"H4":  goex.KLINE_PERIOD_4H,
+			"D1":  goex.KLINE_PERIOD_1DAY,
+			"W1":  goex.KLINE_PERIOD_1WEEK,
 		},
 		minAmountMap: map[string]float64{
 			"BTC/USD": 0.001,
@@ -77,6 +82,12 @@ func NewFutureExchange(opt Option) *FutureExchange {
 
 // GetType get the type of this exchange
 func (e *FutureExchange) Init() error {
+	for k, v := range e.stockTypeMap {
+		e.stockTypeMapReverse[v] = k
+	}
+	for k, v := range e.tradeTypeMap {
+		e.tradeTypeMapReverse[v] = k
+	}
 	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(5 * time.Second)
 	if e.apiBuilder == nil {
 		return errors.New("api builder fail")
@@ -160,19 +171,18 @@ func (e *FutureExchange) GetMinAmount(stock string) float64 {
 
 // GetAccount get the account detail of this exchange
 func (e *FutureExchange) GetAccount() interface{} {
-	userInfo := make(map[string]float64)
+	userInfo := make(map[string][]float64)
 	account, err := e.api.GetFutureUserinfo()
 	if err != nil {
 		return false
 	}
-
 	for k, v := range account.FutureSubAccounts {
 		stockType := k.Symbol
-		userInfo[stockType+"_"+constant.AccountRights] = v.AccountRights
-		userInfo[stockType+"_"+constant.KeepDeposit] = v.KeepDeposit
-		userInfo[stockType+"_"+constant.ProfitReal] = v.ProfitReal
-		userInfo[stockType+"_"+constant.ProfitUnreal] = v.ProfitUnreal
-		userInfo[stockType+"_"+constant.RiskRate] = v.RiskRate
+		userInfo[stockType] = append(userInfo[stockType], v.AccountRights)
+		userInfo[stockType] = append(userInfo[stockType], v.KeepDeposit)
+		userInfo[stockType] = append(userInfo[stockType], v.ProfitReal)
+		userInfo[stockType] = append(userInfo[stockType], v.ProfitUnreal)
+		userInfo[stockType] = append(userInfo[stockType], v.RiskRate)
 	}
 	return userInfo
 }
@@ -252,7 +262,7 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 		return false
 	}
 	return Order{
-		ID:         order.OrderID2,
+		Id:         order.OrderID2,
 		Price:      order.Price,
 		Amount:     order.Amount,
 		DealAmount: order.DealAmount,
@@ -274,7 +284,7 @@ func (e *FutureExchange) GetOrders() interface{} {
 	var resOrders []Order
 	for _, order := range orders {
 		resOrder := Order{
-			ID:         order.OrderID2,
+			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
@@ -287,8 +297,28 @@ func (e *FutureExchange) GetOrders() interface{} {
 }
 
 // GetTrades get all filled orders recently
-func (e *FutureExchange) GetTrades() interface{} {
-	return false
+func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
+	var traders []Trader
+	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	if !ok {
+		return false
+	}
+	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
+	if err != nil {
+		return false
+	}
+	for _, APITrader := range APITraders {
+		trader := Trader{
+			Id:        APITrader.Tid,
+			TradeType: e.tradeTypeMap[int(APITrader.Type)],
+			Amount:    APITrader.Amount,
+			Price:     APITrader.Price,
+			StockType: e.stockTypeMapReverse[APITrader.Pair],
+			Time:      APITrader.Date,
+		}
+		traders = append(traders, trader)
+	}
+	return traders
 }
 
 // CancelOrder cancel an order
@@ -316,17 +346,19 @@ func (e *FutureExchange) GetTicker() interface{} {
 		return false
 	}
 	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
-	if err != nil{
+	if err != nil {
 		return nil
 	}
+	//force covert
+	tickStr := fmt.Sprint(exTicker.Date)
 	ticker := Ticker{
-		Last:exTicker.Last,
-		Buy:exTicker.Buy,
-		Sell:exTicker.Sell,
-		High:exTicker.High,
-		Low:exTicker.Low,
-		Vol:exTicker.Vol,
-		Time:exTicker.Date,
+		Last: exTicker.Last,
+		Buy:  exTicker.Buy,
+		Sell: exTicker.Sell,
+		High: exTicker.High,
+		Low:  exTicker.Low,
+		Vol:  exTicker.Vol,
+		Time: conver.Int64Must(tickStr),
 	}
 	return ticker
 }
@@ -342,7 +374,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 	var since = 0
 	var periodStr = "M15"
 
-	if len(params) > 1 && conver.StringMust(params[0]) != ""{
+	if len(params) > 1 && conver.StringMust(params[0]) != "" {
 		periodStr = conver.StringMust(params[0])
 	}
 
@@ -355,12 +387,12 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 		size = conver.IntMust(params[1])
 	}
 
-	if len(params) > 3 && conver.IntMust(params[2]) > 0{
+	if len(params) > 3 && conver.IntMust(params[2]) > 0 {
 		since = conver.IntMust(params[2])
 	}
 
 	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, period, size, since)
-	if err != nil{
+	if err != nil {
 		return nil
 	}
 	timeLast := int64(0)
@@ -369,7 +401,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 	}
 	var recordsNew []Record
 	for i := len(klineVec); i > 0; i-- {
-		kline := klineVec[i - 1]
+		kline := klineVec[i-1]
 		recordTime := kline.Timestamp
 		if recordTime > timeLast {
 			recordsNew = append([]Record{{

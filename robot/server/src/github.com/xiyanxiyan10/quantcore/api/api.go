@@ -23,7 +23,7 @@ type Exchange interface {
 	Sell(price, amount string, msg ...interface{}) interface{} //卖
 	GetOrder(id string) interface{}                            //返回订单信息
 	GetOrders() interface{}                                    //返回所有的未完成订单列表
-	GetTrades() interface{}                                    //返回最近的已完成订单列表
+	GetTrades(params ...interface{}) interface{}               //返回最近的已完成订单列表
 	CancelOrder(orderID string) bool                           //取消一笔订单
 	GetTicker() interface{}                                    //获取交易所的最新市场行情数据
 	GetRecords(params ...interface{}) interface{}              //返回交易所的最新K线数据列表

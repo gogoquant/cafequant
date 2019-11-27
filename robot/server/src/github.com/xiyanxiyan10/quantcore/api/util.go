@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
 )
 
 var client = http.DefaultClient
@@ -39,14 +38,14 @@ type DepthRecords []DepthRecord
 type Depth struct {
 	ContractType string //for future
 	StockType    string
-	UTime        time.Time
+	Time         int64
 	AskList      DepthRecords // Descending order
 	BidList      DepthRecords // Descending order
 }
 
 // Order struct
 type Order struct {
-	ID         string  //订单ID
+	Id         string  //订单ID
 	Price      float64 //价格
 	Amount     float64 //总量
 	DealAmount float64 //成交量
@@ -72,25 +71,22 @@ type OrderBook struct {
 }
 
 type Ticker struct {
-	Last float64 `json:"last,string"`
-	Buy  float64 `json:"buy,string"`
-	Sell float64 `json:"sell,string"`
-	High float64 `json:"high,string"`
-	Low  float64 `json:"low,string"`
-	Vol  float64 `json:"vol,string"`
-	Time uint64  `json:"date"` // 单位:ms
+	Last float64
+	Buy  float64
+	Sell float64
+	High float64
+	Low  float64
+	Vol  float64
+	Time int64
 }
-
-// Ticker struct
-/*
-type Ticker struct {
-	Bids []OrderBook //买单市场深度列表
-	Buy  float64     //买一价, Bids[0].Price
-	Mid  float64     //(Buy + Sell) / 2
-	Sell float64     //卖一价, Asks[0].Price
-	Asks []OrderBook //卖单市场深度列表
+type Trader struct {
+	Id        int64
+	TradeType string
+	Amount    float64
+	Price     float64
+	StockType string
+	Time      int64
 }
-*/
 
 func base64Encode(data string) string {
 	return base64.StdEncoding.EncodeToString([]byte(data))
