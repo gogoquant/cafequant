@@ -29,10 +29,10 @@ type Exchange interface {
 	GetRecords(params ...interface{}) interface{}              //返回交易所的最新K线数据列表
 	SetContractType(contractType string)                       //设置合约周期
 	GetContractType() string                                   //获取合约周期
-	SetDirection(direction string)
-	GetDirection() string
-	SetStockType(stockType string)
-	GetStockType() string
+	SetDirection(direction string)                             //设置交易方向
+	GetDirection() string                                      //获取交易方向
+	SetStockType(stockType string)                             //设置货币类型
+	GetStockType() string                                      //获取货币类型
 }
 
 var (
