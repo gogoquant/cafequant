@@ -43,6 +43,8 @@ func NewFutureExchange(opt Option) *FutureExchange {
 		stockTypeMap: map[string]goex.CurrencyPair{
 			"BTC/USD": goex.BTC_USD,
 		},
+		stockTypeMapReverse: map[goex.CurrencyPair]string{},
+		tradeTypeMapReverse: map[string]int{},
 		tradeTypeMap: map[int]string{
 			goex.OPEN_BUY:   constant.TradeTypeLong,
 			goex.OPEN_SELL:  constant.TradeTypeShort,
@@ -92,7 +94,7 @@ func (e *FutureExchange) Init() error {
 	if e.apiBuilder == nil {
 		return errors.New("api builder fail")
 	}
-	exchangeName := e.exchangeTypeMap[e.option.Name]
+	exchangeName := e.exchangeTypeMap[e.option.Type]
 	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
 	return nil
 }
@@ -136,6 +138,7 @@ func (e *FutureExchange) GetName() string {
 }
 
 func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
+	var resDepth Depth
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
@@ -144,7 +147,57 @@ func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 	if err != nil {
 		return false
 	}
-	return depth
+	resDepth.Time = depth.UTime.Unix()
+	for _, ask := range depth.AskList {
+		var resAsk DepthRecord
+		resAsk.Amount = ask.Amount
+		resAsk.Price = ask.Price
+		resDepth.AskList = append(resDepth.AskList, resAsk)
+	}
+	for _, bid := range depth.BidList {
+		var resBid DepthRecord
+		resBid.Amount = bid.Amount
+		resBid.Price = bid.Price
+		resDepth.BidList = append(resDepth.BidList, resBid)
+	}
+	return resDepth
+}
+
+func (e *FutureExchange) GetPosition(stockType string) interface{} {
+	resPositon_vec := []Position{}
+	exchangeStockType, ok := e.stockTypeMap[stockType]
+	if !ok {
+		return false
+	}
+	positions, err := e.api.GetFuturePosition(exchangeStockType, e.GetContractType())
+	if err != nil {
+		return false
+	}
+	for _, position := range positions {
+		var resPositon Position
+		if position.BuyAmount > 0 {
+			resPositon.Price = position.BuyPriceAvg
+			resPositon.Amount = position.BuyAmount
+			resPositon.MarginLevel = position.LeverRate
+			resPositon.Profit = position.BuyProfitReal
+			resPositon.ForcePrice = position.ForceLiquPrice
+			resPositon.TradeType = constant.TradeTypeBuy
+			resPositon.ContractType = position.ContractType
+			resPositon.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositon_vec = append(resPositon_vec, resPositon)
+		}
+		if position.SellAmount > 0 {
+			resPositon.Price = position.SellPriceAvg
+			resPositon.Amount = position.SellAmount
+			resPositon.MarginLevel = position.LeverRate
+			resPositon.ForcePrice = position.ForceLiquPrice
+			resPositon.TradeType = constant.TradeTypeSell
+			resPositon.ContractType = e.contractType
+			resPositon.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositon_vec = append(resPositon_vec, resPositon)
+		}
+	}
+	return resPositon_vec
 }
 
 // SetLimit set the limit calls amount per second of this exchange
@@ -257,18 +310,24 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 	if !ok {
 		return false
 	}
-	order, err := e.api.GetFutureOrder(id, exchangeStockType, e.GetContractType())
+	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetContractType())
 	if err != nil {
 		return false
 	}
-	return Order{
-		Id:         order.OrderID2,
-		Price:      order.Price,
-		Amount:     order.Amount,
-		DealAmount: order.DealAmount,
-		TradeType:  e.tradeTypeMap[order.OrderType],
-		StockType:  e.GetStockType(),
+	for _, order := range orders {
+		if id != order.OrderID2 {
+			continue
+		}
+		return Order{
+			Id:         order.OrderID2,
+			Price:      order.Price,
+			Amount:     order.Amount,
+			DealAmount: order.DealAmount,
+			TradeType:  e.tradeTypeMap[order.OrderType],
+			StockType:  e.GetStockType(),
+		}
 	}
+	return false
 }
 
 // GetOrders get all unfilled orders
@@ -281,14 +340,14 @@ func (e *FutureExchange) GetOrders() interface{} {
 	if err != nil {
 		return false
 	}
-	var resOrders []Order
+	resOrders := []Order{}
 	for _, order := range orders {
 		resOrder := Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OrderType],
+			TradeType:  e.tradeTypeMap[order.OType],
 			StockType:  e.GetStockType(),
 		}
 		resOrders = append(resOrders, resOrder)

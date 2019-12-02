@@ -13,7 +13,7 @@ func init() {
 	quantconf := os.Getenv("QUANT_CONFIG")
 	conf, err := ini.InsensitiveLoad(quantconf)
 	if err != nil {
-		conf, err = ini.InsensitiveLoad("config.ini")
+		conf, err = ini.InsensitiveLoad("/tmp/config.ini")
 		if err != nil {
 			log.Fatalln("Load config.ini error:", err)
 		}

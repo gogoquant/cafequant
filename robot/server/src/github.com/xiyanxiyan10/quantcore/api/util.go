@@ -17,15 +17,17 @@ var client = http.DefaultClient
 
 // Position struct
 type Position struct {
-	Price         float64 //价格
-	Leverage      int     //杠杆比例
-	Amount        float64 //总合约数量
-	ConfirmAmount float64
-	FrozenAmount  float64 //冻结的合约数量
-	Profit        float64 //收益
-	ContractType  string  //合约类型
-	TradeType     string  //交易类型
-	StockType     string  //货币类型
+	Price        float64 //价格
+	MarginLevel  int     //杠杆比例
+	Amount       float64 //总合约数量
+	CanCover     float64
+	FrozenAmount float64 //冻结的合约数量
+	Profit       float64 //收益
+	ContractType string  //合约类型
+	TradeType    string  //交易类型
+	Margin       float64 // 仓位占用的保证金
+	StockType    string  //货币类型
+	ForcePrice   float64
 }
 
 type DepthRecord struct {
