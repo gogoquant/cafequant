@@ -17,7 +17,7 @@ type Back interface {
 	SetName(name string)
 
 	// get the holds of the engine
-	Holds() (map[string]Position, error)
+	Position() (map[string]Position, error)
 
 	// get order from the symbol
 	OrdersBySymbol(symbol string) ([]OrderEvent, error)
@@ -91,7 +91,7 @@ func (back *BackTest) AddData(data DataEvent) error {
 }
 
 // Holds get all position
-func (back *BackTest) Holds() (map[string]Position, error) {
+func (back *BackTest) Position() (map[string]Position, error) {
 	position := back.holds()
 	return position, nil
 }
