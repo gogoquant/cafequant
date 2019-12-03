@@ -224,20 +224,23 @@ func (e *FutureExchange) GetMinAmount(stock string) float64 {
 
 // GetAccount get the account detail of this exchange
 func (e *FutureExchange) GetAccount() interface{} {
-	userInfo := make(map[string][]float64)
 	account, err := e.api.GetFutureUserinfo()
 	if err != nil {
 		return false
 	}
+	var resAccount Account
+	resAccount.SubAccounts = make(map[string]SubAccount)
 	for k, v := range account.FutureSubAccounts {
+		var subAccount SubAccount
 		stockType := k.Symbol
-		userInfo[stockType] = append(userInfo[stockType], v.AccountRights)
-		userInfo[stockType] = append(userInfo[stockType], v.KeepDeposit)
-		userInfo[stockType] = append(userInfo[stockType], v.ProfitReal)
-		userInfo[stockType] = append(userInfo[stockType], v.ProfitUnreal)
-		userInfo[stockType] = append(userInfo[stockType], v.RiskRate)
+		subAccount.AccountRights = v.AccountRights
+		subAccount.KeepDeposit = v.KeepDeposit
+		subAccount.ProfitReal = v.ProfitReal
+		subAccount.ProfitUnreal = v.ProfitUnreal
+		subAccount.RiskRate = v.RiskRate
+		resAccount.SubAccounts[stockType] = subAccount
 	}
-	return userInfo
+	return resAccount
 }
 
 func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface{} {

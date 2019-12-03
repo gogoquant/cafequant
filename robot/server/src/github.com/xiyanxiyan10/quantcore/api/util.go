@@ -35,6 +35,19 @@ type DepthRecord struct {
 	Amount float64
 }
 
+type SubAccount struct {
+	StockType     string
+	AccountRights float64 //账户权益
+	KeepDeposit   float64 //保证金
+	ProfitReal    float64 //已实现盈亏
+	ProfitUnreal  float64
+	RiskRate      float64 //保证金率
+}
+
+type Account struct {
+	SubAccounts map[string]SubAccount
+}
+
 type DepthRecords []DepthRecord
 
 type Depth struct {
