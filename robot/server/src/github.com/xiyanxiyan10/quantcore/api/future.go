@@ -24,10 +24,10 @@ type FutureExchange struct {
 	recordsPeriodMap map[string]int
 	minAmountMap     map[string]float64
 
-	records map[string][]Record
+	records map[string][]constant.Record
 	host    string
 	logger  model.Logger
-	option  Option
+	option  constant.Option
 
 	limit     float64
 	lastSleep int64
@@ -38,7 +38,7 @@ type FutureExchange struct {
 }
 
 // NewFutureExchange create an exchange struct of futureExchange.com
-func NewFutureExchange(opt Option) *FutureExchange {
+func NewFutureExchange(opt constant.Option) *FutureExchange {
 	futureExchange := FutureExchange{
 		stockTypeMap: map[string]goex.CurrencyPair{
 			"BTC/USD": goex.BTC_USD,
@@ -71,7 +71,7 @@ func NewFutureExchange(opt Option) *FutureExchange {
 		minAmountMap: map[string]float64{
 			"BTC/USD": 0.001,
 		},
-		records:   make(map[string][]Record),
+		records:   make(map[string][]constant.Record),
 		host:      "https://www.futureExchange.com/api/v1/",
 		logger:    model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
 		option:    opt,
@@ -138,7 +138,7 @@ func (e *FutureExchange) GetName() string {
 }
 
 func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
-	var resDepth Depth
+	var resDepth constant.Depth
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
@@ -149,13 +149,13 @@ func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 	}
 	resDepth.Time = depth.UTime.Unix()
 	for _, ask := range depth.AskList {
-		var resAsk DepthRecord
+		var resAsk constant.DepthRecord
 		resAsk.Amount = ask.Amount
 		resAsk.Price = ask.Price
 		resDepth.AskList = append(resDepth.AskList, resAsk)
 	}
 	for _, bid := range depth.BidList {
-		var resBid DepthRecord
+		var resBid constant.DepthRecord
 		resBid.Amount = bid.Amount
 		resBid.Price = bid.Price
 		resDepth.BidList = append(resDepth.BidList, resBid)
@@ -164,7 +164,7 @@ func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 }
 
 func (e *FutureExchange) GetPosition(stockType string) interface{} {
-	resPositon_vec := []Position{}
+	resPositon_vec := []constant.Position{}
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
@@ -174,7 +174,7 @@ func (e *FutureExchange) GetPosition(stockType string) interface{} {
 		return false
 	}
 	for _, position := range positions {
-		var resPositon Position
+		var resPositon constant.Position
 		if position.BuyAmount > 0 {
 			resPositon.Price = position.BuyPriceAvg
 			resPositon.Amount = position.BuyAmount
@@ -228,10 +228,10 @@ func (e *FutureExchange) GetAccount() interface{} {
 	if err != nil {
 		return false
 	}
-	var resAccount Account
-	resAccount.SubAccounts = make(map[string]SubAccount)
+	var resAccount constant.Account
+	resAccount.SubAccounts = make(map[string]constant.SubAccount)
 	for k, v := range account.FutureSubAccounts {
-		var subAccount SubAccount
+		var subAccount constant.SubAccount
 		stockType := k.Symbol
 		subAccount.AccountRights = v.AccountRights
 		subAccount.KeepDeposit = v.KeepDeposit
@@ -321,7 +321,7 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 		if id != order.OrderID2 {
 			continue
 		}
-		return Order{
+		return constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
@@ -343,9 +343,9 @@ func (e *FutureExchange) GetOrders() interface{} {
 	if err != nil {
 		return false
 	}
-	resOrders := []Order{}
+	resOrders := []constant.Order{}
 	for _, order := range orders {
-		resOrder := Order{
+		resOrder := constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
@@ -360,7 +360,7 @@ func (e *FutureExchange) GetOrders() interface{} {
 
 // GetTrades get all filled orders recently
 func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
-	var traders []Trader
+	var traders []constant.Trader
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		return false
@@ -370,7 +370,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		return false
 	}
 	for _, APITrader := range APITraders {
-		trader := Trader{
+		trader := constant.Trader{
 			Id:        APITrader.Tid,
 			TradeType: e.tradeTypeMap[int(APITrader.Type)],
 			Amount:    APITrader.Amount,
@@ -413,7 +413,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 	}
 	//force covert
 	tickStr := fmt.Sprint(exTicker.Date)
-	ticker := Ticker{
+	ticker := constant.Ticker{
 		Last: exTicker.Last,
 		Buy:  exTicker.Buy,
 		Sell: exTicker.Sell,
@@ -461,12 +461,12 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 	if len(e.records[periodStr]) > 0 {
 		timeLast = e.records[periodStr][len(e.records[periodStr])-1].Time
 	}
-	var recordsNew []Record
+	var recordsNew []constant.Record
 	for i := len(klineVec); i > 0; i-- {
 		kline := klineVec[i-1]
 		recordTime := kline.Timestamp
 		if recordTime > timeLast {
-			recordsNew = append([]Record{{
+			recordsNew = append([]constant.Record{{
 				Time:   recordTime,
 				Open:   kline.Open,
 				High:   kline.High,
@@ -475,7 +475,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 				Volume: kline.Vol2,
 			}}, recordsNew...)
 		} else if timeLast > 0 && recordTime == timeLast {
-			e.records[periodStr][len(e.records[periodStr])-1] = Record{
+			e.records[periodStr][len(e.records[periodStr])-1] = constant.Record{
 				Time:   recordTime,
 				Open:   kline.Open,
 				High:   kline.High,

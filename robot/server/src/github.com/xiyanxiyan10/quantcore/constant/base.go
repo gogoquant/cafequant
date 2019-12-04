@@ -1,4 +1,4 @@
-package api
+package constant
 
 import (
 	"crypto/hmac"
@@ -79,11 +79,22 @@ type Record struct {
 	Volume float64 //交易量
 }
 
+// Option is an exchange option
+type Option struct {
+	TraderID  int64
+	Type      string
+	Name      string
+	AccessKey string
+	SecretKey string
+}
+
 // OrderBook struct
+/*
 type OrderBook struct {
 	Price  float64 //价格
 	Amount float64 //市场深度量
 }
+*/
 
 type Ticker struct {
 	Last float64
@@ -94,6 +105,7 @@ type Ticker struct {
 	Vol  float64
 	Time int64
 }
+
 type Trader struct {
 	Id        int64
 	TradeType string

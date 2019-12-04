@@ -1,13 +1,6 @@
 package api
 
-// Option is an exchange option
-type Option struct {
-	TraderID  int64
-	Type      string
-	Name      string
-	AccessKey string
-	SecretKey string
-}
+import "github.com/xiyanxiyan10/quantcore/constant"
 
 // Exchange interface
 type Exchange interface {
@@ -37,5 +30,5 @@ type Exchange interface {
 }
 
 var (
-	constructor = map[string]func(Option) Exchange{}
+	constructor = map[string]func(constant.Option) Exchange{}
 )
