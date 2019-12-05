@@ -19,10 +19,7 @@ type FutureExchange struct {
 
 	tradeTypeMap        map[int]string
 	tradeTypeMapReverse map[string]int
-
-	exchangeTypeMap  map[string]string
-	recordsPeriodMap map[string]int
-	minAmountMap     map[string]float64
+	exchangeTypeMap     map[string]string
 
 	records map[string][]constant.Record
 	host    string
@@ -51,25 +48,9 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 			goex.CLOSE_BUY:  constant.TradeTypeLongClose,
 			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
-
 		exchangeTypeMap: map[string]string{
 			constant.Fmex:    goex.FMEX,
 			constant.HuobiDm: goex.HBDM,
-		},
-
-		recordsPeriodMap: map[string]int{
-			"M1":  goex.KLINE_PERIOD_1MIN,
-			"M5":  goex.KLINE_PERIOD_5MIN,
-			"M15": goex.KLINE_PERIOD_15MIN,
-			"M30": goex.KLINE_PERIOD_30MIN,
-			"H1":  goex.KLINE_PERIOD_1H,
-			"H2":  goex.KLINE_PERIOD_4H,
-			"H4":  goex.KLINE_PERIOD_4H,
-			"D1":  goex.KLINE_PERIOD_1DAY,
-			"W1":  goex.KLINE_PERIOD_1WEEK,
-		},
-		minAmountMap: map[string]float64{
-			"BTC/USD": 0.001,
 		},
 		records:   make(map[string][]constant.Record),
 		host:      "https://www.futureExchange.com/api/v1/",
@@ -79,6 +60,20 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		lastSleep: time.Now().UnixNano(),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
+	futureExchange.SetRecordsPeriodMap(map[string]int{
+		"M1":  goex.KLINE_PERIOD_1MIN,
+		"M5":  goex.KLINE_PERIOD_5MIN,
+		"M15": goex.KLINE_PERIOD_15MIN,
+		"M30": goex.KLINE_PERIOD_30MIN,
+		"H1":  goex.KLINE_PERIOD_1H,
+		"H2":  goex.KLINE_PERIOD_4H,
+		"H4":  goex.KLINE_PERIOD_4H,
+		"D1":  goex.KLINE_PERIOD_1DAY,
+		"W1":  goex.KLINE_PERIOD_1WEEK,
+	})
+	futureExchange.SetMinAmountMap(map[string]float64{
+		"BTC/USD": 0.001,
+	})
 	return &futureExchange
 }
 
@@ -99,25 +94,12 @@ func (e *FutureExchange) Init() error {
 	return nil
 }
 
-func (e *FutureExchange) SetMinAmountMap(m map[string]float64) {
-	e.minAmountMap = m
-}
-
-func (e *FutureExchange) GetMinAmountMap() map[string]float64 {
-	return e.minAmountMap
-}
-func (e *FutureExchange) SetRecordsPeriodMap(m map[string]int) {
-	e.recordsPeriodMap = m
-}
-
-func (e *FutureExchange) GetRecordsPeriodMap() map[string]int {
-	return e.recordsPeriodMap
-}
-
+// SetStockTypeMap ...
 func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
 	e.stockTypeMap = m
 }
 
+// GetStockTypeMap ...
 func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
 	return e.stockTypeMap
 }
@@ -137,6 +119,7 @@ func (e *FutureExchange) GetName() string {
 	return e.option.Name
 }
 
+// GetDepth ...
 func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 	var resDepth constant.Depth
 	exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -163,8 +146,9 @@ func (e *FutureExchange) GetDepth(size int, stockType string) interface{} {
 	return resDepth
 }
 
+// GetPosition ...
 func (e *FutureExchange) GetPosition(stockType string) interface{} {
-	resPositon_vec := []constant.Position{}
+	resPositionVec := []constant.Position{}
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		return false
@@ -174,30 +158,30 @@ func (e *FutureExchange) GetPosition(stockType string) interface{} {
 		return false
 	}
 	for _, position := range positions {
-		var resPositon constant.Position
+		var resPosition constant.Position
 		if position.BuyAmount > 0 {
-			resPositon.Price = position.BuyPriceAvg
-			resPositon.Amount = position.BuyAmount
-			resPositon.MarginLevel = position.LeverRate
-			resPositon.Profit = position.BuyProfitReal
-			resPositon.ForcePrice = position.ForceLiquPrice
-			resPositon.TradeType = constant.TradeTypeBuy
-			resPositon.ContractType = position.ContractType
-			resPositon.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositon_vec = append(resPositon_vec, resPositon)
+			resPosition.Price = position.BuyPriceAvg
+			resPosition.Amount = position.BuyAmount
+			resPosition.MarginLevel = position.LeverRate
+			resPosition.Profit = position.BuyProfitReal
+			resPosition.ForcePrice = position.ForceLiquPrice
+			resPosition.TradeType = constant.TradeTypeBuy
+			resPosition.ContractType = position.ContractType
+			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositionVec = append(resPositionVec, resPosition)
 		}
 		if position.SellAmount > 0 {
-			resPositon.Price = position.SellPriceAvg
-			resPositon.Amount = position.SellAmount
-			resPositon.MarginLevel = position.LeverRate
-			resPositon.ForcePrice = position.ForceLiquPrice
-			resPositon.TradeType = constant.TradeTypeSell
-			resPositon.ContractType = e.contractType
-			resPositon.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositon_vec = append(resPositon_vec, resPositon)
+			resPosition.Price = position.SellPriceAvg
+			resPosition.Amount = position.SellAmount
+			resPosition.MarginLevel = position.LeverRate
+			resPosition.ForcePrice = position.ForceLiquPrice
+			resPosition.TradeType = constant.TradeTypeSell
+			resPosition.ContractType = e.contractType
+			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositionVec = append(resPositionVec, resPosition)
 		}
 	}
-	return resPositon_vec
+	return resPositionVec
 }
 
 // SetLimit set the limit calls amount per second of this exchange
@@ -217,7 +201,7 @@ func (e *FutureExchange) AutoSleep() {
 	e.lastSleep = now
 }
 
-// GetMinAmount get the min trade amonut of this exchange
+// GetMinAmount get the min trade amount of this exchange
 func (e *FutureExchange) GetMinAmount(stock string) float64 {
 	return e.minAmountMap[stock]
 }
