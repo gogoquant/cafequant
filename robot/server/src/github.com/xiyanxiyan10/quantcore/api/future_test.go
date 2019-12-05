@@ -3,12 +3,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/xiyanxiyan10/quantcore/constant"
+
 	//"github.com/xiyanxiyan10/quantcore/constant"
 	"testing"
 )
 
 func TestFuture(t *testing.T) {
-	var opt Option
+	var opt constant.Option
 	//set key and exchange name
 	opt.Type = "fmex"
 	opt.Name = "test"

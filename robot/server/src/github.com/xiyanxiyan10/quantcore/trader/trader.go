@@ -14,7 +14,7 @@ import (
 var (
 	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
 	errHalt       = fmt.Errorf("HALT")
-	exchangeMaker = map[string]func(api.Option) api.Exchange{ //保存所有交易所的构造函数
+	exchangeMaker = map[string]func(constant.Option) api.Exchange{ //保存所有交易所的构造函数
 		constant.HuobiDm: api.NewHuobiDmExchange,
 		constant.Fmex:    api.NewFmexExchange,
 	}
@@ -36,7 +36,7 @@ func Switch(id int64) (err error) {
 	return run(id)
 }
 
-//核心是初始化js运行环境，及其可以调用的api
+//initialize 核心是初始化js运行环境，及其可以调用的api
 func initialize(id int64) (trader Global, err error) {
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
@@ -50,7 +50,7 @@ func initialize(id int64) (trader Global, err error) {
 		return
 	}
 	if trader.AlgorithmID <= 0 {
-		err = fmt.Errorf("Please select a algorithm")
+		err = fmt.Errorf("please select a algorithm")
 		return
 	}
 	err = model.DB.First(&trader.Algorithm, trader.AlgorithmID).Error
@@ -73,7 +73,7 @@ func initialize(id int64) (trader Global, err error) {
 	}
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
-			opt := api.Option{
+			opt := constant.Option{
 				TraderID:  trader.ID,
 				Type:      e.Type,
 				Name:      e.Name,
@@ -120,7 +120,7 @@ func run(id int64) (err error) {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
 		}
 		if main, err := trader.ctx.Get("main"); err != nil || !main.IsFunction() {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not get the main function")
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, "can not get the main function")
 		} else {
 			if _, err := main.Call(main); err != nil {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
