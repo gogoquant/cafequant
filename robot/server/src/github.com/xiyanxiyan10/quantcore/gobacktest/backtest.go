@@ -165,6 +165,9 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 
 // eventLoop directs the different events to their handler.
 func (t *Backtest) eventLoop(e EventHandler) error {
+
+	// check the order
+
 	// type check for event type
 	switch event := e.(type) {
 	case DataEvent:
@@ -205,6 +208,9 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 		}
 		t.statistic.TrackTransaction(transaction)
 	}
+
+	// Todo check the position
+	// check the cost
 
 	return nil
 }

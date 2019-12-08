@@ -1,5 +1,7 @@
 package gobacktest
 
+import "github.com/xiyanxiyan10/quantcore/constant"
+
 // PortfolioHandler is the combined interface building block for a portfolio.
 type PortfolioHandler interface {
 	OnSignaler
@@ -100,13 +102,22 @@ func (p *Portfolio) Reset() error {
 	return nil
 }
 
-// OnSignal handles an incomming signal event
+// OnSignal handles an incoming signal event
 func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, error) {
 	// fmt.Printf("Portfolio receives Signal: %#v \n", signal)
+	var orderType OrderType
 
 	// set order type
-	orderType := MarketOrder // default Market, should be set by risk manager
-	var limit float64
+	price := signal.Price()
+
+	if price <= 0 {
+		orderType = MarketOrder // default Market, should be set by risk manager
+	} else {
+		orderType = LimitOrder
+	}
+
+	// fetch latest known price for the symbol
+	latest := data.Latest(signal.Symbol())
 
 	initialOrder := &Order{
 		Event: Event{
@@ -116,11 +127,8 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 		direction: signal.Direction(),
 		// Qty should be set by PositionSizer
 		orderType:  orderType,
-		limitPrice: limit,
+		limitPrice: price,
 	}
-
-	// fetch latest known price for the symbol
-	latest := data.Latest(signal.Symbol())
 
 	sizedOrder, err := p.sizeManager.SizeOrder(initialOrder, latest, p)
 	if err != nil {
@@ -133,7 +141,7 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 	return order, nil
 }
 
-// OnFill handles an incomming fill event
+// OnFill handles an incoming fill event
 func (p *Portfolio) OnFill(fill FillEvent, data DataHandler) (*Fill, error) {
 	// Check for nil map, else initialise the map
 	if p.holdings == nil {
@@ -153,7 +161,7 @@ func (p *Portfolio) OnFill(fill FillEvent, data DataHandler) (*Fill, error) {
 	}
 
 	// update cash
-	if fill.Direction() == BOT {
+	if fill.Direction() == constant.TradeTypeLong {
 		p.cash = p.cash - fill.NetValue()
 	} else {
 		// direction is "SLD"

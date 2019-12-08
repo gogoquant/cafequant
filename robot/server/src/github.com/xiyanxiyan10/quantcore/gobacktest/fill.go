@@ -1,11 +1,13 @@
 package gobacktest
 
+import "github.com/xiyanxiyan10/quantcore/constant"
+
 // Fill declares a basic fill event
 type Fill struct {
 	Event
 	direction   Direction // BOT for buy, SLD for sell, HLD for hold
 	Exchange    string    // exchange symbol
-	qty         int64
+	qty         float64
 	price       float64
 	commission  float64
 	exchangeFee float64
@@ -23,12 +25,12 @@ func (f *Fill) SetDirection(dir Direction) {
 }
 
 // Qty returns the qty field of a fill
-func (f Fill) Qty() int64 {
+func (f Fill) Qty() float64 {
 	return f.qty
 }
 
 // SetQty sets the Qty field of a Fill
-func (f *Fill) SetQty(i int64) {
+func (f *Fill) SetQty(i float64) {
 	f.qty = i
 }
 
@@ -54,19 +56,19 @@ func (f Fill) Cost() float64 {
 
 // Value returns the value without cost.
 func (f Fill) Value() float64 {
-	value := float64(f.qty) * f.price
+	value := f.qty * f.price
 	return value
 }
 
 // NetValue returns the net value including cost.
 func (f Fill) NetValue() float64 {
-	if f.direction == BOT {
+	if f.direction == constant.TradeTypeLong {
 		// qty * price + cost
-		netValue := float64(f.qty)*f.price + f.cost
+		netValue := f.qty*f.price + f.cost
 		return netValue
 	}
 	// SLD
 	//qty * price - cost
-	netValue := float64(f.qty)*f.price - f.cost
+	netValue := f.qty*f.price - f.cost
 	return netValue
 }

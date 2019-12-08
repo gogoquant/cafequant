@@ -21,11 +21,7 @@ type OrderType int
 // different types of orders
 const (
 	MarketOrder OrderType = iota // 0
-	MarketOnOpenOrder
-	MarketOnCloseOrder
-	StopMarketOrder
 	LimitOrder
-	StopLimitOrder
 )
 
 // Order declares a basic order event.
@@ -36,11 +32,32 @@ type Order struct {
 	status       OrderStatus
 	direction    Direction // buy or sell
 	assetType    string
-	qty          int64 // quantity of the order
-	qtyFilled    int64
+	qty          float64 // quantity of the order
+	price        float64 // if Price < 0, market order wanted
+	qtyFilled    float64
 	avgFillPrice float64
 	limitPrice   float64 // limit for the order
 	stopPrice    float64
+}
+
+// Price returns the price of a Signal
+func (s Order) OrderType() OrderType {
+	return s.orderType
+}
+
+// SetPrice sets the price field of a Signal
+func (s *Order) SetOrderType(t OrderType) {
+	s.orderType = t
+}
+
+// Price returns the price of a Signal
+func (s Order) Price() float64 {
+	return s.price
+}
+
+// SetPrice sets the price field of a Signal
+func (s *Order) SetPrice(price float64) {
+	s.price = price
 }
 
 // ID returns the id of the Order.
@@ -64,12 +81,12 @@ func (o *Order) SetDirection(dir Direction) {
 }
 
 // Qty returns the Qty field of an Order
-func (o Order) Qty() int64 {
+func (o Order) Qty() float64 {
 	return o.qty
 }
 
 // SetQty sets the Qty field of an Order
-func (o *Order) SetQty(i int64) {
+func (o *Order) SetQty(i float64) {
 	o.qty = i
 }
 

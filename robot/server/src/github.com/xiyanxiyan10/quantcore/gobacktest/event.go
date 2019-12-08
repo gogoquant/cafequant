@@ -50,7 +50,10 @@ func (e *Event) SetSymbol(s string) {
 
 // SignalEvent declares the signal event interface.
 type SignalEvent interface {
+	IDer
 	EventHandler
+	SignalPricer
+	Quantifier
 	Directioner
 }
 
@@ -66,6 +69,7 @@ type OrderEvent interface {
 	Directioner
 	Quantifier
 	IDer
+	SignalPricer
 	Status() OrderStatus
 	Limit() float64
 	Stop() float64
@@ -73,8 +77,14 @@ type OrderEvent interface {
 
 // Quantifier defines a qty interface.
 type Quantifier interface {
-	Qty() int64
-	SetQty(int64)
+	Qty() float64
+	SetQty(float64)
+}
+
+// SignalPricer defines a qty interface.
+type SignalPricer interface {
+	Price() float64
+	SetPrice(float64)
 }
 
 // IDer declares setting and retrieving of an Id.

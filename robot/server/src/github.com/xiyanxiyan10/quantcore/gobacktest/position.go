@@ -1,6 +1,7 @@
 package gobacktest
 
 import (
+	"github.com/xiyanxiyan10/quantcore/constant"
 	"math"
 	"time"
 	// "github.com/shopspring/decimal"
@@ -10,9 +11,9 @@ import (
 type Position struct {
 	timestamp   time.Time
 	symbol      string
-	qty         int64   // current qty of the position, positive on BOT position, negativ on SLD position
-	qtyBOT      int64   // how many BOT
-	qtySLD      int64   // how many SLD
+	qty         float64 // current qty of the position, positive on BOT position, negativ on SLD position
+	qtyBOT      float64 // how many BOT
+	qtySLD      float64 // how many SLD
 	avgPrice    float64 // average price without cost
 	avgPriceNet float64 // average price including cost
 	avgPriceBOT float64 // average price BOT, without cost
@@ -61,7 +62,7 @@ func (p *Position) UpdateValue(data DataEvent) {
 // internal function to update a position on a new fill event
 func (p *Position) update(fill FillEvent) {
 	// convert fill to internally used decimal numbers
-	fillQty := float64(fill.Qty())
+	fillQty := fill.Qty()
 	fillPrice := fill.Price()
 	fillCommission := fill.Commission()
 	fillExchangeFee := fill.ExchangeFee()
@@ -69,9 +70,9 @@ func (p *Position) update(fill FillEvent) {
 	fillNetValue := fill.NetValue()
 
 	// convert position to internally used decimal numbers
-	qty := float64(p.qty)
-	qtyBot := float64(p.qtyBOT)
-	qtySld := float64(p.qtySLD)
+	qty := p.qty
+	qtyBot := p.qtyBOT
+	qtySld := p.qtySLD
 	avgPrice := p.avgPrice
 	avgPriceNet := p.avgPriceNet
 	avgPriceBot := p.avgPriceBOT
@@ -89,7 +90,7 @@ func (p *Position) update(fill FillEvent) {
 	realProfitLoss := p.realProfitLoss
 
 	switch fill.Direction() {
-	case BOT:
+	case constant.TradeTypeBuy:
 		if p.qty >= 0 { // position is long, adding to position
 			costBasis += fillNetValue
 		} else { // position is short, closing partially out
@@ -115,7 +116,7 @@ func (p *Position) update(fill FillEvent) {
 		valueBot = qtyBot * avgPriceBot
 		netValueBot += fillNetValue
 
-	case SLD:
+	case constant.TradeTypeShort:
 		if p.qty > 0 { // position is long, closing partially out
 			costBasis -= math.Abs(fillQty) / qty * costBasis
 			// realProfitLoss + fillQty * (fillPrice - avgPriceNet) - fillCost
@@ -148,9 +149,9 @@ func (p *Position) update(fill FillEvent) {
 	netValue = value - cost
 
 	// convert from internal decimal to float
-	p.qty = int64(qty)
-	p.qtyBOT = int64(qtyBot)
-	p.qtySLD = int64(qtySld)
+	p.qty = qty
+	p.qtyBOT = qtyBot
+	p.qtySLD = qtySld
 	p.avgPrice = math.Round(avgPrice*math.Pow10(DP)) / math.Pow10(DP)
 	p.avgPriceBOT = math.Round(avgPriceBot*math.Pow10(DP)) / math.Pow10(DP)
 	p.avgPriceSLD = math.Round(avgPriceSld*math.Pow10(DP)) / math.Pow10(DP)
@@ -174,7 +175,7 @@ func (p *Position) update(fill FillEvent) {
 func (p *Position) updateValue(l float64) {
 	// convert to internally used decimal numbers
 	latest := l
-	qty := float64(p.qty)
+	qty := p.qty
 	costBasis := p.costBasis
 
 	// update market value

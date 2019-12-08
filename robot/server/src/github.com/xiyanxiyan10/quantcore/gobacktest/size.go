@@ -2,6 +2,7 @@ package gobacktest
 
 import (
 	"errors"
+	"github.com/xiyanxiyan10/quantcore/constant"
 	"math"
 )
 
@@ -22,31 +23,27 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 	o := order.(*Order)
 	// no default set, no sizing possible, order rejected
 	if (s.DefaultSize == 0) || (s.DefaultValue == 0) {
-		return o, errors.New("cannot size order: no defaultSize or defaultValue set,")
+		return o, errors.New("cannot size order: no defaultSize or defaultValue set")
+	}
+
+	price := order.Price()
+	if price < 0 {
+		o.SetOrderType(MarketOrder)
+		price = data.Price()
+	} else {
+		o.SetOrderType(LimitOrder)
 	}
 
 	// decide on order direction
 	switch o.Direction() {
-	case BOT:
-		o.SetDirection(BOT)
-		o.SetQty(s.setDefaultSize(data.Price()))
-	case SLD:
-		o.SetDirection(SLD)
-		o.SetQty(s.setDefaultSize(data.Price()))
-	case EXT: // all shares should be sold or bought, depending on position
-		// poll postions
-		if _, ok := pf.IsInvested(o.Symbol()); !ok {
-
-			return o, errors.New("cannot exit order: no position to symbol in portfolio,")
-		}
-		if pos, ok := pf.IsLong(o.Symbol()); ok {
-			o.SetDirection(SLD)
-			o.SetQty(pos.qty)
-		}
-		if pos, ok := pf.IsShort(o.Symbol()); ok {
-			o.SetDirection(BOT)
-			o.SetQty(pos.qty * -1)
-		}
+	case constant.TradeTypeLong:
+		o.SetDirection(constant.TradeTypeLong)
+		o.SetQty(order.Qty())
+	case constant.TradeTypeShort:
+		o.SetDirection(constant.TradeTypeShort)
+		o.SetQty(order.Qty())
+	default:
+		return o, errors.New("unknown tradeType :" + string(o.Direction()))
 	}
 
 	return o, nil

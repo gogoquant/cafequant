@@ -2,6 +2,7 @@ package gobacktest
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/quantcore/constant"
 	"sort"
 )
 
@@ -82,7 +83,7 @@ func (ob OrderBook) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
 // OrdersBidBySymbol returns all bid orders of a specific symbol from the order book.
 func (ob OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
-		if (order.Symbol() != symbol) || (order.Direction() != BOT) {
+		if (order.Symbol() != symbol) || (order.Direction() != constant.TradeTypeLong) {
 			return false
 		}
 		return true
@@ -104,7 +105,7 @@ func (ob OrderBook) OrdersBidBySymbol(symbol string) ([]OrderEvent, bool) {
 // OrdersAskBySymbol returns all bid orders of a specific symbol from the order book.
 func (ob OrderBook) OrdersAskBySymbol(symbol string) ([]OrderEvent, bool) {
 	var fn = func(order OrderEvent) bool {
-		if (order.Symbol() != symbol) || (order.Direction() != SLD) {
+		if (order.Symbol() != symbol) || (order.Direction() != constant.TradeTypeShort) {
 			return false
 		}
 		return true
