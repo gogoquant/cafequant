@@ -81,9 +81,9 @@ func (t *Backtest) Stats() StatisticHandler {
 	return t.statistic
 }
 
-// Run starts the backtest.
+// Run starts the backTest.
 func (t *Backtest) Run() error {
-	// setup before the backtest runs
+	// setup before the backTest runs
 	err := t.setup()
 	if err != nil {
 		return err
