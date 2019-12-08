@@ -16,7 +16,7 @@ type FixedCommission struct {
 
 // Calculate calculates the commission of the trade
 func (c *FixedCommission) Calculate(qty, price float64) (float64, error) {
-	// no trade value, no commision
+	// no trade value, no commission
 	if qty == 0 || price == 0 {
 		return 0, nil
 	}
@@ -32,7 +32,7 @@ type TresholdFixedCommission struct {
 
 // Calculate calculates the commission of the trade
 func (c *TresholdFixedCommission) Calculate(qty, price float64) (float64, error) {
-	// no trade value, no commision
+	// no trade value, no commission
 	if qty == 0 || price == 0 {
 		return 0, nil
 	}
@@ -52,7 +52,7 @@ type PercentageCommission struct {
 
 // Calculate calculates the commission of the trade
 func (c *PercentageCommission) Calculate(qty, price float64) (float64, error) {
-	// no trade value, no commision
+	// no trade value, no commission
 	if qty == 0 || price == 0 {
 		return 0, nil
 	}
@@ -72,7 +72,7 @@ type ValueCommission struct {
 
 // Calculate calculates the commission of the trade
 func (c *ValueCommission) Calculate(qty, price float64) (float64, error) {
-	// no trade value, no commision
+	// no trade value, no commission
 	if qty == 0 || price == 0 {
 		return 0, nil
 	}

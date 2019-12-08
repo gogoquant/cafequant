@@ -1,6 +1,7 @@
 package gobacktest
 
 import (
+	"github.com/xiyanxiyan10/quantcore/constant"
 	"reflect"
 	"testing"
 	"time"
@@ -21,8 +22,8 @@ func TestResetPortfolio(t *testing.T) {
 					"BAS.DE":  {qty: 90},
 				},
 				transactions: []FillEvent{
-					&Fill{direction: BOT, qty: 100},
-					&Fill{direction: BOT, qty: 90},
+					&Fill{direction: constant.TradeTypeLong, qty: 100},
+					&Fill{direction: constant.TradeTypeShort, qty: 90},
 				},
 				sizeManager: &Size{},
 				riskManager: &Risk{},
@@ -104,14 +105,14 @@ func TestOnFill(t *testing.T) {
 	var fillCases = map[string]FillEvent{
 		"BOT": &Fill{
 			Event:     Event{symbol: "TEST.DE", timestamp: timestamp},
-			direction: BOT,
+			direction: constant.TradeTypeLong,
 			qty:       100,
 			price:     10,
 			cost:      10,
 		},
 		"SLD": &Fill{
 			Event:     Event{symbol: "TEST.DE", timestamp: timestamp},
-			direction: SLD,
+			direction: constant.TradeTypeShort,
 			qty:       100,
 			price:     10,
 			cost:      10,
