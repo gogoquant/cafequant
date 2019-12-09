@@ -29,7 +29,8 @@ const (
 	TradeTypeShort       = "sell"
 	TradeTypeLongClose   = "closebuy"
 	TradeTypeShortClose  = "closesell"
-	TradeTypeCancelOrder = "cancel"
+	TradeTypeCancel	 	 = "cancel"
+	TradeTypeHold 		 = "hold"
 )
 
 // some variables
@@ -38,7 +39,7 @@ var (
 	ExchangeTypes = []string{HuobiDm, Fmex}
 )
 
-// future userinfo string
+// future userInfo string
 const (
 	Currency      = "Currency"
 	AccountRights = "AccountRights" //账户权益

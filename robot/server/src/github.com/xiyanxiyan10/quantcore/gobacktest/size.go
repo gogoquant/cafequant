@@ -41,11 +41,10 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 		o.SetQty(order.Qty())
 	case constant.TradeTypeShort:
 		o.SetDirection(constant.TradeTypeShort)
-		o.SetQty(order.Qty())
+		o.SetQty(order.Qty() * -1)
 	default:
 		return o, errors.New("unknown tradeType :" + string(o.Direction()))
 	}
-
 	return o, nil
 }
 
