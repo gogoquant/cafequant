@@ -21,11 +21,6 @@ type Size struct {
 func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) (*Order, error) {
 	// assert interface to concrete Type
 	o := order.(*Order)
-	// no default set, no sizing possible, order rejected
-	if (s.DefaultSize == 0) || (s.DefaultValue == 0) {
-		return o, errors.New("cannot size order: no defaultSize or defaultValue set")
-	}
-
 	price := order.Price()
 	if price < 0 {
 		o.SetOrderType(MarketOrder)
@@ -33,25 +28,24 @@ func (s *Size) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) 
 	} else {
 		o.SetOrderType(LimitOrder)
 	}
-
+	o.SetPrice(price)
+	size := s.setDefaultSize(order.Qty(), price)
 	// decide on order direction
 	switch o.Direction() {
 	case constant.TradeTypeLong:
 		o.SetDirection(constant.TradeTypeLong)
-		o.SetQty(order.Qty())
+		o.SetQty(float64(size))
 	case constant.TradeTypeShort:
 		o.SetDirection(constant.TradeTypeShort)
-		o.SetQty(order.Qty() * -1)
+		o.SetQty(float64(size) * -1)
 	default:
 		return o, errors.New("unknown tradeType :" + string(o.Direction()))
 	}
 	return o, nil
 }
 
-func (s *Size) setDefaultSize(price float64) int64 {
-	if (float64(s.DefaultSize) * price) > s.DefaultValue {
-		correctedQty := int64(math.Floor(s.DefaultValue / price))
-		return correctedQty
-	}
-	return s.DefaultSize
+// setDefaultSize ...
+func (s *Size) setDefaultSize(size, price float64) int64 {
+	correctedQty := int64(math.Floor(size / price))
+	return correctedQty
 }

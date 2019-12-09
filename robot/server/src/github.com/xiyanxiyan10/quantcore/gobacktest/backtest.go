@@ -175,8 +175,14 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 		t.portfolio.Update(event)
 		// update statistics
 		t.statistic.Update(event, t.portfolio)
-		// check if any orders are filled before proceding
+		// check if any orders are filled before preceding
 		t.exchange.OnData(event)
+		orders, ok := t.portfolio.OnData(t.data)
+		if ok {
+			for _, order := range orders {
+				t.eventQueue = append(t.eventQueue, order)
+			}
+		}
 
 		// run strategy with this data event
 		signals, err := t.strategy.OnData(event)

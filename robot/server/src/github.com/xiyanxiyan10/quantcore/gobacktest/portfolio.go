@@ -5,12 +5,18 @@ import "github.com/xiyanxiyan10/quantcore/constant"
 // PortfolioHandler is the combined interface building block for a portfolio.
 type PortfolioHandler interface {
 	OnSignaler
+	OnMarry
 	OnFiller
 	Investor
 	Updater
 	Casher
 	Valuer
 	Reseter
+}
+
+// OnMarry marry orders
+type OnMarry interface {
+	OnData(data DataHandler) ([]OrderEvent, bool)
 }
 
 // OnSignaler is an interface for the OnSignal method
@@ -59,7 +65,7 @@ type Portfolio struct {
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
-	orderBook    []OrderEvent
+	orderBook    *OrderBook
 	transactions []FillEvent
 	sizeManager  SizeHandler
 	riskManager  RiskHandler
@@ -71,6 +77,7 @@ func NewPortfolio() *Portfolio {
 		initialCash: 100000,
 		sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
 		riskManager: &Risk{},
+		orderBook:   NewOrderBook(),
 	}
 }
 
@@ -100,6 +107,34 @@ func (p *Portfolio) Reset() error {
 	p.holdings = nil
 	p.transactions = nil
 	return nil
+}
+
+// OnData marry orders
+func (p *Portfolio) OnData(data DataHandler) ([]OrderEvent, bool) {
+	// marry orders
+	var fn = func(order OrderEvent) bool {
+		symbol := order.Symbol()
+		tradeType := order.Direction()
+		price := order.Price()
+		latest := data.Latest(symbol)
+		latestPrice := latest.Price()
+		if tradeType == constant.TradeTypeLong && latestPrice <= price {
+			return true
+		}
+		if tradeType == constant.TradeTypeShort && latestPrice >= price {
+			return true
+		}
+		return false
+	}
+	orders, ok := p.orderBook.OrderBy(fn)
+	if !ok {
+		return nil, false
+	}
+	//remove orders from wait into history which is married
+	for _, order := range orders {
+		p.orderBook.Remove(order.ID())
+	}
+	return orders, ok
 }
 
 // OnSignal handles an incoming signal event
@@ -137,8 +172,11 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 	order, err := p.riskManager.EvaluateOrder(sizedOrder, latest, p.holdings)
 	if err != nil {
 	}
-
-	return order, nil
+	// add this order into list
+	p.orderBook.Add(order)
+	//p.orderBook
+	//return nil, nil
+	return nil, nil
 }
 
 // OnFill handles an incoming fill event
@@ -249,26 +287,33 @@ func (p Portfolio) Holdings() map[string]Position {
 
 // OrderBook returns the order book of the portfolio
 func (p Portfolio) OrderBook() ([]OrderEvent, bool) {
-	if len(p.orderBook) == 0 {
-		return p.orderBook, false
-	}
+	/*
+		if len(p.orderBook) == 0 {
+			return p.orderBook, false
+		}
 
-	return p.orderBook, true
+		return p.orderBook, true
+	*/
+	return nil, true
 }
 
 // OrdersBySymbol returns the order of a specific symbol from the order book.
 func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
-	var orders = []OrderEvent{}
+	/*
+		var orders = []OrderEvent{}
 
-	for _, order := range p.orderBook {
-		if order.Symbol() == symbol {
-			orders = append(orders, order)
+		for _, order := range p.orderBook {
+			if order.Symbol() == symbol {
+				orders = append(orders, order)
+			}
 		}
-	}
 
-	if len(orders) == 0 {
-		return orders, false
-	}
+		if len(orders) == 0 {
+			return orders, false
+		}
 
-	return orders, true
+		return orders, true
+	*/
+
+	return nil, true
 }

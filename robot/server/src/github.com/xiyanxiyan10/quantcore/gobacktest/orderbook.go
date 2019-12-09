@@ -13,6 +13,17 @@ type OrderBook struct {
 	history []OrderEvent
 }
 
+// NewOrderBook ...
+func NewOrderBook() *OrderBook {
+	orders := make([]OrderEvent, 0)
+	history := make([]OrderEvent, 0)
+	return &OrderBook{
+		counter: 0,
+		orders:  orders,
+		history: history,
+	}
+}
+
 // Add an order to the order book.
 func (ob *OrderBook) Add(order OrderEvent) error {
 	// increment counter
