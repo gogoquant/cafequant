@@ -136,6 +136,34 @@ type DataEvent interface {
 	Pricer
 }
 
+func (d DataEvent) History() []DataEvent {
+	panic("implement me")
+}
+
+func (d DataEvent) Latest(string) DataEvent {
+	panic("implement me")
+}
+
+func (d DataEvent) List(string) []DataEvent {
+	panic("implement me")
+}
+
+func (d DataEvent) Load([]string) error {
+	panic("implement me")
+}
+
+func (d DataEvent) Next() (DataEvent, bool) {
+	panic("implement me")
+}
+
+func (d DataEvent) Reset() error {
+	panic("implement me")
+}
+
+func (d DataEvent) Stream() []DataEvent {
+	panic("implement me")
+}
+
 // Pricer defines the handling otf the latest Price Information
 type Pricer interface {
 	Price() float64

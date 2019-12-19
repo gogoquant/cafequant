@@ -1,5 +1,7 @@
 package gobacktest
 
+import "time"
+
 // DP sets the the precision of rounded floating numbers
 // used after calculations to format
 const DP = 4 // DP
@@ -123,6 +125,41 @@ func (t *Backtest) Run() error {
 	return nil
 }
 
+// Run2Time starts the backTest. //
+func (t *Backtest) Run2Next(next time.Time) (DataEvent, error) {
+	for {
+		// poll data from stream
+		data, ok := t.data.Next()
+		// no more data, exit event loop
+		if !ok {
+			break
+		}
+		// found data event, add to event stream
+		t.eventQueue = append(t.eventQueue, data)
+		// poll event queue
+		for event, ok := t.nextEvent(); true; event, ok = t.nextEvent() {
+			// no event in the queue
+			if !ok {
+				// start new event cycle
+				break
+			}
+
+			// processing event
+			err := t.eventLoop(event)
+			if err != nil {
+				return nil, err
+			}
+			// event in queue found, add to event history
+			t.statistic.TrackEvent(event)
+		}
+		//return data if the time after next policy trigger
+		if data.Time().After(next) {
+			return data, nil
+		}
+	}
+	return nil, nil
+}
+
 // setup runs at the beginning of the backtest to perfom preparing operations.
 func (t *Backtest) setup() error {
 	// before first run, set portfolio cash
@@ -165,7 +202,6 @@ func (t *Backtest) nextEvent() (e EventHandler, ok bool) {
 
 // eventLoop directs the different events to their handler.
 func (t *Backtest) eventLoop(e EventHandler) error {
-
 	// check the order
 
 	// type check for event type
@@ -178,12 +214,12 @@ func (t *Backtest) eventLoop(e EventHandler) error {
 		// check if any orders are filled before preceding
 		t.exchange.OnData(event)
 		orders, ok := t.portfolio.OnData(t.data)
+		// add orders into queue which is married
 		if ok {
 			for _, order := range orders {
 				t.eventQueue = append(t.eventQueue, order)
 			}
 		}
-
 		// run strategy with this data event
 		signals, err := t.strategy.OnData(event)
 		if err != nil {

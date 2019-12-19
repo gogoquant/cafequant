@@ -287,33 +287,38 @@ func (p Portfolio) Holdings() map[string]Position {
 
 // OrderBook returns the order book of the portfolio
 func (p Portfolio) OrderBook() ([]OrderEvent, bool) {
-	/*
-		if len(p.orderBook) == 0 {
-			return p.orderBook, false
-		}
-
-		return p.orderBook, true
-	*/
-	return nil, true
+	return p.orderBook.orders, true
 }
 
 // OrdersBySymbol returns the order of a specific symbol from the order book.
 func (p Portfolio) OrdersBySymbol(symbol string) ([]OrderEvent, bool) {
-	/*
-		var orders = []OrderEvent{}
-
-		for _, order := range p.orderBook {
-			if order.Symbol() == symbol {
-				orders = append(orders, order)
-			}
+	// marry orders
+	var fn = func(order OrderEvent) bool {
+		if order.Symbol() == symbol {
+			return true
 		}
+		return false
+	}
+	orders, ok := p.orderBook.OrderBy(fn)
+	if !ok {
+		return nil, false
+	}
+	return orders, true
+}
 
-		if len(orders) == 0 {
-			return orders, false
+// OrdersBySymbol returns the order of a specific symbol from the order book.
+func (p Portfolio) OrdersCancel(id int) bool {
+	// marry orders
+	var fn = func(order OrderEvent) bool {
+		if order.ID() == id {
+			return true
 		}
-
-		return orders, true
-	*/
-
-	return nil, true
+		return false
+	}
+	orders, ok := p.orderBook.OrderBy(fn)
+	if !ok || len(orders) > 1 {
+		return false
+	}
+	//p.orderBook.
+	return true
 }
