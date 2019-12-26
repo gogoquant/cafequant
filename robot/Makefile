@@ -8,29 +8,31 @@ WEBSITE_REPO=github.com/hashicorp/terraform-website
 default: test
 
 clean:
+	find -name '*.out' |xargs rm -rf
+	find -name 'cscope.*' |xargs rm -rf
+	find -name 'tags'  |xargs rm -rf
+	find -name '*.so'  |xargs rm -rf
+	find -name '*.o'   |xargs rm -rf
+	find -name '*.a'   |xargs rm -rf
+	find -name '*.d'   |xargs rm -rf
+	find -name '*.pyc' |xargs rm -rf
 	rm -rf golint-report.xml  coverage.out report.json govet-report.out
 
 check: fmtcheck
-	golangci-lint run  --config=golangci.yml
+	golangci-lint run  --config=./golangci.yml
 
 sonar:
-	golangci-lint run  --config=golangci.yml --out-format checkstyle> golint-report.xml; \
+	golangci-lint run  --config=./golangci.yml --out-format checkstyle> golint-report.xml; \
 	export GSD_CONFIG_FILE=$(CURDIR)/configs/config.yml; \
-    go test $(TEST) -coverprofile=coverage.out; \
-    go test $(TEST) -json > report.json; \
-    go list $(CHECK_PACKAGE) | xargs  go vet 2> govet-report.out
+    	go test $(TEST) -coverprofile=coverage.out; \
+    	go test $(TEST) -json > report.json; \
+    	go list $(CHECK_PACKAGE) | xargs  go vet 2> govet-report.out
 
 allcheck: fmtcheck vet lint staticcheck cyclo
 
 bin: dev
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/apigateway -v ./cmd/example/...
 
-
-dev: fmtcheck
-	go mod tidy
-
-quickdev:
-	go mod tidy
 
 
 test: fmtcheck

@@ -26,8 +26,8 @@ RUN mkdir /opt/app -p
 RUN mkdir /opt/app/web -p 
 
 #add file
-COPY ./quant     /opt/app/quant
-COPY ./dist      /opt/app/web/dist
+COPY /tmp/quant     /opt/app/quant
+COPY /tmp/dist      /opt/app/web/dist
 
 VOLUME ["/data"]
 

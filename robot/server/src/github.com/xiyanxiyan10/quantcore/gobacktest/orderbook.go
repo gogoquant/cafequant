@@ -41,14 +41,12 @@ func (ob *OrderBook) Remove(id int) error {
 		// order found
 		if order.ID() == id {
 			ob.history = append(ob.history, ob.orders[i])
-
 			ob.orders = append(ob.orders[:i], ob.orders[i+1:]...)
-
 			return nil
 		}
 	}
 
-	// order not found in orderbook
+	// order not found in orderBook
 	return fmt.Errorf("order with id %v not found", id)
 }
 
@@ -63,7 +61,7 @@ func (ob OrderBook) Orders() ([]OrderEvent, bool) {
 
 // OrderBy returns the order by a select function from the order book.
 func (ob OrderBook) OrderBy(fn func(order OrderEvent) bool) ([]OrderEvent, bool) {
-	var orders = []OrderEvent{}
+	var orders []OrderEvent
 
 	for _, order := range ob.orders {
 		if fn(order) {
