@@ -381,7 +381,7 @@ func (e *FutureExchange) CancelOrder(orderID string) bool {
 	if !result {
 		return false
 	}
-	e.logger.Log(constant.TradeTypeCancelOrder, e.GetStockType(), 0, 0, orderID)
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, 0, orderID)
 	return true
 }
 

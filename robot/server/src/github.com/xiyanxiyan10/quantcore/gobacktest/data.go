@@ -150,12 +150,11 @@ type BarEvent interface {
 type Bar struct {
 	Event
 	Metric
-	Open     float64
-	High     float64
-	Low      float64
-	Close    float64
-	AdjClose float64
-	Volume   int64
+	Open   float64 //开盘价
+	High   float64 //最高价
+	Low    float64 //最低价
+	Close  float64 //收盘价
+	Volume float64 //交易量
 }
 
 // Price returns the close price of the bar event.
@@ -178,19 +177,24 @@ type Spreader interface {
 type Tick struct {
 	Event
 	Metric
-	Bid       float64
-	Ask       float64
-	BidVolume int64
-	AskVolume int64
+	Last float64
+	Buy  float64
+	Sell float64
+	High float64
+	Low  float64
+	Vol  float64
 }
 
 // Price returns the middle of Bid and Ask.
 func (t Tick) Price() float64 {
-	latest := (t.Bid + t.Ask) / float64(2)
+	if t.Last != 0 {
+		return t.Last
+	}
+	latest := (t.Buy + t.Sell) / float64(2)
 	return latest
 }
 
 // Spread returns the difference or spread of Bid and Ask.
 func (t Tick) Spread() float64 {
-	return t.Bid - t.Ask
+	return t.Buy - t.Sell
 }

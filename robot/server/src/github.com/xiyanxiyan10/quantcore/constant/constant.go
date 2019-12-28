@@ -23,19 +23,18 @@ const (
 
 // trade types
 const (
-	TradeTypeBuy         = "buy"
-	TradeTypeSell        = "sell"
-	TradeTypeLong        = "buy"
-	TradeTypeShort       = "sell"
-	TradeTypeLongClose   = "closebuy"
-	TradeTypeShortClose  = "closesell"
-	TradeTypeCancel	 	 = "cancel"
-	TradeTypeHold 		 = "hold"
+	TradeTypeBuy        = "buy"
+	TradeTypeSell       = "sell"
+	TradeTypeLong       = "buy"
+	TradeTypeShort      = "sell"
+	TradeTypeLongClose  = "closeBuy"
+	TradeTypeShortClose = "closeSell"
+	TradeTypeCancel     = "cancel"
+	TradeTypeHold       = "hold"
 )
 
 // some variables
 var (
-	Consts        = []string{"M", "M5", "M15", "M30", "H", "D", "W"}
 	ExchangeTypes = []string{HuobiDm, Fmex}
 )
 

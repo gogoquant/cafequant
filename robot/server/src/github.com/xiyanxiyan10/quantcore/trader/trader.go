@@ -68,9 +68,6 @@ func initialize(id int64) (trader Global, err error) {
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
-	for _, c := range constant.Consts {
-		trader.ctx.Set(c, c)
-	}
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
