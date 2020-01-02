@@ -54,8 +54,8 @@ type Depth struct {
 	ContractType string //for future
 	StockType    string
 	Time         int64
-	AskList      DepthRecords // Descending order
-	BidList      DepthRecords // Descending order
+	Asks         DepthRecords // Descending order
+	Bids         DepthRecords // Descending order
 }
 
 // Order struct

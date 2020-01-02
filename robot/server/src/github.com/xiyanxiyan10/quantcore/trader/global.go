@@ -42,7 +42,7 @@ func (g *Global) Sleep(intervals ...interface{}) {
 		interval = conver.Int64Must(intervals[0])
 	}
 	if interval > 0 {
-		time.Sleep(time.Duration(interval * 1000000))
+		time.Sleep(time.Duration(interval) * time.Millisecond)
 	} else {
 		for _, e := range g.es {
 			e.AutoSleep()

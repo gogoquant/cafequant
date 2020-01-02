@@ -107,11 +107,11 @@ func (e *FutureBackTestExchange) GetName() string {
 	return e.option.Name
 }
 
-func (e *FutureBackTestExchange) GetDepth(size int, stockType string) interface{} {
+func (e *FutureBackTestExchange) GetDepth(size int) interface{} {
 	return false
 }
 
-func (e *FutureBackTestExchange) GetPosition(stockType string) interface{} {
+func (e *FutureBackTestExchange) GetPosition() interface{} {
 	return false
 }
 

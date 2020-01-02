@@ -11,7 +11,7 @@ type Exchange interface {
 	AutoSleep()                                                //自动休眠以满足设置的交易所的API访问频率
 	GetMinAmount(stock string) float64                         //获取交易所的最小交易数量
 	GetAccount() interface{}                                   //获取交易所的账户资金信息
-	GetDepth(size int, stockType string) interface{}           //返回买卖深度表
+	GetDepth(size int) interface{}                             //返回买卖深度表
 	Buy(price, amount string, msg ...interface{}) interface{}  //买
 	Sell(price, amount string, msg ...interface{}) interface{} //卖
 	GetOrder(id string) interface{}                            //返回订单信息
@@ -26,7 +26,7 @@ type Exchange interface {
 	GetDirection() string                                      //获取交易方向
 	SetStockType(stockType string)                             //设置货币类型
 	GetStockType() string                                      //获取货币类型
-	GetPosition(stockType string) interface{}                  //持仓量
+	GetPosition() interface{}                                  //持仓量
 }
 
 var (
