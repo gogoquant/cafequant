@@ -20,11 +20,12 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger  model.Logger   //利用这个对象保存日志
-	ctx     *otto.Otto     //js虚拟机
-	es      []api.Exchange //交易所列表
-	tasks   Tasks          //任务列表
-	running bool
+	Logger     model.Logger   //利用这个对象保存日志
+	ctx        *otto.Otto     //js虚拟机
+	es         []api.Exchange //交易所列表
+	tasks      Tasks          //任务列表
+	running    bool
+	mailServer *conver.MailServer
 	//statusLog string
 }
 
@@ -48,6 +49,63 @@ func (g *Global) Sleep(intervals ...interface{}) {
 			e.AutoSleep()
 		}
 	}
+}
+
+// SetMail ...
+func (g *Global) MailSet(server, portStr, username, password string) interface{} {
+	port, err := conver.Int(portStr)
+	if err != nil {
+		return false
+	}
+	if g.mailServer == nil {
+		return false
+	}
+	g.mailServer.Set(server, port, username, password)
+	return true
+}
+
+// SetMail ...
+func (g *Global) MailSend(msg, to string) interface{} {
+	if g.mailServer == nil {
+		return false
+	}
+	err := g.mailServer.Send(msg, to)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// SetMail ...
+func (g *Global) MailStart() interface{} {
+	if g.mailServer == nil {
+		return false
+	}
+	err := g.mailServer.Start()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// SetMail ...
+func (g *Global) MailStop() interface{} {
+	if g.mailServer == nil {
+		return false
+	}
+	err := g.mailServer.Stop()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+// SetMail ...
+func (g *Global) MailStatus() interface{} {
+	if g.mailServer == nil {
+		return false
+	}
+	return g.mailServer.Status()
 }
 
 // Console ...

@@ -574,9 +574,9 @@ func (fm *FMexSwap) parseOrder(ord interface{}) FutureOrder {
 	order := ord.(map[string]interface{})
 	var orderType int
 	if order["direction"].(string) == "short" {
-		orderType = 1
-	}else{
-		orderType = 0
+		orderType = OPEN_SELL
+	} else {
+		orderType = OPEN_BUY
 	}
 	return FutureOrder{
 		OrderID2:   fmt.Sprintf("%d", ToInt64(order["id"])),
