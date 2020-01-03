@@ -317,6 +317,12 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 		return false
 	}
 	for _, order := range orders {
+		var TradeType string
+		if order.OrderType == 0 {
+			TradeType = constant.TradeTypeBuy
+		} else {
+			TradeType = constant.TradeTypeSell
+		}
 		if id != order.OrderID2 {
 			continue
 		}
@@ -325,7 +331,7 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OrderType],
+			TradeType:  TradeType,
 			StockType:  e.GetStockType(),
 		}
 	}
@@ -339,19 +345,25 @@ func (e *FutureExchange) GetOrders() interface{} {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
 		return false
 	}
-	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.contractType)
+	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetStockType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
 		return false
 	}
 	resOrders := []constant.Order{}
 	for _, order := range orders {
+		var TradeType string
+		if order.OrderType == 0 {
+			TradeType = constant.TradeTypeBuy
+		} else {
+			TradeType = constant.TradeTypeSell
+		}
 		resOrder := constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OType],
+			TradeType:  TradeType,
 			StockType:  e.GetStockType(),
 		}
 		resOrders = append(resOrders, resOrder)
