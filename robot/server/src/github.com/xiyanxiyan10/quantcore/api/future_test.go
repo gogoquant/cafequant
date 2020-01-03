@@ -73,7 +73,7 @@ func TestFuture(t *testing.T) {
 	fmt.Printf("orders %v\n", string(bytes))
 
 	// no order Type in fmex
-	position := exchangeAPI.GetPosition("BTC/USD")
+	position := exchangeAPI.GetPosition()
 	bytes, err = json.Marshal(position)
 	if err != nil {
 		fmt.Println("json.Marshal failed:", err)
@@ -82,7 +82,7 @@ func TestFuture(t *testing.T) {
 	fmt.Printf("position %v\n", string(bytes))
 
 	// no order Type in fmex
-	depth := exchangeAPI.GetDepth(3, "BTC/USD")
+	depth := exchangeAPI.GetDepth(3)
 	bytes, err = json.Marshal(depth)
 	if err != nil {
 		fmt.Println("json.Marshal failed:", err)

@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-// FutureExchange the exchange struct of futureExchange.com
-type FutureExchange struct {
+// SpotExchange the exchange struct of futureExchange.com
+type SpotExchange struct {
 	BaseExchange
 	stockTypeMap        map[string]goex.CurrencyPair
 	stockTypeMapReverse map[goex.CurrencyPair]string
@@ -32,12 +32,12 @@ type FutureExchange struct {
 	lastTimes int64
 
 	apiBuilder *builder.APIBuilder
-	api        goex.FutureRestAPI
+	api        goex.API
 }
 
-// NewFutureExchange create an exchange struct of futureExchange.com
-func NewFutureExchange(opt constant.Option) *FutureExchange {
-	futureExchange := FutureExchange{
+// NewSpotExchange create an exchange struct of futureExchange.com
+func NewSpotExchange(opt constant.Option) *SpotExchange {
+	spotExchange := SpotExchange{
 		stockTypeMap: map[string]goex.CurrencyPair{
 			"BTC/USD": goex.BTC_USD,
 		},
@@ -50,8 +50,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
 		exchangeTypeMap: map[string]string{
-			constant.Fmex:    goex.FMEX,
-			constant.HuoBiDm: goex.HBDM,
+			constant.HuoBi: goex.HUOBI_PRO,
 		},
 		records:   make(map[string][]constant.Record),
 		host:      "https://www.futureExchange.com/api/v1/",
@@ -61,7 +60,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		lastSleep: time.Now().UnixNano(),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
-	futureExchange.SetRecordsPeriodMap(map[string]int{
+	spotExchange.SetRecordsPeriodMap(map[string]int{
 		"M1":  goex.KLINE_PERIOD_1MIN,
 		"M5":  goex.KLINE_PERIOD_5MIN,
 		"M15": goex.KLINE_PERIOD_15MIN,
@@ -72,14 +71,14 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		"D1":  goex.KLINE_PERIOD_1DAY,
 		"W1":  goex.KLINE_PERIOD_1WEEK,
 	})
-	futureExchange.SetMinAmountMap(map[string]float64{
+	spotExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})
-	return &futureExchange
+	return &spotExchange
 }
 
-// GetType get the type of this exchange
-func (e *FutureExchange) Init() error {
+// SpotExchange get the type of this exchange
+func (e *SpotExchange) Init() error {
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
 	}
@@ -96,37 +95,37 @@ func (e *FutureExchange) Init() error {
 		return errors.New("api builder fail")
 	}
 	exchangeName := e.exchangeTypeMap[e.option.Type]
-	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).Build(exchangeName)
 	return nil
 }
 
 // SetStockTypeMap ...
-func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
+func (e *SpotExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
 	e.stockTypeMap = m
 }
 
 // GetStockTypeMap ...
-func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
+func (e *SpotExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
 	return e.stockTypeMap
 }
 
 // Log print something to console
-func (e *FutureExchange) Log(msgs ...interface{}) {
+func (e *SpotExchange) Log(msgs ...interface{}) {
 	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
 }
 
 // GetType get the type of this exchange
-func (e *FutureExchange) GetType() string {
+func (e *SpotExchange) GetType() string {
 	return e.option.Type
 }
 
 // GetName get the name of this exchange
-func (e *FutureExchange) GetName() string {
+func (e *SpotExchange) GetName() string {
 	return e.option.Name
 }
 
 // GetDepth ...
-func (e *FutureExchange) GetDepth(size int) interface{} {
+func (e *SpotExchange) GetDepth(size int) interface{} {
 	var resDepth constant.Depth
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -134,7 +133,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
 		return false
 	}
-	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
+	depth, err := e.api.GetDepth(size, exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
 		return false
@@ -156,54 +155,18 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 }
 
 // GetPosition ...
-func (e *FutureExchange) GetPosition() interface{} {
-	resPositionVec := []constant.Position{}
-	stockType := e.GetStockType()
-	exchangeStockType, ok := e.stockTypeMap[stockType]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is stockType")
-		return false
-	}
-	positions, err := e.api.GetFuturePosition(exchangeStockType, e.GetContractType())
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is ", err.Error())
-		return false
-	}
-	for _, position := range positions {
-		var resPosition constant.Position
-		if position.BuyAmount > 0 {
-			resPosition.Price = position.BuyPriceAvg
-			resPosition.Amount = position.BuyAmount
-			resPosition.MarginLevel = position.LeverRate
-			resPosition.Profit = position.BuyProfitReal
-			resPosition.ForcePrice = position.ForceLiquPrice
-			resPosition.TradeType = constant.TradeTypeBuy
-			resPosition.ContractType = position.ContractType
-			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositionVec = append(resPositionVec, resPosition)
-		}
-		if position.SellAmount > 0 {
-			resPosition.Price = position.SellPriceAvg
-			resPosition.Amount = position.SellAmount
-			resPosition.MarginLevel = position.LeverRate
-			resPosition.ForcePrice = position.ForceLiquPrice
-			resPosition.TradeType = constant.TradeTypeSell
-			resPosition.ContractType = e.contractType
-			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositionVec = append(resPositionVec, resPosition)
-		}
-	}
-	return resPositionVec
+func (e *SpotExchange) GetPosition() interface{} {
+	return false
 }
 
 // SetLimit set the limit calls amount per second of this exchange
-func (e *FutureExchange) SetLimit(times interface{}) float64 {
+func (e *SpotExchange) SetLimit(times interface{}) float64 {
 	e.limit = conver.Float64Must(times)
 	return e.limit
 }
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
-func (e *FutureExchange) AutoSleep() {
+func (e *SpotExchange) AutoSleep() {
 	now := time.Now().UnixNano()
 	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
@@ -214,56 +177,48 @@ func (e *FutureExchange) AutoSleep() {
 }
 
 // GetMinAmount get the min trade amount of this exchange
-func (e *FutureExchange) GetMinAmount(stock string) float64 {
+func (e *SpotExchange) GetMinAmount(stock string) float64 {
 	return e.minAmountMap[stock]
 }
 
 // GetAccount get the account detail of this exchange
-func (e *FutureExchange) GetAccount() interface{} {
-	account, err := e.api.GetFutureUserinfo()
+func (e *SpotExchange) GetAccount() interface{} {
+	account, err := e.api.GetAccount()
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetAccount() error, the error number is ", err.Error())
 		return false
 	}
 	var resAccount constant.Account
 	resAccount.SubAccounts = make(map[string]constant.SubAccount)
-	for k, v := range account.FutureSubAccounts {
+	for k, v := range account.SubAccounts {
 		var subAccount constant.SubAccount
 		stockType := k.Symbol
-		subAccount.AccountRights = v.AccountRights
-		subAccount.KeepDeposit = v.KeepDeposit
-		subAccount.ProfitReal = v.ProfitReal
-		subAccount.ProfitUnreal = v.ProfitUnreal
-		subAccount.RiskRate = v.RiskRate
+		subAccount.Amount = v.Amount
+		subAccount.FrozenAmount = v.ForzenAmount
+		subAccount.LoanAmount = v.LoanAmount
 		resAccount.SubAccounts[stockType] = subAccount
 	}
 	return resAccount
 }
 
-func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface{} {
+func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{} {
 	var err error
-	var openType int
+	var order *goex.Order
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is stockType")
 		return false
 	}
-	level := e.GetMarginLevel()
 	var matchPrice = 0
 	if price == "-1" {
 		matchPrice = 1
 	}
-	if e.direction == constant.TradeTypeLong {
-		openType = goex.OPEN_BUY
-	} else if e.direction == constant.TradeTypeShortClose {
-		openType = goex.CLOSE_SELL
+	if matchPrice == 1 {
+		order, err = e.api.MarketBuy(amount, price, exchangeStockType)
 	} else {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is tradeType")
-		return false
+		order, err = e.api.LimitBuy(amount, price, exchangeStockType)
 	}
-	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
-		price, amount, openType, matchPrice, level)
 
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
@@ -272,33 +227,27 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
-	return orderId
+	return order.Cid
 }
 
-func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interface{} {
+func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{} {
 	var err error
-	var openType int
+	var order *goex.Order
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is stockType")
 		return false
 	}
-	level := e.GetMarginLevel()
 	var matchPrice = 0
 	if price == "-1" {
 		matchPrice = 1
 	}
-	if e.direction == constant.TradeTypeShort {
-		openType = goex.OPEN_SELL
-	} else if e.direction == constant.TradeTypeLongClose {
-		openType = goex.CLOSE_BUY
+	if matchPrice == 1 {
+		order, err = e.api.MarketSell(amount, price, exchangeStockType)
 	} else {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is tradeType")
-		return false
+		order, err = e.api.LimitSell(amount, price, exchangeStockType)
 	}
-	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
-		price, amount, openType, matchPrice, level)
 
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
@@ -307,51 +256,47 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interfac
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
-	return orderId
+	return order.Cid
 }
 
 // GetOrder get details of an order
-func (e *FutureExchange) GetOrder(id string) interface{} {
+func (e *SpotExchange) GetOrder(id string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id), "GetOrder() error, the error number is stockType")
 		return false
 	}
-	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetContractType())
+	order, err := e.api.GetOneOrder(id, exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
 		return false
 	}
-	for _, order := range orders {
-		var TradeType string
-		if order.OrderType == goex.OPEN_BUY {
-			TradeType = constant.TradeTypeBuy
-		} else {
-			TradeType = constant.TradeTypeSell
-		}
-		if id != order.OrderID2 {
-			continue
-		}
-		return constant.Order{
-			Id:         order.OrderID2,
-			Price:      order.Price,
-			Amount:     order.Amount,
-			DealAmount: order.DealAmount,
-			TradeType:  TradeType,
-			StockType:  e.GetStockType(),
-		}
+
+	var TradeType string
+	if order.OrderType == goex.OPEN_BUY {
+		TradeType = constant.TradeTypeBuy
+	} else {
+		TradeType = constant.TradeTypeSell
 	}
-	return false
+
+	return constant.Order{
+		Id:         order.OrderID2,
+		Price:      order.Price,
+		Amount:     order.Amount,
+		DealAmount: order.DealAmount,
+		TradeType:  TradeType,
+		StockType:  e.GetStockType(),
+	}
 }
 
 // GetOrders get all unfilled orders
-func (e *FutureExchange) GetOrders() interface{} {
+func (e *SpotExchange) GetOrders() interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
 		return false
 	}
-	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetStockType())
+	orders, err := e.api.GetUnfinishOrders(exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
 		return false
@@ -378,14 +323,14 @@ func (e *FutureExchange) GetOrders() interface{} {
 }
 
 // GetTrades get all filled orders recently
-func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
+func (e *SpotExchange) GetTrades(params ...interface{}) interface{} {
 	var traders []constant.Trader
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
 		return false
 	}
-	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
+	APITraders, err := e.api.GetTrades(exchangeStockType, 0)
 	if err != nil {
 		return false
 	}
@@ -404,13 +349,13 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 }
 
 // CancelOrder cancel an order
-func (e *FutureExchange) CancelOrder(orderID string) bool {
+func (e *SpotExchange) CancelOrder(orderID string) bool {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
 		return false
 	}
-	result, err := e.api.FutureCancelOrder(exchangeStockType, e.GetContractType(), orderID)
+	result, err := e.api.CancelOrder(orderID, exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
 		return false
@@ -423,13 +368,13 @@ func (e *FutureExchange) CancelOrder(orderID string) bool {
 }
 
 // GetTicker get market ticker
-func (e *FutureExchange) GetTicker() interface{} {
+func (e *SpotExchange) GetTicker() interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetTicker() error, the error number is stockType")
 		return false
 	}
-	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
+	exTicker, err := e.api.GetTicker(exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
 		return false
@@ -452,7 +397,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 // params[0] period
 // params[1] size
 // params[2] since
-func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
+func (e *SpotExchange) GetRecords(params ...interface{}) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period = -1
 	var size = 0
@@ -477,7 +422,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 		since = conver.IntMust(params[2])
 	}
 
-	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, period, size, since)
+	klineVec, err := e.api.GetKlineRecords(exchangeStockType, period, size, since)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
 		return false
@@ -497,7 +442,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 				High:   kline.High,
 				Low:    kline.Low,
 				Close:  kline.Close,
-				Volume: kline.Vol2,
+				Volume: kline.Vol,
 			}}, recordsNew...)
 		} else if timeLast > 0 && recordTime == timeLast {
 			e.records[periodStr][len(e.records[periodStr])-1] = constant.Record{
@@ -506,7 +451,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 				High:   kline.High,
 				Low:    kline.Low,
 				Close:  kline.Close,
-				Volume: kline.Vol2,
+				Volume: kline.Vol,
 			}
 		} else {
 			break

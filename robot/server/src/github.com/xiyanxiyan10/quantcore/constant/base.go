@@ -42,6 +42,9 @@ type SubAccount struct {
 	ProfitReal    float64 //已实现盈亏
 	ProfitUnreal  float64
 	RiskRate      float64 //保证金率
+	Amount        float64
+	FrozenAmount  float64
+	LoanAmount    float64
 }
 
 type Account struct {

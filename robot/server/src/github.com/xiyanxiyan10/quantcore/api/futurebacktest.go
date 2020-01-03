@@ -42,10 +42,9 @@ func NewFutureBackTestExchange(opt constant.Option) *FutureExchange {
 			goex.CLOSE_BUY:  constant.TradeTypeLongClose,
 			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
-
 		exchangeTypeMap: map[string]string{
 			constant.Fmex:    goex.FMEX,
-			constant.HuobiDm: goex.HBDM,
+			constant.HuoBiDm: goex.HBDM,
 		},
 		records:   make(map[string][]constant.Record),
 		host:      "https://www.futureExchange.com/api/v1/",

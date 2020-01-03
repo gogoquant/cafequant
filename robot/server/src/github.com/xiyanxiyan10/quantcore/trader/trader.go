@@ -16,8 +16,9 @@ var (
 	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
 	errHalt       = fmt.Errorf("HALT")
 	exchangeMaker = map[string]func(constant.Option) api.Exchange{ //保存所有交易所的构造函数
-		constant.HuobiDm: api.NewHuobiDmExchange,
+		constant.HuoBiDm: api.NewHuoBiDmExchange,
 		constant.Fmex:    api.NewFmexExchange,
+		constant.HuoBi:   api.NewHuoBiExchange,
 	}
 )
 
