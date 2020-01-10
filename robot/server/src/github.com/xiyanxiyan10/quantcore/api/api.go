@@ -24,6 +24,8 @@ type Exchange interface {
 	GetContractType() string                                   //获取合约周期
 	SetDirection(direction string)                             //设置交易方向
 	GetDirection() string                                      //获取交易方向
+	SetMarginLevel(lever int)                                  //杠杆设置
+	GetMarginLevel() int                                       //获取杠杆
 	SetStockType(stockType string)                             //设置货币类型
 	GetStockType() string                                      //获取货币类型
 	GetPosition() interface{}                                  //持仓量

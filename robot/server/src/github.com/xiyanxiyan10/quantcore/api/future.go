@@ -78,6 +78,30 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 	return &futureExchange
 }
 
+// ValidBuy ...
+func (e *FutureExchange) ValidBuy() error {
+	dir := e.GetDirection()
+	if dir == constant.TradeTypeBuy {
+		return nil
+	}
+	if dir == constant.TradeTypeShortClose {
+		return nil
+	}
+	return errors.New("错误buy交易方向: " + e.GetDirection())
+}
+
+// ValidSell ...
+func (e *FutureExchange) ValidSell() error {
+	dir := e.GetDirection()
+	if dir == constant.TradeTypeSell {
+		return nil
+	}
+	if dir == constant.TradeTypeLongClose {
+		return nil
+	}
+	return errors.New("错误sell交易方向:" + e.GetDirection())
+}
+
 // GetType get the type of this exchange
 func (e *FutureExchange) Init() error {
 	for k, v := range e.stockTypeMap {
@@ -227,9 +251,9 @@ func (e *FutureExchange) GetAccount() interface{} {
 	}
 	var resAccount constant.Account
 	resAccount.SubAccounts = make(map[string]constant.SubAccount)
-	for k, v := range account.FutureSubAccounts {
+	for _, v := range account.FutureSubAccounts {
 		var subAccount constant.SubAccount
-		stockType := k.Symbol
+		stockType := v.Currency.Symbol
 		subAccount.AccountRights = v.AccountRights
 		subAccount.KeepDeposit = v.KeepDeposit
 		subAccount.ProfitReal = v.ProfitReal
@@ -249,19 +273,16 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is stockType")
 		return false
 	}
+	if err := e.ValidBuy(); err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		return false
+	}
 	level := e.GetMarginLevel()
 	var matchPrice = 0
 	if price == "-1" {
 		matchPrice = 1
 	}
-	if e.direction == constant.TradeTypeLong {
-		openType = goex.OPEN_BUY
-	} else if e.direction == constant.TradeTypeShortClose {
-		openType = goex.CLOSE_SELL
-	} else {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is tradeType")
-		return false
-	}
+	openType = e.tradeTypeMapReverse[e.GetDirection()]
 	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
 		price, amount, openType, matchPrice, level)
 
@@ -284,19 +305,16 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interfac
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is stockType")
 		return false
 	}
+	if err := e.ValidSell(); err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		return false
+	}
 	level := e.GetMarginLevel()
 	var matchPrice = 0
 	if price == "-1" {
 		matchPrice = 1
 	}
-	if e.direction == constant.TradeTypeShort {
-		openType = goex.OPEN_SELL
-	} else if e.direction == constant.TradeTypeLongClose {
-		openType = goex.CLOSE_BUY
-	} else {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is tradeType")
-		return false
-	}
+	openType = e.tradeTypeMapReverse[e.GetDirection()]
 	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
 		price, amount, openType, matchPrice, level)
 
@@ -323,12 +341,6 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 		return false
 	}
 	for _, order := range orders {
-		var TradeType string
-		if order.OrderType == goex.OPEN_BUY {
-			TradeType = constant.TradeTypeBuy
-		} else {
-			TradeType = constant.TradeTypeSell
-		}
 		if id != order.OrderID2 {
 			continue
 		}
@@ -337,7 +349,7 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  TradeType,
+			TradeType:  e.tradeTypeMap[order.OrderType],
 			StockType:  e.GetStockType(),
 		}
 	}
@@ -358,18 +370,12 @@ func (e *FutureExchange) GetOrders() interface{} {
 	}
 	resOrders := []constant.Order{}
 	for _, order := range orders {
-		var TradeType string
-		if order.OrderType == goex.OPEN_BUY {
-			TradeType = constant.TradeTypeBuy
-		} else {
-			TradeType = constant.TradeTypeSell
-		}
 		resOrder := constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  TradeType,
+			TradeType:  e.tradeTypeMap[order.OrderType],
 			StockType:  e.GetStockType(),
 		}
 		resOrders = append(resOrders, resOrder)
