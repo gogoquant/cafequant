@@ -3,13 +3,15 @@ import { LogList } from '../actions/log';
 import React from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
-import { Button, Table, Tag, notification } from 'antd';
+import { Button, Table, Tag, notification, Switch } from 'antd';
 
 class Log extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      sync: false,
+      syncTime: 2000,
       messageErrorKey: '',
       pagination: {
         pageSize: 12,
@@ -20,6 +22,7 @@ class Log extends React.Component {
     };
 
     this.reload = this.reload.bind(this);
+    this.handleSync = this.handleSync.bind(this);
     this.handleTableChange = this.handleTableChange.bind(this);
   }
 
@@ -59,6 +62,8 @@ class Log extends React.Component {
 
   componentWillUnmount() {
     notification.destroy();
+    this.syncTimer && clearTimeout(this.syncTimer);
+    this.syncTimer = null;
   }
 
   reload() {
@@ -79,6 +84,24 @@ class Log extends React.Component {
 
   handleCancel() {
     browserHistory.push('/algorithm');
+  }
+
+  handleSync(sync) {
+    if (sync === this.state.sync) {
+      return;
+    }
+    console.log(sync);
+    if (sync === true) {
+      this.state.pagination.current = 0;
+      this.syncTimer = setInterval(
+        () => this.reload(),
+        this.state.syncTime
+      );
+    } else {
+      this.syncTimer && clearTimeout(this.syncTimer);
+      this.syncTimer = null;
+    }
+    this.state.sync = sync;
   }
 
   render() {
@@ -123,6 +146,7 @@ class Log extends React.Component {
         <div className="table-operations">
           <Button type="primary" onClick={this.reload}>Reload</Button>
           <Button type="ghost" onClick={this.handleCancel}>Back</Button>
+          <Switch checkedChildren="sync" unCheckedChildren="" onChange={this.handleSync}/>
         </div>
         <Table rowKey="id"
           columns={columns}
