@@ -5,6 +5,10 @@ import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 import { Button, Table, Tag, notification, Switch } from 'antd';
 
+function PrefixInteger(num, m) {
+  return (num + Array(m).join(0)).slice(0, m);
+}
+
 class Log extends React.Component {
   constructor(props) {
     super(props);
@@ -117,7 +121,7 @@ class Log extends React.Component {
       width: 160,
       title: 'Time',
       dataIndex: 'time',
-      render: (v) => v.toLocaleString(),
+      render: (v) => v.toLocaleString() + '.' + PrefixInteger(v.getMilliseconds(), 3).toString(),
     }, {
       width: 100,
       title: 'Exchange',
