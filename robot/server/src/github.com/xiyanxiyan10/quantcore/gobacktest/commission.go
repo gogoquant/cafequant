@@ -23,20 +23,20 @@ func (c *FixedCommission) Calculate(qty, price float64) (float64, error) {
 	return c.Commission, nil
 }
 
-// TresholdFixedCommission is a commission handler implementation which returns a fixed price commission
-// if the value of the trade is above a set treshold
-type TresholdFixedCommission struct {
+// ThresholdFixedCommission is a commission handler implementation which returns a fixed price commission
+// if the value of the trade is above a set threshold
+type ThresholdFixedCommission struct {
 	Commission float64
 	MinValue   float64
 }
 
 // Calculate calculates the commission of the trade
-func (c *TresholdFixedCommission) Calculate(qty, price float64) (float64, error) {
+func (c *ThresholdFixedCommission) Calculate(qty, price float64) (float64, error) {
 	// no trade value, no commission
 	if qty == 0 || price == 0 {
 		return 0, nil
 	}
-	// minimum value of trade below treshold
+	// minimum value of trade below threshold
 	if c.MinValue > (qty * price) {
 		return 0, nil
 	}
