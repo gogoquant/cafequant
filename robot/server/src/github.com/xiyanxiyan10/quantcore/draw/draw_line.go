@@ -58,7 +58,7 @@ func (p *LineService) Draw() error {
 				return
 			}
 		} else {
-			os.Remove(DrawPath)
+			_ = os.Remove(DrawPath)
 		}
 		file, err := os.Create(DrawPath)
 		if err != nil {
