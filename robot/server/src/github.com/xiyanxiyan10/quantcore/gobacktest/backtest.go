@@ -39,37 +39,37 @@ func New() *BackTest {
 	}
 }
 
-// SetSymbols sets the symbols to include into the backtest.
+// SetSymbols sets the symbols to include into the backTest.
 func (t *BackTest) SetSymbols(symbols []string) {
 	t.symbols = symbols
 }
 
-// SetData sets the data provider to be used within the backtest.
+// SetData sets the data provider to be used within the backTest.
 func (t *BackTest) SetData(data DataHandler) {
 	t.data = data
 }
 
-// SetStrategy sets the strategy provider to be used within the backtest.
+// SetStrategy sets the strategy provider to be used within the backTest.
 func (t *BackTest) SetStrategy(strategy StrategyHandler) {
 	t.strategy = strategy
 }
 
-// SetPortfolio sets the portfolio provider to be used within the backtest.
+// SetPortfolio sets the portfolio provider to be used within the backTest.
 func (t *BackTest) SetPortfolio(portfolio PortfolioHandler) {
 	t.portfolio = portfolio
 }
 
-// SetExchange sets the execution provider to be used within the backtest.
+// SetExchange sets the execution provider to be used within the backTest.
 func (t *BackTest) SetExchange(exchange ExecutionHandler) {
 	t.exchange = exchange
 }
 
-// SetStatistic sets the statistic provider to be used within the backtest.
+// SetStatistic sets the statistic provider to be used within the backTest.
 func (t *BackTest) SetStatistic(statistic StatisticHandler) {
 	t.statistic = statistic
 }
 
-// Reset the backtest into a clean state with loaded data.
+// Reset the backTest into a clean state with loaded data.
 func (t *BackTest) Reset() error {
 	t.eventQueue = nil
 	t.data.Reset()
@@ -78,7 +78,7 @@ func (t *BackTest) Reset() error {
 	return nil
 }
 
-// Stats returns the statistic handler of the backtest.
+// Stats returns the statistic handler of the backTest.
 func (t *BackTest) Stats() StatisticHandler {
 	return t.statistic
 }
@@ -116,7 +116,7 @@ func (t *BackTest) Run() error {
 		t.statistic.TrackEvent(event)
 	}
 
-	// teardown at the end of the backtest
+	// teardown at the end of the backTest
 	err = t.teardown()
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (t *BackTest) Run2Next(next time.Time) (DataEvent, error) {
 	return nil, nil
 }
 
-// setup runs at the beginning of the backtest to perfom preparing operations.
+// setup runs at the beginning of the backTest to perform preparing operations.
 func (t *BackTest) setup() error {
 	// before first run, set portfolio cash
 	t.portfolio.SetCash(t.portfolio.InitialCash())
@@ -180,7 +180,7 @@ func (t *BackTest) setup() error {
 	return nil
 }
 
-// teardown performs any cleaning operations at the end of the backtest.
+// teardown performs any cleaning operations at the end of the backTest.
 func (t *BackTest) teardown() error {
 	// no implementation yet
 	return nil
