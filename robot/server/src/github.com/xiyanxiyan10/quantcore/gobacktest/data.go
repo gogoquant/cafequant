@@ -40,7 +40,7 @@ func (d *Data) Load(s []string) error {
 	return nil
 }
 
-// Reset implements Reseter to reset the data struct to a clean state with loaded data events.
+// Reset implements Reset to reset the data struct to a clean state with loaded data events.
 func (d *Data) Reset() error {
 	d.latest = nil
 	d.list = nil
@@ -168,7 +168,7 @@ type TickEvent interface {
 	Spreader
 }
 
-// Spreader declares functionality to get spre spread of a tick.
+// Spreader declares functionality to get spread of a tick.
 type Spreader interface {
 	Spread() float64
 }
