@@ -3,7 +3,7 @@ package draw
 // Draw draw interface
 type LineDrawer interface {
 	//  PlotKLine draw line of the pic
-	PlotKLine(data klineData)
+	PlotKLine(data KlineData)
 	//  PlotLine draw kline of the pic
 	PlotLine(name string, data LineData)
 	//  reset pic
@@ -17,10 +17,9 @@ type LineDrawer interface {
 }
 
 // GetLineDrawer ...
-func GetLineDrawer(path string) LineDrawer {
+func GetLineDrawer() LineDrawer {
 	var draw LineService
-	draw.kline = []klineData{}
+	draw.kline = []KlineData{}
 	draw.line = make(map[string][]LineData)
-	draw.SetPath(path)
 	return &draw
 }

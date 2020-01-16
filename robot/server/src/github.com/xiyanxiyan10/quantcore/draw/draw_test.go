@@ -3,10 +3,12 @@ package draw
 import (
 	"fmt"
 	"testing"
+	"time"
 )
 
 func TestDraw(*testing.T) {
-	draw := GetLineDrawer("/tmp/line.html")
+	draw := GetLineDrawer()
+	draw.SetPath("/tmp/line.html")
 
 	var klineVec = [...]klineData{
 		{date: "2018/1/24 09:09:09", data: [4]float32{2320.26, 2320.26, 2287.3, 2362.94}},
@@ -104,41 +106,25 @@ func TestDraw(*testing.T) {
 	}
 
 	var lineVec = [...]LineData{
-		{date: "2018/1/24", data: 2320.26},
-		{date: "2018/1/24", data: 2420.26},
-		{date: "2018/1/24", data: 2520.26},
-		{date: "2018/1/24", data: 2620.26},
-		{date: "2018/1/24", data: 2720.26},
-		{date: "2018/1/24", data: 2820.26},
-		{date: "2018/1/24", data: 2720.26},
-		{date: "2018/1/24", data: 2620.26},
-		{date: "2018/1/24", data: 2520.26},
-		{date: "2018/1/24", data: 2420.26},
-		{date: "2018/1/24", data: 2320.26},
-		{date: "2018/1/24", data: 2220.26},
-		{date: "2018/1/24", data: 2120.26},
-		{date: "2018/1/24", data: 2020.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 1320.26},
-		{date: "2018/1/24", data: 3320.26},
+		{date: "2018/1/24 09:09:09", data: 2360.26},
+		{date: "2018/1/24 10:09:09", data: 2420.26},
+		{date: "2018/1/24 11:09:09", data: 2620.26},
+		{date: "2018/1/24 12:09:09", data: 2520.26},
+		{date: "2018/1/24 11:09:09", data: 2120.26},
+		{date: "2018/1/24 09:09:09", data: 2920.26},
 	}
 	for _, kline := range klineVec {
 		draw.PlotKLine(kline)
 	}
 
 	for _, line := range lineVec {
-		draw.PlotLine("mm", line)
+		draw.PlotLine("mm5", line)
 	}
 	for _, line := range lineVec {
-		draw.PlotLine("mm1", line)
+		draw.PlotLine("mm3", line)
 	}
 	if err := draw.Draw(); err != nil {
 		fmt.Printf("%s\n", err.Error())
 	}
+	time.Sleep(30 * time.Minute)
 }

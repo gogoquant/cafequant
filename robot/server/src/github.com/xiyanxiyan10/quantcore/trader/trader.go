@@ -2,6 +2,7 @@ package trader
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/quantcore/draw"
 	conver "github.com/xiyanxiyan10/quantcore/util"
 	"time"
 
@@ -71,6 +72,7 @@ func initialize(id int64) (trader Global, err error) {
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mailServer = conver.NewMailServer(5, 3)
+	trader.lineDrawer = draw.GetLineDrawer()
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{

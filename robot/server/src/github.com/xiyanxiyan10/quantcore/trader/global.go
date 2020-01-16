@@ -11,6 +11,7 @@ import (
 	"github.com/robertkrimen/otto"
 	"github.com/xiyanxiyan10/quantcore/api"
 	"github.com/xiyanxiyan10/quantcore/constant"
+	"github.com/xiyanxiyan10/quantcore/draw"
 	"github.com/xiyanxiyan10/quantcore/model"
 	"github.com/xiyanxiyan10/quantcore/util"
 )
@@ -25,7 +26,8 @@ type Global struct {
 	es         []api.Exchange //交易所列表
 	tasks      Tasks          //任务列表
 	running    bool
-	mailServer *conver.MailServer
+	mailServer *conver.MailServer // 邮件发送
+	lineDrawer draw.LineDrawer    // 图标绘制
 	//statusLog string
 }
 
@@ -51,7 +53,7 @@ func (g *Global) Sleep(intervals ...interface{}) {
 	}
 }
 
-// SetMail ...
+// MailSet ...
 func (g *Global) MailSet(server, portStr, username, password string) interface{} {
 	port, err := conver.Int(portStr)
 	if err != nil {
@@ -64,7 +66,7 @@ func (g *Global) MailSet(server, portStr, username, password string) interface{}
 	return true
 }
 
-// SetMail ...
+// MailSend ...
 func (g *Global) MailSend(msg, to string) interface{} {
 	if g.mailServer == nil {
 		return false
@@ -100,12 +102,47 @@ func (g *Global) MailStop() interface{} {
 	return true
 }
 
-// SetMail ...
+// MailStatus ...
 func (g *Global) MailStatus() interface{} {
 	if g.mailServer == nil {
 		return false
 	}
 	return g.mailServer.Status()
+}
+
+// LineDrawSetPath ...
+func (g *Global) LineDrawSetPath(path string) interface{} {
+	g.lineDrawer.SetPath(path)
+	return true
+}
+
+// LineDrawGetPath ...
+func (g *Global) LineDrawGetPath() interface{} {
+	return g.lineDrawer.GetPath()
+}
+
+// LineDrawReset ...
+func (g *Global) LineDrawReset() interface{} {
+	g.lineDrawer.Reset()
+	return true
+}
+
+// LineDrawKline ...
+func (g *Global) LineDrawKline(data draw.KlineData) interface{} {
+	g.lineDrawer.PlotKLine(data)
+	return true
+}
+
+// LineDrawKline ...
+func (g *Global) LineDrawLine(name string, data draw.LineData) interface{} {
+	g.lineDrawer.PlotLine(name, data)
+	return true
+}
+
+// LineDrawPlot ...
+func (g *Global) LineDrawPlot() interface{} {
+	g.lineDrawer.Draw()
+	return true
 }
 
 // Console ...
