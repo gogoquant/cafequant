@@ -6,8 +6,8 @@ import "time"
 // used after calculations to format
 const DP = 4 // DP
 
-// Reseter provides a resting interface.
-type Reseter interface {
+// Reset provides a resting interface.
+type ResetHandler interface {
 	Reset() error
 }
 
@@ -22,7 +22,7 @@ type BackTest struct {
 	eventQueue []EventHandler
 }
 
-// New creates a default backtest with sensible defaults ready for use.
+// New creates a default backTest with sensible defaults ready for use.
 func New() *BackTest {
 	return &BackTest{
 		portfolio: &Portfolio{

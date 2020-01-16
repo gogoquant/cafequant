@@ -8,7 +8,7 @@ import (
 type DataHandler interface {
 	DataLoader
 	DataStreamer
-	Reseter
+	ResetHandler
 }
 
 // DataLoader defines how to load data into the data stream.
@@ -62,7 +62,7 @@ func (d *Data) SetStream(stream []DataEvent) {
 // Next returns the first element of the data stream,
 // deletes it from the data stream and appends it to the historic data stream.
 func (d *Data) Next() (dh DataEvent, ok bool) {
-	// check for element in datastream
+	// check for element in dataStream
 	if len(d.stream) == 0 {
 		return dh, false
 	}
@@ -133,11 +133,11 @@ func (d *Data) updateList(event DataEvent) {
 type DataEvent interface {
 	EventHandler
 	MetricHandler
-	Pricer
+	PriceHandler
 }
 
-// Pricer defines the handling otf the latest Price Information
-type Pricer interface {
+// PriceHandler defines the handling otf the latest Price Information
+type PriceHandler interface {
 	Price() float64
 }
 
@@ -146,7 +146,7 @@ type BarEvent interface {
 	DataEvent
 }
 
-// Bar declares a data event for an OHLCV bar.
+// Bar declares a data event for an bar.
 type Bar struct {
 	Event
 	Metric

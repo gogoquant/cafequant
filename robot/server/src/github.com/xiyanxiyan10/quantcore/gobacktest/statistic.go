@@ -14,7 +14,7 @@ type StatisticHandler interface {
 	EventTracker
 	TransactionTracker
 	StatisticPrinter
-	Reseter
+	ResetHandler
 	StatisticUpdater
 	Resulter
 }

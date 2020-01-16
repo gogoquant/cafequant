@@ -11,7 +11,7 @@ type PortfolioHandler interface {
 	Updater
 	Casher
 	Valuer
-	Reseter
+	ResetHandler
 }
 
 // OnMarry marry orders

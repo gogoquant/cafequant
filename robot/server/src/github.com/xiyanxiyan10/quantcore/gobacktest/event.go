@@ -7,7 +7,7 @@ import (
 // EventHandler declares the basic event interface
 type EventHandler interface {
 	Timer
-	Symboler
+	SymbolHandler
 }
 
 // Timer declares the timer interface
@@ -16,8 +16,8 @@ type Timer interface {
 	SetTime(time.Time)
 }
 
-// Symboler declares the symboler interface
-type Symboler interface {
+// SymbolHandler declares the symbol interface
+type SymbolHandler interface {
 	Symbol() string
 	SetSymbol(string)
 }
@@ -54,11 +54,11 @@ type SignalEvent interface {
 	EventHandler
 	SignalPricer
 	Quantifier
-	Directioner
+	DirectionHandler
 }
 
 // Directioner defines a direction interface
-type Directioner interface {
+type DirectionHandler interface {
 	Direction() Direction
 	SetDirection(Direction)
 }
@@ -66,7 +66,7 @@ type Directioner interface {
 // OrderEvent declares the order event interface.
 type OrderEvent interface {
 	EventHandler
-	Directioner
+	DirectionHandler
 	Quantifier
 	IDer
 	SignalPricer
@@ -96,7 +96,7 @@ type IDer interface {
 // FillEvent declares fill event functionality.
 type FillEvent interface {
 	EventHandler
-	Directioner
+	DirectionHandler
 	Quantifier
 	Price() float64
 	Commission() float64
