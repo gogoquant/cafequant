@@ -116,16 +116,16 @@ func (e *FutureBackTestExchange) GetPosition() interface{} {
 
 // SetLimit set the limit calls amount per second of this exchange
 func (e *FutureBackTestExchange) SetLimit(times interface{}) float64 {
-	e.limit = conver.Float64Must(times)
+	e.limit = util.Float64Must(times)
 	return e.limit
 }
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
 func (e *FutureBackTestExchange) AutoSleep() {
 	now := time.Now().UnixNano()
-	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
+	interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
-		time.Sleep(time.Duration(conver.Int64Must(interval)))
+		time.Sleep(time.Duration(util.Int64Must(interval)))
 	}
 	e.lastTimes = 0
 	e.lastSleep = now

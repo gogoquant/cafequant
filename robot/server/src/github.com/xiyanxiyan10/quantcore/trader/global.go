@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"github.com/xiyanxiyan10/quantcore/util"
 	//"encoding/json"
 	//"fmt"
 	"log"
@@ -13,7 +14,7 @@ import (
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/draw"
 	"github.com/xiyanxiyan10/quantcore/model"
-	"github.com/xiyanxiyan10/quantcore/util"
+	"github.com/xiyanxiyan10/quantcore/notice"
 )
 
 type Tasks map[string][]task
@@ -26,7 +27,7 @@ type Global struct {
 	es         []api.Exchange //交易所列表
 	tasks      Tasks          //任务列表
 	running    bool
-	mailServer *conver.MailServer // 邮件发送
+	mailNotice notice.MailNotice // 邮件发送
 	lineDrawer draw.LineDrawer    // 图标绘制
 	//statusLog string
 }
@@ -42,7 +43,7 @@ type task struct {
 func (g *Global) Sleep(intervals ...interface{}) {
 	interval := int64(0)
 	if len(intervals) > 0 {
-		interval = conver.Int64Must(intervals[0])
+		interval = util.Int64Must(intervals[0])
 	}
 	if interval > 0 {
 		time.Sleep(time.Duration(interval) * time.Millisecond)
@@ -55,23 +56,17 @@ func (g *Global) Sleep(intervals ...interface{}) {
 
 // MailSet ...
 func (g *Global) MailSet(server, portStr, username, password string) interface{} {
-	port, err := conver.Int(portStr)
+	port, err := util.Int(portStr)
 	if err != nil {
 		return false
 	}
-	if g.mailServer == nil {
-		return false
-	}
-	g.mailServer.Set(server, port, username, password)
+	g.mailNotice.Set(server, port, username, password)
 	return true
 }
 
 // MailSend ...
 func (g *Global) MailSend(msg, to string) interface{} {
-	if g.mailServer == nil {
-		return false
-	}
-	err := g.mailServer.Send(msg, to)
+	err := g.mailNotice.Send(msg, to)
 	if err != nil {
 		return false
 	}
@@ -80,10 +75,7 @@ func (g *Global) MailSend(msg, to string) interface{} {
 
 // SetMail ...
 func (g *Global) MailStart() interface{} {
-	if g.mailServer == nil {
-		return false
-	}
-	err := g.mailServer.Start()
+	err := g.mailNotice.Start()
 	if err != nil {
 		return false
 	}
@@ -92,10 +84,7 @@ func (g *Global) MailStart() interface{} {
 
 // SetMail ...
 func (g *Global) MailStop() interface{} {
-	if g.mailServer == nil {
-		return false
-	}
-	err := g.mailServer.Stop()
+	err := g.mailNotice.Stop()
 	if err != nil {
 		return false
 	}
@@ -104,10 +93,7 @@ func (g *Global) MailStop() interface{} {
 
 // MailStatus ...
 func (g *Global) MailStatus() interface{} {
-	if g.mailServer == nil {
-		return false
-	}
-	return g.mailServer.Status()
+	return g.mailNotice.Status()
 }
 
 // LineDrawSetPath ...
@@ -159,7 +145,7 @@ func (g *Global) Log(msgs ...interface{}) {
 func (g *Global) LogProfit(msgs ...interface{}) {
 	profit := 0.0
 	if len(msgs) > 0 {
-		profit = conver.Float64Must(msgs[0])
+		profit = util.Float64Must(msgs[0])
 	}
 	g.Logger.Log(constant.PROFIT, "", 0.0, profit, msgs[1:]...)
 }

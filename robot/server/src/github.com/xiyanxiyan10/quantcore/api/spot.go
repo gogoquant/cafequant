@@ -161,16 +161,16 @@ func (e *SpotExchange) GetPosition() interface{} {
 
 // SetLimit set the limit calls amount per second of this exchange
 func (e *SpotExchange) SetLimit(times interface{}) float64 {
-	e.limit = conver.Float64Must(times)
+	e.limit = util.Float64Must(times)
 	return e.limit
 }
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
 func (e *SpotExchange) AutoSleep() {
 	now := time.Now().UnixNano()
-	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
+	interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
-		time.Sleep(time.Duration(conver.Int64Must(interval)))
+		time.Sleep(time.Duration(util.Int64Must(interval)))
 	}
 	e.lastTimes = 0
 	e.lastSleep = now
@@ -207,7 +207,7 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{}
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is stockType")
 		return false
 	}
 	var matchPrice = 0
@@ -221,11 +221,11 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{}
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return false
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return order.Cid
 }
@@ -236,7 +236,7 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is stockType")
 		return false
 	}
 	var matchPrice = 0
@@ -250,11 +250,11 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return false
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return order.Cid
 }
@@ -263,12 +263,12 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 func (e *SpotExchange) GetOrder(id string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id), "GetOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id), "GetOrder() error, the error number is stockType")
 		return false
 	}
 	order, err := e.api.GetOneOrder(id, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
 		return false
 	}
 
@@ -352,18 +352,18 @@ func (e *SpotExchange) GetTrades(params ...interface{}) interface{} {
 func (e *SpotExchange) CancelOrder(orderID string) bool {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
 		return false
 	}
 	result, err := e.api.CancelOrder(orderID, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
 		return false
 	}
 	if !result {
 		return false
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() success")
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() success")
 	return true
 }
 
@@ -388,7 +388,7 @@ func (e *SpotExchange) GetTicker() interface{} {
 		High: exTicker.High,
 		Low:  exTicker.Low,
 		Vol:  exTicker.Vol,
-		Time: conver.Int64Must(tickStr),
+		Time: util.Int64Must(tickStr),
 	}
 	return ticker
 }
@@ -404,8 +404,8 @@ func (e *SpotExchange) GetRecords(params ...interface{}) interface{} {
 	var since = 0
 	var periodStr = "M15"
 
-	if len(params) >= 1 && conver.StringMust(params[0]) != "" {
-		periodStr = conver.StringMust(params[0])
+	if len(params) >= 1 && util.StringMust(params[0]) != "" {
+		periodStr = util.StringMust(params[0])
 	}
 
 	period, ok = e.recordsPeriodMap[periodStr]
@@ -414,12 +414,12 @@ func (e *SpotExchange) GetRecords(params ...interface{}) interface{} {
 		return false
 	}
 
-	if len(params) >= 2 && conver.IntMust(params[1]) > 0 {
-		size = conver.IntMust(params[1])
+	if len(params) >= 2 && util.IntMust(params[1]) > 0 {
+		size = util.IntMust(params[1])
 	}
 
-	if len(params) >= 3 && conver.IntMust(params[2]) > 0 {
-		since = conver.IntMust(params[2])
+	if len(params) >= 3 && util.IntMust(params[2]) > 0 {
+		since = util.IntMust(params[2])
 	}
 
 	klineVec, err := e.api.GetKlineRecords(exchangeStockType, period, size, since)
