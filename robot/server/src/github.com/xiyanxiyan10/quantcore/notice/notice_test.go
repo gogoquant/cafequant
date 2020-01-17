@@ -1,10 +1,9 @@
 package notice
 
-
 import (
-"fmt"
-"testing"
-"time"
+	"fmt"
+	"testing"
+	"time"
 )
 
 func TestMailServer(t *testing.T) {

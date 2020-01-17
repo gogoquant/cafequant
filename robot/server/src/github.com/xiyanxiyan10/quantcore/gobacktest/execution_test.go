@@ -28,9 +28,9 @@ func TestOnOrder(t *testing.T) {
 		{
 			"buy order",
 			&Order{
-				Event:     Event{timestamp: exampleTime, symbol: "TEST.DE"},
-				direction: BOT, // buy or sell
-				qty:       10,
+				Event: Event{timestamp: exampleTime, symbol: "TEST.DE"},
+				//direction: BOT, // buy or sell
+				qty: 10,
 			},
 			&Data{
 				latest: map[string]DataEvent{
@@ -38,9 +38,9 @@ func TestOnOrder(t *testing.T) {
 				},
 			},
 			&Fill{
-				Event:       Event{timestamp: exampleTime, symbol: "TEST.DE"},
-				Exchange:    "TEST",
-				direction:   BOT, // BOT for buy or SLD for sell
+				Event:    Event{timestamp: exampleTime, symbol: "TEST.DE"},
+				Exchange: "TEST",
+				//direction:   BOT, // BOT for buy or SLD for sell
 				qty:         10,
 				price:       10,
 				commission:  0,
@@ -52,9 +52,9 @@ func TestOnOrder(t *testing.T) {
 		{
 			"sell order",
 			&Order{
-				Event:     Event{timestamp: exampleTime, symbol: "TEST.DE"},
-				direction: SLD, // buy or sell
-				qty:       10,
+				Event: Event{timestamp: exampleTime, symbol: "TEST.DE"},
+				//direction: SLD, // buy or sell
+				qty: 10,
 			},
 			&Data{
 				latest: map[string]DataEvent{
@@ -62,9 +62,9 @@ func TestOnOrder(t *testing.T) {
 				},
 			},
 			&Fill{
-				Event:       Event{timestamp: exampleTime, symbol: "TEST.DE"},
-				Exchange:    "TEST",
-				direction:   SLD, // BOT for buy or SLD for sell
+				Event:    Event{timestamp: exampleTime, symbol: "TEST.DE"},
+				Exchange: "TEST",
+				//direction:   SLD, // BOT for buy or SLD for sell
 				qty:         10,
 				price:       10,
 				commission:  0,

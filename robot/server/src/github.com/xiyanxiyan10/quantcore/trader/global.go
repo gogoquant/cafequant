@@ -28,7 +28,7 @@ type Global struct {
 	tasks      Tasks          //任务列表
 	running    bool
 	mailNotice notice.MailNotice // 邮件发送
-	lineDrawer draw.LineDrawer    // 图标绘制
+	lineDrawer draw.LineDrawer   // 图标绘制
 	//statusLog string
 }
 

@@ -114,12 +114,10 @@ func TestNodeChildren(t *testing.T) {
 		{"test with multiple children:",
 			&Node{
 				children: []NodeHandler{
-					&Strategy{},
 					&Asset{},
 				},
 			},
 			[]NodeHandler{
-				&Strategy{},
 				&Asset{},
 			},
 			true,

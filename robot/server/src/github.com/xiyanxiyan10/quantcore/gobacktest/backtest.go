@@ -15,7 +15,6 @@ type ResetHandler interface {
 type BackTest struct {
 	symbols    []string
 	data       DataHandler
-	strategy   StrategyHandler
 	portfolio  PortfolioHandler
 	exchange   ExecutionHandler
 	statistic  StatisticHandler
@@ -47,11 +46,6 @@ func (t *BackTest) SetSymbols(symbols []string) {
 // SetData sets the data provider to be used within the backTest.
 func (t *BackTest) SetData(data DataHandler) {
 	t.data = data
-}
-
-// SetStrategy sets the strategy provider to be used within the backTest.
-func (t *BackTest) SetStrategy(strategy StrategyHandler) {
-	t.strategy = strategy
 }
 
 // SetPortfolio sets the portfolio provider to be used within the backTest.
@@ -165,18 +159,6 @@ func (t *BackTest) setup() error {
 	// before first run, set portfolio cash
 	t.portfolio.SetCash(t.portfolio.InitialCash())
 
-	// make the data known to the strategy
-	err := t.strategy.SetData(t.data)
-	if err != nil {
-		return err
-	}
-
-	// make the portfolio known to the strategy
-	err = t.strategy.SetPortfolio(t.portfolio)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -221,13 +203,17 @@ func (t *BackTest) eventLoop(e EventHandler) error {
 			}
 		}
 		// run strategy with this data event
-		signals, err := t.strategy.OnData(event)
-		if err != nil {
-			break
-		}
-		for _, signal := range signals {
-			t.eventQueue = append(t.eventQueue, signal)
-		}
+		/*
+			signals, err := t.strategy.OnData(event)
+			if err != nil {
+				break
+			}
+		*/
+		/*
+			for _, signal := range signals {
+				t.eventQueue = append(t.eventQueue, signal)
+			}
+		*/
 
 	case *Signal:
 		order, err := t.portfolio.OnSignal(event, t.data)
