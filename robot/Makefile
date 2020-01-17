@@ -21,8 +21,8 @@ clean:
 	find -name '*.pyc' |xargs rm -rf
 	rm -rf golint-report.xml  coverage.out report.json govet-report.out
 
-#check: fmtcheck
-	#golangci-lint run  --config=./golangci.yml
+check: fmtcheck
+	golangci-lint run  --config=./golangci.yml
 
 #sonar:
 #	golangci-lint run  --config=./golangci.yml --out-format checkstyle> golint-report.xml; \
@@ -31,7 +31,7 @@ clean:
 #    	go test $(TEST) -json > report.json; \
 #    	go list $(CHECK_PACKAGE) | xargs  go vet 2> govet-report.out
 
-check: fmtcheck vet lint staticcheck cyclo
+#check: fmtcheck vet lint staticcheck cyclo
 
 bin: dev
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/apigateway -v ./cmd/example/...
@@ -52,7 +52,7 @@ bin: dev
 #	go tool cover -html=coverage.out
 #	rm coverage.out
 
-vet: $(GOFMT_FILES)
+vet: 
 	go vet $(GOFMT_FILES) 
 
 staticcheck:
