@@ -1,12 +1,12 @@
 VERSION?="0.1.0"
 TEST?=./...
 TESTARGS ?= -v
-CURRDIR ?=$(shell pwd)
-GODIR ?= $(CURRDIR)/server/src/github.com/xiyanxiyan10/quantcore
+CURRDIR =$(shell pwd)
+GODIR = $(CURRDIR)/server/src/github.com/xiyanxiyan10/quantcore
 #CHECK_PACKAGE?=$$(go list ./... | grep -v migrations)
 #GOFMT_FILES?=$$(find . -not -path "./pkg/model/migrations/*" -type f -name '*.go')
 #WEBSITE_REPO=github.com/hashicorp/terraform-website
-GOFMT_FILES?=$$(find $(GODIR) -not -path "./pkg/model/migrations/*" -type f -name '*.go')
+GOFMT_FILES =$$(find $(GODIR) -not -path "$(GODIR)/gobacktest" -type f -name '*.go')
 
 default: test
 
@@ -52,8 +52,8 @@ bin: dev
 #	go tool cover -html=coverage.out
 #	rm coverage.out
 
-vet:
-	go list $(GOFMT_FILES) | xargs  go vet
+vet: $(GOFMT_FILES)
+	go vet $(GOFMT_FILES) 
 
 staticcheck:
 	staticcheck $(GOFMT_FILES)
