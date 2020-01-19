@@ -1,12 +1,6 @@
-package stockdb
+package types
 
-import (
-	"encoding/base64"
-	"net/http"
-
-	"github.com/hprose/hprose-golang/io"
-	"github.com/hprose/hprose-golang/rpc"
-)
+import "github.com/hprose/hprose-golang/rpc"
 
 // Option is a request option
 type Option struct {
@@ -115,33 +109,4 @@ type Client struct {
 	GetPeriodRange func(opt Option) TimeRangeResponse
 	GetOHLCs       func(opt Option) OHLCResponse
 	GetDepth       func(opt Option) DepthResponse
-}
-
-func init() {
-	io.Register(Option{}, "Option", "json")
-	io.Register(OHLC{}, "OHLC", "json")
-	io.Register(Order{}, "Order", "json")
-	io.Register(OrderBook{}, "OrderBook", "json")
-	io.Register(Depth{}, "Depth", "json")
-	io.Register(BaseResponse{}, "BaseResponse", "json")
-	io.Register(Stats{}, "Stats", "json")
-	io.Register(StatsResponse{}, "StatsResponse", "json")
-	io.Register(StringsResponse{}, "StringsResponse", "json")
-	io.Register(TimeRangeResponse{}, "TimeRangeResponse", "json")
-	io.Register(OHLCResponse{}, "OHLCResponse", "json")
-	io.Register(DepthResponse{}, "DepthResponse", "json")
-}
-
-// New can create a StockDB Client
-func New(uri, auth string) (client *Client) {
-	client = &Client{
-		uri:    uri,
-		Hprose: rpc.NewHTTPClient(uri),
-	}
-	if auth != "" {
-		client.Hprose.Header = make(http.Header)
-		client.Hprose.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
-	}
-	client.Hprose.UseService(&client)
-	return
 }

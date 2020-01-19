@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hprose/hprose-golang/rpc"
+	"github.com/miaolz123/stockdb/types"
 )
 
 type response struct {

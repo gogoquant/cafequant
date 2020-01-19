@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/influxdata/influxdb/client/v2"
 	"github.com/miaolz123/conver"
-	"github.com/miaolz123/stockdb/stockdb"
+	"github.com/miaolz123/stockdb/api"
+	"github.com/miaolz123/stockdb/config"
 )
 
 type influxdb struct {

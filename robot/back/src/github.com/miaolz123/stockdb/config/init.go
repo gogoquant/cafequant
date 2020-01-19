@@ -1,8 +1,9 @@
-package main
+package config
 
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/hprose/hprose-golang/io"
 )
@@ -14,8 +15,11 @@ const (
 
 func init() {
 	io.Register(response{}, "Response", "json")
-	confPath := flag.String("conf", "stockdb.ini", "config file path")
+	confPath := os.Getenv("STOCK_CONFIG")
+	if confPath == ""{
+		confPath = "/tmp/stockdb.ini"
+	}
 	flag.Parse()
-	loadConfig(*confPath)
+	loadConfig(confPath)
 	log(logInfo, fmt.Sprintf("StockDB Version %s running at %s", version, config["http.bind"]))
 }

@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/base64"
@@ -32,14 +32,14 @@ func loadConfig(path string) {
 	if err != nil {
 		log(logFatal, "Load config file error: ", err)
 	}
-	conf.Section("log").MapTo(&logConf)
+	_ = conf.Section("log").MapTo(&logConf)
 	logConf.Enable = logConf.Console || logConf.File
 	if loc, err := time.LoadLocation(logConf.Timezone); err != nil || loc == nil {
 		logConf.Location = time.Local
 	} else {
 		logConf.Location = loc
 	}
-	conf.Section("default").MapTo(&defaultOption)
+	_ = conf.Section("default").MapTo(&defaultOption)
 	if defaultOption.Period < minPeriod {
 		defaultOption.Period = minPeriod
 	}
