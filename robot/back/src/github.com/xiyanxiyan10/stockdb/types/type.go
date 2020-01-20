@@ -1,6 +1,9 @@
 package types
 
-import "github.com/hprose/hprose-golang/rpc"
+import (
+	"github.com/hprose/hprose-golang/io"
+	"github.com/hprose/hprose-golang/rpc"
+)
 
 // Driver is a stockdb interface
 type Driver interface {
@@ -116,4 +119,19 @@ type DepthResponse struct {
 	Success bool   `json:"Success"`
 	Message string `json:"Message"`
 	Data    Depth  `json:"Data"`
+}
+
+func init() {
+	io.Register(Option{}, "Option", "json")
+	io.Register(OHLC{}, "OHLC", "json")
+	io.Register(Order{}, "Order", "json")
+	io.Register(OrderBook{}, "OrderBook", "json")
+	io.Register(Depth{}, "Depth", "json")
+	io.Register(BaseResponse{}, "BaseResponse", "json")
+	io.Register(Stats{}, "Stats", "json")
+	io.Register(StatsResponse{}, "StatsResponse", "json")
+	io.Register(StringsResponse{}, "StringsResponse", "json")
+	io.Register(TimeRangeResponse{}, "TimeRangeResponse", "json")
+	io.Register(OHLCResponse{}, "OHLCResponse", "json")
+	io.Register(DepthResponse{}, "DepthResponse", "json")
 }

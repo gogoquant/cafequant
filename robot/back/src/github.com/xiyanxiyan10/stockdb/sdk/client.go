@@ -2,26 +2,10 @@ package sdk
 
 import (
 	"encoding/base64"
-	"github.com/hprose/hprose-golang/io"
 	"github.com/hprose/hprose-golang/rpc"
 	"github.com/xiyanxiyan10/stockdb/types"
 	"net/http"
 )
-
-func init() {
-	io.Register(types.Option{}, "Option", "json")
-	io.Register(types.OHLC{}, "OHLC", "json")
-	io.Register(types.Order{}, "Order", "json")
-	io.Register(types.OrderBook{}, "OrderBook", "json")
-	io.Register(types.Depth{}, "Depth", "json")
-	io.Register(types.BaseResponse{}, "BaseResponse", "json")
-	io.Register(types.Stats{}, "Stats", "json")
-	io.Register(types.StatsResponse{}, "StatsResponse", "json")
-	io.Register(types.StringsResponse{}, "StringsResponse", "json")
-	io.Register(types.TimeRangeResponse{}, "TimeRangeResponse", "json")
-	io.Register(types.OHLCResponse{}, "OHLCResponse", "json")
-	io.Register(types.DepthResponse{}, "DepthResponse", "json")
-}
 
 // Client Client of StockDB
 type Client struct {
