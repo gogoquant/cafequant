@@ -10,8 +10,8 @@ import (
 var confs = make(map[string]string)
 
 func init() {
-	quantconf := os.Getenv("QUANT_CONFIG")
-	conf, err := ini.InsensitiveLoad(quantconf)
+	configFile := os.Getenv("QUANT_CONFIG")
+	conf, err := ini.InsensitiveLoad(configFile)
 	if err != nil {
 		conf, err = ini.InsensitiveLoad("/tmp/config.ini")
 		if err != nil {

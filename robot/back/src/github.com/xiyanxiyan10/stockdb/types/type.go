@@ -2,6 +2,32 @@ package types
 
 import "github.com/hprose/hprose-golang/rpc"
 
+// Driver is a stockdb interface
+type Driver interface {
+	//close() error
+
+	PutOHLC(datum OHLC, opt Option) Response
+	PutOHLCs(data []OHLC, opt Option) Response
+	PutOrder(datum Order, opt Option) Response
+	PutOrders(data []Order, opt Option) Response
+	GetStats() Response
+	GetMarkets() Response
+	GetSymbols(market string) Response
+	GetTimeRange(opt Option) Response
+	GetOHLCs(opt Option) Response
+	GetDepth(opt Option) Response
+}
+
+type Response struct {
+	Success bool        `json:"Success"`
+	Message string      `json:"Message"`
+	Data    interface{} `json:"Data"`
+}
+
+func (Response) OnSendHeader(ctx *rpc.HTTPContext) {
+	ctx.Response.Header().Set("Access-Control-Allow-Headers", "Authorization")
+}
+
 // Option is a request option
 type Option struct {
 	Market        string `json:"Market" ini:"Market"`
@@ -90,23 +116,4 @@ type DepthResponse struct {
 	Success bool   `json:"Success"`
 	Message string `json:"Message"`
 	Data    Depth  `json:"Data"`
-}
-
-// Client of StockDB
-type Client struct {
-	uri    string
-	auth   string
-	Hprose *rpc.HTTPClient
-
-	PutOHLC        func(datum OHLC, opt Option) BaseResponse
-	PutOHLCs       func(data []OHLC, opt Option) BaseResponse
-	PutOrder       func(datum Order, opt Option) BaseResponse
-	PutOrders      func(data []Order, opt Option) BaseResponse
-	GetStats       func() StatsResponse
-	GetMarkets     func() StringsResponse
-	GetSymbols     func(market string) StringsResponse
-	GetTimeRange   func(opt Option) TimeRangeResponse
-	GetPeriodRange func(opt Option) TimeRangeResponse
-	GetOHLCs       func(opt Option) OHLCResponse
-	GetDepth       func(opt Option) DepthResponse
 }

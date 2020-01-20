@@ -2,13 +2,14 @@ package client
 
 import (
 	"fmt"
+	"github.com/influxdata/influxdb1-client/v2"
+	"github.com/xiyanxiyan10/conver"
+	"github.com/xiyanxiyan10/stockdb/config"
+	"github.com/xiyanxiyan10/stockdb/constant"
+	"github.com/xiyanxiyan10/stockdb/log"
+	"github.com/xiyanxiyan10/stockdb/types"
 	"strings"
 	"time"
-
-	"github.com/influxdata/influxdb/client/v2"
-	"github.com/miaolz123/conver"
-	"github.com/miaolz123/stockdb/api"
-	"github.com/miaolz123/stockdb/config"
 )
 
 type influxdb struct {
@@ -16,23 +17,24 @@ type influxdb struct {
 	status int64
 }
 
-// newInfluxdb create a Influxdb struct
-func newInfluxdb() Driver {
+// NewInfluxdb create a Influxdb struct
+func NewInfluxdb() types.Driver {
 	var err error
 	driver := &influxdb{}
+	config := config.GetConfig()
 	driver.client, err = client.NewHTTPClient(client.HTTPConfig{
 		Addr:     config["influxdb.host"],
 		Username: config["influxdb.username"],
 		Password: config["influxdb.password"],
 	})
 	if err != nil {
-		log(logFatal, "Influxdb connect error: ", err)
+		log.Log(log.FatalLog, "Influxdb connect error: ", err)
 	}
 	if _, _, err := driver.client.Ping(30 * time.Second); err != nil {
-		log(logError, "Influxdb connect error: ", err)
+		log.Log(log.ErrorLog, "Influxdb connect error: ", err)
 	} else {
 		driver.status = 1
-		log(logSuccess, "Influxdb connect successfully")
+		log.Log(log.SuccessLog, "Influxdb connect successfully")
 	}
 	go func(driver *influxdb) {
 		for {
@@ -49,6 +51,7 @@ func newInfluxdb() Driver {
 // reconnect the client
 func (driver *influxdb) reconnect() {
 	for {
+		config := config.GetConfig()
 		time.Sleep(1 * time.Minute)
 		var err error
 		if driver.client, err = client.NewHTTPClient(client.HTTPConfig{
@@ -57,44 +60,44 @@ func (driver *influxdb) reconnect() {
 			Password: config["influxdb.password"],
 		}); err == nil {
 			if _, _, err = driver.client.Ping(30 * time.Second); err == nil {
-				log(logSuccess, "Influxdb reconnect successfully")
+				log.Log(log.SuccessLog, "Influxdb reconnect successfully")
 				driver.status = 1
 				break
 			}
 		}
-		log(logError, "Influxdb reconnect error: ", err)
+		log.Log(log.ErrorLog, "Influxdb reconnect error: ", err)
 		time.Sleep(2 * time.Minute)
 	}
 }
 
 // close this client
 func (driver *influxdb) close() error {
-	log(logSuccess, "Influxdb disconnected successfully")
+	log.Log(log.SuccessLog, "Influxdb disconnected successfully")
 	return driver.client.Close()
 }
 
 // check the client is connected
 func (driver *influxdb) check() error {
 	if driver.status < 1 {
-		return errInfluxdbNotConnected
+		return constant.ErrInfluxdbNotConnected
 	}
 	return nil
 }
 
 // putMarket create a new market to stockdb
-func (driver *influxdb) putMarket(market string) (resp response) {
+func (driver *influxdb) putMarket(market string) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
 	q := client.NewQuery(fmt.Sprintf(`CREATE DATABASE "market_%s"`, market), "", "")
 	if response, err := driver.client.Query(q); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	} else if err = response.Error(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -103,9 +106,9 @@ func (driver *influxdb) putMarket(market string) (resp response) {
 }
 
 // records2BatchPoints parse struct from OHLC to BatchPoints
-func (driver *influxdb) records2BatchPoints(data []stockdb.OHLC, opt stockdb.Option) (bp client.BatchPoints, err error) {
+func (driver *influxdb) records2BatchPoints(data []types.OHLC, opt types.Option) (bp client.BatchPoints, err error) {
 	if driver.status < 1 {
-		err = errInfluxdbNotConnected
+		err = constant.ErrInfluxdbNotConnected
 		return
 	}
 	bp, err = client.NewBatchPoints(client.BatchPointsConfig{
@@ -144,24 +147,25 @@ func (driver *influxdb) records2BatchPoints(data []stockdb.OHLC, opt stockdb.Opt
 }
 
 // PutOHLC add an OHLC record to stockdb
-func (driver *influxdb) PutOHLC(datum stockdb.OHLC, opt stockdb.Option) (resp response) {
+func (driver *influxdb) PutOHLC(datum types.OHLC, opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
 	if opt.Symbol == "" {
 		opt.Symbol = defaultOption.Symbol
 	}
-	if opt.Period < minPeriod {
+	if opt.Period < constant.MinPeriod {
 		opt.Period = defaultOption.Period
 	}
-	bp, err := driver.records2BatchPoints([]stockdb.OHLC{datum}, opt)
+	bp, err := driver.records2BatchPoints([]types.OHLC{datum}, opt)
 	if err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -173,7 +177,7 @@ func (driver *influxdb) PutOHLC(datum stockdb.OHLC, opt stockdb.Option) (resp re
 			}
 			return
 		}
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -182,24 +186,25 @@ func (driver *influxdb) PutOHLC(datum stockdb.OHLC, opt stockdb.Option) (resp re
 }
 
 // PutOHLCs add OHLC records to stockdb
-func (driver *influxdb) PutOHLCs(data []stockdb.OHLC, opt stockdb.Option) (resp response) {
+func (driver *influxdb) PutOHLCs(data []types.OHLC, opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
 	if opt.Symbol == "" {
 		opt.Symbol = defaultOption.Symbol
 	}
-	if opt.Period < minPeriod {
+	if opt.Period < constant.MinPeriod {
 		opt.Period = defaultOption.Period
 	}
 	bp, err := driver.records2BatchPoints(data, opt)
 	if err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -211,7 +216,7 @@ func (driver *influxdb) PutOHLCs(data []stockdb.OHLC, opt stockdb.Option) (resp 
 			}
 			return
 		}
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -220,9 +225,9 @@ func (driver *influxdb) PutOHLCs(data []stockdb.OHLC, opt stockdb.Option) (resp 
 }
 
 // orders2BatchPoints parse struct from Order to BatchPoints
-func (driver *influxdb) orders2BatchPoints(data []stockdb.Order, opt stockdb.Option) (bp client.BatchPoints, err error) {
+func (driver *influxdb) orders2BatchPoints(data []types.Order, opt types.Option) (bp client.BatchPoints, err error) {
 	if driver.status < 1 {
-		err = errInfluxdbNotConnected
+		err = constant.ErrInfluxdbNotConnected
 		return
 	}
 	bp, err = client.NewBatchPoints(client.BatchPointsConfig{
@@ -255,21 +260,22 @@ func (driver *influxdb) orders2BatchPoints(data []stockdb.Order, opt stockdb.Opt
 }
 
 // PutOrder add an order record to stockdb
-func (driver *influxdb) PutOrder(datum stockdb.Order, opt stockdb.Option) (resp response) {
+func (driver *influxdb) PutOrder(datum types.Order, opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
 	if opt.Symbol == "" {
 		opt.Symbol = defaultOption.Symbol
 	}
-	bp, err := driver.orders2BatchPoints([]stockdb.Order{datum}, opt)
+	bp, err := driver.orders2BatchPoints([]types.Order{datum}, opt)
 	if err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -281,7 +287,7 @@ func (driver *influxdb) PutOrder(datum stockdb.Order, opt stockdb.Option) (resp 
 			}
 			return
 		}
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -290,12 +296,13 @@ func (driver *influxdb) PutOrder(datum stockdb.Order, opt stockdb.Option) (resp 
 }
 
 // PutOrders add order records to stockdb
-func (driver *influxdb) PutOrders(data []stockdb.Order, opt stockdb.Option) (resp response) {
+func (driver *influxdb) PutOrders(data []types.Order, opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
@@ -304,7 +311,7 @@ func (driver *influxdb) PutOrders(data []stockdb.Order, opt stockdb.Option) (res
 	}
 	bp, err := driver.orders2BatchPoints(data, opt)
 	if err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -316,7 +323,7 @@ func (driver *influxdb) PutOrders(data []stockdb.Order, opt stockdb.Option) (res
 			}
 			return
 		}
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -325,13 +332,13 @@ func (driver *influxdb) PutOrders(data []stockdb.Order, opt stockdb.Option) (res
 }
 
 // GetStats return the stats of StockDB
-func (driver *influxdb) GetStats() (resp response) {
+func (driver *influxdb) GetStats() (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
-	stats := make(map[string]stockdb.Stats)
+	stats := make(map[string]types.Stats)
 	q := client.NewQuery("SHOW STATS FOR 'shard'", "", "s")
 	if response, err := driver.client.Query(q); err == nil && response.Err == "" && len(response.Results) > 0 {
 		result := response.Results[0]
@@ -347,7 +354,7 @@ func (driver *influxdb) GetStats() (resp response) {
 			}
 		}
 	}
-	data := []stockdb.Stats{}
+	data := []types.Stats{}
 	for _, s := range stats {
 		q := client.NewQuery("SELECT COUNT(price) FROM /symbol_/", "market_"+s.Market, "s")
 		if response, err := driver.client.Query(q); err == nil && response.Err == "" && len(response.Results) > 0 {
@@ -368,7 +375,7 @@ func (driver *influxdb) GetStats() (resp response) {
 }
 
 // getTimeRange return the first and the last record time
-func (driver *influxdb) getTimeRange(opt stockdb.Option) (ranges [2]int64) {
+func (driver *influxdb) getTimeRange(opt types.Option) (ranges [2]int64) {
 	params := [2]string{"FIRST", "LAST"}
 	for i, param := range params {
 		raw := fmt.Sprintf(`SELECT %v("price") FROM "symbol_%v"`, param, opt.Symbol)
@@ -384,9 +391,9 @@ func (driver *influxdb) getTimeRange(opt stockdb.Option) (ranges [2]int64) {
 }
 
 // GetMarkets return the list of market name
-func (driver *influxdb) GetMarkets() (resp response) {
+func (driver *influxdb) GetMarkets() (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -411,9 +418,9 @@ func (driver *influxdb) GetMarkets() (resp response) {
 }
 
 // GetSymbols return the list of symbol name
-func (driver *influxdb) GetSymbols(market string) (resp response) {
+func (driver *influxdb) GetSymbols(market string) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -438,12 +445,13 @@ func (driver *influxdb) GetSymbols(market string) (resp response) {
 }
 
 // GetTimeRange return the first and the last record time
-func (driver *influxdb) GetTimeRange(opt stockdb.Option) (resp response) {
+func (driver *influxdb) GetTimeRange(opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
@@ -456,9 +464,9 @@ func (driver *influxdb) GetTimeRange(opt stockdb.Option) (resp response) {
 }
 
 // GetPeriodRange return the min and the max record period
-func (driver *influxdb) GetPeriodRange(opt stockdb.Option) (resp response) {
+func (driver *influxdb) GetPeriodRange(opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
@@ -478,7 +486,7 @@ func (driver *influxdb) GetPeriodRange(opt stockdb.Option) (resp response) {
 }
 
 // getOHLCQuery return a query of OHLC
-func (driver *influxdb) getOHLCQuery(opt stockdb.Option) (q client.Query) {
+func (driver *influxdb) getOHLCQuery(opt types.Option) (q client.Query) {
 	ranges := driver.getTimeRange(opt)
 	if opt.EndTime <= 0 || opt.EndTime > ranges[1] {
 		opt.EndTime = ranges[1]
@@ -498,12 +506,12 @@ func (driver *influxdb) getOHLCQuery(opt stockdb.Option) (q client.Query) {
 }
 
 // result2ohlc parse record result to OHLC
-func (driver *influxdb) result2ohlc(result client.Result, opt stockdb.Option) (data []stockdb.OHLC) {
+func (driver *influxdb) result2ohlc(result client.Result, opt types.Option) (data []types.OHLC) {
 	if len(result.Series) > 0 {
 		serie := result.Series[0]
 		offset := 0
 		for i := range serie.Values {
-			d := stockdb.OHLC{
+			d := types.OHLC{
 				Time:   conver.Int64Must(serie.Values[i][0]),
 				Volume: conver.Float64Must(serie.Values[i][5]),
 			}
@@ -534,33 +542,34 @@ func (driver *influxdb) result2ohlc(result client.Result, opt stockdb.Option) (d
 }
 
 // GetOHLC get OHLC records
-func (driver *influxdb) GetOHLCs(opt stockdb.Option) (resp response) {
+func (driver *influxdb) GetOHLCs(opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, 367, err)
+		log.Log(log.ErrorLog, 367, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
 	if opt.Symbol == "" {
 		opt.Symbol = defaultOption.Symbol
 	}
-	if opt.Period < minPeriod {
+	if opt.Period < constant.MinPeriod {
 		opt.Period = defaultOption.Period
 	}
 	if response, err := driver.client.Query(driver.getOHLCQuery(opt)); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	} else if response.Err != "" {
-		log(logError, response.Err)
+		log.Log(log.ErrorLog, response.Err)
 		resp.Message = response.Err
 		return
 	} else if len(response.Results) > 0 {
 		result := response.Results[0]
 		if result.Err != "" {
-			log(logError, result.Err)
+			log.Log(log.ErrorLog, result.Err)
 			resp.Message = result.Err
 			return
 		}
@@ -571,7 +580,7 @@ func (driver *influxdb) GetOHLCs(opt stockdb.Option) (resp response) {
 }
 
 // getDepthQuery return a query of market depth
-func (driver *influxdb) getDepthQuery(opt stockdb.Option) (q client.Query) {
+func (driver *influxdb) getDepthQuery(opt types.Option) (q client.Query) {
 	ranges := driver.getTimeRange(opt)
 	if opt.BeginTime <= 0 || opt.BeginTime > ranges[1] {
 		opt.BeginTime = ranges[1]
@@ -583,7 +592,7 @@ func (driver *influxdb) getDepthQuery(opt stockdb.Option) (q client.Query) {
 }
 
 // result2depth parse result to market depth
-func (driver *influxdb) result2depth(result client.Result, opt stockdb.Option) (data stockdb.Depth) {
+func (driver *influxdb) result2depth(result client.Result, opt types.Option) (data types.Depth) {
 	if len(result.Series) > 0 {
 		serie := result.Series[0]
 		d := struct {
@@ -616,12 +625,12 @@ func (driver *influxdb) result2depth(result client.Result, opt stockdb.Option) (
 			for i := 0; i <= 10; i++ {
 				price := d.low + d.dif/10*conver.Float64Must(i)
 				if i == 0 || price <= d.open {
-					data.Bids = append([]stockdb.OrderBook{{
+					data.Bids = append([]types.OrderBook{{
 						Price:  price,
 						Amount: d.volume / 10.0,
 					}}, data.Bids...)
 				} else if i == 10 || price >= d.open {
-					data.Asks = append(data.Asks, stockdb.OrderBook{
+					data.Asks = append(data.Asks, types.OrderBook{
 						Price:  price,
 						Amount: d.volume / 10.0,
 					})
@@ -633,12 +642,13 @@ func (driver *influxdb) result2depth(result client.Result, opt stockdb.Option) (
 }
 
 // GetDepth get simulated market depth
-func (driver *influxdb) GetDepth(opt stockdb.Option) (resp response) {
+func (driver *influxdb) GetDepth(opt types.Option) (resp types.Response) {
 	if err := driver.check(); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	}
+	defaultOption := config.GetDefaultOption()
 	if opt.Market == "" {
 		opt.Market = defaultOption.Market
 	}
@@ -649,17 +659,17 @@ func (driver *influxdb) GetDepth(opt stockdb.Option) (resp response) {
 		opt.Period = 0
 	}
 	if response, err := driver.client.Query(driver.getDepthQuery(opt)); err != nil {
-		log(logError, err)
+		log.Log(log.ErrorLog, err)
 		resp.Message = err.Error()
 		return
 	} else if response.Err != "" {
-		log(logError, response.Err)
+		log.Log(log.ErrorLog, response.Err)
 		resp.Message = response.Err
 		return
 	} else if len(response.Results) > 0 {
 		result := response.Results[0]
 		if result.Err != "" {
-			log(logError, result.Err)
+			log.Log(log.ErrorLog, result.Err)
 			resp.Message = result.Err
 			return
 		}

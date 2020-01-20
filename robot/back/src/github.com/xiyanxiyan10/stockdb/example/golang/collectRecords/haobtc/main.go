@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/httplib"
-	"github.com/miaolz123/stockdb/stockdb"
+	"github.com/xiyanxiyan10/stockdb/sdk"
+	"github.com/xiyanxiyan10/stockdb/types"
 )
 
 const (
@@ -24,7 +25,7 @@ func main() {
 	} else {
 		location = loc
 	}
-	opt := stockdb.Option{
+	opt := types.Option{
 		Market: market,
 		Symbol: symbol,
 	}
@@ -34,34 +35,36 @@ func main() {
 	}
 }
 
-func fetch(opt stockdb.Option) {
-	records := []struct {
-		Volume float64
-		Price  float64
-		Side   string
-		Time   string
-	}{}
-	req := httplib.Get("https://haobtc.com/exchange/api/v1/trades")
-	if err := req.ToJSON(&records); err != nil {
+type Recrod struct {
+	Volume float64 `json:"amount"`
+	Price  float64 `json:"price"`
+	Side   string  `json:"sid"`
+	Time   int64   `json:"ts"`
+}
+
+type Records struct {
+	Status  int      `json:"status"`
+	Records []Recrod `json:"data"`
+}
+
+func fetch(opt types.Option) {
+	var data Records
+	req := httplib.Get("https://api.fmex.com/v2/market/trades/btcusd_p")
+	if err := req.ToJSON(&data); err != nil {
 		log.Println("parse json error: ", err)
 	} else {
-		orders := []stockdb.Order{}
-		for _, record := range records {
-			t, err := time.ParseInLocation("2006-01-02 15:04:05", record.Time, location)
-			if err != nil {
-				log.Println("parse time error: ", err)
-				continue
-			}
-			orders = append(orders, stockdb.Order{
+		orders := []types.Order{}
+		for _, record := range data.Records {
+			orders = append(orders, types.Order{
 				ID:     fmt.Sprint(record.Volume, "@", record.Price),
-				Time:   t.Unix(),
+				Time:   record.Time,
 				Price:  record.Price,
 				Amount: record.Volume,
 				Type:   record.Side,
 			})
 		}
 		if len(orders) > 0 {
-			cli := stockdb.New(uri, auth)
+			cli := sdk.NewClient(uri, auth)
 			if resp := cli.PutOrders(orders, opt); !resp.Success {
 				log.Println("PutOrders error: ", resp.Message)
 			} else {

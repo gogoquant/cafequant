@@ -1,28 +1,40 @@
-package main
+package resource
 
 import (
 	"fmt"
+	"github.com/hprose/hprose-golang/io"
+	"github.com/hprose/hprose-golang/rpc"
+	"github.com/xiyanxiyan10/stockdb/client"
+	stockConfig "github.com/xiyanxiyan10/stockdb/config"
+	"github.com/xiyanxiyan10/stockdb/constant"
+	"github.com/xiyanxiyan10/stockdb/log"
+	"github.com/xiyanxiyan10/stockdb/types"
 	"net/http"
 	"reflect"
 	"time"
-
-	"github.com/hprose/hprose-golang/rpc"
-	"github.com/miaolz123/stockdb/types"
 )
 
-type response struct {
-	Success bool        `json:"Success"`
-	Message string      `json:"Message"`
-	Data    interface{} `json:"Data"`
+func init() {
+	io.Register(types.Option{}, "Option", "json")
+	io.Register(types.OHLC{}, "OHLC", "json")
+	io.Register(types.Order{}, "Order", "json")
+	io.Register(types.OrderBook{}, "OrderBook", "json")
+	io.Register(types.Depth{}, "Depth", "json")
+	io.Register(types.BaseResponse{}, "BaseResponse", "json")
+	io.Register(types.Stats{}, "Stats", "json")
+	io.Register(types.StatsResponse{}, "StatsResponse", "json")
+	io.Register(types.StringsResponse{}, "StringsResponse", "json")
+	io.Register(types.TimeRangeResponse{}, "TimeRangeResponse", "json")
+	io.Register(types.OHLCResponse{}, "OHLCResponse", "json")
+	io.Register(types.DepthResponse{}, "DepthResponse", "json")
 }
 
-func (response) OnSendHeader(ctx *rpc.HTTPContext) {
-	ctx.Response.Header().Set("Access-Control-Allow-Headers", "Authorization")
-}
-
-func server() {
+func Server() {
+	config := stockConfig.GetConfig()
+	openMethods := stockConfig.GetOpenMethods()
+	logConf := stockConfig.GetLogConf()
 	service := rpc.NewHTTPService()
-	service.Event = response{}
+	service.Event = types.Response{}
 	service.AddBeforeFilterHandler(func(request []byte, ctx rpc.Context, next rpc.NextFilterHandler) (response []byte, err error) {
 		ctx.SetInt64("start", time.Now().UnixNano())
 		httpContext := ctx.(*rpc.HTTPContext)
@@ -35,7 +47,7 @@ func server() {
 		if openMethods[name] || ctx.GetBool("authorized") {
 			results, err = next(name, args, ctx)
 		} else {
-			resp := response{Message: errHTTPUnauthorized.Error()}
+			resp := types.Response{Message: constant.ErrHTTPUnauthorized.Error()}
 			results = append(results, reflect.ValueOf(resp))
 		}
 		if logConf.Enable {
@@ -46,7 +58,7 @@ func server() {
 			} else {
 				spendInfo = fmt.Sprintf("%vms", spend)
 			}
-			log(logRequest, fmt.Sprintf("%12s() spend %s", name, spendInfo))
+			log.Log(log.RequestLog, fmt.Sprintf("%12s() spend %s", name, spendInfo))
 		}
 		return
 	})
@@ -64,12 +76,12 @@ func server() {
 			"GetOHLCs",
 			"GetDepth",
 		},
-		newInfluxdb(),
+		client.NewInfluxdb(),
 		nil,
 	)
 	http.Handle("/", service)
 	http.Handle("/admin/", http.FileServer(http.Dir("")))
 	if err := http.ListenAndServe(config["http.bind"], nil); err != nil {
-		log(logFatal, "Server error: ", err)
+		log.Log(log.FatalLog, "Server error: ", err)
 	}
 }

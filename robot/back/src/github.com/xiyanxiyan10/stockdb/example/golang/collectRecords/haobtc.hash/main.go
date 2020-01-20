@@ -7,8 +7,8 @@ import (
 
 	"github.com/astaxie/beego/httplib"
 	"github.com/bitly/go-simplejson"
-	"github.com/miaolz123/conver"
-	"github.com/miaolz123/stockdb/stockdb"
+	"github.com/xiyanxiyan10/conver"
+	"github.com/xiyanxiyan10/stockdb/types"
 )
 
 const (
@@ -26,7 +26,7 @@ func main() {
 	} else {
 		location = loc
 	}
-	opt := stockdb.Option{
+	opt := types.Option{
 		Market: market,
 		Symbol: symbol,
 	}
@@ -36,7 +36,7 @@ func main() {
 	}
 }
 
-func fetch(opt stockdb.Option) {
+func fetch(opt types.Option) {
 	req := httplib.Get("https://hashex.haobtc.com/exchange/main?code=200001&limit=undefined")
 	req.Header("Cookie", "")
 	if resp, err := req.Bytes(); err != nil {
@@ -49,7 +49,7 @@ func fetch(opt stockdb.Option) {
 				log.Println("get data error: ", json)
 			}
 			records := json.GetPath("data", "public", "trades")
-			orders := []stockdb.Order{}
+			orders := []types.Order{}
 			for i := 0; i < len(records.MustArray()); i++ {
 				record := records.GetIndex(i).MustMap()
 				t, err := time.ParseInLocation("2006-01-02 15:04:05", fmt.Sprint(record["time"]), location)
@@ -57,7 +57,7 @@ func fetch(opt stockdb.Option) {
 					log.Println("parse time error: ", err)
 					continue
 				}
-				orders = append(orders, stockdb.Order{
+				orders = append(orders, types.Order{
 					ID:     fmt.Sprint(record["volume"], "@", conver.Float64Must(record["price"])),
 					Time:   t.Unix(),
 					Price:  conver.Float64Must(record["price"]),

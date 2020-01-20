@@ -2,11 +2,11 @@ package config
 
 import (
 	"encoding/base64"
+	"fmt"
+	"github.com/go-ini/ini"
+	"github.com/xiyanxiyan10/stockdb/types"
 	"strings"
 	"time"
-
-	"github.com/go-ini/ini"
-	"github.com/miaolz123/stockdb/stockdb"
 )
 
 type logConfig struct {
@@ -20,9 +20,25 @@ type logConfig struct {
 var (
 	config        = make(map[string]string)
 	openMethods   = make(map[string]bool)
-	defaultOption = stockdb.Option{}
+	defaultOption = types.Option{}
 	logConf       = logConfig{}
 )
+
+func GetConfig() map[string]string {
+	return config
+}
+
+func GetDefaultOption() types.Option {
+	return defaultOption
+}
+
+func GetOpenMethods() map[string]bool {
+	return openMethods
+}
+
+func GetLogConf() logConfig {
+	return logConf
+}
 
 func loadConfig(path string) {
 	if path == "" {
@@ -30,7 +46,8 @@ func loadConfig(path string) {
 	}
 	conf, err := ini.Load(path)
 	if err != nil {
-		log(logFatal, "Load config file error: ", err)
+		fmt.Printf("Load config file error: %s", err.Error())
+		return
 	}
 	_ = conf.Section("log").MapTo(&logConf)
 	logConf.Enable = logConf.Console || logConf.File
