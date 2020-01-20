@@ -57,7 +57,7 @@ func fetch(opt types.Option) {
 		for _, record := range data.Records {
 			orders = append(orders, types.Order{
 				ID:     fmt.Sprint(record.Volume, "@", record.Price),
-				Time:   record.Time,
+				Time:   record.Time / 1000,
 				Price:  record.Price,
 				Amount: record.Volume,
 				Type:   record.Side,

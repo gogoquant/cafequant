@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/stockdb/constant"
+	"github.com/xiyanxiyan10/stockdb/sdk"
+	"github.com/xiyanxiyan10/stockdb/types"
 	"log"
 	"time"
 
 	"github.com/astaxie/beego/httplib"
 	"github.com/bitly/go-simplejson"
-	"github.com/miaolz123/conver"
-	"github.com/miaolz123/stockdb/stockdb"
+	"github.com/xiyanxiyan10/conver"
 )
 
 const (
@@ -27,15 +29,15 @@ func main() {
 	} else {
 		location = loc
 	}
-	opt := stockdb.Option{
+	opt := types.Option{
 		Market: market,
 		Symbol: symbol,
-		Period: stockdb.Day,
+		Period: constant.Day,
 	}
 	fetch(opt)
 }
 
-func fetch(opt stockdb.Option) {
+func fetch(opt types.Option) {
 	req := httplib.Get(fmt.Sprintf("https://www.quandl.com/api/v3/datasets/WIKI/%v.json?api_key=%v", symbol, apiKey))
 	if resp, err := req.Bytes(); err != nil {
 		log.Println("http error: ", err)
@@ -44,7 +46,7 @@ func fetch(opt stockdb.Option) {
 			log.Println("parse json error: ", err)
 		} else {
 			records := json.GetPath("dataset", "data")
-			ohlcs := []stockdb.OHLC{}
+			ohlcs := []types.OHLC{}
 			for i := 0; i < len(records.MustArray()); i++ {
 				record := records.GetIndex(i).MustArray()
 				t, err := time.ParseInLocation("2006-01-02", fmt.Sprint(record[0]), location)
@@ -52,7 +54,7 @@ func fetch(opt stockdb.Option) {
 					log.Println("parse time error: ", err)
 					continue
 				}
-				ohlcs = append(ohlcs, stockdb.OHLC{
+				ohlcs = append(ohlcs, types.OHLC{
 					Time:   t.Unix(),
 					Open:   conver.Float64Must(record[1]),
 					High:   conver.Float64Must(record[2]),
@@ -70,7 +72,7 @@ func fetch(opt stockdb.Option) {
 					if end > len(ohlcs) {
 						end = len(ohlcs)
 					}
-					cli := stockdb.New(uri, auth)
+					cli := sdk.NewClient(uri, auth)
 					if resp := cli.PutOHLCs(ohlcs[begin:end], opt); !resp.Success {
 						log.Println("PutOHLCs error: ", resp.Message)
 					} else {

@@ -2,13 +2,21 @@ package main
 
 import (
 	"fmt"
+	"github.com/xiyanxiyan10/stockdb/constant"
+	"github.com/xiyanxiyan10/stockdb/sdk"
+	"github.com/xiyanxiyan10/stockdb/types"
+)
 
-	"github.com/miaolz123/stockdb/stockdb"
+const (
+	uri    = "http://localhost:8765"
+	auth   = "username:password"
+	market = "haobtc"
+	symbol = "BTC/CNY"
 )
 
 func main() {
-	cli := stockdb.New("http://localhost:8765", "username:password")
-	opt := stockdb.Option{Period: stockdb.Hour}
+	cli := sdk.NewClient(uri, auth)
+	opt := types.Option{Period: constant.Hour, Symbol: symbol, Market: market}
 	fmt.Printf("%+v\n", cli.GetTimeRange(opt))
 	fmt.Printf("%+v\n", cli.GetOHLCs(opt))
 }
