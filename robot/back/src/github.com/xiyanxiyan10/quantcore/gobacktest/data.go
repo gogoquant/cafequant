@@ -115,7 +115,6 @@ func (d *Data) updateLatest(event DataEvent) {
 	if d.latest == nil {
 		d.latest = make(map[string]DataEvent)
 	}
-
 	d.latest[event.Symbol()] = event
 }
 

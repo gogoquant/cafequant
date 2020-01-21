@@ -66,9 +66,9 @@ func (t *BackTest) SetStatistic(statistic StatisticHandler) {
 // Reset the backTest into a clean state with loaded data.
 func (t *BackTest) Reset() error {
 	t.eventQueue = nil
-	t.data.Reset()
-	t.portfolio.Reset()
-	t.statistic.Reset()
+	_ = t.data.Reset()
+	_ = t.portfolio.Reset()
+	_ = t.statistic.Reset()
 	return nil
 }
 

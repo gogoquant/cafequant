@@ -84,11 +84,14 @@ type Record struct {
 
 // Option is an exchange option
 type Option struct {
-	TraderID  int64
-	Type      string
-	Name      string
-	AccessKey string
-	SecretKey string
+	TraderID      int64
+	Type          string
+	Name          string
+	AccessKey     string
+	SecretKey     string
+	backTest      bool  //是否回测
+	backTestBegin int64 //回测开始时间
+	backTestEnd   int64 //回测结束时间
 }
 
 // OrderBook struct

@@ -61,7 +61,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		lastSleep: time.Now().UnixNano(),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
-	futureExchange.SetRecordsPeriodMap(map[string]int{
+	futureExchange.SetRecordsPeriodMap(map[string]int64{
 		"M1":  goex.KLINE_PERIOD_1MIN,
 		"M5":  goex.KLINE_PERIOD_5MIN,
 		"M15": goex.KLINE_PERIOD_15MIN,
@@ -460,7 +460,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 // params[2] since
 func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-	var period = -1
+	var period int64 = -1
 	var size = 0
 	var since = 0
 	var periodStr = "M15"
@@ -483,7 +483,7 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 		since = util.IntMust(params[2])
 	}
 
-	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, period, size, since)
+	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, int(period), size, since)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
 		return false

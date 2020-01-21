@@ -6,7 +6,7 @@ type BaseExchange struct {
 	direction        string             // trade type
 	stockType        string             // stockType
 	lever            int                // lever
-	recordsPeriodMap map[string]int     // recordsPeriod support
+	recordsPeriodMap map[string]int64   // recordsPeriod support
 	minAmountMap     map[string]float64 // minAmount of trade
 }
 
@@ -61,11 +61,11 @@ func (e *BaseExchange) GetMinAmountMap() map[string]float64 {
 }
 
 // SetRecordsPeriodMap ...
-func (e *BaseExchange) SetRecordsPeriodMap(m map[string]int) {
+func (e *BaseExchange) SetRecordsPeriodMap(m map[string]int64) {
 	e.recordsPeriodMap = m
 }
 
 // GetRecordsPeriodMap ...
-func (e *BaseExchange) GetRecordsPeriodMap() map[string]int {
+func (e *BaseExchange) GetRecordsPeriodMap() map[string]int64 {
 	return e.recordsPeriodMap
 }
