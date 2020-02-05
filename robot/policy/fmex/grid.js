@@ -13,7 +13,8 @@ PriceGrid = 50
 // 价格精度
 Precision = 1
 // 开仓保护价差
-OpenProtectDiff = 10
+OpenLowDiff = 10
+OpenHighDiff = 1000
 // 买单数量
 BAmountOnce = 10
 // 卖单数量
