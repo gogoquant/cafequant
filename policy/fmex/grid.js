@@ -327,6 +327,9 @@ function valuesToString(values, pos) {
     return result;
 }
 
+function Position2Grip(wantPosition, price, money) {
+
+}
 
 function GridTrader() {
     var vId = 0;

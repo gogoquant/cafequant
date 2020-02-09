@@ -1,4 +1,0 @@
-# Quant
-auto trader framework
-
-
