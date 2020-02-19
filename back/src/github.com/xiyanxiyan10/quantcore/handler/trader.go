@@ -114,11 +114,13 @@ func (runner) Delete(req model.Trader, ctx rpc.Context) (resp response) {
 	db = db.Begin()
 
 	// delete all parameters
-	if err := self.DeleteParameters(req.ID); err != nil {
-		resp.Message = fmt.Sprint(err)
-		db.Rollback()
-		return
-	}
+	/*
+		if err := self.DeleteParameters(req.ID); err != nil {
+			resp.Message = fmt.Sprint(err)
+			db.Rollback()
+			return
+		}
+	*/
 	if err := db.Where("id = ?", req.ID).Delete(&model.Trader{}).Error; err != nil {
 		db.Rollback()
 		resp.Message = fmt.Sprint(err)

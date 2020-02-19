@@ -189,7 +189,6 @@ TradeRobot.prototype.Interval = function() {
     return this.interval
 };
 
-
 function ValidItem(val) {
     if (typeof val == undefined || val == null) {
         return false
