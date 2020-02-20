@@ -11,7 +11,7 @@ import (
 type traderExt struct{}
 
 // List ...
-func (traderExt) List(traderID int64, ctx rpc.Context) (resp response) {
+func (traderExt) List(traderID, algorithmId int64, ctx rpc.Context) (resp response) {
 	username := ctx.GetString("username")
 	if username == "" {
 		resp.Message = constant.ErrAuthorizationError
@@ -19,7 +19,7 @@ func (traderExt) List(traderID int64, ctx rpc.Context) (resp response) {
 	}
 
 	var um model.User
-	exts, err := um.ListParameters(traderID)
+	extends, err := um.ListParameters(traderID, algorithmId)
 	if err != nil {
 		resp.Message = fmt.Sprint(err)
 		return
@@ -28,15 +28,15 @@ func (traderExt) List(traderID int64, ctx rpc.Context) (resp response) {
 		Total int64
 		List  []model.TraderExt
 	}{
-		Total: int64(len(exts)),
-		List:  exts,
+		Total: int64(len(extends)),
+		List:  extends,
 	}
 	resp.Success = true
 	return
 }
 
 // Put ...
-func (traderExt) Put(req model.TraderExt, traderID int64, ctx rpc.Context) (resp response) {
+func (traderExt) Put(req model.TraderExt, bindID, bindType int64, ctx rpc.Context) (resp response) {
 	username := ctx.GetString("username")
 	if username == "" {
 		resp.Message = constant.ErrAuthorizationError
@@ -52,9 +52,16 @@ func (traderExt) Put(req model.TraderExt, traderID int64, ctx rpc.Context) (resp
 		resp.Message = fmt.Sprint(err)
 		return
 	}
-	if _, err := self.GetTrader(traderID); err != nil {
-		resp.Message = fmt.Sprint(err)
-		return
+	if bindType == 0 {
+		if _, err := self.GetTrader(bindID); err != nil {
+			resp.Message = fmt.Sprint(err)
+			return
+		}
+	}else{
+		if _, err := getalgor(bindID); err != nil {
+			resp.Message = fmt.Sprint(err)
+			return
+		}
 	}
 	defer db.Close()
 	db = db.Begin()
@@ -76,7 +83,8 @@ func (traderExt) Put(req model.TraderExt, traderID int64, ctx rpc.Context) (resp
 		return
 	}
 
-	req.TraderID = traderID
+	req.BindID = bindID
+	req.BindType = bindType
 	if err := db.Create(&req).Error; err != nil {
 		resp.Message = fmt.Sprint(err)
 		db.Rollback()
