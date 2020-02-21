@@ -174,60 +174,60 @@ func (e *FutureBackTest) GetDepth(size int) interface{} {
 // GetPosition ...
 func (e *FutureBackTest) GetPosition() interface{} {
 	/*
-		resPositionVec := []constant.Position{}
-		stockType := e.GetStockType()
-		exchangeStockType, ok := e.stockTypeMap[stockType]
-		if !ok {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is stockType")
-			return false
-		}
-		positions, err := e.api.GetFuturePosition(exchangeStockType, e.GetContractType())
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is ", err.Error())
-			return false
-		}
-		for _, position := range positions {
-			var resPosition constant.Position
-			if position.BuyAmount > 0 {
-				resPosition.Price = position.BuyPriceAvg
-				resPosition.Amount = position.BuyAmount
-				resPosition.MarginLevel = position.LeverRate
-				resPosition.Profit = position.BuyProfitReal
-				resPosition.ForcePrice = position.ForceLiquPrice
-				resPosition.TradeType = constant.TradeTypeBuy
-				resPosition.ContractType = position.ContractType
-				resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-				resPositionVec = append(resPositionVec, resPosition)
+			resPositionVec := []constant.Position{}
+			stockType := e.GetStockType()
+			exchangeStockType, ok := e.stockTypeMap[stockType]
+			if !ok {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is stockType")
+				return false
 			}
-			if position.SellAmount > 0 {
-				resPosition.Price = position.SellPriceAvg
-				resPosition.Amount = position.SellAmount
-				resPosition.MarginLevel = position.LeverRate
-				resPosition.ForcePrice = position.ForceLiquPrice
-				resPosition.TradeType = constant.TradeTypeSell
-				resPosition.ContractType = e.contractType
-				resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-				resPositionVec = append(resPositionVec, resPosition)
+			positions, err := e.api.GetFuturePosition(exchangeStockType, e.GetContractType())
+			if err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is ", err.Error())
+				return false
 			}
+			for _, position := range positions {
+				var resPosition constant.Position
+				if position.BuyAmount > 0 {
+					resPosition.Price = position.BuyPriceAvg
+					resPosition.Amount = position.BuyAmount
+					resPosition.MarginLevel = position.LeverRate
+					resPosition.Profit = position.BuyProfitReal
+					resPosition.ForcePrice = position.ForceLiquPrice
+					resPosition.TradeType = constant.TradeTypeBuy
+					resPosition.ContractType = position.ContractType
+					resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+					resPositionVec = append(resPositionVec, resPosition)
+				}
+				if position.SellAmount > 0 {
+					resPosition.Price = position.SellPriceAvg
+					resPosition.Amount = position.SellAmount
+					resPosition.MarginLevel = position.LeverRate
+					resPosition.ForcePrice = position.ForceLiquPrice
+					resPosition.TradeType = constant.TradeTypeSell
+					resPosition.ContractType = e.contractType
+					resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+					resPositionVec = append(resPositionVec, resPosition)
+				}
+			}
+			return resPositionVec
 		}
-		return resPositionVec
-	}
 
-	// SetLimit set the limit calls amount per second of this exchange
-	func (e *FutureBackTest) SetLimit(times interface{}) float64 {
-		e.limit = util.Float64Must(times)
-		return e.limit
-	}
-
-	// AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
-	func (e *FutureBackTest) AutoSleep() {
-		now := time.Now().UnixNano()
-		interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
-		if interval > 0.0 {
-			time.Sleep(time.Duration(util.Int64Must(interval)))
+		// SetLimit set the limit calls amount per second of this exchange
+		func (e *FutureBackTest) SetLimit(times interface{}) float64 {
+			e.limit = util.Float64Must(times)
+			return e.limit
 		}
-		e.lastTimes = 0
-		e.lastSleep = now
+
+		// AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
+		func (e *FutureBackTest) AutoSleep() {
+			now := time.Now().UnixNano()
+			interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
+			if interval > 0.0 {
+				time.Sleep(time.Duration(util.Int64Must(interval)))
+			}
+			e.lastTimes = 0
+			e.lastSleep = now
 
 	*/
 	return false
@@ -302,63 +302,63 @@ func (e *FutureBackTest) Buy(price, amount string, msg ...interface{}) interface
 
 func (e *FutureBackTest) Sell(price, amount string, msg ...interface{}) interface{} {
 	/*
-		var err error
-		var openType int
-		stockType := e.GetStockType()
-		exchangeStockType, ok := e.stockTypeMap[stockType]
-		if !ok {
-			e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is stockType")
-			return false
-		}
-		if err := e.ValidSell(); err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
-			return false
-		}
-		level := e.GetMarginLevel()
-		var matchPrice = 0
-		if price == "-1" {
-			matchPrice = 1
-		}
-		openType = e.tradeTypeMapReverse[e.GetDirection()]
-		orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
-			price, amount, openType, matchPrice, level)
-
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
-			return false
-		}
-		priceFloat := util.Float64Must(price)
-		amountFloat := util.Float64Must(amount)
-		e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
-		return orderId
-	}
-
-	// GetOrder get details of an order
-	func (e *FutureBackTest) GetOrder(id string) interface{} {
-		exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-		if !ok {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id), "GetOrder() error, the error number is stockType")
-			return false
-		}
-		orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetContractType())
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
-			return false
-		}
-		for _, order := range orders {
-			if id != order.OrderID2 {
-				continue
+			var err error
+			var openType int
+			stockType := e.GetStockType()
+			exchangeStockType, ok := e.stockTypeMap[stockType]
+			if !ok {
+				e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is stockType")
+				return false
 			}
-			return constant.Order{
-				Id:         order.OrderID2,
-				Price:      order.Price,
-				Amount:     order.Amount,
-				DealAmount: order.DealAmount,
-				TradeType:  e.tradeTypeMap[order.OrderType],
-				StockType:  e.GetStockType(),
+			if err := e.ValidSell(); err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+				return false
 			}
+			level := e.GetMarginLevel()
+			var matchPrice = 0
+			if price == "-1" {
+				matchPrice = 1
+			}
+			openType = e.tradeTypeMapReverse[e.GetDirection()]
+			orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+				price, amount, openType, matchPrice, level)
+
+			if err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+				return false
+			}
+			priceFloat := util.Float64Must(price)
+			amountFloat := util.Float64Must(amount)
+			e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+			return orderId
 		}
-		return false
+
+		// GetOrder get details of an order
+		func (e *FutureBackTest) GetOrder(id string) interface{} {
+			exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+			if !ok {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id), "GetOrder() error, the error number is stockType")
+				return false
+			}
+			orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetContractType())
+			if err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
+				return false
+			}
+			for _, order := range orders {
+				if id != order.OrderID2 {
+					continue
+				}
+				return constant.Order{
+					Id:         order.OrderID2,
+					Price:      order.Price,
+					Amount:     order.Amount,
+					DealAmount: order.DealAmount,
+					TradeType:  e.tradeTypeMap[order.OrderType],
+					StockType:  e.GetStockType(),
+				}
+			}
+			return false
 
 	*/
 	return false
@@ -367,55 +367,55 @@ func (e *FutureBackTest) Sell(price, amount string, msg ...interface{}) interfac
 // GetOrders get all unfilled orders
 func (e *FutureBackTest) GetOrders() interface{} {
 	/*
-		exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-		if !ok {
-			e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
-			return false
-		}
-		orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetStockType())
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
-			return false
-		}
-		resOrders := []constant.Order{}
-		for _, order := range orders {
-			resOrder := constant.Order{
-				Id:         order.OrderID2,
-				Price:      order.Price,
-				Amount:     order.Amount,
-				DealAmount: order.DealAmount,
-				TradeType:  e.tradeTypeMap[order.OrderType],
-				StockType:  e.GetStockType(),
+			exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+			if !ok {
+				e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
+				return false
 			}
-			resOrders = append(resOrders, resOrder)
+			orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetStockType())
+			if err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
+				return false
+			}
+			resOrders := []constant.Order{}
+			for _, order := range orders {
+				resOrder := constant.Order{
+					Id:         order.OrderID2,
+					Price:      order.Price,
+					Amount:     order.Amount,
+					DealAmount: order.DealAmount,
+					TradeType:  e.tradeTypeMap[order.OrderType],
+					StockType:  e.GetStockType(),
+				}
+				resOrders = append(resOrders, resOrder)
+			}
+			return resOrders
 		}
-		return resOrders
-	}
 
-	// GetTrades get all filled orders recently
-	func (e *FutureBackTest) GetTrades(params ...interface{}) interface{} {
-		var traders []constant.Trader
-		exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-		if !ok {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
-			return false
-		}
-		APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
-		if err != nil {
-			return false
-		}
-		for _, APITrader := range APITraders {
-			trader := constant.Trader{
-				Id:        APITrader.Tid,
-				TradeType: e.tradeTypeMap[int(APITrader.Type)],
-				Amount:    APITrader.Amount,
-				Price:     APITrader.Price,
-				StockType: e.stockTypeMapReverse[APITrader.Pair],
-				Time:      APITrader.Date,
+		// GetTrades get all filled orders recently
+		func (e *FutureBackTest) GetTrades(params ...interface{}) interface{} {
+			var traders []constant.Trader
+			exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+			if !ok {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
+				return false
 			}
-			traders = append(traders, trader)
-		}
-		return traders
+			APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
+			if err != nil {
+				return false
+			}
+			for _, APITrader := range APITraders {
+				trader := constant.Trader{
+					Id:        APITrader.Tid,
+					TradeType: e.tradeTypeMap[int(APITrader.Type)],
+					Amount:    APITrader.Amount,
+					Price:     APITrader.Price,
+					StockType: e.stockTypeMapReverse[APITrader.Pair],
+					Time:      APITrader.Date,
+				}
+				traders = append(traders, trader)
+			}
+			return traders
 
 	*/
 	return false
