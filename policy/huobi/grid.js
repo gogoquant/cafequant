@@ -106,8 +106,10 @@ function _N(num, pre) {
 */
 
 // @Todo 
-// 1. 多空仓位对冲的双向网格,对冲时多空比例的控制
-// 2. 实际使用中发现，是否各个网格的量应该距离fish开始价格越远则量按照一定比例更为离散
+// 1. 空方向测试
+// 2. 多空双向使用一套程序
+// 3. 平仓考虑整体规划挂单
+// 4. 考虑使用其他算法，调整网格的离散度
 
 // ArrayQueue 队列
 ArrayQueue = function() {
@@ -753,7 +755,7 @@ function fishing(orgAccount, fishCount) {
         }
         var needStocks = Order2Cost(nextPrice, BuyFirst ? BAmountOnce : SAmountOnce, ticker.Last)
         Log("下单需要stock:", needStocks);
-        if (needStocks >= account.Stocks* MarginLevel) {
+        if (needStocks >= account.Stocks * MarginLevel) {
             Log("需要的stock不足:", needStocks)
             gridTrader.Poll(ticker, orders)
             Sleep(Interval);
@@ -780,8 +782,8 @@ function fishing(orgAccount, fishCount) {
 }
 
 function main() {
-    exchange.SetContractType(ContractType) // 举例设置为OKEX期货当周合约
-    exchange.SetMarginLevel(MarginLevel); // 设置杠杆为5倍
+    exchange.SetContractType(ContractType) // 设置合约
+    exchange.SetMarginLevel(MarginLevel); // 设置杠杆
     blockGetInfo(onAccount)
     var orgAccount = globalInfo.account
     var fishCount = 1;
