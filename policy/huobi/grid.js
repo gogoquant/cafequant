@@ -7,13 +7,13 @@ LowBox = 9500
 // 网格方向
 BuyFirst = 1
 // 计划持仓量
-MaxPosition = 2
+MaxPosition = 10
 // 网格价格距离
 GridOffset = 50
 // 价格精度
 Precision = 1
 // 开仓保护价差
-OpenProtect = 1
+OpenProtect = 100
 // 买单数量
 BAmountOnce = 1
 // 卖单数量
@@ -36,7 +36,7 @@ AutoMove = 1
 MaxDistance = 300
 // 最大空仓时间
 HoldTime = 1000 * 60 * 5
-// 收网周期
+// 收网检测周期
 FishCheckTime = 1000 * 60 * 3
 // 最小周期
 Interval = 1000 * 60 * 1
@@ -65,6 +65,7 @@ var ORDER_TYPE_SELL = 1;
 var holdTimer = new TradeRobot("hold")
 var fishCheckTimer = new TradeRobot("check")
 var firstPrice = -1
+var orgAccount = new Object()
 
 /*
  * Only used for test
@@ -525,7 +526,7 @@ function GridTrader() {
 
     // 遍历所有各自尝试转换状态机
     this.Poll = function(ticker, orders) {
-        var deleteBooks = []
+        var deleteBooks = new Object();
         for (orderId in orderBooks) {
             var order = orderBooks[orderId];
             this.PollOne(order, ticker, orders)
@@ -535,7 +536,7 @@ function GridTrader() {
             }
         }
         for (orderId in deleteBooks) {
-            hisBooks[orderId] = order;
+            hisBooks[orderId] = deleteBooks[orderId];
             hisBooksLen++;
             delete(orderBooks[orderId])
             orderBooksLen--;
@@ -647,13 +648,14 @@ function fishingCheck(orgAccount, grid) {
         }
         msg += "\n"
         var account = globalInfo.account
-        oldStock = orgAccount.Sotcks + orgAccount.FrozenStocks + 0.0001
+        oldStock = orgAccount.Stocks + orgAccount.FrozenStocks + 0.00000001
         currStock = account.Stocks + account.FrozenStocks
-        diffStock = oldStock - currStock
-        msg += "原货币量:" + String(oldStock) + "\n"
-        msg += "现货币量:" + String(currStock) + "\n"
-        msg += "盈亏量:" + String(diffStock) + "\n"
-        msg += "盈亏率" + String(diffStock * 1.0 / oldStock * 100) + "%\n"
+        diffStock = currStock - oldStock
+        msg += "总原货币量:" + String(_N(oldStock, 6)) + "\n"
+        msg += "总现货币量:" + String(_N(currStock, 6)) + "\n"
+        msg += "总盈亏量:" + String(_N(diffStock, Precision)) + "\n"
+        msg += "总盈亏率" + String(_N(diffStock * 1.0 / oldStock * 100, 6)) + "%\n"
+        LogStatus(msg)
         grid.Debug()
     }
 
@@ -785,7 +787,7 @@ function main() {
     exchange.SetContractType(ContractType) // 设置合约
     exchange.SetMarginLevel(MarginLevel); // 设置杠杆
     blockGetInfo(onAccount)
-    var orgAccount = globalInfo.account
+    var orgAccount = Object.assign({}, globalInfo.account);
     var fishCount = 1;
     Log("Stocks:", orgAccount.Stocks, "FrozenStocks:", orgAccount.FrozenStocks);
     while (true) {
