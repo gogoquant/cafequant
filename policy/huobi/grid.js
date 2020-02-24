@@ -1,23 +1,23 @@
 // 滑点
 Slide = 0.1
 // 箱体上沿
-HighBox = 9900
+HighBox = 11000
 // 箱体下沿
-LowBox = 8000
+LowBox = 9500
 // 网格方向
 BuyFirst = 1
 // 计划持仓量
-MaxPosition = 100
+MaxPosition = 2
 // 网格价格距离
 GridOffset = 50
 // 价格精度
 Precision = 1
 // 开仓保护价差
-OpenProtect = 1000
+OpenProtect = 1
 // 买单数量
-BAmountOnce = 10
+BAmountOnce = 1
 // 卖单数量
-SAmountOnce = 10
+SAmountOnce = 1
 // 是否止损
 EnableStopLoss = 1
 // 止损模式
@@ -35,11 +35,17 @@ AutoMove = 1
 // 仓位当前价格最大价差
 MaxDistance = 300
 // 最大空仓时间
-HoldTime = 1000 * 60 * 10
+HoldTime = 1000 * 60 * 5
 // 收网周期
-FishCheckTime = 1000 * 60 * 5
+FishCheckTime = 1000 * 60 * 3
 // 最小周期
-Interval = 1000 * 60 * 2
+Interval = 1000 * 60 * 1
+// 盈利滑动
+ProfitPrice = 5
+// 合约
+ContractType = "this_week"
+// 杠杆
+MarginLevel = 10
 
 // local
 var globalInfo = {
@@ -58,11 +64,13 @@ var ORDER_TYPE_SELL = 1;
 // 持仓定时器
 var holdTimer = new TradeRobot("hold")
 var fishCheckTimer = new TradeRobot("check")
+var firstPrice = -1
 
 /*
  * Only used for test
  */
 
+/*
 function Log(val) {
     console.log(val)
 }
@@ -85,6 +93,7 @@ Exchange = function() {
 
 exchange = new Exchange()
 
+
 function _N(num, pre) {
     var str1 = String(num); //将类型转化为字符串类型
     if (str1.indexOf('.') < 0) {
@@ -94,7 +103,7 @@ function _N(num, pre) {
     var num = Number(str); //转化为number类型
     return num
 }
-
+*/
 
 // 1. 准备撒网阶段首先以当前买一或卖一位置预留一段保护价格算出网格起使价格
 // 2. 判断资金量是否充足以及利用起使价格计算网格位置
@@ -179,7 +188,7 @@ TradeRobot.prototype.AddInterval = function(num) {
     this.nextTime = (new Date()).valueOf() + num
 };
 
-TradeRobot.prototype.CheckInterval = function() {
+TradeRobot.prototype.Timeout = function() {
     this.leftTime = this.nextTime - (new Date()).valueOf()
     return this.leftTime >= 0 ? 0 : 1
 };
@@ -247,7 +256,7 @@ function blockGetInfo() {
 }
 
 function Order2Cost(price, amount, last) {
-    return _N(1.0 * price * amount / last)
+    return _N(1.0 * price * amount * 0.01 / last)
 }
 
 function hasOrder(orders, orderId) {
@@ -340,10 +349,11 @@ function valuesToString(values, pos) {
 
 function GridTrader() {
     var vId = 0;
-    var orderBooks = [];
-    var hisBooks = [];
+    var orderBooks = new Object();
+    var hisBooks = new Object();
     var orderBooksLen = 0;
     var hisBooksLen = 0;
+    var openLen = 0;
     var profitPrice = -1
     var lastOrderPrice = -1
 
@@ -355,7 +365,28 @@ function GridTrader() {
         return profitPrice
     }
 
+    this.Debug = function() {
+        Log("open len:", openLen);
+        Log("Orders List:")
+        for (orderId in orderBooks) {
+            Log(orderBooks[orderId])
+        }
+        Log("HisOrders List:")
+        for (orderId in hisBooks) {
+            Log(hisBooks[orderId])
+        }
+        return
+    }
+
+
+    this.OpenLen = function() {
+        return openLen
+    }
+
     this.Buy = function(price, amount, extra) {
+        Log("Buy price: " + price + ", amount: " + amount + ", extra:" + extra)
+        //return
+
         if (typeof(extra) === 'undefined') {
             extra = '';
         } else {
@@ -375,10 +406,14 @@ function GridTrader() {
             Amount: amount,
             Extra: extra
         };
+        openLen++;
         orderBooksLen++;
         return orderId;
     };
     this.Sell = function(price, amount, extra) {
+        Log("Sell price: " + price + ", amount: " + amount + ", extra:" + extra)
+        //return
+
         if (typeof(extra) === 'undefined') {
             extra = '';
         } else {
@@ -398,6 +433,7 @@ function GridTrader() {
             Amount: amount,
             Extra: extra
         };
+        openLen++;
         orderBooksLen++;
         return orderId;
     };
@@ -447,7 +483,9 @@ function GridTrader() {
     // 一个格子的状态机转换
     this.PollOne = function(order, ticker, exchangeOrders) {
         var pfn = order.Type == ORDER_TYPE_BUY ? exchange.Buy : exchange.Sell;
+        var pfnDir = order.Type == ORDER_TYPE_BUY ? "buy" : "sell";
         var coverPfn = order.Type == ORDER_TYPE_BUY ? exchange.Sell : exchange.Buy;
+        var coverPfnDir = order.Type == ORDER_TYPE_BUY ? "closebuy" : "closesell";
 
         // 等待开仓的订单
         if (order.Status == STATE_WAIT_OPEN) {
@@ -456,8 +494,9 @@ function GridTrader() {
             if (diff < 0) {
                 return
             }
+            exchange.SetDirection(pfnDir);
             var realId = pfn(order.Price, order.Amount, order.Extra + "(距离: " + diff + (order.Type == ORDER_TYPE_BUY ? (" 买一: " + ticker.Buy) : (" 卖一: " + ticker.Sell)) + ")" + " VID:" + order.VID);
-            if (typeof(realId) === 'number') {
+            if (realId != null) {
                 order.OpenId = realId;
                 order.Status = STATE_WAIT_COVER
             }
@@ -468,10 +507,12 @@ function GridTrader() {
         if (order.Status == STATE_WAIT_COVER) {
             var found = hasOrder(exchangeOrders, order.OpenId)
             if (!found) {
+                exchange.SetDirection(coverPfnDir);
                 var realId = coverPfn(order.CoverPrice, order.Amount, order.Extra + " 平仓 价格:" + order.CoverPrice + " VID:" + order.VID);
-                if (typeof(realId) === 'number') {
+                if (realId != null) {
                     order.CoverId = realId;
                     order.Status = STATE_WAIT_CLOSE
+                    openLen--;
                 }
             }
             return
@@ -479,9 +520,9 @@ function GridTrader() {
 
         //  等待完结的订单
         if (order.Status == STATE_WAIT_CLOSE) {
-            Log("close order:" + order.CoverId)
             var found = hasOrder(exchangeOrders, order.CoverId)
             if (!found) {
+                Log("close order:" + order.CoverId)
                 order.Status = STATE_END_CLOSE;
             }
             return
@@ -510,6 +551,7 @@ function GridTrader() {
 
 // 动态再平衡
 function balanceAccount() {
+    Log("平衡账户")
     cancelPending();
     while (true) {
         blockGetInfo(onOrders, onPosition)
@@ -528,7 +570,7 @@ function balanceAccount() {
             exchange.SetDirection('buy')
             var closeId = exchange.Buy(-1, leftAmount, '平空仓')
         }
-        Sleep(2000);
+        Sleep(Interval);
         cancelPending();
     }
     Log("平衡完成");
@@ -556,7 +598,7 @@ function getHoldPosition(positions, dir) {
 }
 
 // return 0-continue 1-fish again 2-exit app 3-continue
-function fishingCheck(orgAccount) {
+function fishingCheck(orgAccount, grid) {
     var msg = ""
     var ticker = globalInfo.ticker
     var positions = globalInfo.positions
@@ -568,7 +610,7 @@ function fishingCheck(orgAccount) {
         holdAmount = position.Amount
     }
 
-    if (fishCheckTimer.CheckInterval()) {
+    if (fishCheckTimer.Timeout()) {
         fishCheckTimer.SetInterval(FishCheckTime)
 
         if (isHold) {
@@ -596,7 +638,7 @@ function fishingCheck(orgAccount) {
                 distance = firstPrice - ticker.Last;
             }
             var refish = false;
-            if (!isHold && holdTimer.CheckInterval()) {
+            if (!isHold && holdTimer.Timeout()) {
                 Log("空仓过久, 开始移动网格");
                 refish = 1;
             }
@@ -612,17 +654,17 @@ function fishingCheck(orgAccount) {
         msg += "\n"
         var account = globalInfo.account
         oldStock = orgAccount.Sotcks + orgAccount.FrozenStocks + 0.0001
-        currStock = account.Stocks + acount.FrozenStocks
+        currStock = account.Stocks + account.FrozenStocks
         diffStock = oldStock - currStock
         msg += "原货币量:" + String(oldStock) + "\n"
         msg += "现货币量:" + String(currStock) + "\n"
         msg += "盈亏量:" + String(diffStock) + "\n"
         msg += "盈亏率" + String(diffStock * 1.0 / oldStock * 100) + "%\n"
-        LogStatus(msg);
+        grid.Debug()
     }
 
     // 检查后发现持仓达到期望后不需要继续追加持仓
-    if (isHold && holdAmount > 0 && holdAmount <= MaxPosition) {
+    if (isHold && holdAmount > 0 && holdAmount >= MaxPosition) {
         return 3
     }
     return 0
@@ -651,23 +693,29 @@ function nextGridPrice(ticker, lastPrice) {
 
 function fishing(orgAccount, fishCount) {
     var gridTrader = new GridTrader();
+    gridTrader.SetProfitPrice(ProfitPrice)
 
     holdTimer.SetInterval(HoldTime)
     fishCheckTimer.SetInterval(FishCheckTime)
-    var firstPrice = -1
+    var lastPrice = -1
     while (true) {
         blockGetInfo(onOrders, onTicker, onPosition, onAccount)
         var isHold = false
         var ticker = globalInfo.ticker
         var orders = globalInfo.orders
         var account = globalInfo.account
+        Log("Debug orderbook")
+        gridTrader.Debug()
 
         //超出网格则停止机器人
         if (ticker.Last < LowBox || ticker.Last > HighBox) {
+            Log("当前价格超过箱体 last:", ticker.Last, " lowbox:", LowBox, " HighBox:", HighBox)
             return false
         }
 
-        var checkFlag = fishingCheck(orgAccount)
+        var checkFlag = fishingCheck(orgAccount, gridTrader)
+
+        Log("checkflag is:", checkFlag);
 
         if (checkFlag == 0) {
 
@@ -682,50 +730,70 @@ function fishing(orgAccount, fishCount) {
         }
 
         if (checkFlag == 3) {
-            gridTrader.Poll(ticker, orders, PriceDiff)
-            Sleep(CheckInterval);
+            gridTrader.Poll(ticker, orders)
+            Sleep(Interval);
             continue
         }
 
-        var nextpirce = -1
-        lastPrice = gridTrader.GetLastOrderPrice()
-        if (lastPice < 0) {
+        if (gridTrader.OpenLen() > 0) {
+            gridTrader.Poll(ticker, orders)
+            Sleep(Interval);
+            continue
+        }
+
+        var nextPrice = -1
+        //lastPrice = gridTrader.GetLastOrderPrice()
+        if (lastPrice < 0) {
             firstPrice = BuyFirst ? _N(ticker.Buy - OpenProtect, Precision) : _N(ticker.Sell + OpenProtect, Precision);
             nextPrice = firstPrice
+            Log("ticker.Buy:", ticker.Buy, "ticker.Sell:", ticker.Sell)
+            Log("初始fish nextPrice:", nextPrice)
             // need to open new one
-        } else if (gridTrader.Len() == 0) {
+        } else {
             nextPrice = nextGridPrice(ticker, lastPrice)
             // out of box
             if (nextPrice < 0) {
                 Log("尝试挂单位置超过箱体，放弃挂单")
-                return false
-            }
-            var needStocks = Order2Cost(nextpirce, BuyFirst ? BAmountOnce : SAmountOnce, ticker.last)
-            if (needStocks >= account.Stocks) {
-                Log("需要的stock不足:", needStocks)
-                gridTrader.Poll(ticker, orders, PriceDiff)
-                Sleep(CheckInterval);
+                gridTrader.Poll(ticker, orders)
+                Sleep(Interval);
                 continue
             }
-
-            if (BuyFirst) {
-                gridTrader.Buy(nextpirce, BAmountOnce, "")
-            } else {
-                gridTrader.Sell(nextpirce, SAmountOnce, "")
-            }
         }
-        gridTrader.Poll(ticker, orders, PriceDiff)
-        Sleep(CheckInterval);
+        var needStocks = Order2Cost(nextPrice, BuyFirst ? BAmountOnce : SAmountOnce, ticker.Last)
+        Log("下单需要stock:", needStocks);
+        if (needStocks >= account.Stocks* MarginLevel) {
+            Log("需要的stock不足:", needStocks)
+            gridTrader.Poll(ticker, orders)
+            Sleep(Interval);
+            continue
+        }
+
+        if (BuyFirst) {
+            gridTrader.Buy(nextPrice, BAmountOnce, "")
+        } else {
+            gridTrader.Sell(nextPrice, SAmountOnce, "")
+        }
+        Log("Debug orderbook after open")
+        gridTrader.Debug()
+
+        gridTrader.Poll(ticker, orders)
+
+        Log("Debug orderbook after poll")
+        gridTrader.Debug()
+
+        lastPrice = nextPrice
+        Sleep(Interval);
     }
     return true;
 }
 
 function main() {
-    BuyFirst = (OpType == 0);
+    exchange.SetContractType(ContractType) // 举例设置为OKEX期货当周合约
+    exchange.SetMarginLevel(MarginLevel); // 设置杠杆为5倍
     blockGetInfo(onAccount)
     var orgAccount = globalInfo.account
     var fishCount = 1;
-    return
+    Log("Stocks:", orgAccount.Stocks, "FrozenStocks:", orgAccount.FrozenStocks);
     while (true) {
         if (!fishing(orgAccount, fishCount)) {
             break;
@@ -755,7 +823,7 @@ console.log(checkInfo() ? "checkInfo Success" : "checkInfo Fail")
  * Test function for gridTrader
  */
 
-
+/*
 console.log(exchange.Buy(9000, 100, "buy"))
 console.log(exchange.Sell(9000, 100, "sell"))
 grid = new GridTrader()
@@ -819,3 +887,4 @@ HighBox = 9900
 LowBox = 7001
 ticker.Buy = 7050
 Log(nextGridPrice(ticker, 8000))
+*/
