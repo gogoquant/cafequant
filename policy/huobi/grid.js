@@ -1,23 +1,24 @@
+Coin = "BTC";
 // 滑点
 Slide = 0.1;
 // 箱体上沿
-HighBox = 11000;
+HighBox = 10000;
 // 箱体下沿
-LowBox = 9500;
+LowBox = 8500;
 // 网格方向
 BuyFirst = 1;
 // 计划持仓量
-MaxPosition = 10;
+MaxPosition = 20;
 // 网格价格距离
 GridOffset = 50;
 // 价格精度
 Precision = 1;
 // 开仓保护价差
-OpenProtect = 100;
+OpenProtect = 5;
 // 买单数量
-BAmountOnce = 1;
+BAmountOnce = 4;
 // 卖单数量
-SAmountOnce = 1;
+SAmountOnce = 4;
 // 是否止损
 EnableStopLoss = 1;
 // 止损模式
@@ -25,7 +26,7 @@ StopLossMode = 0;
 // 是否止盈
 EnableStopWin = 1;
 // 止损盈亏损率
-StopLoss = 20;
+StopLoss = 40;
 // 止盈率
 StopWin = 10;
 // 最小量
@@ -37,21 +38,21 @@ MaxDistance = 300;
 // 最大空仓时间
 HoldTime = 1000 * 60 * 5;
 // 收网检测周期
-FishCheckTime = 1000 * 60 * 3;
+FishCheckTime = 1000 * 60 * 1;
 // 最小周期
 Interval = 1000 * 60 * 1;
 // 盈利滑动
-ProfitPrice = 5;
+ProfitPrice = 10;
 // 合约
 ContractType = "this_week";
 // 杠杆
 MarginLevel = 10;
+// 合约列表
+ContractVec = ["this_week", "next_week", "quarter"];
 
 // local
 var globalInfo = {};
 
-var ProfitCount = 0;
-var globalInfo = {};
 var STATE_WAIT_OPEN = "wait_open";
 var STATE_WAIT_COVER = "wait_cover";
 var STATE_WAIT_CLOSE = "wait_close";
@@ -106,9 +107,9 @@ function _N(num, pre) {
 
 // @Todo
 // 1. 空方向测试
-// 2. 多空双向使用一套程序
-// 3. 平仓考虑整体规划挂单
-// 4. 考虑使用其他算法，调整网格的离散度
+// 2. 多空双向使用一套程序管理两个仓位?
+// 3. 平仓挂单和开仓挂单本质无强关联，是否分批平仓单策略只通过当前仓为平均价格来推算挂平仓单的方式?
+// 4. 考虑使用其他算法，调整网格的离散度?
 
 // ArrayQueue 队列
 ArrayQueue = function() {
@@ -199,6 +200,10 @@ function ValidItem(val) {
     return false;
   }
   return true;
+}
+
+function position2Rate(position, price) {
+  return ((position.Profit * price) / position.Amount) * MarginLevel;
 }
 
 function initInfo() {
@@ -337,6 +342,17 @@ function valuesToString(values, pos) {
     }
   }
   return result;
+}
+
+function account2balance(account, symbol) {
+  data = account.Info.data;
+  for (j = 0, len = data.length; j < len; j++) {
+    info = data[j];
+    if (info.symbol == symbol) {
+      return info.margin_balance;
+    }
+  }
+  return null;
 }
 
 function GridTrader() {
@@ -568,6 +584,7 @@ function balanceAccount() {
     if (positions.length == 0 && orders.length == 0) {
       break;
     }
+    pos = positions;
     var leftAmount = pos[0].Amount;
     if (pos[0].Type == 0) {
       //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
@@ -629,15 +646,20 @@ function fishingCheck(orgAccount, grid) {
     }
 
     if (isHold) {
+      var profitRate = position2Rate(position, globalInfo.ticker.Last);
+      Log("仓位 profit:", profitRate);
       msg +=
         "持仓: " +
-        positions[0].Amount +
+        position.Amount +
         " 持仓均价: " +
-        _N(positions[0].Price) +
-        " 浮动盈亏: " +
-        _N(positions[0].Profit);
-      if (EnableStopLoss && -positions[0].Profit >= StopLoss) {
-        Log("当前浮动盈亏", positions[0].Profit, "开始止损");
+        _N(position.Price, Precision) +
+        " 浮动盈亏量: " +
+        _N(position.Profit, Precision) +
+        " 浮动盈亏率" +
+        _N(profitRate, Precision);
+
+      if (EnableStopLoss && profitRate + StopLoss < 0) {
+        Log("当前浮动盈亏", profitRate, "开始止损");
         balanceAccount();
         if (StopLossMode === 0) {
           return 2;
@@ -675,8 +697,8 @@ function fishingCheck(orgAccount, grid) {
     }
     msg += "\n";
     var account = globalInfo.account;
-    oldStock = orgAccount.Stocks + orgAccount.FrozenStocks + 0.00000001;
-    currStock = account.Stocks + account.FrozenStocks;
+    oldStock = orgAccount.totBalance + 0.00000001;
+    currStock = account2balance(account, Coin);
     diffStock = currStock - oldStock;
     msg += "总原货币量:" + String(_N(oldStock, 6)) + "\n";
     msg += "总现货币量:" + String(_N(currStock, 6)) + "\n";
@@ -828,10 +850,29 @@ function fishing(orgAccount, fishCount) {
 function main() {
   exchange.SetContractType(ContractType); // 设置合约
   exchange.SetMarginLevel(MarginLevel); // 设置杠杆
-  blockGetInfo(onAccount);
+  blockGetInfo(onAccount, onPosition, onTicker);
   var orgAccount = Object.assign({}, globalInfo.account);
   var fishCount = 1;
-  Log("Stocks:", orgAccount.Stocks, "FrozenStocks:", orgAccount.FrozenStocks);
+  var totBalance = account2balance(orgAccount, Coin);
+  orgAccount.totBalance = totBalance;
+  Log(
+    "Stocks:",
+    orgAccount.Stocks,
+    "FrozenStocks:",
+    orgAccount.FrozenStocks,
+    "totBalance:",
+    orgAccount.totBalance
+  );
+  var position = BuyFirst
+    ? getHoldPosition(globalInfo.positions, 0)
+    : getHoldPosition(globalInfo.positions, 1);
+  if (position != null) {
+    Log("仓位 amount:", position.Amount);
+    Log("仓位 price:", position.Price);
+    Log("仓位 profit:", position.Profit);
+    Log("仓位 rate:", position2Rate(position, globalInfo.ticker.Last));
+  }
+
   while (true) {
     if (!fishing(orgAccount, fishCount)) {
       break;
