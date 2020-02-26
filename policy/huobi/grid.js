@@ -4,11 +4,11 @@ Slide = 0.1;
 // 箱体上沿
 HighBox = 10000;
 // 箱体下沿
-LowBox = 8500;
+LowBox = 8000;
 // 网格方向
-BuyFirst = 1;
+BuyFirst = 0;
 // 计划持仓量
-MaxPosition = 20;
+MaxPosition = 10;
 // 网格价格距离
 GridOffset = 50;
 // 价格精度
@@ -16,9 +16,9 @@ Precision = 1;
 // 开仓保护价差
 OpenProtect = 5;
 // 买单数量
-BAmountOnce = 4;
+BAmountOnce = 2;
 // 卖单数量
-SAmountOnce = 4;
+SAmountOnce = 2;
 // 是否止损
 EnableStopLoss = 1;
 // 止损模式
@@ -26,7 +26,7 @@ StopLossMode = 0;
 // 是否止盈
 EnableStopWin = 1;
 // 止损盈亏损率
-StopLoss = 40;
+StopLoss = 30;
 // 止盈率
 StopWin = 10;
 // 最小量
@@ -688,7 +688,7 @@ function fishingCheck(orgAccount, grid) {
           "当前价格:",
           ticker.Last
         );
-        refish = 1;
+        //refish = 1;
       }
       if (refish) {
         balanceAccount();
