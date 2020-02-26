@@ -589,11 +589,11 @@ function balanceAccount() {
     if (pos[0].Type == 0) {
       //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
       Log("平多仓", leftAmount);
-      exchange.SetDirection("sell");
+      exchange.SetDirection("closebuy");
       var closeId = exchange.Sell(-1, leftAmount, "平多仓");
     } else {
       Log("平空仓", leftAmount);
-      exchange.SetDirection("buy");
+      exchange.SetDirection("closesell");
       var closeId = exchange.Buy(-1, leftAmount, "平空仓");
     }
     Sleep(Interval);
