@@ -5,7 +5,7 @@ Slide = 0.1;
 // 箱体上沿
 HighBox = 10000;
 // 箱体下沿
-LowBox = 8000;
+LowBox = 8600;
 // 网格方向
 BuyFirst = 0;
 // 计划持仓量
@@ -655,7 +655,7 @@ function fishingCheck(orgAccount, grid) {
         " 持仓均价: " +
         _N(position.Price, Precision) +
         " 浮动盈亏量: " +
-        _N(position.Profit, Precision) +
+        _N(position.Profit) +
         " 浮动盈亏率" +
         _N(profitRate, Precision);
 
@@ -709,7 +709,7 @@ function fishingCheck(orgAccount, grid) {
     diffStock = currStock - oldStock;
     msg += "总原货币量:" + String(_N(oldStock, 6)) + "\n";
     msg += "总现货币量:" + String(_N(currStock, 6)) + "\n";
-    msg += "总盈亏量:" + String(_N(diffStock, Precision)) + "\n";
+    msg += "总盈亏量:" + String(_N(diffStock)) + "\n";
     msg +=
       "总盈亏率" + String(_N(((diffStock * 1.0) / oldStock) * 100, 6)) + "%\n";
     LogStatus(msg);
