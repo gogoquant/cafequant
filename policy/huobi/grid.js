@@ -8,7 +8,7 @@ LowBox = 8000;
 // 网格方向
 BuyFirst = 0;
 // 计划持仓量
-MaxPosition = 10;
+MaxPosition = 20;
 // 网格价格距离
 GridOffset = 50;
 // 价格精度
@@ -40,9 +40,9 @@ HoldTime = 1000 * 60 * 5;
 // 收网检测周期
 FishCheckTime = 1000 * 60 * 1;
 // 最小周期
-Interval = 1000 * 60 * 1;
+Interval = 1000 * 10 * 1;
 // 盈利滑动
-ProfitPrice = 10;
+ProfitPrice = 51;
 // 合约
 ContractType = "this_week";
 // 杠杆
