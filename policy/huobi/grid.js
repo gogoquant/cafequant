@@ -1,3 +1,4 @@
+// coin type
 Coin = "BTC";
 // 滑点
 Slide = 0.1;
@@ -28,7 +29,7 @@ EnableStopWin = 1;
 // 止损盈亏损率
 StopLoss = 30;
 // 止盈率
-StopWin = 10;
+StopWin = 15;
 // 最小量
 MinStock = 0.1;
 // 是否自动移动价格
@@ -42,9 +43,9 @@ FishCheckTime = 1000 * 60 * 1;
 // 最小周期
 Interval = 1000 * 10 * 1;
 // 盈利滑动
-ProfitPrice = 51;
+ProfitPrice = 25;
 // 合约
-ContractType = "this_week";
+ContractType = "quarter";
 // 杠杆
 MarginLevel = 10;
 // 合约列表
@@ -666,6 +667,12 @@ function fishingCheck(orgAccount, grid) {
         }
         return 1;
       }
+
+      if (EnableStopWin && profitRate - StopWin > 0) {
+        Log("当前浮动盈亏", profitRate, "开始止盈");
+        balanceAccount();
+        return 1;
+      }
     } else {
       msg += "空仓";
     }
@@ -752,8 +759,6 @@ function fishing(orgAccount, fishCount) {
     var ticker = globalInfo.ticker;
     var orders = globalInfo.orders;
     var account = globalInfo.account;
-    Log("Debug orderbook");
-    gridTrader.Debug();
 
     //超出网格则停止机器人
     if (ticker.Last < LowBox || ticker.Last > HighBox) {
@@ -833,13 +838,8 @@ function fishing(orgAccount, fishCount) {
     } else {
       gridTrader.Sell(nextPrice, SAmountOnce, "");
     }
-    Log("Debug orderbook after open");
-    gridTrader.Debug();
 
     gridTrader.Poll(ticker, orders);
-
-    Log("Debug orderbook after poll");
-    gridTrader.Debug();
 
     lastPrice = nextPrice;
     Sleep(Interval);
