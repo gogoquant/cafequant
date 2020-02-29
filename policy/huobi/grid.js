@@ -64,6 +64,10 @@ var ORDER_TYPE_SELL = 1;
 
 // 持仓定时器
 var holdTimer = new TradeRobot("hold");
+
+var reverseholdTimer = new TradeRobot("reversehold");
+var LastPositionAmount = 0;
+
 var fishCheckTimer = new TradeRobot("check");
 var firstPrice = -1;
 var orgAccount = new Object();
@@ -765,6 +769,8 @@ function fishing(orgAccount, fishCount) {
   gridTrader.SetProfitPrice(ProfitPrice);
 
   holdTimer.SetInterval(HoldTime);
+  reverseholdTimer.SetInterval(HoldTime);
+
   fishCheckTimer.SetInterval(FishCheckTime);
   var lastPrice = -1;
   while (true) {
