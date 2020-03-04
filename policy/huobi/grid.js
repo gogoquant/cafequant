@@ -66,7 +66,7 @@ var ORDER_TYPE_SELL = 1;
 var holdTimer = new TradeRobot("hold");
 
 var reverseholdTimer = new TradeRobot("reversehold");
-var reverseAmount = 0;
+var reverseAmountOld = 0;
 
 var fishCheckTimer = new TradeRobot("check");
 var firstPrice = -1;
@@ -535,10 +535,10 @@ function GridTrader() {
     if (order.Status == STATE_WAIT_COVER) {
       var found = hasOrder(exchangeOrders, order.OpenId);
       if (!found) {
-        var positionReverse = ext.positionReverse;
-        if (positionReverse != null) {
+        var reverseMsg = ext.reverse;
+        if (reverseMsg != null) {
           order.CoverId = order.OpenId;
-          order.Extra = order.Extra + " reverse:" + positionReverse;
+          order.Extra = order.Extra + " reverse:" + reverseMsg;
           order.Status = STATE_WAIT_CLOSE;
           return;
         }
@@ -602,17 +602,12 @@ function getHoldPosition(positions, dir) {
   return null;
 }
 
-// reversePosition get the reverse position from position
+// reversePosition get the reverse position
 function reversePosition(position, reverse) {
-  var reversePos = Object.assign({}, position);
-  if (reversePos == null) {
-    return null;
+  if (position == null) {
+    return reverse > 0 ? 0 - reverse : 0;
   }
-  reversePos.Amount -= reverse;
-  if (reversePos.Amount < 0) {
-    reversePos.Amount = 0;
-  }
-  return reversePos;
+  return position.Amount - reverse;
 }
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
@@ -626,15 +621,15 @@ function balanceAccount() {
     var pos = BuyFirst
       ? getHoldPosition(positions, 0)
       : getHoldPosition(positions, 1);
-    var reversePos = reversePosition(pos, LowPosition);
+    var reverseAmount = reversePosition(pos, LowPosition);
 
-    if ((reversePos == null || reversePos.Amount == 0) && orders.length == 0) {
+    if (reverseAmount <= 0 && orders.length == 0) {
       break;
     }
 
-    if (reversePos == null || reversePos.Amount == 0) {
-      var leftAmount = reversePos.Amount;
-      if (reversePos.Type == 0) {
+    if (reverseAmount > 0) {
+      var leftAmount = reverseAmount;
+      if (BuyFirst) {
         //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
         Log("平多仓", leftAmount);
         exchange.SetDirection("closebuy");
@@ -712,9 +707,10 @@ function fishingCheck(orgAccount, grid) {
       holdTimer.SetInterval(HoldTime);
     }
 
+    var reverseAmount = reversePosition(position, LowPosition);
+
     if (LowPosition != 0) {
-      var reversePos = reversePosition(position, LowPosition);
-      if (reversePos != null && reversePos.Amount != reverseAmount) {
+      if (reverseAmount < 0 && reverseAmount != reverseAmount) {
         reverseholdTimer.SetInterval(HoldTime);
       }
     }
@@ -727,21 +723,9 @@ function fishingCheck(orgAccount, grid) {
       }
 
       if (LowPosition != 0) {
-        var reversePos = reversePosition(position, LowPosition);
-        if (
-          reversePos == null ||
-          (reversePos != null && reversePos.Amount != reverseAmount)
-        ) {
-          reverseholdTimer.SetInterval(HoldTime);
-        }
         if (reverseholdTimer.Timeout()) {
           reverseholdTimer.SetInterval(HoldTime);
           refish = 1;
-        }
-        if (reversePos != null) {
-          reverseAmount = reversePos.Amount;
-        } else {
-          reverseAmount = -1;
         }
       }
 
@@ -750,6 +734,9 @@ function fishingCheck(orgAccount, grid) {
         return 1;
       }
     }
+
+    reverseAmountOld = reverseAmount;
+
     msg += "\n";
     var account = globalInfo.account;
     oldStock = orgAccount.totBalance + 0.00000001;
@@ -817,8 +804,13 @@ function fishing(orgAccount, fishCount) {
     var orders = globalInfo.orders;
     var account = globalInfo.account;
     var ext = new Object();
+    if (LowPosition > 0) {
+      ext.reverse = " reverse postion:" + LowPosition.toString();
+    } else {
+      ext.reverse = null;
+    }
 
-    //超出网格则停止机器人
+    var crossBox = false;
     if (ticker.Last < LowBox || ticker.Last > HighBox) {
       Log(
         "当前价格超过箱体 last:",
@@ -828,10 +820,7 @@ function fishing(orgAccount, fishCount) {
         " HighBox:",
         HighBox
       );
-
-      gridTrader.Poll(ticker, orders, ext);
-      Sleep(Interval);
-      continue;
+      crossBox = true;
     }
 
     var checkFlag = fishingCheck(orgAccount, gridTrader);
@@ -849,14 +838,12 @@ function fishing(orgAccount, fishCount) {
       return false;
     }
 
-    if (checkFlag == 3) {
-      gridTrader.Poll(ticker, orders, ext);
-      Sleep(Interval);
-      continue;
-    }
-
     orderLen = gridTrader.OrderLen();
-    if (orderLen.wait_open + orderLen.wait_cover > 0) {
+    if (
+      crossBox ||
+      checkFlag == 3 ||
+      orderLen.wait_open + orderLen.wait_cover > 0
+    ) {
       gridTrader.Poll(ticker, orders, ext);
       Sleep(Interval);
       continue;

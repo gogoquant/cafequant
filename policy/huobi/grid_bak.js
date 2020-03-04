@@ -574,7 +574,6 @@ function GridTrader() {
   };
 }
 
-
 function getHoldPosition(positions, dir) {
   var len = positions.length;
   if (len == 0) {
@@ -768,7 +767,7 @@ function fishing(orgAccount, fishCount) {
     var ticker = globalInfo.ticker;
     var orders = globalInfo.orders;
     var account = globalInfo.account;
-
+    var isCrossBox = false;
     //超出网格则停止机器人
     if (ticker.Last < LowBox || ticker.Last > HighBox) {
       Log(
@@ -779,7 +778,8 @@ function fishing(orgAccount, fishCount) {
         " HighBox:",
         HighBox
       );
-      return false;
+      isCrossBox = true;
+      //return false;
     }
 
     var checkFlag = fishingCheck(orgAccount, gridTrader);
@@ -797,13 +797,7 @@ function fishing(orgAccount, fishCount) {
       return false;
     }
 
-    if (checkFlag == 3) {
-      gridTrader.Poll(ticker, orders);
-      Sleep(Interval);
-      continue;
-    }
-
-    if (gridTrader.OpenLen() > 0) {
+    if (checkFlag == 3 || isCrossBox || gridTrader.OpenLen() > 0) {
       gridTrader.Poll(ticker, orders);
       Sleep(Interval);
       continue;
@@ -974,4 +968,3 @@ LowBox = 7001
 ticker.Buy = 7050
 Log(nextGridPrice(ticker, 8000))
 */
-
