@@ -1,56 +1,56 @@
 // coin type
-Coin = "BTC";
+var Coin = "BTC";
 // 滑点
-Slide = 0.1;
+// var Slide = 0.1;
 // 箱体上沿
-HighBox = 10000;
+var HighBox = 10000;
 // 箱体下沿
-LowBox = 8000;
+var LowBox = 8000;
 // 网格方向
-BuyFirst = 1;
+var BuyFirst = 1;
 // 计划持仓量
-HighPosition = 10;
+var HighPosition = 10;
 // 网格价格距离
-GridOffset = 50;
+var GridOffset = 50;
 // 价格精度
-Precision = 1;
+var Precision = 1;
 // 开仓保护价差
-OpenProtect = 5;
+var OpenProtect = 5;
 // 买单数量
-BAmountOnce = 2;
+var BAmountOnce = 2;
 // 卖单数量
-SAmountOnce = 2;
+var SAmountOnce = 2;
 // 是否止损
-EnableStopLoss = 1;
+var EnableStopLoss = 1;
 // 止损模式
-StopLossMode = 0;
+var StopLossMode = 0;
 // 是否止盈
-EnableStopWin = 1;
+var EnableStopWin = 1;
 // 止损盈亏损率
-StopLoss = 30;
+var StopLoss = 30;
 // 止盈率
-StopWin = 15;
+var StopWin = 15;
 // 最小量
-MinStock = 0.1;
+//var MinStock = 0.1;
 // 是否自动移动价格
-AutoMove = 1;
+var AutoMove = 1;
 // 最大空仓时间
-HoldTime = 1000 * 60 * 5;
+var HoldTime = 1000 * 60 * 5;
 // 收网检测周期
-FishCheckTime = 1000 * 60 * 1;
+var FishCheckTime = 1000 * 60 * 1;
 // 最小周期
-Interval = 1000 * 10 * 1;
+var Interval = 1000 * 10 * 1;
 // 盈利滑动
-ProfitPrice = 30;
+var ProfitPrice = 30;
 // 合约
-ContractType = "quarter";
+var ContractType = "quarter";
 // 杠杆
-MarginLevel = 20;
+var MarginLevel = 20;
 // 合约列表
-ContractVec = ["this_week", "next_week", "quarter"];
+//var ContractVec = ["this_week", "next_week", "quarter"];
 
 // 屯仓模式, 控制仓位不低于某一个值
-LowPosition = -1;
+var LowPosition = -1;
 
 // local
 var globalInfo = {};
@@ -61,16 +61,6 @@ var STATE_WAIT_CLOSE = "wait_close";
 var STATE_END_CLOSE = "end_close";
 var ORDER_TYPE_BUY = 0;
 var ORDER_TYPE_SELL = 1;
-
-// 持仓定时器
-var holdTimer = new TradeRobot("hold");
-
-var reverseholdTimer = new TradeRobot("reversehold");
-var reverseAmountOld = 0;
-
-var fishCheckTimer = new TradeRobot("check");
-var firstPrice = -1;
-var orgAccount = new Object();
 
 /*
  * Only used for test
@@ -111,14 +101,14 @@ function _N(num, pre) {
 }
 */
 
-// @Todo
+// 
 // 1. 空方向测试
 // 2. 多空双向使用一套程序管理两个仓位?
 // 3. 平仓挂单和开仓挂单本质无强关联，是否分批平仓单策略只通过当前仓为平均价格来推算挂平仓单的方式?
 // 4. 考虑使用其他算法，调整网格的离散度?
 
 // ArrayQueue 队列
-ArrayQueue = function() {
+function ArrayQueue() {
   var arr = [];
   //入队操作
   this.push = function(element) {
@@ -151,7 +141,7 @@ ArrayQueue = function() {
     }
     return this.getFront();
   };
-};
+}
 
 // TradeRobot 交易者,用于交易配置以及延时处理等
 function TradeRobot(name) {
@@ -209,16 +199,16 @@ function ValidItem(val) {
 }
 
 function position2Rate(position, price) {
-  return ((position.Profit * price) / position.Amount) * MarginLevel;
+  return position.Profit * price / position.Amount * MarginLevel;
 }
 
 function initInfo() {
   globalInfo = {};
 }
 
-function onDepth() {
-  globalInfo.depth = exchange.GetDepth();
-}
+//function onDepth() {
+//  globalInfo.depth = exchange.GetDepth();
+//}
 
 function onPosition() {
   globalInfo.positions = exchange.GetPosition();
@@ -282,8 +272,9 @@ function foundOrder(orders, orderId) {
 
 //阻塞关闭订单
 function cancelPending() {
-  var ret = false;
-  while (true) {
+    var ret = false;
+    var cycle= true;
+  while (cycle) {
     if (ret) {
       Sleep(Interval);
     }
@@ -302,14 +293,15 @@ function cancelPending() {
 
 //阻塞关闭一个订单
 function cancelOnePending(Id) {
-  var ret = false;
-  while (true) {
+    var ret = false;
+    var cycle= true;
+  while (cycle) {
     if (ret) {
       Sleep(Interval);
     }
     blockGetInfo(onOrders);
     var orders = globalInfo.orders;
-    order = foundOrder(orders, Id);
+    var order = foundOrder(orders, Id);
     if (order == null) {
       break;
     } else {
@@ -351,9 +343,9 @@ function valuesToString(values, pos) {
 }
 
 function account2balance(account, symbol) {
-  data = account.Info.data;
-  for (j = 0, len = data.length; j < len; j++) {
-    info = data[j];
+  var data = account.Info.data;
+  for (var j = 0, len = data.length; j < len; j++) {
+    var info = data[j];
     if (info.symbol == symbol) {
       return info.margin_balance;
     }
@@ -363,11 +355,14 @@ function account2balance(account, symbol) {
 
 function GridTrader() {
   var vId = 0;
+  var realId;
+  var found;
   var orderBooks = new Object();
   var hisBooks = new Object();
   var orderBooksLen = 0;
   var hisBooksLen = 0;
   var profitPrice = -1;
+  var orderId;
 
   this.SetProfitPrice = function(price) {
     profitPrice = price;
@@ -390,18 +385,14 @@ function GridTrader() {
   };
 
   this.OrderLen = function() {
-    obj = new Object();
+    var obj = new Object();
     obj.wait_open = 0;
     obj.wait_cover = 0;
     obj.wait_close = 0;
-    obj.end_close = this.hisBooksLen;
+    obj.end_close = hisBooksLen;
 
-    var STATE_WAIT_OPEN = "wait_open";
-    var STATE_WAIT_COVER = "wait_cover";
-    var STATE_WAIT_CLOSE = "wait_close";
-    var STATE_END_CLOSE = "end_close";
     for (orderId in orderBooks) {
-      order = orderBooks[orderId];
+      var order = orderBooks[orderId];
       if (order.Status == STATE_WAIT_OPEN) {
         obj.wait_open++;
       }
@@ -511,7 +502,7 @@ function GridTrader() {
         return;
       }
       exchange.SetDirection(pfnDir);
-      var realId = pfn(
+      realId = pfn(
         order.Price,
         order.Amount,
         order.Extra +
@@ -533,18 +524,23 @@ function GridTrader() {
 
     // 等待平仓的订单
     if (order.Status == STATE_WAIT_COVER) {
-      var found = hasOrder(exchangeOrders, order.OpenId);
+      found = hasOrder(exchangeOrders, order.OpenId);
       if (!found) {
-        var reverseMsg = ext.reverse;
-        if (reverseMsg != null) {
+        var reverse = ext.reverse;
+        if (reverse + (BuyFirst ? BAmountOnce : SAmountOnce) <= 0) {
           order.CoverId = order.OpenId;
-          order.Extra = order.Extra + " reverse:" + reverseMsg;
+          order.Extra =
+            order.Extra +
+            " reverse->LowPosition:" +
+            reverse.toString() +
+            "->" +
+            LowPosition.toString();
           order.Status = STATE_WAIT_CLOSE;
           return;
         }
 
         exchange.SetDirection(coverPfnDir);
-        var realId = coverPfn(
+        realId = coverPfn(
           order.CoverPrice,
           order.Amount,
           order.Extra + " 平仓 价格:" + order.CoverPrice + " VID:" + order.VID
@@ -559,7 +555,7 @@ function GridTrader() {
 
     //  等待完结的订单
     if (order.Status == STATE_WAIT_CLOSE) {
-      var found = hasOrder(exchangeOrders, order.CoverId);
+      found = hasOrder(exchangeOrders, order.CoverId);
       if (!found) {
         Log("close order:" + order.CoverId);
         order.Status = STATE_END_CLOSE;
@@ -581,7 +577,7 @@ function GridTrader() {
     }
     for (orderId in deleteBooks) {
       hisBooks[orderId] = deleteBooks[orderId];
-      hisBooksLen++;
+        hisBooksLen++;
       delete orderBooks[orderId];
       orderBooksLen--;
     }
@@ -609,6 +605,14 @@ function reversePosition(position, reverse) {
   }
   return position.Amount - reverse;
 }
+
+// 持仓定时器
+var holdTimer = new TradeRobot("hold");
+var gridTrader = new GridTrader();
+var reverseholdTimer = new TradeRobot("reversehold");
+var reverseAmountOld = 0;
+var fishCheckTimer = new TradeRobot("check");
+var firstPrice = -1;
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
 function balanceAccount() {
@@ -710,9 +714,24 @@ function fishingCheck(orgAccount, grid) {
     var reverseAmount = reversePosition(position, LowPosition);
 
     if (LowPosition != 0) {
-      if (reverseAmount < 0 && reverseAmount != reverseAmount) {
+      if (
+        reverseAmount + (BuyFirst ? BAmountOnce : SAmountOnce) <= 0 &&
+        reverseAmountOld != reverseAmount
+      ) {
         reverseholdTimer.SetInterval(HoldTime);
       }
+    }
+
+    if (ticker.Last < LowBox || ticker.Last > HighBox) {
+      Log(
+        "当前价格超过箱体 last:",
+        ticker.Last,
+        " lowbox:",
+        LowBox,
+        " HighBox:",
+        HighBox
+      );
+      return 3;
     }
 
     if (AutoMove) {
@@ -739,9 +758,9 @@ function fishingCheck(orgAccount, grid) {
 
     msg += "\n";
     var account = globalInfo.account;
-    oldStock = orgAccount.totBalance + 0.00000001;
-    currStock = account2balance(account, Coin);
-    diffStock = currStock - oldStock;
+    var oldStock = orgAccount.totBalance + 0.00000001;
+    var currStock = account2balance(account, Coin);
+    var diffStock = currStock - oldStock;
     msg += "总原货币量:" + String(_N(oldStock, 10)) + "\n";
     msg += "总现货币量:" + String(_N(currStock, 10)) + "\n";
     msg += "总盈亏量:" + String(_N(diffStock)) + "\n";
@@ -759,7 +778,16 @@ function fishingCheck(orgAccount, grid) {
   }
 
   // 检查后发现持仓达到最大仓位后不需要继续追加持仓
-  if (isHold && holdAmount > 0 && holdAmount >= HighPosition) {
+  if (
+    isHold &&
+    holdAmount > 0 &&
+    holdAmount + (BuyFirst ? BAmountOnce : SAmountOnce) > HighPosition
+  ) {
+    return 3;
+  }
+
+  var orderLen = gridTrader.OrderLen();
+  if (orderLen.wait_open + orderLen.wait_cover > 0) {
     return 3;
   }
   return 0;
@@ -799,36 +827,23 @@ function fishing(orgAccount, fishCount) {
   var lastPrice = -1;
   while (true) {
     blockGetInfo(onOrders, onTicker, onPosition, onAccount);
-    var isHold = false;
     var ticker = globalInfo.ticker;
     var orders = globalInfo.orders;
     var account = globalInfo.account;
-    var ext = new Object();
-    if (LowPosition > 0) {
-      ext.reverse = " reverse postion:" + LowPosition.toString();
-    } else {
-      ext.reverse = null;
-    }
+    var positions = globalInfo.postions;
 
-    var crossBox = false;
-    if (ticker.Last < LowBox || ticker.Last > HighBox) {
-      Log(
-        "当前价格超过箱体 last:",
-        ticker.Last,
-        " lowbox:",
-        LowBox,
-        " HighBox:",
-        HighBox
-      );
-      crossBox = true;
-    }
+    var ext = new Object();
+    var pos = BuyFirst
+      ? getHoldPosition(positions, 0)
+      : getHoldPosition(positions, 1);
+    var reverseAmount = reversePosition(pos, LowPosition);
+    ext.reverse = reverseAmount;
 
     var checkFlag = fishingCheck(orgAccount, gridTrader);
 
     Log("checkflag is:", checkFlag);
 
-    if (checkFlag == 0) {
-    }
+    if (checkFlag == 0) {}
 
     if (checkFlag == 1) {
       return true;
@@ -838,19 +853,13 @@ function fishing(orgAccount, fishCount) {
       return false;
     }
 
-    orderLen = gridTrader.OrderLen();
-    if (
-      crossBox ||
-      checkFlag == 3 ||
-      orderLen.wait_open + orderLen.wait_cover > 0
-    ) {
+    if (checkFlag == 3) {
       gridTrader.Poll(ticker, orders, ext);
       Sleep(Interval);
       continue;
     }
 
     var nextPrice = -1;
-    //lastPrice = gridTrader.GetLastOrderPrice()
     if (lastPrice < 0) {
       firstPrice = BuyFirst
         ? _N(ticker.Buy - OpenProtect, Precision)
@@ -892,7 +901,7 @@ function fishing(orgAccount, fishCount) {
     lastPrice = nextPrice;
     Sleep(Interval);
   }
-  return true;
+    //return true;
 }
 
 function main() {
@@ -902,14 +911,14 @@ function main() {
   var orgAccount = Object.assign({}, globalInfo.account);
   var fishCount = 1;
   var totBalance = account2balance(orgAccount, Coin);
-  orgAccount.totBalance = totBalance;
+  orgAccount.TotBalance = totBalance;
   Log(
     "Stocks:",
     orgAccount.Stocks,
     "FrozenStocks:",
     orgAccount.FrozenStocks,
-    "totBalance:",
-    orgAccount.totBalance
+    "TotBalance:",
+    orgAccount.TotBalance
   );
   var position = BuyFirst
     ? getHoldPosition(globalInfo.positions, 0)
