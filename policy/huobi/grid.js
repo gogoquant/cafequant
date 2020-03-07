@@ -7,7 +7,7 @@ var HighBox = 10000;
 // 箱体下沿
 var LowBox = 8000;
 // 网格方向
-var BuyFirst = 1;
+var BuyFirst = true;
 // 计划持仓量
 var HighPosition = 10;
 // 网格价格距离
@@ -21,11 +21,11 @@ var BAmountOnce = 2;
 // 卖单数量
 var SAmountOnce = 2;
 // 是否止损
-var EnableStopLoss = 1;
+var EnableStopLoss = true;
 // 止损模式
 var StopLossMode = 0;
 // 是否止盈
-var EnableStopWin = 1;
+var EnableStopWin = true;
 // 止损盈亏损率
 var StopLoss = 30;
 // 止盈率
@@ -33,7 +33,7 @@ var StopWin = 15;
 // 最小量
 //var MinStock = 0.1;
 // 是否自动移动价格
-var AutoMove = 1;
+var AutoMove = true;
 // 最大空仓时间
 var HoldTime = 1000 * 60 * 5;
 // 收网检测周期
@@ -47,7 +47,9 @@ var ContractType = "quarter";
 // 杠杆
 var MarginLevel = 20;
 // 合约列表
-//var ContractVec = ["this_week", "next_week", "quarter"];
+var ContractVec = ["this_week", "next_week", "quarter"];
+// 货币支持类型
+var CoinVec = ["BTC"];
 
 // 屯仓模式, 控制仓位不低于某一个值
 var LowPosition = -1;
@@ -101,7 +103,7 @@ function _N(num, pre) {
 }
 */
 
-// 
+//
 // 1. 空方向测试
 // 2. 多空双向使用一套程序管理两个仓位?
 // 3. 平仓挂单和开仓挂单本质无强关联，是否分批平仓单策略只通过当前仓为平均价格来推算挂平仓单的方式?
@@ -249,7 +251,7 @@ function blockGetInfo() {
 }
 
 function Order2Cost(price, amount, last) {
-  return _N((1.0 * price * amount * 0.01) / last);
+  return _N(1.0 * price * amount * 0.01 / last);
 }
 
 function hasOrder(orders, orderId) {
@@ -272,8 +274,8 @@ function foundOrder(orders, orderId) {
 
 //阻塞关闭订单
 function cancelPending() {
-    var ret = false;
-    var cycle= true;
+  var ret = false;
+  var cycle = true;
   while (cycle) {
     if (ret) {
       Sleep(Interval);
@@ -293,8 +295,8 @@ function cancelPending() {
 
 //阻塞关闭一个订单
 function cancelOnePending(Id) {
-    var ret = false;
-    var cycle= true;
+  var ret = false;
+  var cycle = true;
   while (cycle) {
     if (ret) {
       Sleep(Interval);
@@ -577,7 +579,7 @@ function GridTrader() {
     }
     for (orderId in deleteBooks) {
       hisBooks[orderId] = deleteBooks[orderId];
-        hisBooksLen++;
+      hisBooksLen++;
       delete orderBooks[orderId];
       orderBooksLen--;
     }
@@ -661,7 +663,6 @@ function onexit() {
 function fishingCheck(orgAccount, grid) {
   var msg = "";
   var ticker = globalInfo.ticker;
-  var positions = globalInfo.positions;
   var position = BuyFirst
     ? getHoldPosition(globalInfo.positions, 0)
     : getHoldPosition(globalInfo.positions, 1);
@@ -772,7 +773,7 @@ function fishingCheck(orgAccount, grid) {
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
     msg +=
-      "总盈亏率" + String(_N(((diffStock * 1.0) / oldStock) * 100, 6)) + "%\n";
+      "总盈亏率" + String(_N(diffStock * 1.0 / oldStock * 100, 6)) + "%\n";
     LogStatus(msg);
     grid.Debug();
   }
@@ -780,7 +781,6 @@ function fishingCheck(orgAccount, grid) {
   // 检查后发现持仓达到最大仓位后不需要继续追加持仓
   if (
     isHold &&
-    holdAmount > 0 &&
     holdAmount + (BuyFirst ? BAmountOnce : SAmountOnce) > HighPosition
   ) {
     return 3;
@@ -795,7 +795,8 @@ function fishingCheck(orgAccount, grid) {
 
 function nextGridPrice(ticker, lastPrice) {
   var nextPrice = lastPrice;
-  while (true) {
+  var cycle = true;
+  while (cycle) {
     nextPrice = _N(
       BuyFirst ? nextPrice - GridOffset : nextPrice + GridOffset,
       Precision
@@ -825,7 +826,8 @@ function fishing(orgAccount, fishCount) {
 
   fishCheckTimer.SetInterval(FishCheckTime);
   var lastPrice = -1;
-  while (true) {
+  var cycle = true;
+  while (cycle) {
     blockGetInfo(onOrders, onTicker, onPosition, onAccount);
     var ticker = globalInfo.ticker;
     var orders = globalInfo.orders;
@@ -843,7 +845,8 @@ function fishing(orgAccount, fishCount) {
 
     Log("checkflag is:", checkFlag);
 
-    if (checkFlag == 0) {}
+    if (checkFlag == 0) {
+    }
 
     if (checkFlag == 1) {
       return true;
@@ -901,10 +904,86 @@ function fishing(orgAccount, fishCount) {
     lastPrice = nextPrice;
     Sleep(Interval);
   }
-    //return true;
+  //return true;
+}
+
+function IsParameterInvalid() {
+  if (BAmountOnce <= 0) {
+    return "BAmountOnce invalid:" + BAmountOnce.toString();
+  }
+  if (SAmountOnce <= 0) {
+    return "SAmountOnce invalid:" + SAmountOnce.toString();
+  }
+
+  if (GridOffset <= 0) {
+    return "GridOffset invalid:" + GridOffset.toString();
+  }
+
+  if (ProfitPrice <= 0) {
+    return "ProfitPrice invalid:" + ProfitPrice.toString();
+  }
+
+  if (OpenProtect < 0) {
+    return "OpenProtect invalid:" + OpenProtect.toString();
+  }
+
+  if (Precision < 0) {
+    return "Precision invalid:" + Precision.toString();
+  }
+  if (HoldTime <= 0) {
+    return "HoldTime invalid:" + HoldTime.toString();
+  }
+  if (LowPosition < 0) {
+    return "LowPosition invalid:" + LowPosition.toString();
+  }
+
+  if (HighPosition <= 0) {
+    return "HighPosition invalid:" + HighPosition.toString();
+  }
+  if (LowPosition > HighPosition) {
+    return (
+      "Position range invalid:" +
+      LowPosition.toString() +
+      "->" +
+      HighPosition.toString()
+    );
+  }
+
+  if (LowBox < 0) {
+    return "LowBox invalid:" + LowBox.toString();
+  }
+
+  if (HighBox <= 0) {
+    return "HighBox invalid:" + HighBox.toString();
+  }
+  if (LowBox > HighBox) {
+    return "box range invalid:" + LowBox.toString() + "->" + HighBox.toString();
+  }
+  if (!ContractVec.includes(ContractType)) {
+    return "contractType not support:" + ContractType;
+  }
+
+  if (!CoinVec.includes(Coin)) {
+    return "coin not support:" + Coin;
+  }
+  if (MarginLevel < 1) {
+    return "marginLevel not support:" + MarginLevel.toString();
+  }
+  if (EnableStopLoss && StopLoss < 0) {
+    return "stopLoss invalid:" + StopLoss.toString();
+  }
+
+  if (EnableStopWin && StopWin < 0) {
+    return "stopWin invalid:" + StopWin.toString();
+  }
 }
 
 function main() {
+  var invalid = IsParameterInvalid();
+  if (invalid != null) {
+    Log(invalid);
+    return 0;
+  }
   exchange.SetContractType(ContractType); // 设置合约
   exchange.SetMarginLevel(MarginLevel); // 设置杠杆
   blockGetInfo(onAccount, onPosition, onTicker);
