@@ -7,7 +7,7 @@ var HighBox = 10000;
 // 箱体下沿
 var LowBox = 8000;
 // 网格方向
-var BuyFirst = true;
+var BuyFirst = false;
 // 计划持仓量
 var HighPosition = 10;
 // 网格价格距离
@@ -52,7 +52,7 @@ var ContractVec = ["this_week", "next_week", "quarter"];
 var CoinVec = ["BTC"];
 
 // 屯仓模式, 控制仓位不低于某一个值
-var LowPosition = -1;
+var LowPosition = 0;
 
 // local
 var globalInfo = {};
@@ -660,12 +660,8 @@ function onexit() {
 }
 
 // return 0-continue 1-fish again 2-exit app 3-continue
-function fishingCheck(orgAccount, grid) {
+function fishingCheck(orgAccount, grid, position, ticker) {
   var msg = "";
-  var ticker = globalInfo.ticker;
-  var position = BuyFirst
-    ? getHoldPosition(globalInfo.positions, 0)
-    : getHoldPosition(globalInfo.positions, 1);
   var isHold = false;
 
   var holdAmount = 0;
@@ -678,7 +674,7 @@ function fishingCheck(orgAccount, grid) {
     fishCheckTimer.SetInterval(FishCheckTime);
 
     if (isHold) {
-      var profitRate = position2Rate(position, globalInfo.ticker.Last);
+      var profitRate = position2Rate(position, ticker.Last);
       Log("仓位盈亏百分比:", profitRate);
       msg +=
         "持仓: " +
@@ -832,7 +828,7 @@ function fishing(orgAccount, fishCount) {
     var ticker = globalInfo.ticker;
     var orders = globalInfo.orders;
     var account = globalInfo.account;
-    var positions = globalInfo.postions;
+    var positions = globalInfo.positions;
 
     var ext = new Object();
     var pos = BuyFirst
@@ -841,7 +837,7 @@ function fishing(orgAccount, fishCount) {
     var reverseAmount = reversePosition(pos, LowPosition);
     ext.reverse = reverseAmount;
 
-    var checkFlag = fishingCheck(orgAccount, gridTrader);
+    var checkFlag = fishingCheck(orgAccount, gridTrader, pos, ticker);
 
     Log("checkflag is:", checkFlag);
 
@@ -959,11 +955,11 @@ function IsParameterInvalid() {
   if (LowBox > HighBox) {
     return "box range invalid:" + LowBox.toString() + "->" + HighBox.toString();
   }
-  if (!ContractVec.includes(ContractType)) {
+  if (-1 == ContractVec.indexOf(ContractType)) {
     return "contractType not support:" + ContractType;
   }
 
-  if (!CoinVec.includes(Coin)) {
+  if (-1 == CoinVec.indexOf(Coin)) {
     return "coin not support:" + Coin;
   }
   if (MarginLevel < 1) {
