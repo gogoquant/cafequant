@@ -786,7 +786,7 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
     msg += "reverse定时器剩余时间:" + String(reverseholdTimer.TimeLeft()/1000.0) + "s\n";
     msg += "hold定时器剩余时间:" + String(holdTimer.TimeLeft()/1000.0) + "s\n";
       LogStatus(msg);
-    gridTrader.Debug();
+      //gridTrader.Debug();
   }
 
   // 检查后发现持仓达到最大仓位后不需要继续追加持仓
@@ -798,7 +798,7 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
   }
 
   var orderLen = gridTrader.BooksLen();
-  Log("order Len:", JSON.stringify(orderLen));
+    //Log("order Len:", JSON.stringify(orderLen));
   if (orderLen.wait_open + orderLen.wait_cover > 0) {
     return 3;
   }
@@ -845,7 +845,7 @@ function fishing(orgAccount, fishCount) {
     var orders = globalInfo.orders;
     var account = globalInfo.account;
     var positions = globalInfo.positions;
-    gridTrader.Debug();
+      //gridTrader.Debug();
     var ext = new Object();
     var pos = BuyFirst
       ? getHoldPosition(positions, 0)
