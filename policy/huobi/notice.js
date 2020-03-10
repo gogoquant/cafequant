@@ -400,6 +400,7 @@ var getfail_cnt = 0
 var notice_cnt = 0
 var noticefail_cnt = 0
 var mail_pwd = MailPwd
+var mail_user = MailUser
 var mail_host = MailHost
 //var mail_host = 'http://66.112.223.53/mail'
 
@@ -413,8 +414,8 @@ var msgQueue = new ArrayQueue()
 var queryQueue = new ArrayQueue()
 
 
-function BuildMsg(pwd, msg){
-    var msg = 'pwd=' + pwd + '&' + 'msg=' + msg 
+function BuildMsg(user, pwd, msg){
+    var msg = 'admin_user=' + user+ '&' +'admin_pwd=' + pwd + '&' + 'msg=' + msg 
     return {method:'POST', data:msg, timeout:1000}
 }
 
@@ -602,7 +603,7 @@ function onNotice() {
         Log(curr_msg + "@")
         notice_cnt++
         LogProfit(notice_cnt, '&') 
-        send_msg = BuildMsg(mail_pwd, curr_msg)
+        send_msg = BuildMsg(mail_user, mail_pwd, curr_msg)
         Log("Send mail:", send_msg)
         HttpQuery(mail_host, send_msg)           
         msgQueue.clear()
