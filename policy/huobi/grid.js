@@ -739,7 +739,6 @@ function balanceAccountTot() {
   Log("tot平衡完成");
 }
 
-function onexit() {
 
 function onexit() {
   cancelPending(BuyFirst ? 0 : 1);
@@ -880,10 +879,8 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         "s\n";
     }
 
-    if(TotStopLoss > 0){
         var totRate = totProfit(totpositions, ticker);
         msg += "多空总盈亏:" + String(totRate) + "\n";
-    }
     msg +=
       "hold定时器剩余时间:" + String(holdTimer.TimeLeft() / 1000.0) + "s\n";
     LogStatus(msg);
@@ -937,7 +934,7 @@ function totProfit(positions, ticker) {
     buyProfitRate = position2Rate(buyPos, ticker.Last);
   }
 
-  if (buyPos != null) {
+  if (sellPos != null) {
     sellProfitRate = position2Rate(sellPos, ticker.Last);
   }
   return buyProfitRate + sellProfitRate;
