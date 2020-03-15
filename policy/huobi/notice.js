@@ -614,6 +614,11 @@ function onNotice() {
 
 
 function main() {
+    var curr_msg = "Test notice mail"
+    var send_msg = BuildMsg(mail_user, mail_pwd, curr_msg)
+    Log("Send mail:", send_msg)
+    HttpQuery(mail_host, send_msg)           
+    
     LogReset(1);
     ChartObj = Chart(null);
     ChartObj.reset();

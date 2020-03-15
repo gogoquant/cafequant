@@ -232,6 +232,19 @@ function position2Rate(position, price) {
   return position.Profit * price / position.Amount * MarginLevel;
 }
 
+
+// normal filter by dir
+function order2DirOrder(orders, dir){
+    var ordervec = [];
+    for (var i = 0; i < orders.length; i += 1) {
+     if (orders[i].Type == dir) {
+       ordervec.push(orders[i]);
+     }
+    }
+    return ordervec;
+}
+
+
 function initInfo() {
   globalInfo = {};
 }
@@ -309,7 +322,7 @@ function cancelPending() {
       Sleep(Interval);
     }
     blockGetInfo(onOrders);
-    var orders = globalInfo.orders;
+    var orders = order2DirOrder(globalInfo.orders);
     if (orders.length == 0) {
       break;
     }
@@ -551,21 +564,23 @@ function GridTrader() {
     // 等待平仓的订单
     if (order.Status == STATE_WAIT_COVER) {
       found = hasOrder(exchangeOrders, order.OpenId);
-      if (!found) {
-        var reverse = ext.reverse;
-        if (reverse < 0) {
-          order.CoverId = order.OpenId;
-          order.Extra =
+        if (!found) {
+        if(LowPosition > 0 ){
+            var reverse = ext.reverse;
+            if (reverse <= 0) {
+            order.CoverId = order.OpenId;
+            order.Extra =
             order.Extra +
             " reverse->LowPosition:" +
             reverse.toString() +
             "->" +
             LowPosition.toString();
-          Log(
-            "reverse order:" + reverse.toString() + "->" + JSON.stringify(order)
-          );
-          order.Status = STATE_WAIT_CLOSE;
-          return;
+            Log(
+                "reverse order:" + reverse.toString() + "->" + JSON.stringify(order)
+            );
+            order.Status = STATE_WAIT_CLOSE;
+            return;
+            }
         }
 
         exchange.SetDirection(coverPfnDir);
@@ -649,7 +664,7 @@ function balanceAccount(all) {
   cancelPending();
   while (true) {
     blockGetInfo(onOrders, onPosition);
-    var orders = globalInfo.orders;
+    var orders = order2DirOrder(globalInfo.orders);
     var positions = globalInfo.positions;
     var pos = BuyFirst
       ? getHoldPosition(positions, 0)
