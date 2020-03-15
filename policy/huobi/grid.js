@@ -43,7 +43,7 @@ var HoldTime = 1000 * 60 * 5;
 // 最大reverse时间
 var ReverseTime = 1000 * 60 * 3;
 // 收网检测周期
-var FishCheckTime = 1000 * 60 * 1;
+var FishCheckTime = 1000 * 20 * 1;
 // 最小周期
 var Interval = 1000 * 10 * 1;
 // 盈利滑动
@@ -232,18 +232,16 @@ function position2Rate(position, price) {
   return position.Profit * price / position.Amount * MarginLevel;
 }
 
-
 // normal filter by dir
-function order2DirOrder(orders, dir){
-    var ordervec = [];
-    for (var i = 0; i < orders.length; i += 1) {
-     if (orders[i].Type == dir) {
-       ordervec.push(orders[i]);
-     }
+function order2DirOrder(orders, dir) {
+  var ordervec = [];
+  for (var i = 0; i < orders.length; i += 1) {
+    if (orders[i].Type == dir) {
+      ordervec.push(orders[i]);
     }
-    return ordervec;
+  }
+  return ordervec;
 }
-
 
 function initInfo() {
   globalInfo = {};
@@ -564,23 +562,26 @@ function GridTrader() {
     // 等待平仓的订单
     if (order.Status == STATE_WAIT_COVER) {
       found = hasOrder(exchangeOrders, order.OpenId);
-        if (!found) {
-        if(LowPosition > 0 ){
-            var reverse = ext.reverse;
-            if (reverse <= 0) {
+      if (!found) {
+        if (LowPosition > 0) {
+          var reverse = ext.reverse;
+          if (reverse <= 0) {
             order.CoverId = order.OpenId;
             order.Extra =
-            order.Extra +
-            " reverse->LowPosition:" +
-            reverse.toString() +
-            "->" +
-            LowPosition.toString();
+              order.Extra +
+              " reverse->LowPosition:" +
+              reverse.toString() +
+              "->" +
+              LowPosition.toString();
             Log(
-                "reverse order:" + reverse.toString() + "->" + JSON.stringify(order)
+              "reverse order:" +
+                reverse.toString() +
+                "->" +
+                JSON.stringify(order)
             );
             order.Status = STATE_WAIT_CLOSE;
             return;
-            }
+          }
         }
 
         exchange.SetDirection(coverPfnDir);
@@ -812,8 +813,11 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
-    var bookLen = gridTrader.BooksLen()
-    msg += "已撮合单数:" + String(bookLen.history) + "\n";
+    var bookLen = gridTrader.BooksLen();
+    msg +=
+      "已撮合单数:" +
+      String(bookLen.history * (BuyFirst ? BAmountOnce : SAmountOnce)) +
+      "\n";
     msg +=
       "总盈亏率" + String(_N(diffStock * 1.0 / oldStock * 100, 6)) + "%\n";
     if (LowPosition) {
