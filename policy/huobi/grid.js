@@ -57,6 +57,8 @@ var ContractVec = ["this_week", "next_week", "quarter"];
 // 货币支持类型
 var CoinVec = ["BTC"];
 
+var TotStopLoss = 0;
+
 var marryTot = 0;
 
 // get from engine
@@ -702,13 +704,50 @@ function balanceAccount(all, dir) {
   Log("平衡完成");
 }
 
+
+// 动态再平衡, 注意不会平仓调reverse部分的仓位
+function balanceAccountTot() {
+  cancelPending(0);
+  cancelPending(1);
+  while (true) {
+    blockGetInfo(onOrders, onPosition);
+    var orders = globalInfo.orders;
+      
+    var buyPos = getHoldPosition(positions, 0)
+    var sellPos = getHoldPosition(positions, 1);
+    var buyPosAmount = buyPos == null ? 0 : buyPos.Amount;
+    var sellPosAmount = sellPos == null ? 0 : buyPos.Amount;
+    var diffAmount = buyPosAmount - sellPosAmount;
+    if (diffAmount != 0) {
+        if (diffAmount > 0) {
+        //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
+        Log("平多仓", diffAmount);
+        exchange.SetDirection("closebuy");
+        var closeId = exchange.Sell(-1, diffAmount, "平多仓");
+      } else {
+        Log("平空仓", diffAmount);
+        exchange.SetDirection("closesell");
+        var closeId = exchange.Buy(-1, 0 - diffAmount, "平空仓");
+      }
+    }
+    Sleep(Interval);
+    if (orders.length != 0) {
+        cancelPending(0);
+        cancelPending(1);
+    }
+  }
+  Log("tot平衡完成");
+}
+
+function onexit() {
+
 function onexit() {
   cancelPending(BuyFirst ? 0 : 1);
   Log("策略成功停止");
 }
 
 // return 0-continue 1-fish again 2-exit app 3-continue
-function fishingCheck(orgAccount, gridTrader, position, ticker) {
+function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
   var msg = "";
   var isHold = false;
 
@@ -745,6 +784,15 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
           return 2;
         }
         return 1;
+      }
+
+      if (EnableStopLoss && TotStopLoss > 0) {
+        var totRate = totProfit(totpositions, ticker);
+          if (totRate + TotStopLoss < 0) {
+          balanceAccountTot();
+          Log("总止损触发");
+          return 2;
+        }
       }
 
       if (EnableStopWin && profitRate - StopWin > 0) {
@@ -875,6 +923,21 @@ function nextGridPrice(ticker, lastPrice) {
   return nextPrice;
 }
 
+function totProfit(positions, ticker) {
+  var buyPos = getHoldPosition(positions, 0);
+  var sellPos = getHoldPosition(positions, 1);
+  var buyProfitRate = 0;
+  var sellProfitRate = 0;
+  if (buyPos != null) {
+    buyProfitRate = position2Rate(buyPos, ticker.Last);
+  }
+
+  if (buyPos != null) {
+    sellProfitRate = position2Rate(sellPos, ticker.Last);
+  }
+  return buyProfitRate + sellProfitRate;
+}
+
 function fishing(orgAccount, fishCount) {
   var gridTrader = new GridTrader();
   gridTrader.SetProfitPrice(ProfitPrice);
@@ -899,7 +962,13 @@ function fishing(orgAccount, fishCount) {
     var reverseAmount = reversePosition(pos, LowPosition);
     ext.reverse = reverseAmount;
 
-    var checkFlag = fishingCheck(orgAccount, gridTrader, pos, ticker);
+    var checkFlag = fishingCheck(
+      orgAccount,
+      gridTrader,
+      pos,
+      positions,
+      ticker
+    );
 
     //Log("checkflag is:", checkFlag);
 
