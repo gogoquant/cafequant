@@ -1,8 +1,9 @@
 package api
 
+/*
 import (
 	"errors"
-	goex "github.com/nntaoli-project/GoEx"
+	"github.com/nntaoli-project/goex"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"
 	"github.com/xiyanxiyan10/quantcore/util"
@@ -173,7 +174,6 @@ func (e *FutureBackTest) GetDepth(size int) interface{} {
 
 // GetPosition ...
 func (e *FutureBackTest) GetPosition() interface{} {
-	/*
 			resPositionVec := []constant.Position{}
 			stockType := e.GetStockType()
 			exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -229,7 +229,6 @@ func (e *FutureBackTest) GetPosition() interface{} {
 			e.lastTimes = 0
 			e.lastSleep = now
 
-	*/
 	return false
 }
 
@@ -240,7 +239,6 @@ func (e *FutureBackTest) GetMinAmount(stock string) float64 {
 
 // GetAccount get the account detail of this exchange
 func (e *FutureBackTest) GetAccount() interface{} {
-	/*
 		account, err := e.api.GetFutureUserinfo()
 		if err != nil {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetAccount() error, the error number is ", err.Error())
@@ -260,12 +258,10 @@ func (e *FutureBackTest) GetAccount() interface{} {
 		}
 		return resAccount
 
-	*/
 	return false
 }
 
 func (e *FutureBackTest) Buy(price, amount string, msg ...interface{}) interface{} {
-	/*
 		var err error
 		var openType int
 		stockType := e.GetStockType()
@@ -296,12 +292,10 @@ func (e *FutureBackTest) Buy(price, amount string, msg ...interface{}) interface
 		e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 		return orderId
 
-	*/
 	return false
 }
 
 func (e *FutureBackTest) Sell(price, amount string, msg ...interface{}) interface{} {
-	/*
 			var err error
 			var openType int
 			stockType := e.GetStockType()
@@ -360,13 +354,11 @@ func (e *FutureBackTest) Sell(price, amount string, msg ...interface{}) interfac
 			}
 			return false
 
-	*/
 	return false
 }
 
 // GetOrders get all unfilled orders
 func (e *FutureBackTest) GetOrders() interface{} {
-	/*
 			exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 			if !ok {
 				e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
@@ -417,13 +409,11 @@ func (e *FutureBackTest) GetOrders() interface{} {
 			}
 			return traders
 
-	*/
 	return false
 }
 
 // CancelOrder cancel an order
 func (e *FutureBackTest) CancelOrder(orderID string) bool {
-	/*
 		exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 		if !ok {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
@@ -440,7 +430,6 @@ func (e *FutureBackTest) CancelOrder(orderID string) bool {
 		e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() success")
 		return true
 
-	*/
 	return false
 }
 
@@ -552,3 +541,4 @@ func (e *FutureBackTest) GetRecords(params ...interface{}) interface{} {
 	}
 	return e.records[periodStr]
 }
+*/

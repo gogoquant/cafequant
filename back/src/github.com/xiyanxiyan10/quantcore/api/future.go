@@ -3,8 +3,8 @@ package api
 import (
 	"errors"
 	"fmt"
-	goex "github.com/nntaoli-project/GoEx"
-	"github.com/nntaoli-project/GoEx/builder"
+	goex "github.com/nntaoli-project/goex"
+	"github.com/nntaoli-project/goex/builder"
 	"github.com/xiyanxiyan10/quantcore/config"
 	"github.com/xiyanxiyan10/quantcore/constant"
 	"github.com/xiyanxiyan10/quantcore/model"

@@ -57,11 +57,13 @@ func (traderExt) Put(req model.TraderExt, bindID, bindType int64, ctx rpc.Contex
 			resp.Message = fmt.Sprint(err)
 			return
 		}
-	}else{
-		if _, err := getalgor(bindID); err != nil {
-			resp.Message = fmt.Sprint(err)
-			return
-		}
+	} else {
+		/*
+			if _, err := get(bindID); err != nil {
+				resp.Message = fmt.Sprint(err)
+				return
+			}
+		*/
 	}
 	defer db.Close()
 	db = db.Begin()
@@ -112,10 +114,12 @@ func (traderExt) Delete(ext model.TraderExt, ctx rpc.Context) (resp response) {
 		resp.Message = fmt.Sprint(err)
 		return
 	}
-	if _, err := self.GetTrader(ext.TraderID); err != nil {
-		resp.Message = fmt.Sprint(err)
-		return
-	}
+	/*
+		if _, err := self.GetTrader(ext.TraderID); err != nil {
+			resp.Message = fmt.Sprint(err)
+			return
+		}
+	*/
 	if err := self.DeleteParameter(ext.ID); err != nil {
 		resp.Message = fmt.Sprint(err)
 		return
