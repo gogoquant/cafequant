@@ -57,6 +57,8 @@ var ContractVec = ["this_week", "next_week", "quarter"];
 // 货币支持类型
 var CoinVec = ["BTC"];
 
+var marryTot = 0;
+
 // get from engine
 HighBox = HIGHBOX;
 LowBox = LOWBOX;
@@ -312,7 +314,7 @@ function foundOrder(orders, orderId) {
 }
 
 //阻塞关闭订单
-function cancelPending() {
+function cancelPending(dir) {
   var ret = false;
   var cycle = true;
   while (cycle) {
@@ -320,7 +322,7 @@ function cancelPending() {
       Sleep(Interval);
     }
     blockGetInfo(onOrders);
-    var orders = order2DirOrder(globalInfo.orders, BuyFirst ? 0 : 1);
+    var orders = order2DirOrder(globalInfo.orders, dir);
     if (orders.length == 0) {
       break;
     }
@@ -623,6 +625,7 @@ function GridTrader() {
     for (orderId in deleteBooks) {
       hisBooks[orderId] = deleteBooks[orderId];
       hisBooksLen++;
+      marryTot++;
       delete orderBooks[orderId];
       orderBooksLen--;
     }
@@ -660,9 +663,9 @@ var fishCheckTimer = new TradeRobot("check");
 var firstPrice = -1;
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
-function balanceAccount(all) {
+function balanceAccount(all, dir) {
   Log("平衡账户mode:", all);
-  cancelPending();
+  cancelPending(dir);
   while (true) {
     blockGetInfo(onOrders, onPosition);
     var orders = order2DirOrder(globalInfo.orders, BuyFirst ? 0 : 1);
@@ -693,14 +696,14 @@ function balanceAccount(all) {
     }
     Sleep(Interval);
     if (orders.length != 0) {
-      cancelPending();
+      cancelPending(dir);
     }
   }
   Log("平衡完成");
 }
 
 function onexit() {
-  cancelPending();
+  cancelPending(BuyFirst ? 0 : 1);
   Log("策略成功停止");
 }
 
@@ -734,7 +737,10 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
 
       if (EnableStopLoss && profitRate + StopLoss < 0) {
         Log("当前浮动盈亏", profitRate, "开始止损");
-        balanceAccount(StopLossBeginMode === 0 ? false : true);
+        balanceAccount(
+          StopLossBeginMode === 0 ? false : true,
+          BuyFirst ? 0 : 1
+        );
         if (StopLossAfterMode === 0) {
           return 2;
         }
@@ -743,7 +749,7 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
 
       if (EnableStopWin && profitRate - StopWin > 0) {
         Log("当前浮动盈亏", profitRate, "开始止盈");
-        balanceAccount(false);
+        balanceAccount(false, BuyFirst ? 0 : 1);
         return 1;
       }
     } else {
@@ -789,7 +795,7 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
       }
 
       if (refish) {
-        balanceAccount(false);
+        balanceAccount(false, BuyFirst ? 0 : 1);
         return 1;
       }
     }
@@ -813,10 +819,9 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
-    var bookLen = gridTrader.BooksLen();
     msg +=
       "已撮合单数:" +
-      String(bookLen.history * (BuyFirst ? BAmountOnce : SAmountOnce)) +
+      String(marryTot * (BuyFirst ? BAmountOnce : SAmountOnce)) +
       "\n";
     msg +=
       "总盈亏率" + String(_N(diffStock * 1.0 / oldStock * 100, 6)) + "%\n";
