@@ -879,6 +879,11 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         String(reverseholdTimer.TimeLeft() / 1000.0) +
         "s\n";
     }
+
+    if(TotStopLoss > 0){
+        var totRate = totProfit(totpositions, ticker);
+        msg += "多空总盈亏:" + String(totRate) + "\n";
+    }
     msg +=
       "hold定时器剩余时间:" + String(holdTimer.TimeLeft() / 1000.0) + "s\n";
     LogStatus(msg);
