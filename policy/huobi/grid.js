@@ -322,7 +322,7 @@ function cancelPending() {
       Sleep(Interval);
     }
     blockGetInfo(onOrders);
-    var orders = order2DirOrder(globalInfo.orders);
+    var orders = order2DirOrder(globalInfo.orders, BuyFirst ? 0 : 1);
     if (orders.length == 0) {
       break;
     }
@@ -664,7 +664,7 @@ function balanceAccount(all) {
   cancelPending();
   while (true) {
     blockGetInfo(onOrders, onPosition);
-    var orders = order2DirOrder(globalInfo.orders);
+    var orders = order2DirOrder(globalInfo.orders, BuyFirst ? 0 : 1);
     var positions = globalInfo.positions;
     var pos = BuyFirst
       ? getHoldPosition(positions, 0)
@@ -812,6 +812,8 @@ function fishingCheck(orgAccount, gridTrader, position, ticker) {
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
+    var bookLen = gridTrader.BooksLen()
+    msg += "已撮合单数:" + String(bookLen.history) + "\n";
     msg +=
       "总盈亏率" + String(_N(diffStock * 1.0 / oldStock * 100, 6)) + "%\n";
     if (LowPosition) {
