@@ -1,4 +1,4 @@
-// coin type
+// Coin type
 var Coin = "BTC";
 // 滑点
 // var Slide = 0.1;
@@ -55,9 +55,12 @@ var CoinVec = ["BTC"];
 
 var TotStopLoss = 0;
 
+var PositionDiffMax = 0;
+
 var marryTot = 0;
 
 // get from engine
+PositionDiffMax = POSITIONDIFFMAX;
 HighBox = HIGHBOX;
 LowBox = LOWBOX;
 BuyFirst = BUYFIRST;
@@ -77,7 +80,7 @@ ProfitPrice = PROFITPRICE;
 ContractType = CONTRACTTYPE;
 MarginLevel = MARGINLEVEL;
 TotStopLoss = TOTSTOPLOSS;
-coin = COIN;
+Coin = COIN;
 
 // local
 var globalInfo = {};
@@ -234,17 +237,23 @@ function position2Rate(position, price) {
 
 // normal filter by dir
 function order2DirOrder(orders, dir) {
-  if(dir == -1){
-        return orders;
+  if (dir == -1) {
+    return orders;
   }
   var ordervec = [];
-    for (var i = 0; i < orders.length; i += 1) {
-        if(dir == 0 && orders[i].Type == 0 && orders[i].Offset == 0 || orders[i].Type == 1 && orders[i].Offset == 1) {
-                ordervec.push(orders[i]);
-        }
-        if (dir == 1 && orders[i].Type == 1 && orders[i].Offset == 0 || orders[i].Type == 0 && orders[i].Offset == 1) {
-                ordervec.push(orders[i]);
-        }
+  for (var i = 0; i < orders.length; i += 1) {
+    if (
+      dir == 0 && orders[i].Type == 0 && orders[i].Offset == 0 ||
+      orders[i].Type == 1 && orders[i].Offset == 1
+    ) {
+      ordervec.push(orders[i]);
+    }
+    if (
+      dir == 1 && orders[i].Type == 1 && orders[i].Offset == 0 ||
+      orders[i].Type == 0 && orders[i].Offset == 1
+    ) {
+      ordervec.push(orders[i]);
+    }
   }
   return ordervec;
 }
@@ -706,35 +715,37 @@ function resetAccount(all, dir) {
   Log("平衡完成");
 }
 
-
+function positionDiff(positions) {
+  var buyPos = getHoldPosition(positions, 0);
+  var sellPos = getHoldPosition(positions, 1);
+  var buyPosAmount = buyPos == null ? 0 : buyPos.Amount;
+  var sellPosAmount = sellPos == null ? 0 : sellPos.Amount;
+  var diffAmount = buyPosAmount - sellPosAmount;
+  return diffAmount;
+}
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
 function balanceAccount(dir) {
-    while (true) {
+  while (true) {
     blockGetInfo(onOrders, onPosition);
-    var buyPos = getHoldPosition(positions, 0)
-    var sellPos = getHoldPosition(positions, 1);
-    var buyPosAmount = buyPos == null ? 0 : buyPos.Amount;
-    var sellPosAmount = sellPos == null ? 0 : sellPos.Amount;
-    var diffAmount = buyPosAmount - sellPosAmount;
     var dirOrders = order2DirOrder(globalInfo.orders, dir);
-        
-    if(diffAmount == 0){
-        Log("buy and sell balance");
+    var diffAmount = positionDiff(globalInfo.positions);
+    if (diffAmount == 0) {
+      Log("buy and sell balance");
     }
 
-    if(diffAmount > 0 ){
-        Log("buy not balance:", diffAmount);
+    if (diffAmount > 0) {
+      Log("buy not balance:", diffAmount);
     }
 
-    if(diffAmount < 0 ){
-        Log("sell not balance:", diffAmount);
+    if (diffAmount < 0) {
+      Log("sell not balance:", diffAmount);
     }
     // 不是自己职务内的不用平衡
-    if(diffAmount < 0 && dir == 0){
+    if (diffAmount < 0 && dir == 0) {
       break;
     }
 
-    if(diffAmount > 0 && dir == 1){
+    if (diffAmount > 0 && dir == 1) {
       break;
     }
 
@@ -743,25 +754,24 @@ function balanceAccount(dir) {
     }
 
     if (dirOrders.length != 0) {
-        cancelPending(dir);
+      cancelPending(dir);
     }
     if (dir == 0 && diffAmount > 0) {
-        //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
-        Log("平多仓", diffAmount);
-        exchange.SetDirection("closebuy");
-        exchange.Sell(-1, diffAmount, "平多仓");
-    } 
+      //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
+      Log("平多仓", diffAmount);
+      exchange.SetDirection("closebuy");
+      exchange.Sell(-1, diffAmount, "平多仓");
+    }
 
     if (dir == 1 && diffAmount < 0) {
-        Log("平空仓", diffAmount);
-        exchange.SetDirection("closesell");
-        exchange.Buy(-1, 0 - diffAmount, "平空仓");
+      Log("平空仓", diffAmount);
+      exchange.SetDirection("closesell");
+      exchange.Buy(-1, 0 - diffAmount, "平空仓");
     }
     Sleep(Interval);
   }
   Log("tot平衡完成");
 }
-
 
 function onexit() {
   cancelPending(BuyFirst ? 0 : 1);
@@ -796,12 +806,9 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         String(_N(profitRate, Precision)) +
         "%";
 
-        if (StopLoss > 0 && profitRate + StopLoss < 0) {
+      if (StopLoss > 0 && profitRate + StopLoss < 0) {
         Log("当前浮动盈亏", profitRate, "开始止损");
-        resetAccount(
-          StopLossBeginMode === 0 ? false : true,
-          BuyFirst ? 0 : 1
-        );
+        resetAccount(StopLossBeginMode === 0 ? false : true, BuyFirst ? 0 : 1);
         if (StopLossAfterMode === 0) {
           return 2;
         }
@@ -810,7 +817,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
 
       if (TotStopLoss > 0) {
         var totRate = totProfit(totpositions, ticker);
-          if (totRate + TotStopLoss < 0) {
+        if (totRate + TotStopLoss < 0) {
           Log("总止损触发");
           balanceAccount(BuyFirst ? 0 : 1);
           return 1;
@@ -877,7 +884,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
     var oldStock = orgAccount.TotBalance + 0.00000001;
     var currStock = account2balance(account, Coin);
     var diffStock = currStock - oldStock;
-
+    var diffAmount = positionDiff(totpositions);
     msg += "总原货币量:" + String(_N(oldStock, 10)) + "\n";
     msg += "总现货币量:" + String(_N(currStock, 10)) + "\n";
     msg += "总盈亏量:" + String(_N(diffStock, 10)) + "\n";
@@ -890,6 +897,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
+    msg += "当前仓位差:" + String(_N(diffAmount)) + "\n";
     msg +=
       "已撮合单数:" +
       String(marryTot * (BuyFirst ? BAmountOnce : SAmountOnce)) +
@@ -903,8 +911,8 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         "s\n";
     }
 
-        var totRate = totProfit(totpositions, ticker);
-        msg += "多空总盈亏:" + String(totRate) + "\n";
+    var totRate = totProfit(totpositions, ticker);
+    msg += "多空总盈亏:" + String(totRate) + "\n";
     msg +=
       "hold定时器剩余时间:" + String(holdTimer.TimeLeft() / 1000.0) + "s\n";
     LogStatus(msg);
@@ -921,6 +929,18 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
   //Log("order Len:", JSON.stringify(orderLen));
   if (orderLen.wait_open + orderLen.wait_cover > 0) {
     return 3;
+  }
+
+  if (PositionDiffMax > 0) {
+    if (BuyFirst) {
+      if (diffAmount > 0 && diffAmount >= PositionDiffMax) {
+        return 3;
+      }
+    } else {
+      if (diffAmount < 0 && 0 - diffAmount >= PositionDiffMax) {
+        return 3;
+      }
+    }
   }
   return 0;
 }
@@ -1124,7 +1144,7 @@ function IsParameterInvalid() {
   }
 
   if (-1 == CoinVec.indexOf(Coin)) {
-    return "coin not support:" + Coin;
+    return "Coin not support:" + Coin;
   }
   if (MarginLevel < 1) {
     return "marginLevel not support:" + MarginLevel.toString();
@@ -1256,4 +1276,3 @@ LowBox = 7001;
 ticker.Buy = 7050;
 Log(nextGridPrice(ticker, 8000));
 */
-
