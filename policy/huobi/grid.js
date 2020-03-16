@@ -22,14 +22,10 @@ var OpenProtect = 5;
 var BAmountOnce = 1;
 // 卖单数量
 var SAmountOnce = 1;
-// 是否止损
-var EnableStopLoss = true;
 // 止损后模式
 var StopLossAfterMode = 0;
 // 止损执行模式
 var StopLossBeginMode = 0;
-// 是否止盈
-var EnableStopWin = true;
 // 止损盈亏损率
 var StopLoss = 30;
 // 止盈率
@@ -71,16 +67,16 @@ GridOffset = GRIDOFFSET;
 OpenProtect = OPENPROTECT;
 BAmountOnce = BAMOUNTONCE;
 SAmountOnce = SAMOUNTONCE;
-EnableStopLoss = ENABLESTOPLOSS;
 StopLossAfterMode = STOPLOSSAFTERMODE;
 StopLossBeginMode = STOPLOSSBEGINMODE;
 StopLoss = STOPLOSS;
 StopWin = STOPWIN;
 HoldTime = HOLDTIME;
 ReverseTime = REVERSETIME;
-ProfitPrice = PROTPRICE;
+ProfitPrice = PROFITPRICE;
 ContractType = CONTRACTTYPE;
 MarginLevel = MARGINLEVEL;
+TotStopLoss = TOTSTOPLOSS;
 coin = COIN;
 
 // local
@@ -712,33 +708,56 @@ function resetAccount(all, dir) {
 
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
-function balanceAccount() {
-  cancelPending(-1);
-  while (true) {
+function balanceAccount(dir) {
+    while (true) {
     blockGetInfo(onOrders, onPosition);
-    var orders = globalInfo.orders;
-      
     var buyPos = getHoldPosition(positions, 0)
     var sellPos = getHoldPosition(positions, 1);
     var buyPosAmount = buyPos == null ? 0 : buyPos.Amount;
     var sellPosAmount = sellPos == null ? 0 : sellPos.Amount;
     var diffAmount = buyPosAmount - sellPosAmount;
-    if (diffAmount != 0) {
-        if (diffAmount > 0) {
+    var dirOrders = order2DirOrder(globalInfo.orders, dir);
+        
+    if(diffAmount == 0){
+        Log("buy and sell balance");
+    }
+
+    if(diffAmount > 0 ){
+        Log("buy not balance:", diffAmount);
+    }
+
+    if(diffAmount < 0 ){
+        Log("sell not balance:", diffAmount);
+    }
+    // 不是自己职务内的不用平衡
+    if(diffAmount < 0 && dir == 0){
+      break;
+    }
+
+    if(diffAmount > 0 && dir == 1){
+      break;
+    }
+
+    if (diffAmount == 0 && orders.length == 0) {
+      break;
+    }
+
+    if (dirOrders.length != 0) {
+        cancelPending(dir);
+    }
+    if (dir == 0 && diffAmount > 0) {
         //平多仓，采用盘口吃单，会损失手续费，可改为盘口挂单，会增加持仓风险。
         Log("平多仓", diffAmount);
         exchange.SetDirection("closebuy");
-        var closeId = exchange.Sell(-1, diffAmount, "平多仓");
-      } else {
+        exchange.Sell(-1, diffAmount, "平多仓");
+    } 
+
+    if (dir == 1 && diffAmount < 0) {
         Log("平空仓", diffAmount);
         exchange.SetDirection("closesell");
-        var closeId = exchange.Buy(-1, 0 - diffAmount, "平空仓");
-      }
+        exchange.Buy(-1, 0 - diffAmount, "平空仓");
     }
     Sleep(Interval);
-    if (orders.length != 0) {
-        cancelPending(-1);
-    }
   }
   Log("tot平衡完成");
 }
@@ -777,7 +796,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         String(_N(profitRate, Precision)) +
         "%";
 
-      if (EnableStopLoss && profitRate + StopLoss < 0) {
+        if (StopLoss > 0 && profitRate + StopLoss < 0) {
         Log("当前浮动盈亏", profitRate, "开始止损");
         resetAccount(
           StopLossBeginMode === 0 ? false : true,
@@ -789,16 +808,16 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         return 1;
       }
 
-      if (EnableStopLoss && TotStopLoss > 0) {
+      if (TotStopLoss > 0) {
         var totRate = totProfit(totpositions, ticker);
           if (totRate + TotStopLoss < 0) {
-          balanceAccount();
           Log("总止损触发");
-          return 2;
+          balanceAccount(BuyFirst ? 0 : 1);
+          return 1;
         }
       }
 
-      if (EnableStopWin && profitRate - StopWin > 0) {
+      if (StopWin > 0 && profitRate - StopWin > 0) {
         Log("当前浮动盈亏", profitRate, "开始止盈");
         resetAccount(false, BuyFirst ? 0 : 1);
         return 1;
@@ -866,6 +885,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
     msg += "箱体下沿:" + String(_N(LowBox)) + "\n";
     msg += "止损百分比:" + String(_N(StopLoss)) + "%\n";
     msg += "止盈百分比:" + String(_N(StopWin)) + "%\n";
+    msg += "总止损百分比:" + String(_N(TotStopLoss)) + "%\n";
     msg += "仓位上沿:" + String(_N(HighPosition)) + "\n";
     msg += "仓位下沿:" + String(_N(LowPosition)) + "\n";
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
@@ -1109,13 +1129,6 @@ function IsParameterInvalid() {
   if (MarginLevel < 1) {
     return "marginLevel not support:" + MarginLevel.toString();
   }
-  if (EnableStopLoss && StopLoss < 0) {
-    return "stopLoss invalid:" + StopLoss.toString();
-  }
-
-  if (EnableStopWin && StopWin < 0) {
-    return "stopWin invalid:" + StopWin.toString();
-  }
 }
 
 function main() {
@@ -1243,3 +1256,4 @@ LowBox = 7001;
 ticker.Buy = 7050;
 Log(nextGridPrice(ticker, 8000));
 */
+
