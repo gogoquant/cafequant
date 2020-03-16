@@ -238,11 +238,17 @@ function position2Rate(position, price) {
 
 // normal filter by dir
 function order2DirOrder(orders, dir) {
+  if(dir == -1){
+        return orders;
+  }
   var ordervec = [];
-  for (var i = 0; i < orders.length; i += 1) {
-    if (orders[i].Type == dir) {
-      ordervec.push(orders[i]);
-    }
+    for (var i = 0; i < orders.length; i += 1) {
+        if(dir == 0 && orders[i].Type == 0 && orders[i].Offset == 0 || orders[i].Type == 1 && orders[i].Offset == 1) {
+                ordervec.push(orders[i]);
+        }
+        if (dir == 1 && orders[i].Type == 1 && orders[i].Offset == 0 || orders[i].Type == 0 && orders[i].Offset == 1) {
+                ordervec.push(orders[i]);
+        }
   }
   return ordervec;
 }
@@ -665,7 +671,7 @@ var fishCheckTimer = new TradeRobot("check");
 var firstPrice = -1;
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
-function balanceAccount(all, dir) {
+function resetAccount(all, dir) {
   Log("平衡账户mode:", all);
   cancelPending(dir);
   while (true) {
@@ -706,9 +712,8 @@ function balanceAccount(all, dir) {
 
 
 // 动态再平衡, 注意不会平仓调reverse部分的仓位
-function balanceAccountTot() {
-  cancelPending(0);
-  cancelPending(1);
+function balanceAccount() {
+  cancelPending(-1);
   while (true) {
     blockGetInfo(onOrders, onPosition);
     var orders = globalInfo.orders;
@@ -716,7 +721,7 @@ function balanceAccountTot() {
     var buyPos = getHoldPosition(positions, 0)
     var sellPos = getHoldPosition(positions, 1);
     var buyPosAmount = buyPos == null ? 0 : buyPos.Amount;
-    var sellPosAmount = sellPos == null ? 0 : buyPos.Amount;
+    var sellPosAmount = sellPos == null ? 0 : sellPos.Amount;
     var diffAmount = buyPosAmount - sellPosAmount;
     if (diffAmount != 0) {
         if (diffAmount > 0) {
@@ -732,8 +737,7 @@ function balanceAccountTot() {
     }
     Sleep(Interval);
     if (orders.length != 0) {
-        cancelPending(0);
-        cancelPending(1);
+        cancelPending(-1);
     }
   }
   Log("tot平衡完成");
@@ -775,7 +779,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
 
       if (EnableStopLoss && profitRate + StopLoss < 0) {
         Log("当前浮动盈亏", profitRate, "开始止损");
-        balanceAccount(
+        resetAccount(
           StopLossBeginMode === 0 ? false : true,
           BuyFirst ? 0 : 1
         );
@@ -788,7 +792,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
       if (EnableStopLoss && TotStopLoss > 0) {
         var totRate = totProfit(totpositions, ticker);
           if (totRate + TotStopLoss < 0) {
-          balanceAccountTot();
+          balanceAccount();
           Log("总止损触发");
           return 2;
         }
@@ -796,7 +800,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
 
       if (EnableStopWin && profitRate - StopWin > 0) {
         Log("当前浮动盈亏", profitRate, "开始止盈");
-        balanceAccount(false, BuyFirst ? 0 : 1);
+        resetAccount(false, BuyFirst ? 0 : 1);
         return 1;
       }
     } else {
@@ -842,7 +846,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
       }
 
       if (refish) {
-        balanceAccount(false, BuyFirst ? 0 : 1);
+        resetAccount(false, BuyFirst ? 0 : 1);
         return 1;
       }
     }

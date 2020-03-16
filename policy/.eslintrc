@@ -15,7 +15,7 @@
     "no-extra-parens": 1,                     //多余的括号
     "no-empty": 1,                            //空代码块
     "no-use-before-define": [1, "nofunc"],    //使用前未定义
-    "complexity": [1, 10],                    //圈复杂度大于10 警告
+    "complexity": [1, 13],                    //圈复杂度大于13 警告
 
     //常见错误
     "comma-dangle": [2, "never"],             //定义数组或对象最后多余的逗号
