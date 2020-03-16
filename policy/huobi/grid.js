@@ -235,6 +235,13 @@ function position2Rate(position, price) {
   return position.Profit * price / position.Amount * MarginLevel;
 }
 
+function orderClean(orders) {
+  for (var i = 0; i < orders.length; i += 1) {
+    orders[i].Info = null;
+  }
+  return orders;
+}
+
 // normal filter by dir
 function order2DirOrder(orders, dir) {
   if (dir == -1) {
@@ -242,17 +249,20 @@ function order2DirOrder(orders, dir) {
   }
   var ordervec = [];
   for (var i = 0; i < orders.length; i += 1) {
-    if (
-      dir == 0 && orders[i].Type == 0 && orders[i].Offset == 0 ||
-      orders[i].Type == 1 && orders[i].Offset == 1
-    ) {
-      ordervec.push(orders[i]);
-    }
-    if (
-      dir == 1 && orders[i].Type == 1 && orders[i].Offset == 0 ||
-      orders[i].Type == 0 && orders[i].Offset == 1
-    ) {
-      ordervec.push(orders[i]);
+    if (dir == 0) {
+      if (
+        orders[i].Type == 0 && orders[i].Offset == 0 ||
+        orders[i].Type == 1 && orders[i].Offset == 1
+      ) {
+        ordervec.push(orders[i]);
+      }
+    } else {
+      if (
+        orders[i].Type == 1 && orders[i].Offset == 0 ||
+        orders[i].Type == 0 && orders[i].Offset == 1
+      ) {
+        ordervec.push(orders[i]);
+      }
     }
   }
   return ordervec;
@@ -806,6 +816,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
         String(_N(profitRate, Precision)) +
         "%";
 
+      // 只有开单边的时候才使用这个
       if (StopLoss > 0 && profitRate + StopLoss < 0) {
         Log("当前浮动盈亏", profitRate, "开始止损");
         resetAccount(StopLossBeginMode === 0 ? false : true, BuyFirst ? 0 : 1);
@@ -898,6 +909,7 @@ function fishingCheck(orgAccount, gridTrader, position, totpositions, ticker) {
     msg += "保留仓位差:" + String(_N(reverseAmount)) + "\n";
     msg += "当前价格:" + String(_N(ticker.Last)) + "\n";
     msg += "当前仓位差:" + String(_N(diffAmount)) + "\n";
+    LogProfit(marryTot * (BuyFirst ? BAmountOnce : SAmountOnce), "&");
     msg +=
       "已撮合单数:" +
       String(marryTot * (BuyFirst ? BAmountOnce : SAmountOnce)) +
@@ -1159,7 +1171,7 @@ function main() {
   }
   exchange.SetContractType(ContractType); // 设置合约
   exchange.SetMarginLevel(MarginLevel); // 设置杠杆
-  blockGetInfo(onAccount, onPosition, onTicker);
+  blockGetInfo(onOrders, onAccount, onPosition, onTicker);
   var orgAccount = Object.assign({}, globalInfo.account);
   var fishCount = 1;
   var totBalance = account2balance(orgAccount, Coin);
@@ -1181,6 +1193,10 @@ function main() {
     Log("仓位 profit:", position.Profit);
     Log("仓位 rate:", position2Rate(position, globalInfo.ticker.Last));
   }
+  var orders = orderClean(globalInfo.orders);
+  Log("all orders:", JSON.stringify(orders));
+  Log("buy orders:", JSON.stringify(order2DirOrder(orders, 0)));
+  Log("sell orders:", JSON.stringify(order2DirOrder(orders, 1)));
   var cycle = true;
   while (cycle) {
     if (!fishing(orgAccount, fishCount)) {
