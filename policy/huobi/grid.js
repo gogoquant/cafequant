@@ -242,7 +242,7 @@ function orderClean(orders) {
   return orders;
 }
 
-// normal filter by dir
+// order2DirOrder normal filter by dir
 function order2DirOrder(orders, dir) {
   if (dir == -1) {
     return orders;
@@ -346,6 +346,7 @@ function cancelPending(dir) {
     }
     blockGetInfo(onOrders);
     var orders = order2DirOrder(globalInfo.orders, dir);
+    Log("cancel order:" + JSON.stringify(orders));
     if (orders.length == 0) {
       break;
     }
