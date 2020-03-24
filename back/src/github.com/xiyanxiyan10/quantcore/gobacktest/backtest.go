@@ -22,10 +22,11 @@ type BackTest struct {
 
 // New creates a default backTest with sensible defaults ready for use.
 func New() *BackTest {
+	profit := NewPortfolio()
+	var handler PortfolioHandler
+	handler  = profit
 	return &BackTest{
-		portfolio: &Portfolio{
-			Symbol:"test"
-		},
+		portfolio: handler,
 		statistic: &Statistic{},
 	}
 }
@@ -183,14 +184,17 @@ func (t *BackTest) eventLoop(e EventHandler) error {
 		// update statistics
 		t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before preceding
-		t.portfolio.OnData(event)
-		orders, ok := t.portfolio.OnData(t.data)
+		t.portfolio.OnData(t.data)
+		//orders, ok := t.portfolio.OnData(t.data)
 		// add orders into queue which is married
+		/*
 		if ok {
 			for _, order := range orders {
 				t.eventQueue = append(t.eventQueue, order)
 			}
 		}
+		*/
+
 		// run strategy with this data event
 		/*
 			signals, err := t.strategy.OnData(event)

@@ -15,7 +15,8 @@ type PortfolioHandler interface {
 	Casher
 	Valuer
 	ResetHandler
-	OnData(DataEvent) (*Fill, error)
+	OnData(data DataHandler) ([]OrderEvent, bool)
+	//OnData(DataEvent) (*Fill, error)
 	OnOrder(OrderEvent, DataHandler) (*Fill, error)
 }
 
