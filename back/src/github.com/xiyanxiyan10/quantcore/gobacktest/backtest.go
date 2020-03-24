@@ -16,7 +16,6 @@ type BackTest struct {
 	symbols    []string
 	data       DataHandler
 	portfolio  PortfolioHandler
-	exchange   ExecutionHandler
 	statistic  StatisticHandler
 	eventQueue []EventHandler
 }
@@ -25,13 +24,7 @@ type BackTest struct {
 func New() *BackTest {
 	return &BackTest{
 		portfolio: &Portfolio{
-			initialCash: 100000,
-			sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
-			riskManager: &Risk{},
-		},
-		exchange: &Exchange{
-			Symbol:      "TEST",
-			Commission:  &FixedCommission{Commission: 0},
+			Symbol:"test"
 		},
 		statistic: &Statistic{},
 	}
@@ -52,10 +45,7 @@ func (t *BackTest) SetPortfolio(portfolio PortfolioHandler) {
 	t.portfolio = portfolio
 }
 
-// SetExchange sets the execution provider to be used within the backTest.
-func (t *BackTest) SetExchange(exchange ExecutionHandler) {
-	t.exchange = exchange
-}
+
 
 // SetStatistic sets the statistic provider to be used within the backTest.
 func (t *BackTest) SetStatistic(statistic StatisticHandler) {
@@ -193,7 +183,7 @@ func (t *BackTest) eventLoop(e EventHandler) error {
 		// update statistics
 		t.statistic.Update(event, t.portfolio)
 		// check if any orders are filled before preceding
-		t.exchange.OnData(event)
+		t.portfolio.OnData(event)
 		orders, ok := t.portfolio.OnData(t.data)
 		// add orders into queue which is married
 		if ok {
@@ -222,7 +212,7 @@ func (t *BackTest) eventLoop(e EventHandler) error {
 		t.eventQueue = append(t.eventQueue, order)
 
 	case *Order:
-		fill, err := t.exchange.OnOrder(event, t.data)
+		fill, err := t.portfolio.OnOrder(event, t.data)
 		if err != nil {
 			break
 		}

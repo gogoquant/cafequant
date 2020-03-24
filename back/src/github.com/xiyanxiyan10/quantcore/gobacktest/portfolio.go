@@ -1,23 +1,24 @@
 package gobacktest
 
-import "github.com/xiyanxiyan10/quantcore/constant"
+import (
+	"errors"
+	"github.com/xiyanxiyan10/quantcore/constant"
+	"math"
+)
 
 // PortfolioHandler is the combined interface building block for a portfolio.
 type PortfolioHandler interface {
 	OnSignaler
-	OnMarry
 	OnFiller
 	Investor
 	Updater
 	Casher
 	Valuer
 	ResetHandler
+	OnData(DataEvent) (*Fill, error)
+	OnOrder(OrderEvent, DataHandler) (*Fill, error)
 }
 
-// OnMarry marry orders
-type OnMarry interface {
-	OnData(data DataHandler) ([]OrderEvent, bool)
-}
 
 // OnSignaler is an interface for the OnSignal method
 type OnSignaler interface {
@@ -28,6 +29,7 @@ type OnSignaler interface {
 type OnFiller interface {
 	OnFill(FillEvent, DataHandler) (*Fill, error)
 }
+
 
 // Investor is an interface to check if a portfolio has a position of a symbol
 type Investor interface {
@@ -62,44 +64,90 @@ type Booker interface {
 
 // Portfolio represent a simple portfolio struct.
 type Portfolio struct {
+	Symbol string
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
 	orderBook    *OrderBook
 	transactions []FillEvent
-	sizeManager  SizeHandler
-	riskManager  RiskHandler
 }
 
 // NewPortfolio creates a default portfolio with sensible defaults ready for use.
 func NewPortfolio() *Portfolio {
 	return &Portfolio{
+		Symbol:     "TEST",
 		initialCash: 100000,
-		sizeManager: &Size{DefaultSize: 100, DefaultValue: 1000},
-		riskManager: &Risk{},
 		orderBook:   NewOrderBook(),
 	}
 }
 
-// SizeManager return the size manager of the portfolio.
-func (p Portfolio) SizeManager() SizeHandler {
-	return p.sizeManager
+
+// OnOrder executes an order event
+func (e *Portfolio) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
+	// fetch latest known data event for the symbol
+	latest := data.Latest(order.Symbol())
+
+	// simple implementation, creates a direct fill from the order
+	// based on the last known data price
+	f := &Fill{
+		Event:    Event{timestamp: order.Time(), symbol: order.Symbol()},
+		Exchange: e.Symbol,
+		qty:      order.Qty(),
+		price:    latest.Price(), // last price from data event
+	}
+
+	f.direction = order.Direction()
+
+	// todo commission
+	commission := 0.1
+	f.commission = commission
+	// todo
+	exchangeFee := 0.1
+	f.exchangeFee = exchangeFee
+
+	f.cost = e.calculateCost(commission, exchangeFee)
+
+	return f, nil
 }
 
-// SetSizeManager sets the size manager to be used with the portfolio.
-func (p *Portfolio) SetSizeManager(size SizeHandler) {
-	p.sizeManager = size
+// calculateCost() calculates the total cost for a stock trade
+func (e *Portfolio) calculateCost(commission, fee float64) float64 {
+	return commission + fee
 }
 
-// RiskManager returns the risk manager of the portfolio.
-func (p Portfolio) RiskManager() RiskHandler {
-	return p.riskManager
+// SizeOrder adjusts the size of an order
+func (s *Portfolio) SizeOrder(order OrderEvent, data DataEvent, pf PortfolioHandler) (*Order, error) {
+	// assert interface to concrete Type
+	o := order.(*Order)
+	price := order.Price()
+	if price < 0 {
+		o.SetOrderType(MarketOrder)
+		price = data.Price()
+	} else {
+		o.SetOrderType(LimitOrder)
+	}
+	o.SetPrice(price)
+	size := s.setDefaultSize(order.Qty(), price)
+	// decide on order direction
+	switch o.Direction() {
+	case constant.TradeTypeLong:
+		o.SetDirection(constant.TradeTypeLong)
+		o.SetQty(float64(size))
+	case constant.TradeTypeShort:
+		o.SetDirection(constant.TradeTypeShort)
+		o.SetQty(float64(size) * -1)
+	default:
+		return o, errors.New("unknown tradeType :" + string(o.Direction()))
+	}
+	return o, nil
 }
 
-// SetRiskManager sets the risk manager to be used with the portfolio.
-func (p *Portfolio) SetRiskManager(risk RiskHandler) {
-	p.riskManager = risk
+// setDefaultSize ...
+func (s *Portfolio) setDefaultSize(size, price float64) int64 {
+	correctedQty := int64(math.Floor(size / price))
+	return correctedQty
 }
+
 
 // Reset the portfolio into a clean state with set initial cash.
 func (p *Portfolio) Reset() error {
@@ -165,15 +213,12 @@ func (p *Portfolio) OnSignal(signal SignalEvent, data DataHandler) (*Order, erro
 		limitPrice: price,
 	}
 
-	sizedOrder, err := p.sizeManager.SizeOrder(initialOrder, latest, p)
+	sizedOrder, err := p.SizeOrder(initialOrder, latest, p)
 	if err != nil {
 	}
 
-	order, err := p.riskManager.EvaluateOrder(sizedOrder, latest, p.holdings)
-	if err != nil {
-	}
 	// add this order into list
-	p.orderBook.Add(order)
+	p.orderBook.Add(sizedOrder)
 	//p.orderBook
 	//return nil, nil
 	return nil, nil
