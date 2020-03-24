@@ -89,12 +89,31 @@ func initialize(id int64) (trader Global, err error) {
 		err = fmt.Errorf("please add at least one exchange")
 		return
 	}
-	trader.ctx.Set("Global", &trader)
-	trader.ctx.Set("G", &trader)
-	trader.ctx.Set("Exchange", trader.es[0])
-	trader.ctx.Set("E", trader.es[0])
-	trader.ctx.Set("Exchanges", trader.es)
-	trader.ctx.Set("Es", trader.es)
+	if localErr := trader.ctx.Set("Global", &trader); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("G", &trader); localErr != nil {
+		err = localErr
+		return
+	}
+
+	if localErr := trader.ctx.Set("Exchange", trader.es[0]); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("E", trader.es[0]); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("Exchanges", trader.es); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("Es", trader.es); localErr != nil {
+		err = localErr
+		return
+	}
 	return
 }
 
