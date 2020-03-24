@@ -40,29 +40,13 @@ func TestFixedCommission(t *testing.T) {
 }
 
 func TestTresholdFixedCommission(t *testing.T) {
-	var testCases = []struct {
+	var testCases []struct {
 		msg    string
 		c      CommissionHandler
 		qty    float64
 		price  float64
 		expCom float64
 		expErr error
-	}{
-		{"testing treshold commission for empty parameters / no trade:",
-			&TresholdFixedCommission{Commission: 10, MinValue: 1000},
-			0, 0,
-			0, nil,
-		},
-		{"testing treshold commission for value below minimum:",
-			&TresholdFixedCommission{Commission: 10, MinValue: 1000},
-			10, 10,
-			0, nil,
-		},
-		{"testing treshold commission for value above minimum:",
-			&TresholdFixedCommission{Commission: 10, MinValue: 1000},
-			100, 100,
-			10, nil,
-		},
 	}
 
 	for _, tc := range testCases {

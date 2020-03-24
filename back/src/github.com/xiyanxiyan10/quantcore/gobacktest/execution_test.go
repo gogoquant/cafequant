@@ -12,9 +12,8 @@ func TestOnOrder(t *testing.T) {
 
 	// set ExecutionHandler with symbol
 	var e = &Exchange{
-		Symbol:      "TEST",
-		Commission:  &FixedCommission{Commission: 0},
-		ExchangeFee: &FixedExchangeFee{ExchangeFee: 1.0},
+		Symbol:     "TEST",
+		Commission: &FixedCommission{Commission: 0},
 	}
 
 	// orderEventTests is a table for testing parsing bar data into a BarEvent

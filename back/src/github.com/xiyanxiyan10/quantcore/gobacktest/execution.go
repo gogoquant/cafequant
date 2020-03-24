@@ -12,17 +12,15 @@ type ExecutionHandler interface {
 
 // Exchange is a basic execution handler implementation
 type Exchange struct {
-	Symbol      string
-	Commission  CommissionHandler
-	ExchangeFee ExchangeFeeHandler
+	Symbol     string
+	Commission CommissionHandler
 }
 
 // NewExchange creates a default exchange with sensible defaults ready for use.
 func NewExchange() *Exchange {
 	return &Exchange{
-		Symbol:      "TEST",
-		Commission:  &FixedCommission{Commission: 0},
-		ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
+		Symbol:     "TEST",
+		Commission: &FixedCommission{Commission: 0},
 	}
 }
 
@@ -52,8 +50,8 @@ func (e *Exchange) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
 		return f, err
 	}
 	f.commission = commission
-
-	exchangeFee, err := e.ExchangeFee.Fee()
+	// todo
+	exchangeFee := 0.1
 	if err != nil {
 		return f, err
 	}
