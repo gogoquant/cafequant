@@ -13,6 +13,7 @@ require (
 	github.com/nntaoli-project/goex v1.1.0
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/smartystreets/goconvey v1.6.4 // indirect
+	gonum.org/v1/gonum v0.7.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
