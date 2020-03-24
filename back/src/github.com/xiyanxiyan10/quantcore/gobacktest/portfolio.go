@@ -20,7 +20,6 @@ type PortfolioHandler interface {
 	OnOrder(OrderEvent, DataHandler) (*Fill, error)
 }
 
-
 // OnSignaler is an interface for the OnSignal method
 type OnSignaler interface {
 	OnSignal(SignalEvent, DataHandler) (*Order, error)
@@ -30,7 +29,6 @@ type OnSignaler interface {
 type OnFiller interface {
 	OnFill(FillEvent, DataHandler) (*Fill, error)
 }
-
 
 // Investor is an interface to check if a portfolio has a position of a symbol
 type Investor interface {
@@ -65,7 +63,7 @@ type Booker interface {
 
 // Portfolio represent a simple portfolio struct.
 type Portfolio struct {
-	Symbol string
+	Symbol       string
 	initialCash  float64
 	cash         float64
 	holdings     map[string]Position
@@ -76,12 +74,11 @@ type Portfolio struct {
 // NewPortfolio creates a default portfolio with sensible defaults ready for use.
 func NewPortfolio() *Portfolio {
 	return &Portfolio{
-		Symbol:     "TEST",
+		Symbol:      "TEST",
 		initialCash: 100000,
 		orderBook:   NewOrderBook(),
 	}
 }
-
 
 // OnOrder executes an order event
 func (e *Portfolio) OnOrder(order OrderEvent, data DataHandler) (*Fill, error) {
@@ -148,7 +145,6 @@ func (s *Portfolio) setDefaultSize(size, price float64) int64 {
 	correctedQty := int64(math.Floor(size / price))
 	return correctedQty
 }
-
 
 // Reset the portfolio into a clean state with set initial cash.
 func (p *Portfolio) Reset() error {

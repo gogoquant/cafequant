@@ -34,7 +34,6 @@ func (m Metric) Get(key string) (float64, bool) {
 	return value, ok
 }
 
-
 // Mean calculates the average for a slice of float64 values.
 func Mean(values []float64) float64 {
 	if len(values) == 0 {
@@ -103,4 +102,3 @@ func EMA(values []float64, period int) ([]float64, error) {
 
 	return result, nil
 }
-

@@ -24,7 +24,7 @@ type BackTest struct {
 func New() *BackTest {
 	profit := NewPortfolio()
 	var handler PortfolioHandler
-	handler  = profit
+	handler = profit
 	return &BackTest{
 		portfolio: handler,
 		statistic: &Statistic{},
@@ -45,8 +45,6 @@ func (t *BackTest) SetData(data DataHandler) {
 func (t *BackTest) SetPortfolio(portfolio PortfolioHandler) {
 	t.portfolio = portfolio
 }
-
-
 
 // SetStatistic sets the statistic provider to be used within the backTest.
 func (t *BackTest) SetStatistic(statistic StatisticHandler) {
@@ -188,11 +186,11 @@ func (t *BackTest) eventLoop(e EventHandler) error {
 		//orders, ok := t.portfolio.OnData(t.data)
 		// add orders into queue which is married
 		/*
-		if ok {
-			for _, order := range orders {
-				t.eventQueue = append(t.eventQueue, order)
+			if ok {
+				for _, order := range orders {
+					t.eventQueue = append(t.eventQueue, order)
+				}
 			}
-		}
 		*/
 
 		// run strategy with this data event
