@@ -107,11 +107,11 @@ func run(id int64) (err error) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil && err != errHalt {
-				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.(*otto.Error).String())
 			}
 			if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
 				if _, err := exit.Call(exit); err != nil {
-					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.(*otto.Error).String())
 				}
 			}
 			trader.Status = 0
@@ -119,13 +119,13 @@ func run(id int64) (err error) {
 		trader.LastRunAt = time.Now()
 		trader.Status = 1
 		if _, err := trader.ctx.Run(trader.Algorithm.Script); err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.(*otto.Error).String())
 		}
 		if main, err := trader.ctx.Get("main"); err != nil || !main.IsFunction() {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, "can not get the main function")
 		} else {
 			if _, err := main.Call(main); err != nil {
-				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.(*otto.Error).String())
 			}
 		}
 	}()
