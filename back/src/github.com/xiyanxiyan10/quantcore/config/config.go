@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var confs = make(map[string]string)
+var confMap = make(map[string]string)
 
 func init() {
 	configFile := os.Getenv("QUANT_CONFIG")
@@ -20,14 +20,14 @@ func init() {
 	}
 	keys := conf.Section("").KeyStrings()
 	for _, k := range keys {
-		confs[k] = conf.Section("").Key(k).String()
+		confMap[k] = conf.Section("").Key(k).String()
 	}
-	if confs["logstimezone"] == "" {
-		confs["logstimezone"] = "Local"
+	if confMap["logstimezone"] == "" {
+		confMap["logstimezone"] = "Local"
 	}
 }
 
 // String ...
 func String(key string) string {
-	return confs[strings.ToLower(key)]
+	return confMap[strings.ToLower(key)]
 }
