@@ -32,7 +32,6 @@ func New() *BackTest {
 		exchange: &Exchange{
 			Symbol:      "TEST",
 			Commission:  &FixedCommission{Commission: 0},
-			ExchangeFee: &FixedExchangeFee{ExchangeFee: 0},
 		},
 		statistic: &Statistic{},
 	}
