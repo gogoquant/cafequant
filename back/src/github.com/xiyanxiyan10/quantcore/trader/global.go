@@ -127,7 +127,10 @@ func (g *Global) LineDrawLine(name string, data draw.LineData) interface{} {
 
 // LineDrawPlot ...
 func (g *Global) LineDrawPlot() interface{} {
-	g.lineDrawer.Draw()
+	if err := g.lineDrawer.Draw(); err != nil {
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+		return false
+	}
 	return true
 }
 
