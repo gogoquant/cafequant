@@ -1,4 +1,4 @@
-package gobacktest
+package backtest
 
 import (
 	"sort"

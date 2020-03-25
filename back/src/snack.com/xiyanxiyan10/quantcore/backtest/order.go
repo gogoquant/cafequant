@@ -1,4 +1,4 @@
-package gobacktest
+package backtest
 
 // OrderStatus defines an order status
 type OrderStatus int

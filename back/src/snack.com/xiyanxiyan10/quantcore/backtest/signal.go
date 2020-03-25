@@ -1,4 +1,4 @@
-package gobacktest
+package backtest
 
 // Direction defines which direction a signal indicates
 type Direction string

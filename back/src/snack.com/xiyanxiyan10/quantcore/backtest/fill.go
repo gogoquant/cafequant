@@ -1,4 +1,4 @@
-package gobacktest
+package backtest
 
 import "snack.com/xiyanxiyan10/quantcore/constant"
 
