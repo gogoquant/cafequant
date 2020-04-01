@@ -2,8 +2,8 @@ package backtest
 
 import (
 	"errors"
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"math"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 // PortfolioHandler is the combined interface building block for a portfolio.

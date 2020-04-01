@@ -1,3 +1,3 @@
-from snack import example
+from snack import hello
 
-print(example("test"))
+print(hello())

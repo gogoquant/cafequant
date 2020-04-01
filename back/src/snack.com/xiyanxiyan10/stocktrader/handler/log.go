@@ -6,6 +6,7 @@ import (
 	"github.com/hprose/hprose-golang/rpc"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	traderApi "snack.com/xiyanxiyan10/stocktrader/trader"
 )
 
 type logger struct{}
@@ -48,6 +49,27 @@ func (logger) List(trader model.Trader, pagination pagination, filters filters, 
 		Total: total,
 		List:  logs,
 	}
+	resp.Success = true
+	return
+}
+
+func (logger) LogStatus(trader model.Trader, ctx rpc.Context) (resp response) {
+	username := ctx.GetString("username")
+	if username == "" {
+		resp.Message = constant.ErrAuthorizationError
+		return
+	}
+	self, err := model.GetUser(username)
+	if err != nil {
+		resp.Message = fmt.Sprint(err)
+		return
+	}
+	if trader, err = self.GetTrader(trader.ID); err != nil {
+		resp.Message = fmt.Sprint(err)
+		return
+	}
+	msg := traderApi.GetTraderLogStatus(trader.ID)
+	resp.Data = msg
 	resp.Success = true
 	return
 }

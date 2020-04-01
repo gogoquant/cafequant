@@ -1,8 +1,8 @@
 package backtest
 
 import (
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"math"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"time"
 	// "github.com/shopspring/decimal"
 )

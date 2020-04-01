@@ -31,6 +31,14 @@ func GetTraderStatus(id int64) (status int64) {
 	return
 }
 
+// GetTraderLogStatus ...
+func GetTraderLogStatus(id int64) (status string) {
+	if t, ok := Executor[id]; ok && t != nil {
+		return t.statusLog
+	}
+	return ""
+}
+
 // Switch ...
 func Switch(id int64) (err error) {
 	if GetTraderStatus(id) > 0 {

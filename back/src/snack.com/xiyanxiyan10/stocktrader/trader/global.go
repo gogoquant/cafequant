@@ -1,11 +1,11 @@
 package trader
 
 import (
-	"snack.com/xiyanxiyan10/stocktrader/util"
-	//"encoding/json"
-	//"fmt"
+	"encoding/json"
+	"fmt"
 	"log"
-	//"reflect"
+	"reflect"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 	"sync"
 	"time"
 
@@ -29,7 +29,7 @@ type Global struct {
 	running    bool
 	mailNotice notice.MailNotice // 邮件发送
 	lineDrawer draw.LineDrawer   // 图标绘制
-	//statusLog string
+	statusLog  string
 }
 
 //js中的一个任务,目的是可以并发工作
@@ -154,23 +154,23 @@ func (g *Global) LogProfit(msgs ...interface{}) {
 }
 
 // LogStatus ...
-//func (g *Global) LogStatus(msgs ...interface{}) {
-//	go func() {
-//		msg := ""
-//		for _, m := range msgs {
-//			v := reflect.ValueOf(m)
-//			switch v.Kind() {
-//			case reflect.Struct, reflect.Map, reflect.Slice:
-//				if bs, err := json.Marshal(m); err == nil {
-//					msg += string(bs)
-//					continue
-//				}
-//			}
-//			msg += fmt.Sprintf("%+v", m)
-//		}
-//		g.statusLog = msg
-//	}()
-//}
+func (g *Global) LogStatus(msgs ...interface{}) {
+	go func() {
+		msg := ""
+		for _, m := range msgs {
+			v := reflect.ValueOf(m)
+			switch v.Kind() {
+			case reflect.Struct, reflect.Map, reflect.Slice:
+				if bs, err := json.Marshal(m); err == nil {
+					msg += string(bs)
+					continue
+				}
+			}
+			msg += fmt.Sprintf("%+v", m)
+		}
+		g.statusLog = msg
+	}()
+}
 
 // AddTask ...
 func (g *Global) AddTask(group otto.Value, fn otto.Value, args ...interface{}) bool {
