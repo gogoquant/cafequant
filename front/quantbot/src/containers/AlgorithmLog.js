@@ -1,13 +1,24 @@
-import { ResetError } from '../actions';
-import { LogList } from '../actions/log';
-import React from 'react';
-import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
-import { Button, Table, Tag, notification, Switch } from 'antd';
+import { ResetError } from "../actions";
+import { LogList } from "../actions/log";
+import React from "react";
+import { connect } from "react-redux";
+import { browserHistory } from "react-router";
+import { Button, Table, Tag, notification, Switch, Collapse } from "antd";
+const Panel = Collapse.Panel;
 
 function PrefixInteger(num, m) {
   return (num + Array(m).join(0)).slice(0, m);
 }
+
+function callback(key) {
+  console.log(key);
+}
+
+const text = `
+  A dog is a type of domesticated animal.
+  Known for its loyalty and faithfulness,
+  it can be found as a welcome guest in many households across the world.
+`;
 
 class Log extends React.Component {
   constructor(props) {
@@ -16,13 +27,13 @@ class Log extends React.Component {
     this.state = {
       sync: false,
       syncTime: 2000,
-      messageErrorKey: '',
+      messageErrorKey: "",
       pagination: {
         pageSize: 12,
         current: 1,
-        total: 0,
+        total: 0
       },
-      filters: {},
+      filters: {}
     };
 
     this.reload = this.reload.bind(this);
@@ -36,23 +47,23 @@ class Log extends React.Component {
     const { trader, log } = nextProps;
 
     if (!trader.cache.name) {
-      browserHistory.push('/algorithm');
+      browserHistory.push("/algorithm");
     }
 
     if (!messageErrorKey && log.message) {
       this.setState({
-        messageErrorKey: 'logError',
+        messageErrorKey: "logError"
       });
-      notification['error']({
-        key: 'logError',
-        message: 'Error',
+      notification["error"]({
+        key: "logError",
+        message: "Error",
         description: String(log.message),
         onClose: () => {
           if (this.state.messageErrorKey) {
-            this.setState({ messageErrorKey: '' });
+            this.setState({ messageErrorKey: "" });
           }
           dispatch(ResetError());
-        },
+        }
       });
     }
     pagination.total = log.total;
@@ -87,7 +98,7 @@ class Log extends React.Component {
   }
 
   handleCancel() {
-    browserHistory.push('/algorithm');
+    browserHistory.push("/algorithm");
   }
 
   handleSync(sync) {
@@ -97,10 +108,7 @@ class Log extends React.Component {
     console.log(sync);
     if (sync === true) {
       this.state.pagination.current = 0;
-      this.syncTimer = setInterval(
-        () => this.reload(),
-        this.state.syncTime
-      );
+      this.syncTimer = setInterval(() => this.reload(), this.state.syncTime);
     } else {
       this.syncTimer && clearTimeout(this.syncTimer);
       this.syncTimer = null;
@@ -112,47 +120,71 @@ class Log extends React.Component {
     const { pagination } = this.state;
     const { log } = this.props;
     const colors = {
-      'INFO': '#A9A9A9',
-      'ERROR': '#F50F50',
-      'PROFIT': '#4682B4',
-      'CANCEL': '#5F9EA0',
+      INFO: "#A9A9A9",
+      ERROR: "#F50F50",
+      PROFIT: "#4682B4",
+      CANCEL: "#5F9EA0"
     };
-    const columns = [{
-      width: 160,
-      title: 'Time',
-      dataIndex: 'time',
-      render: (v) => v.toLocaleString() + '.' + PrefixInteger(v.getMilliseconds(), 3).toString(),
-    }, {
-      width: 100,
-      title: 'Exchange',
-      dataIndex: 'exchangeType',
-      render: (v) => <Tag color={v === 'global' ? '' : '#00BFFF'}>{v}</Tag>,
-    }, {
-      width: 100,
-      title: 'Type',
-      dataIndex: 'type',
-      render: (v) => <Tag color={colors[v] || '#00BFFF'}>{v}</Tag>,
-    }, {
-      title: 'Price',
-      dataIndex: 'price',
-      width: 100,
-    }, {
-      width: 100,
-      title: 'Amount',
-      dataIndex: 'amount',
-    }, {
-      title: 'Message',
-      dataIndex: 'message',
-    }];
+    const columns = [
+      {
+        width: 160,
+        title: "Time",
+        dataIndex: "time",
+        render: v =>
+          v.toLocaleString() +
+          "." +
+          PrefixInteger(v.getMilliseconds(), 3).toString()
+      },
+      {
+        width: 100,
+        title: "Exchange",
+        dataIndex: "exchangeType",
+        render: v => <Tag color={v === "global" ? "" : "#00BFFF"}>{v}</Tag>
+      },
+      {
+        width: 100,
+        title: "Type",
+        dataIndex: "type",
+        render: v => <Tag color={colors[v] || "#00BFFF"}>{v}</Tag>
+      },
+      {
+        title: "Price",
+        dataIndex: "price",
+        width: 100
+      },
+      {
+        width: 100,
+        title: "Amount",
+        dataIndex: "amount"
+      },
+      {
+        title: "Message",
+        dataIndex: "message"
+      }
+    ];
 
     return (
       <div>
         <div className="table-operations">
-          <Button type="primary" onClick={this.reload}>Reload</Button>
-          <Button type="ghost" onClick={this.handleCancel}>Back</Button>
-          <Switch checkedChildren="sync" unCheckedChildren="" onChange={this.handleSync}/>
+          <Button type="primary" onClick={this.reload}>
+            Reload
+          </Button>
+          <Button type="ghost" onClick={this.handleCancel}>
+            Back
+          </Button>
+          <Switch
+            checkedChildren="sync"
+            unCheckedChildren=""
+            onChange={this.handleSync}
+          />
         </div>
-        <Table rowKey="id"
+        <Collapse onChange={callback}>
+          <Panel header="Status Info" key="1">
+            <p>{text}</p>
+          </Panel>
+        </Collapse>
+        <Table
+          rowKey="id"
           columns={columns}
           dataSource={log.list}
           pagination={pagination}
@@ -164,10 +196,10 @@ class Log extends React.Component {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   user: state.user,
   trader: state.trader,
-  log: state.log,
+  log: state.log
 });
 
 export default connect(mapStateToProps)(Log);
