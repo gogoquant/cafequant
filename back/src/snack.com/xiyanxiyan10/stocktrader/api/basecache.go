@@ -1,25 +1,20 @@
 package api
 
 import (
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
 )
 
-// BaseExchangeCache store val as cache for callback api
+// BaseExchangeCache store the date from api in cahce
 type BaseExchangeCache struct {
+	data interface{}
+	date time.Time
+}
+
+// BaseExchangeCacheManager store val as cache for callback api
+type BaseExchangeCachManager struct {
 	BaseExchange
-
 	sync.Mutex
-	depth     constant.Depth
-	depthTime time.Time
-
-	orders     []constant.Order
-	ordersTime time.Time
-
-	traders     []constant.Trader
-	tradersTime time.Time
-
-	ticker     constant.Ticker
-	tickerTime time.Time
+	key    string // which trigger
+	caches map[string]BaseExchangeCache
 }
