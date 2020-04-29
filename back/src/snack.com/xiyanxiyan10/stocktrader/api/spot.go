@@ -349,7 +349,7 @@ func (e *SpotExchange) GetTrades(params ...interface{}) interface{} {
 }
 
 // CancelOrder cancel an order
-func (e *SpotExchange) CancelOrder(orderID string) bool {
+func (e *SpotExchange) CancelOrder(orderID string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
