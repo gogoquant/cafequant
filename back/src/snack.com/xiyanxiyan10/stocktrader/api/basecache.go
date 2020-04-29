@@ -7,8 +7,8 @@ import (
 
 // BaseExchangeCache store the date from api in cahce
 type BaseExchangeCache struct {
-	data interface{}
-	date time.Time
+	Data      interface{}
+	TimeStamp time.Time
 }
 
 // BaseExchangeCacheManager store val as cache for callback api
