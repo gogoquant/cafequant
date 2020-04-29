@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"snack.com/xiyanxiyan10/stockdb/constant"
 	"snack.com/xiyanxiyan10/stockdb/sdk"
 	"snack.com/xiyanxiyan10/stockdb/types"
-	"log"
 	"time"
 
 	"github.com/astaxie/beego/httplib"

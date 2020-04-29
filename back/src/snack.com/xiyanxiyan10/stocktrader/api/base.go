@@ -2,12 +2,23 @@ package api
 
 //base exchange
 type BaseExchange struct {
+	IOMode           int                // io mode for exchange
 	contractType     string             // contractType
 	direction        string             // trade type
 	stockType        string             // stockType
 	lever            int                // lever
 	recordsPeriodMap map[string]int64   // recordsPeriod support
 	minAmountMap     map[string]float64 // minAmount of trade
+}
+
+// SetIO set IO mode
+func (e *BaseExchange) SetIO(mode int) {
+	e.IOMode = mode
+}
+
+// GetIO get IO mode
+func (e *BaseExchange) GetIO() int {
+	return e.IOMode
 }
 
 // SetContractType set the limit calls amount per second of this exchange

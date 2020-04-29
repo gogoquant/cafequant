@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/hprose/hprose-golang/io"
+	"os"
 	"snack.com/xiyanxiyan10/stockdb/log"
 	"snack.com/xiyanxiyan10/stockdb/types"
-	"os"
 )
 
 const (
