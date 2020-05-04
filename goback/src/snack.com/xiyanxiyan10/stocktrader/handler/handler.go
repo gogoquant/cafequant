@@ -64,7 +64,7 @@ func Server() {
 	// set handler for http
 	drawPath := config.String(constant.FilePath)
 	// set the draw file path
-	http.Handle(drawPath, http.FileServer(http.Dir(drawPath)))
+	http.Handle("/", http.FileServer(http.Dir(drawPath)))
 	fmt.Printf("%v  Version %v\n", constant.Banner, constant.Version)
 	log.Printf("Running at :%v\n", port)
 	http.ListenAndServe(":"+port, nil)
