@@ -11,6 +11,7 @@ import (
 
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
@@ -73,7 +74,7 @@ func (g *Global) MailSend(msg, to string) interface{} {
 	return true
 }
 
-// SetMail ...
+// MailStart ...
 func (g *Global) MailStart() interface{} {
 	err := g.mailNotice.Start()
 	if err != nil {
@@ -96,15 +97,20 @@ func (g *Global) MailStatus() interface{} {
 	return g.mailNotice.Status()
 }
 
-// LineDrawSetPath ...
+// LineDrawSetPath set file path for config map
 func (g *Global) LineDrawSetPath(path string) interface{} {
 	g.lineDrawer.SetPath(path)
 	return true
 }
 
-// LineDrawGetPath ...
+// LineDrawGetPath get file path from config map
 func (g *Global) LineDrawGetPath() interface{} {
-	return g.lineDrawer.GetPath()
+	// get the picture path
+	path := g.lineDrawer.GetPath()
+	if path == "" {
+		path = config.String("filePath")
+	}
+	return path
 }
 
 // LineDrawReset ...

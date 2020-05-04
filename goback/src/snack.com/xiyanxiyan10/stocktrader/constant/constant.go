@@ -48,3 +48,8 @@ const (
 	ProfitUnreal  = "ProfitUnreal"
 	RiskRate      = "RiskRate" //保证金率
 )
+
+const (
+	// FilePath
+	FilePath = "files"
+)
