@@ -2,14 +2,14 @@ package trader
 
 import (
 	"fmt"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
-	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"time"
-
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"snack.com/xiyanxiyan10/stocktrader/notice"
+	"strconv"
+	"time"
 )
 
 // Trader Variable
@@ -81,6 +81,8 @@ func initialize(id int64) (trader Global, err error) {
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mailNotice = notice.NewMailServer(5, 3)
 	trader.lineDrawer = draw.GetLineDrawer()
+	// set the diagram path
+	trader.lineDrawer.SetPath(strconv.FormatInt(trader.ID, 10))
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{

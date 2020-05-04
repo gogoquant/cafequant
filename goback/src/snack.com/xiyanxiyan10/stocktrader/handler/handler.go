@@ -60,9 +60,11 @@ func Server() {
 	})
 	service.AddAllMethods(handler)
 	http.Handle("/api", service)
-	//http.Handle("/", http.FileServer(http.Dir("web/dist")))
+	// http.Handle("/", http.FileServer(http.Dir("web/dist")))
 	// set handler for http
-	http.Handle("/", http.FileServer(http.Dir(config.String(constant.FilePath))))
+	drawPath := config.String(constant.FilePath)
+	// set the draw file path
+	http.Handle(drawPath, http.FileServer(http.Dir(drawPath)))
 	fmt.Printf("%v  Version %v\n", constant.Banner, constant.Version)
 	log.Printf("Running at :%v\n", port)
 	http.ListenAndServe(":"+port, nil)
