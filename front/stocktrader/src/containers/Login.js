@@ -12,6 +12,7 @@ class Login extends React.Component {
     this.state = {
       windowHeight: window.innerHeight || 720,
       messageErrorKey: '',
+      cluster: '',
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);

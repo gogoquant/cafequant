@@ -35,9 +35,9 @@ class Log extends React.Component {
       },
       filters: {}
     };
-
     this.reload = this.reload.bind(this);
     this.handleSync = this.handleSync.bind(this);
+    this.handleDiagram = this.handleDiagram.bind(this);
     this.handleTableChange = this.handleTableChange.bind(this);
   }
 
@@ -99,6 +99,12 @@ class Log extends React.Component {
 
   handleCancel() {
     browserHistory.push("/algorithm");
+  }
+
+  handleDiagram() {
+    const { trader } = this.props;
+    const cluster = localStorage.getItem('cluster');
+    window.location.href = cluster + "/" + String(trader.cache.id) + ".html";     
   }
 
   handleSync(sync) {
@@ -171,6 +177,9 @@ class Log extends React.Component {
           </Button>
           <Button type="ghost" onClick={this.handleCancel}>
             Back
+          </Button>
+          <Button type="ghost" onClick={this.handleDiagram}>
+            Diagram
           </Button>
           <Switch
             checkedChildren="sync"
