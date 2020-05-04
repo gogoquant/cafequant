@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
@@ -82,7 +83,8 @@ func initialize(id int64) (trader Global, err error) {
 	trader.mailNotice = notice.NewMailServer(5, 3)
 	trader.lineDrawer = draw.GetLineDrawer()
 	// set the diagram path
-	trader.lineDrawer.SetPath(strconv.FormatInt(trader.ID, 10))
+	filePath := config.String(constant.FilePath)
+	trader.lineDrawer.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
 	for _, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
