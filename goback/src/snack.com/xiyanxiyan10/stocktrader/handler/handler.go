@@ -67,5 +67,8 @@ func Server() {
 	http.Handle("/", http.FileServer(http.Dir(drawPath)))
 	fmt.Printf("%v  Version %v\n", constant.Banner, constant.Version)
 	log.Printf("Running at :%v\n", port)
-	http.ListenAndServe(":"+port, nil)
+	if err := http.ListenAndServe(":"+port, nil); err != nil{
+		log.Printf("Listen at %v fail:%s\n", port, err.Error())
+		return
+	}
 }
