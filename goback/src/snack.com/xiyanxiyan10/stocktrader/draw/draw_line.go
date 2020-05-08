@@ -11,13 +11,13 @@ import (
 
 // klineData ...
 type KlineData struct {
-	date string
+	time string
 	data [4]float32
 }
 
 // LineData ...
 type LineData struct {
-	date string
+	time string
 	data float32
 }
 
@@ -79,7 +79,7 @@ func (p *LineService) prevDrawKline() {
 	x := make([]string, 0)
 	y := make([][4]float32, 0)
 	for i := 0; i < len(p.kline); i++ {
-		x = append(x, p.kline[i].date)
+		x = append(x, p.kline[i].time)
 		y = append(y, p.kline[i].data)
 	}
 	p.klineChart.AddXAxis(x).AddYAxis("kline", y)
@@ -100,7 +100,7 @@ func (p *LineService) prevDrawLine() {
 		x := make([]string, 0)
 		y := make([]float32, 0)
 		for i := 0; i < len(v); i++ {
-			x = append(x, v[i].date)
+			x = append(x, v[i].time)
 			y = append(y, v[i].data)
 		}
 		p.lineChart.AddXAxis(x).AddYAxis(k, y)
