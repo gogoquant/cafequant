@@ -98,13 +98,13 @@ func (g *Global) MailStatus() interface{} {
 }
 
 // LineDrawSetPath set file path for config map
-func (g *Global) LineDrawSetPath(path string) interface{} {
+func (g *Global) DrawSetPath(path string) interface{} {
 	g.lineDrawer.SetPath(path)
 	return true
 }
 
 // LineDrawGetPath get file path from config map
-func (g *Global) LineDrawGetPath() interface{} {
+func (g *Global) DrawGetPath() interface{} {
 	// get the picture path
 	path := g.lineDrawer.GetPath()
 	if path == "" {
@@ -114,13 +114,13 @@ func (g *Global) LineDrawGetPath() interface{} {
 }
 
 // LineDrawReset ...
-func (g *Global) LineDrawReset() interface{} {
+func (g *Global) DrawReset() interface{} {
 	g.lineDrawer.Reset()
 	return true
 }
 
 // LineDrawKline ...
-func (g *Global) LineDrawKline(time string, data [4]float32) interface{} {
+func (g *Global) DrawKline(time string, data [4]float32) interface{} {
 	var kline draw.KlineData
 	kline.Time = time
 	kline.Data = data
@@ -129,7 +129,7 @@ func (g *Global) LineDrawKline(time string, data [4]float32) interface{} {
 }
 
 // LineDrawKline ...
-func (g *Global) LineDrawLine(name string, time string, data float32) interface{} {
+func (g *Global) DrawLine(name string, time string, data float32) interface{} {
 	var line draw.LineData
 	line.Time = time
 	line.Data = data
@@ -138,7 +138,7 @@ func (g *Global) LineDrawLine(name string, time string, data float32) interface{
 }
 
 // LineDrawPlot ...
-func (g *Global) LineDrawPlot() interface{} {
+func (g *Global) DrawPlot() interface{} {
 	if err := g.lineDrawer.Draw(); err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 		return false
@@ -147,29 +147,29 @@ func (g *Global) LineDrawPlot() interface{} {
 }
 
 // Console ...
-func (g *Global) Console(msgs ...interface{}) {
-	log.Printf("%v %v\n", constant.INFO, msgs)
+func (g *Global) Console(messages ...interface{}) {
+	log.Printf("%v %v\n", constant.INFO, messages)
 }
 
 // Log ...
-func (g *Global) Log(msgs ...interface{}) {
-	g.Logger.Log(constant.INFO, "", 0.0, 0.0, msgs...)
+func (g *Global) Log(messages ...interface{}) {
+	g.Logger.Log(constant.INFO, "", 0.0, 0.0, messages...)
 }
 
 // LogProfit ...
-func (g *Global) LogProfit(msgs ...interface{}) {
+func (g *Global) LogProfit(messages ...interface{}) {
 	profit := 0.0
-	if len(msgs) > 0 {
-		profit = util.Float64Must(msgs[0])
+	if len(messages) > 0 {
+		profit = util.Float64Must(messages[0])
 	}
-	g.Logger.Log(constant.PROFIT, "", 0.0, profit, msgs[1:]...)
+	g.Logger.Log(constant.PROFIT, "", 0.0, profit, messages[1:]...)
 }
 
 // LogStatus ...
-func (g *Global) LogStatus(msgs ...interface{}) {
+func (g *Global) LogStatus(messages ...interface{}) {
 	go func() {
 		msg := ""
-		for _, m := range msgs {
+		for _, m := range messages {
 			v := reflect.ValueOf(m)
 			switch v.Kind() {
 			case reflect.Struct, reflect.Map, reflect.Slice:
