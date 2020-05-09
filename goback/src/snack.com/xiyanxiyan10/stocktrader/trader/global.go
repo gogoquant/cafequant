@@ -120,14 +120,20 @@ func (g *Global) LineDrawReset() interface{} {
 }
 
 // LineDrawKline ...
-func (g *Global) LineDrawKline(data draw.KlineData) interface{} {
-	g.lineDrawer.PlotKLine(data)
+func (g *Global) LineDrawKline(time string, data [4]float32) interface{} {
+	var kline draw.KlineData
+	kline.Time = time
+	kline.Data = data
+	g.lineDrawer.PlotKLine(kline)
 	return true
 }
 
 // LineDrawKline ...
-func (g *Global) LineDrawLine(name string, data draw.LineData) interface{} {
-	g.lineDrawer.PlotLine(name, data)
+func (g *Global) LineDrawLine(name string, time string, data float32) interface{} {
+	var line draw.LineData
+	line.Time = time
+	line.Data = data
+	g.lineDrawer.PlotLine(name, line)
 	return true
 }
 
