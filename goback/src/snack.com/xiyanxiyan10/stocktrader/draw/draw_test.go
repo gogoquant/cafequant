@@ -27,15 +27,7 @@ func TestDraw(*testing.T) {
 	for _, kline := range klineVec {
 		draw.PlotKLine(kline)
 	}
-	/*
-		for _, line := range lineVec {
-			draw.PlotLine("mm5", line)
-		}
-		for _, line := range lineVec {
-			draw.PlotLine("mm3", line)
-		}
-	*/
-	if err := draw.Draw(); err != nil {
+	if err := draw.Display(); err != nil {
 		fmt.Printf("%s\n", err.Error())
 	}
 	time.Sleep(30 * time.Minute)

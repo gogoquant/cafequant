@@ -23,14 +23,14 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger     model.Logger   //利用这个对象保存日志
-	ctx        *otto.Otto     //js虚拟机
-	es         []api.Exchange //交易所列表
-	tasks      Tasks          //任务列表
-	running    bool
+	Logger     model.Logger      //利用这个对象保存日志
+	ctx        *otto.Otto        //js虚拟机
+	es         []api.Exchange    //交易所列表
+	tasks      Tasks             //任务列表
+	running    bool              // 运行中
 	mailNotice notice.MailNotice // 邮件发送
 	lineDrawer draw.LineDrawer   // 图标绘制
-	statusLog  string
+	statusLog  string            // 状态日志
 }
 
 //js中的一个任务,目的是可以并发工作
@@ -187,7 +187,7 @@ func (g *Global) LogStatus(messages ...interface{}) {
 // AddTask ...
 func (g *Global) AddTask(group otto.Value, fn otto.Value, args ...interface{}) bool {
 	if g.running {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), tasks are running")
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Tasks are running")
 		return false
 	}
 	if !group.IsString() {
