@@ -139,7 +139,7 @@ func (g *Global) DrawLine(name string, time string, data float32) interface{} {
 
 // LineDrawPlot ...
 func (g *Global) DrawPlot() interface{} {
-	if err := g.lineDrawer.Draw(); err != nil {
+	if err := g.lineDrawer.Display(); err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 		return false
 	}

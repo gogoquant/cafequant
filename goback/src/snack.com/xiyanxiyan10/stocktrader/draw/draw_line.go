@@ -4,7 +4,6 @@ import (
 	"github.com/go-echarts/go-echarts/charts"
 	log "gopkg.in/logger.v1"
 
-	//"github.com/go-openapi/errors"
 	"os"
 	"sync"
 )
@@ -42,7 +41,7 @@ func (p *LineService) unLock() {
 }
 
 // Draw draw
-func (p *LineService) Draw() error {
+func (p *LineService) Display() error {
 	go func() {
 		var file *os.File = nil
 		p.lock()

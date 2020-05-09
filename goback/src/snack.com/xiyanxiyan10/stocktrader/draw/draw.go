@@ -2,18 +2,18 @@ package draw
 
 // Draw draw interface
 type LineDrawer interface {
-	//  PlotKLine draw line of the pic
+	//  PlotKLine draw line of the diagram
 	PlotKLine(data KlineData)
-	//  PlotLine draw kline of the pic
+	//  PlotLine draw kline of the diagram
 	PlotLine(name string, data LineData)
-	//  reset pic
+	//  reset diagram
 	Reset()
-	//  set path store pic
+	//  set path store diagram
 	SetPath(path string)
-	// get path store pc
+	// get path store diagram
 	GetPath() string
 	// draw pic
-	Draw() error
+	Display() error
 }
 
 // GetLineDrawer ...
