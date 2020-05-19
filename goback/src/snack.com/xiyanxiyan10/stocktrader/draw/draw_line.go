@@ -45,15 +45,15 @@ func (p *LineService) Display() error {
 	go func() {
 		var file *os.File = nil
 		p.lock()
-		p.prevDrawKline()
-		p.prevDrawLine()
+		p.prevKLine()
+		p.prevLine()
 		p.klineChart.Overlap(p.lineChart)
 		p.unLock()
 
 		DrawPath := p.GetPath()
 		if _, err := os.Stat(DrawPath); err != nil {
 			if !os.IsNotExist(err) {
-				log.Error("State pic fail ", err)
+				log.Error("State diagram fail", err)
 				return
 			}
 		} else {
@@ -61,19 +61,19 @@ func (p *LineService) Display() error {
 		}
 		file, err := os.Create(DrawPath)
 		if err != nil {
-			log.Error("Create pic fail ", err)
+			log.Error("Create diagram fail", err)
 			return
 		}
 		if err := p.klineChart.Render(file); err != nil {
-			log.Error("Render pic fail", err)
+			log.Error("Render diagram fail", err)
 			return
 		}
 	}()
 	return nil
 }
 
-// prevDrawKline ...
-func (p *LineService) prevDrawKline() {
+// prevKLine ...
+func (p *LineService) prevKLine() {
 	p.klineChart = charts.NewKLine()
 	x := make([]string, 0)
 	y := make([][4]float32, 0)
@@ -91,8 +91,8 @@ func (p *LineService) prevDrawKline() {
 	)
 }
 
-// prevDrawLine ...
-func (p *LineService) prevDrawLine() {
+// prevLine ...
+func (p *LineService) prevLine() {
 	p.lineChart = charts.NewLine()
 	//p.lineChart.SetGlobalOptions(charts.TitleOpts{Title: "Line多线"}, charts.InitOpts{Theme: "shine"})
 	for k, v := range p.line {
