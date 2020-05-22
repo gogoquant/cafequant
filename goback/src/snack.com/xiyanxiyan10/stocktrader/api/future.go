@@ -351,7 +351,7 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OrderType],
+			TradeType:  e.tradeTypeMap[order.OType],
 			StockType:  e.GetStockType(),
 		}
 	}
@@ -377,7 +377,7 @@ func (e *FutureExchange) GetOrders() interface{} {
 			Price:      order.Price,
 			Amount:     order.Amount,
 			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OrderType],
+			TradeType:  e.tradeTypeMap[order.OType],
 			StockType:  e.GetStockType(),
 		}
 		resOrders = append(resOrders, resOrder)
