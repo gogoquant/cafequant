@@ -176,6 +176,8 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		resBid.Price = bid.Price
 		resDepth.Bids = append(resDepth.Bids, resBid)
 	}
+	resDepth.ContractType = e.GetContractType()
+	resDepth.StockType = e.GetStockType()
 	return resDepth
 }
 
