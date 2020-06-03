@@ -129,7 +129,7 @@ func initialize(id int64) (trader Global, err error) {
 	return
 }
 
-// err2String
+// err2String 捕获策略的错误信息并转化为对应的字符串
 func err2String(err interface{}) string {
 	switch err.(type) {
 	case error:
