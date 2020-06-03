@@ -1,9 +1,9 @@
-import { ResetError } from "../actions";
-import { LogList } from "../actions/log";
-import React from "react";
-import { connect } from "react-redux";
-import { browserHistory } from "react-router";
-import { Button, Table, Tag, notification, Switch, Collapse } from "antd";
+import { ResetError } from '../actions';
+import { LogList } from '../actions/log';
+import React from 'react';
+import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
+import { Button, Table, Tag, notification, Switch, Collapse } from 'antd';
 const Panel = Collapse.Panel;
 
 function PrefixInteger(num, m) {
@@ -27,7 +27,7 @@ class Log extends React.Component {
     this.state = {
       sync: false,
       syncTime: 2000,
-      messageErrorKey: "",
+      messageErrorKey: '',
       pagination: {
         pageSize: 12,
         current: 1,
@@ -47,20 +47,20 @@ class Log extends React.Component {
     const { trader, log } = nextProps;
 
     if (!trader.cache.name) {
-      browserHistory.push("/algorithm");
+      browserHistory.push('/algorithm');
     }
 
     if (!messageErrorKey && log.message) {
       this.setState({
-        messageErrorKey: "logError"
+        messageErrorKey: 'logError'
       });
-      notification["error"]({
-        key: "logError",
-        message: "Error",
+      notification['error']({
+        key: 'logError',
+        message: 'Error',
         description: String(log.message),
         onClose: () => {
           if (this.state.messageErrorKey) {
-            this.setState({ messageErrorKey: "" });
+            this.setState({ messageErrorKey: '' });
           }
           dispatch(ResetError());
         }
@@ -98,13 +98,13 @@ class Log extends React.Component {
   }
 
   handleCancel() {
-    browserHistory.push("/algorithm");
+    browserHistory.push('/algorithm');
   }
 
   handleDiagram() {
     const { trader } = this.props;
     const cluster = localStorage.getItem('cluster');
-    window.location.href = cluster + "/" + String(trader.cache.id) + ".html";     
+    window.location.href = cluster + '/' + String(trader.cache.id) + '.html';
   }
 
   handleSync(sync) {
@@ -126,46 +126,46 @@ class Log extends React.Component {
     const { pagination } = this.state;
     const { log } = this.props;
     const colors = {
-      INFO: "#A9A9A9",
-      ERROR: "#F50F50",
-      PROFIT: "#4682B4",
-      CANCEL: "#5F9EA0"
+      INFO: '#A9A9A9',
+      ERROR: '#F50F50',
+      PROFIT: '#4682B4',
+      CANCEL: '#5F9EA0'
     };
     const columns = [
       {
         width: 160,
-        title: "Time",
-        dataIndex: "time",
+        title: 'Time',
+        dataIndex: 'time',
         render: v =>
           v.toLocaleString() +
-          "." +
+          '.' +
           PrefixInteger(v.getMilliseconds(), 3).toString()
       },
       {
         width: 100,
-        title: "Exchange",
-        dataIndex: "exchangeType",
-        render: v => <Tag color={v === "global" ? "" : "#00BFFF"}>{v}</Tag>
+        title: 'Exchange',
+        dataIndex: 'exchangeType',
+        render: v => <Tag color={v === 'global' ? '' : '#00BFFF'}>{v}</Tag>
       },
       {
         width: 100,
-        title: "Type",
-        dataIndex: "type",
-        render: v => <Tag color={colors[v] || "#00BFFF"}>{v}</Tag>
+        title: 'Type',
+        dataIndex: 'type',
+        render: v => <Tag color={colors[v] || '#00BFFF'}>{v}</Tag>
       },
       {
-        title: "Price",
-        dataIndex: "price",
+        title: 'Price',
+        dataIndex: 'price',
         width: 100
       },
       {
         width: 100,
-        title: "Amount",
-        dataIndex: "amount"
+        title: 'Amount',
+        dataIndex: 'amount'
       },
       {
-        title: "Message",
-        dataIndex: "message"
+        title: 'Message',
+        dataIndex: 'message'
       }
     ];
 
