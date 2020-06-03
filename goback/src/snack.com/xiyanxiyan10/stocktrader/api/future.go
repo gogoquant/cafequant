@@ -395,6 +395,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 	}
 	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
 	if err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is ", err.Error())
 		return nil
 	}
 	for _, APITrader := range APITraders {
