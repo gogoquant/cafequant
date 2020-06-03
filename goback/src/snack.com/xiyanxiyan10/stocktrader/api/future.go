@@ -102,7 +102,7 @@ func (e *FutureExchange) ValidSell() error {
 	return errors.New("错误sell交易方向:" + e.GetDirection())
 }
 
-// GetType get the type of this exchange
+// Init init the instance of this exchange
 func (e *FutureExchange) Init() error {
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
@@ -124,12 +124,12 @@ func (e *FutureExchange) Init() error {
 	return nil
 }
 
-// SetStockTypeMap ...
+// SetStockTypeMap set stock type map
 func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
 	e.stockTypeMap = m
 }
 
-// GetStockTypeMap ...
+// GetStockTypeMap get stock type map
 func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
 	return e.stockTypeMap
 }
@@ -149,7 +149,7 @@ func (e *FutureExchange) GetName() string {
 	return e.option.Name
 }
 
-// GetDepth ...
+// GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth(size int) interface{} {
 	var resDepth constant.Depth
 	stockType := e.GetStockType()
@@ -181,7 +181,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 	return resDepth
 }
 
-// GetPosition ...
+// GetPosition get position from exchange
 func (e *FutureExchange) GetPosition() interface{} {
 	resPositionVec := []constant.Position{}
 	stockType := e.GetStockType()
@@ -266,6 +266,7 @@ func (e *FutureExchange) GetAccount() interface{} {
 	return resAccount
 }
 
+// Buy buy from exchange
 func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var openType int
@@ -298,6 +299,7 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface
 	return orderId
 }
 
+// Sell sell from exchange
 func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var openType int
@@ -330,7 +332,7 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interfac
 	return orderId
 }
 
-// GetOrder get details of an order
+// GetOrder get detail of an order
 func (e *FutureExchange) GetOrder(id string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {

@@ -21,6 +21,7 @@
 
 - riceQuant
 - fmz
+- bigQuant
 
 # 4. 优势
 
