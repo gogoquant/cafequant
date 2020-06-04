@@ -26,7 +26,7 @@ class Log extends React.Component {
 
     this.state = {
       sync: false,
-      syncTime: 2000,
+      syncTime: 5000,
       messageErrorKey: '',
       pagination: {
         pageSize: 12,
