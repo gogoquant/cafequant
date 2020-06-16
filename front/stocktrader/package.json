@@ -11,6 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "antd": "^2.4.3",
+    "cooking": "^1.5.4",
+    "cooking-cli": "^1.5.5",
     "hprose-js": "^2.0.29",
     "lodash.keys": "^4.2.0",
     "react-fa": "^4.1.2",
@@ -24,6 +26,9 @@
   },
   "devDependencies": {
     "babel-plugin-import": "^1.0.1",
+    "cooking-less": "^1.0.5",
+    "cooking-lint": "^0.1.4",
+    "cooking-react": "^0.1.0",
     "copy-webpack-plugin": "^4.0.1",
     "loglevel": "^1.4.1"
   }

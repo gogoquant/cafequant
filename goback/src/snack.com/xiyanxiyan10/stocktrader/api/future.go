@@ -372,7 +372,7 @@ func (e *FutureExchange) GetOrders() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
 		return nil
 	}
-	resOrders := []constant.Order{}
+	resOrders := make([]constant.Order, 0)
 	for _, order := range orders {
 		resOrder := constant.Order{
 			Id:         order.OrderID2,
