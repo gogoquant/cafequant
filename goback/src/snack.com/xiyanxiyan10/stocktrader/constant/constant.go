@@ -51,5 +51,6 @@ const (
 
 const (
 	// FilePath
-	FilePath = "files"
+	FilePath  = "files"
+	KLineSize = 100
 )

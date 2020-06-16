@@ -482,6 +482,8 @@ func (e *FutureExchange) GetRecords(params ...interface{}) interface{} {
 
 	if len(params) >= 2 && util.IntMust(params[1]) > 0 {
 		size = util.IntMust(params[1])
+	} else {
+		size = constant.KLineSize
 	}
 
 	if len(params) >= 3 && util.IntMust(params[2]) > 0 {
