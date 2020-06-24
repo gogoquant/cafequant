@@ -151,7 +151,6 @@ func (e *FutureExchange) GetName() string {
 
 // GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth(size int) interface{} {
-	var resDepth constant.Depth
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
@@ -163,6 +162,13 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
 		return nil
 	}
+	resDepth := e.depthA2U(depth)
+	return *resDepth
+}
+
+// depthA2U convert api depth to usr depth
+func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
+	var resDepth constant.Depth
 	resDepth.Time = depth.UTime.Unix()
 	for _, ask := range depth.AskList {
 		var resAsk constant.DepthRecord
@@ -178,12 +184,11 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 	}
 	resDepth.ContractType = e.GetContractType()
 	resDepth.StockType = e.GetStockType()
-	return resDepth
+	return &resDepth
 }
 
 // GetPosition get position from exchange
 func (e *FutureExchange) GetPosition() interface{} {
-	resPositionVec := []constant.Position{}
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
@@ -195,6 +200,13 @@ func (e *FutureExchange) GetPosition() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is ", err.Error())
 		return nil
 	}
+	resPosition := e.positionA2U(positions)
+	return resPosition
+}
+
+// positionA2U convert api position to usr depth
+func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant.Position {
+	resPositionVec := []constant.Position{}
 	for _, position := range positions {
 		var resPosition constant.Position
 		if position.BuyAmount > 0 {
@@ -389,7 +401,6 @@ func (e *FutureExchange) GetOrders() interface{} {
 
 // GetTrades get all filled orders recently
 func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
-	var traders []constant.Trader
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
@@ -400,6 +411,13 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is ", err.Error())
 		return nil
 	}
+	traders := e.tradesA2U(APITraders)
+	return traders
+}
+
+// tradesA2U ...
+func (e *FutureExchange) tradesA2U(APITraders []goex.Trade) []constant.Trader {
+	var traders []constant.Trader
 	for _, APITrader := range APITraders {
 		trader := constant.Trader{
 			Id:        APITrader.Tid,
@@ -445,6 +463,12 @@ func (e *FutureExchange) GetTicker() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
 		return nil
 	}
+	ticker := e.tickerA2U(exTicker)
+	return *ticker
+}
+
+// tickerA2U ...
+func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 	//force covert
 	tickStr := fmt.Sprint(exTicker.Date)
 	ticker := constant.Ticker{
@@ -456,7 +480,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 		Vol:  exTicker.Vol,
 		Time: util.Int64Must(tickStr),
 	}
-	return ticker
+	return &ticker
 }
 
 // GetRecords get candlestick data
