@@ -5,6 +5,7 @@ import (
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
+	hbex "github.com/nntaoli-project/goex/huobi"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
@@ -33,6 +34,44 @@ type FutureExchange struct {
 
 	apiBuilder *builder.APIBuilder
 	api        goex.FutureRestAPI
+}
+
+// Subscribe ...
+func (e *FutureExchange) Subscribe() interface{} {
+	ws := hbex.NewHbdmWs()
+	//ws.ProxyUrl("socks5://127.0.0.1:1080")
+
+	ws.SetCallbacks(func(ticker *goex.FutureTicker) {
+		e.SetCache("ticker", ticker, "")
+		e.option.Ws.Push(e.GetID(), "ticker")
+	}, func(depth *goex.Depth) {
+		e.SetCache("depth", depth, "")
+		e.option.Ws.Push(e.GetID(), "depth")
+	}, func(trade *goex.Trade, s string) {
+		e.SetCache("trader", trade, s)
+		e.option.Ws.Push(e.GetID(), "trader")
+	})
+
+	stockType := e.GetStockType()
+	exchangeStockType, ok := e.stockTypeMap[stockType]
+	if !ok {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe error, the error number is stockType")
+		return nil
+	}
+
+	if err := ws.SubscribeTicker(exchangeStockType, e.GetContractType()); err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Ticker() error:"+err.Error())
+		return nil
+	}
+	if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
+		return nil
+	}
+	if err := ws.SubscribeTrade(exchangeStockType, e.GetContractType()); err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Trade() error:"+err.Error())
+		return nil
+	}
+	return "success"
 }
 
 // NewFutureExchange create an exchange struct of futureExchange.com
@@ -75,6 +114,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 	futureExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})
+	futureExchange.SetID(opt.Index)
 	return &futureExchange
 }
 
@@ -156,6 +196,11 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
 		return nil
+	}
+
+	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+		val := e.GetCache("depth")
+		return val.Data
 	}
 	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
 	if err != nil {
@@ -406,6 +451,10 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
 		return nil
 	}
+	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+		val := e.GetCache("ticker")
+		return val.Data
+	}
 	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is ", err.Error())
@@ -458,6 +507,12 @@ func (e *FutureExchange) GetTicker() interface{} {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetTicker() error, the error number is stockType")
 		return nil
 	}
+	// ws
+	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+		val := e.GetCache("ticker")
+		return val.Data
+	}
+
 	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())

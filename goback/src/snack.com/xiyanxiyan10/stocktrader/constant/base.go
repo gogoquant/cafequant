@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 var client = http.DefaultClient
@@ -72,6 +73,38 @@ type Order struct {
 	StockType  string  //货币类型
 }
 
+type WsVal struct {
+	Index int
+	Key   string
+}
+
+type WsPiP struct {
+	ch    chan WsVal
+	mutex sync.Mutex
+}
+
+func NewWsPip(cache int) *WsPiP {
+	var ws WsPiP
+	ws.ch = make(chan WsVal, cache)
+	return &ws
+}
+
+func (ws *WsPiP) Push(index int, key string) {
+	ws.mutex.Lock()
+	defer ws.mutex.Unlock()
+	var val WsVal
+	val.Index = index
+	val.Key = key
+	ws.ch <- val
+}
+
+func (ws *WsPiP) Pop() WsVal {
+	ws.mutex.Lock()
+	defer ws.mutex.Unlock()
+	val := <-ws.ch
+	return val
+}
+
 // Record struct
 type Record struct {
 	Time   int64   //unix时间戳
@@ -84,14 +117,16 @@ type Record struct {
 
 // Option is an exchange option
 type Option struct {
+	Index         int
 	TraderID      int64
 	Type          string
 	Name          string
 	AccessKey     string
 	SecretKey     string
-	backTest      bool  //是否回测
-	backTestBegin int64 //回测开始时间
-	backTestEnd   int64 //回测结束时间
+	backTest      bool   //是否回测
+	backTestBegin int64  //回测开始时间
+	backTestEnd   int64  //回测结束时间
+	Ws            *WsPiP //全局异步通道
 }
 
 // OrderBook struct

@@ -1,14 +1,26 @@
 package api
 
-//base exchange
+// BaseExchange ...
 type BaseExchange struct {
-	IOMode           int                // io mode for exchange
-	contractType     string             // contractType
-	direction        string             // trade type
-	stockType        string             // stockType
-	lever            int                // lever
-	recordsPeriodMap map[string]int64   // recordsPeriod support
-	minAmountMap     map[string]float64 // minAmount of trade
+	BaseExchangeCachePool // cache for exchange
+	ID                    int
+	IOMode                int                // io mode for exchange
+	contractType          string             // contractType
+	direction             string             // trade type
+	stockType             string             // stockType
+	lever                 int                // lever
+	recordsPeriodMap      map[string]int64   // recordsPeriod support
+	minAmountMap          map[string]float64 // minAmount of trade
+}
+
+// SetIO set IO mode
+func (e *BaseExchange) SetID(mode int) {
+	e.ID = mode
+}
+
+// GetIO get IO mode
+func (e *BaseExchange) GetID() int {
+	return e.ID
 }
 
 // SetIO set IO mode
@@ -31,32 +43,32 @@ func (e *BaseExchange) GetContractType() string {
 	return e.contractType
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// SetDirection set the limit calls amount per second of this exchange
 func (e *BaseExchange) SetDirection(direction string) {
 	e.direction = direction
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// GetDirection set the limit calls amount per second of this exchange
 func (e *BaseExchange) GetDirection() string {
 	return e.direction
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// SetMarginLevel set the limit calls amount per second of this exchange
 func (e *BaseExchange) SetMarginLevel(lever int) {
 	e.lever = lever
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// GetMarginLevel set the limit calls amount per second of this exchange
 func (e *BaseExchange) GetMarginLevel() int {
 	return e.lever
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// GetStockType set the limit calls amount per second of this exchange
 func (e *BaseExchange) GetStockType() string {
 	return e.stockType
 }
 
-// SetContractType set the limit calls amount per second of this exchange
+// SetStockType set the limit calls amount per second of this exchange
 func (e *BaseExchange) SetStockType(stockType string) {
 	e.stockType = stockType
 }

@@ -28,6 +28,7 @@ type Global struct {
 	es         []api.Exchange    //交易所列表
 	tasks      Tasks             //任务列表
 	running    bool              // 运行中
+	ws         *constant.WsPiP   // 全局异步通道
 	mailNotice notice.MailNotice // 邮件发送
 	lineDrawer draw.LineDrawer   // 图标绘制
 	statusLog  string            // 状态日志
@@ -53,6 +54,11 @@ func (g *Global) Sleep(intervals ...interface{}) {
 			e.AutoSleep()
 		}
 	}
+}
+
+// Wait ch ...
+func (g *Global) Wait() interface{} {
+	return g.ws.Pop()
 }
 
 // MailSet ...
