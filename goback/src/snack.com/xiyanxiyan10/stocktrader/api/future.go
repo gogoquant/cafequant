@@ -38,38 +38,41 @@ type FutureExchange struct {
 
 // Subscribe ...
 func (e *FutureExchange) Subscribe() interface{} {
-	ws := hbex.NewHbdmWs()
-	//ws.ProxyUrl("socks5://127.0.0.1:1080")
 
-	ws.SetCallbacks(func(ticker *goex.FutureTicker) {
-		e.SetCache("ticker", ticker, "")
-		e.option.Ws.Push(e.GetID(), "ticker")
-	}, func(depth *goex.Depth) {
-		e.SetCache("depth", depth, "")
-		e.option.Ws.Push(e.GetID(), "depth")
-	}, func(trade *goex.Trade, s string) {
-		e.SetCache("trader", trade, s)
-		e.option.Ws.Push(e.GetID(), "trader")
-	})
+	if e.option.Type == constant.HuoBiDm {
+		ws := hbex.NewHbdmWs()
+		//ws.ProxyUrl("socks5://127.0.0.1:1080")
 
-	stockType := e.GetStockType()
-	exchangeStockType, ok := e.stockTypeMap[stockType]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe error, the error number is stockType")
-		return nil
-	}
+		ws.SetCallbacks(func(ticker *goex.FutureTicker) {
+			e.SetCache("ticker", ticker, "")
+			e.option.Ws.Push(e.GetID(), "ticker")
+		}, func(depth *goex.Depth) {
+			e.SetCache("depth", depth, "")
+			e.option.Ws.Push(e.GetID(), "depth")
+		}, func(trade *goex.Trade, s string) {
+			e.SetCache("trader", trade, s)
+			e.option.Ws.Push(e.GetID(), "trader")
+		})
 
-	if err := ws.SubscribeTicker(exchangeStockType, e.GetContractType()); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Ticker() error:"+err.Error())
-		return nil
-	}
-	if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
-		return nil
-	}
-	if err := ws.SubscribeTrade(exchangeStockType, e.GetContractType()); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Trade() error:"+err.Error())
-		return nil
+		stockType := e.GetStockType()
+		exchangeStockType, ok := e.stockTypeMap[stockType]
+		if !ok {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe error, the error number is stockType")
+			return nil
+		}
+
+		if err := ws.SubscribeTicker(exchangeStockType, e.GetContractType()); err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Ticker() error:"+err.Error())
+			return nil
+		}
+		if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
+			return nil
+		}
+		if err := ws.SubscribeTrade(exchangeStockType, e.GetContractType()); err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Trade() error:"+err.Error())
+			return nil
+		}
 	}
 	return "success"
 }
