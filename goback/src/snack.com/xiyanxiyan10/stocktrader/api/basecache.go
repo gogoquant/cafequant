@@ -29,28 +29,64 @@ type BaseExchangeCache struct {
 // BaseExchangeCachePool ...
 type BaseExchangeCachePool struct {
 	mutex  sync.Mutex
-	caches map[string]BaseExchangeCache
+	depth  map[string]BaseExchangeCache
+	order  map[string]BaseExchangeCache
+	trader map[string]BaseExchangeCache
+	kline  map[string]BaseExchangeCache
+	ticker map[string]BaseExchangeCache
+	//caches map[string]BaseExchangeCache
 }
 
 // Subscribe ...
-func (e *BaseExchangeCachePool) Subscribe() interface{} {
+func (e *BaseExchangeCachePool) Subscribe(stockSymbol string) interface{} {
 	return nil
 }
 
-// Get get ws val from cache
-func (e *BaseExchangeCachePool) GetCache(key string) BaseExchangeCache {
+// GetCache get ws val from cache
+func (e *BaseExchangeCachePool) GetCache(key string, stockSymbol string) BaseExchangeCache {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	return e.caches[key]
+	if key == CacheDepth {
+		return e.depth[stockSymbol]
+	}
+
+	if key == CacheTicker {
+		return e.ticker[stockSymbol]
+	}
+
+	if key == CacheTrader {
+		return e.trader[stockSymbol]
+	}
+
+	if key == CacheKline {
+		return e.kline[stockSymbol]
+	}
+	return BaseExchangeCache{}
 }
 
-// Set set ws val into cache
-func (e *BaseExchangeCachePool) SetCache(key string, val interface{}, mark string) {
+// SetCache set ws val into cache
+func (e *BaseExchangeCachePool) SetCache(key string, stockSymbol string, val interface{}, mark string) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 	var item BaseExchangeCache
+
 	item.Data = val
 	item.TimeStamp = time.Now()
 	item.Mark = mark
-	e.caches[key] = item
+
+	if key == CacheDepth {
+		e.depth[stockSymbol] = item
+	}
+
+	if key == CacheTicker {
+		e.ticker[stockSymbol] = item
+	}
+
+	if key == CacheTrader {
+		e.trader[stockSymbol] = item
+	}
+
+	if key == CacheKline {
+		e.kline[stockSymbol] = item
+	}
 }

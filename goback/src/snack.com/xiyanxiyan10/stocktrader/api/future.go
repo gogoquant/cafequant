@@ -44,14 +44,14 @@ func (e *FutureExchange) Subscribe() interface{} {
 		//ws.ProxyUrl("socks5://127.0.0.1:1080")
 
 		ws.SetCallbacks(func(ticker *goex.FutureTicker) {
-			e.SetCache("ticker", ticker, "")
-			e.option.Ws.Push(e.GetID(), "ticker")
+			e.SetCache(CacheTicker, e.GetStockType(), ticker, "")
+			e.option.Ws.Push(e.GetID(), CacheTicker)
 		}, func(depth *goex.Depth) {
-			e.SetCache("depth", depth, "")
-			e.option.Ws.Push(e.GetID(), "depth")
+			e.SetCache(CacheDepth, e.GetStockType(), depth, "")
+			e.option.Ws.Push(e.GetID(), CacheDepth)
 		}, func(trade *goex.Trade, s string) {
-			e.SetCache("trader", trade, s)
-			e.option.Ws.Push(e.GetID(), "trader")
+			e.SetCache(CacheTrader, e.GetStockType(), trade, s)
+			e.option.Ws.Push(e.GetID(), CacheTrader)
 		})
 
 		stockType := e.GetStockType()
@@ -202,7 +202,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 	}
 
 	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
-		val := e.GetCache("depth")
+		val := e.GetCache(CacheDepth, e.GetStockType())
 		return val.Data
 	}
 	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
@@ -455,7 +455,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		return nil
 	}
 	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
-		val := e.GetCache("ticker")
+		val := e.GetCache(CacheTrader, e.GetStockType())
 		return val.Data
 	}
 	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
@@ -512,7 +512,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 	}
 	// ws
 	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
-		val := e.GetCache("ticker")
+		val := e.GetCache(CacheTicker, e.GetStockType())
 		return val.Data
 	}
 
