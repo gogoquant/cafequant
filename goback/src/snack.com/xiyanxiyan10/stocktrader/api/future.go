@@ -44,13 +44,17 @@ func (e *FutureExchange) Subscribe() interface{} {
 		//ws.ProxyUrl("socks5://127.0.0.1:1080")
 
 		ws.SetCallbacks(func(ticker *goex.FutureTicker) {
-			e.SetCache(CacheTicker, e.GetStockType(), ticker, "")
-			e.option.Ws.Push(e.GetID(), CacheTicker)
+			if ticker.Ticker != nil {
+				e.SetCache(CacheTicker, e.GetStockType(), e.tickerA2U(ticker.Ticker), "")
+				e.option.Ws.Push(e.GetID(), CacheTicker)
+			}
 		}, func(depth *goex.Depth) {
-			e.SetCache(CacheDepth, e.GetStockType(), depth, "")
+			e.SetCache(CacheDepth, e.GetStockType(), e.depthA2U(depth), "")
 			e.option.Ws.Push(e.GetID(), CacheDepth)
 		}, func(trade *goex.Trade, s string) {
-			e.SetCache(CacheTrader, e.GetStockType(), trade, s)
+			var traders []goex.Trade
+			traders = append(traders, *trade)
+			e.SetCache(CacheTrader, e.GetStockType(), e.tradesA2U(traders), s)
 			e.option.Ws.Push(e.GetID(), CacheTrader)
 		})
 
