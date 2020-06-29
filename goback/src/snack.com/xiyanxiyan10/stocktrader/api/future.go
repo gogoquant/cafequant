@@ -205,7 +205,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		return nil
 	}
 
-	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+	if e.GetIO() == 1 {
 		val := e.GetCache(CacheDepth, e.GetStockType())
 		return val.Data
 	}
@@ -424,6 +424,25 @@ func (e *FutureExchange) GetOrder(id string) interface{} {
 	return nil
 }
 
+// CompareOrders ...
+func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
+	mp := make(map[string]bool)
+	if len(lft) != len(rht) {
+		return false
+	}
+	for _, order := range lft {
+		mp[order.Id] = true
+	}
+
+	for _, order := range rht {
+		_, ok := mp[order.Id]
+		if !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // GetOrders get all unfilled orders
 func (e *FutureExchange) GetOrders() interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
@@ -436,6 +455,11 @@ func (e *FutureExchange) GetOrders() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
 		return nil
 	}
+	resOrders := e.orderA2U(orders)
+	return resOrders
+}
+
+func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
 	resOrders := make([]constant.Order, 0)
 	for _, order := range orders {
 		resOrder := constant.Order{
@@ -458,7 +482,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
 		return nil
 	}
-	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+	if e.GetIO() == 1 {
 		val := e.GetCache(CacheTrader, e.GetStockType())
 		return val.Data
 	}
@@ -515,7 +539,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 		return nil
 	}
 	// ws
-	if e.option.Type == constant.HuoBiDm && e.GetIO() == 1 {
+	if e.GetIO() == 1 {
 		val := e.GetCache(CacheTicker, e.GetStockType())
 		return val.Data
 	}
