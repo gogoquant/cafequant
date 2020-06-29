@@ -38,7 +38,7 @@ type BaseExchangeCachePool struct {
 }
 
 // Subscribe ...
-func (e *BaseExchangeCachePool) Subscribe(stockSymbol string) interface{} {
+func (e *BaseExchangeCachePool) Subscribe() interface{} {
 	return nil
 }
 
