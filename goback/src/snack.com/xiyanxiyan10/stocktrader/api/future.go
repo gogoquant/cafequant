@@ -65,7 +65,11 @@ func (e *FutureExchange) Subscribe(source string) interface{} {
 
 	if e.option.Type == constant.HuoBiDm {
 		ws := hbex.NewHbdmWs()
-		//ws.ProxyUrl("socks5://127.0.0.1:1080")
+		proxyURL := config.String("proxy")
+		if proxyURL != "" {
+			//ws.ProxyUrl("socks5://127.0.0.1:1080")
+			ws.ProxyUrl(proxyURL)
+		}
 
 		// set callback
 		ws.SetCallbacks(e.subscribeTicker, e.subscribeDepth, e.subscribeTrade)
