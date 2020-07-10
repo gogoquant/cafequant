@@ -124,6 +124,11 @@ func (e *SpotExchange) GetName() string {
 	return e.option.Name
 }
 
+// Subscribe ...
+func (e *SpotExchange) Subscribe(string) interface{} {
+	return nil
+}
+
 // GetDepth ...
 func (e *SpotExchange) GetDepth(size int) interface{} {
 	var resDepth constant.Depth

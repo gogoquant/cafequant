@@ -1,22 +1,9 @@
 package api
 
 import (
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
-)
-
-const (
-	// CacheTicker ...
-	CacheTicker = "ticker"
-
-	// CacheDepth ...
-	CacheDepth = "depth"
-
-	// CacheTrader ...
-	CacheTrader = "trader"
-
-	// CacheKline ...
-	CacheKline = "kline"
 )
 
 // BaseExchangeCache store the date from api in cahce
@@ -46,19 +33,19 @@ func (e *BaseExchangeCachePool) Subscribe() interface{} {
 func (e *BaseExchangeCachePool) GetCache(key string, stockSymbol string) BaseExchangeCache {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	if key == CacheDepth {
+	if key == constant.CacheDepth {
 		return e.depth[stockSymbol]
 	}
 
-	if key == CacheTicker {
+	if key == constant.CacheTicker {
 		return e.ticker[stockSymbol]
 	}
 
-	if key == CacheTrader {
+	if key == constant.CacheTrader {
 		return e.trader[stockSymbol]
 	}
 
-	if key == CacheKline {
+	if key == constant.CacheKline {
 		return e.kline[stockSymbol]
 	}
 	return BaseExchangeCache{}
@@ -74,19 +61,19 @@ func (e *BaseExchangeCachePool) SetCache(key string, stockSymbol string, val int
 	item.TimeStamp = time.Now()
 	item.Mark = mark
 
-	if key == CacheDepth {
+	if key == constant.CacheDepth {
 		e.depth[stockSymbol] = item
 	}
 
-	if key == CacheTicker {
+	if key == constant.CacheTicker {
 		e.ticker[stockSymbol] = item
 	}
 
-	if key == CacheTrader {
+	if key == constant.CacheTrader {
 		e.trader[stockSymbol] = item
 	}
 
-	if key == CacheKline {
+	if key == constant.CacheKline {
 		e.kline[stockSymbol] = item
 	}
 }

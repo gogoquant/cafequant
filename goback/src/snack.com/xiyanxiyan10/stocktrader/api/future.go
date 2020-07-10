@@ -36,27 +36,37 @@ type FutureExchange struct {
 	api        goex.FutureRestAPI
 }
 
+// subscribeTicker 订阅ticker
+func (e *FutureExchange) subscribeTicker(ticker *goex.FutureTicker) {
+	if ticker.Ticker != nil {
+		e.SetCache(constant.CacheTicker, e.GetStockType(), e.tickerA2U(ticker.Ticker), "")
+		e.option.Ws.Push(e.GetID(), constant.CacheTicker)
+	}
+}
+
+// subscribeDepth 订阅depth
+func (e *FutureExchange) subscribeDepth(depth *goex.Depth) {
+	e.SetCache(constant.CacheDepth, e.GetStockType(), e.depthA2U(depth), "")
+	e.option.Ws.Push(e.GetID(), constant.CacheDepth)
+}
+
+// subscribeTrade 订阅交易
+func (e *FutureExchange) subscribeTrade(trade *goex.Trade, s string) {
+	var traders []goex.Trade
+	traders = append(traders, *trade)
+	e.SetCache(constant.CacheTrader, e.GetStockType(), e.tradesA2U(traders), s)
+	e.option.Ws.Push(e.GetID(), constant.CacheTrader)
+}
+
 // Subscribe ...
-func (e *FutureExchange) Subscribe() interface{} {
+func (e *FutureExchange) Subscribe(source string) interface{} {
 
 	if e.option.Type == constant.HuoBiDm {
 		ws := hbex.NewHbdmWs()
 		//ws.ProxyUrl("socks5://127.0.0.1:1080")
 
-		ws.SetCallbacks(func(ticker *goex.FutureTicker) {
-			if ticker.Ticker != nil {
-				e.SetCache(CacheTicker, e.GetStockType(), e.tickerA2U(ticker.Ticker), "")
-				e.option.Ws.Push(e.GetID(), CacheTicker)
-			}
-		}, func(depth *goex.Depth) {
-			e.SetCache(CacheDepth, e.GetStockType(), e.depthA2U(depth), "")
-			e.option.Ws.Push(e.GetID(), CacheDepth)
-		}, func(trade *goex.Trade, s string) {
-			var traders []goex.Trade
-			traders = append(traders, *trade)
-			e.SetCache(CacheTrader, e.GetStockType(), e.tradesA2U(traders), s)
-			e.option.Ws.Push(e.GetID(), CacheTrader)
-		})
+		// set callback
+		ws.SetCallbacks(e.subscribeTicker, e.subscribeDepth, e.subscribeTrade)
 
 		stockType := e.GetStockType()
 		exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -65,17 +75,26 @@ func (e *FutureExchange) Subscribe() interface{} {
 			return nil
 		}
 
-		if err := ws.SubscribeTicker(exchangeStockType, e.GetContractType()); err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Ticker() error:"+err.Error())
-			return nil
+		//subscribe
+		if source == constant.CacheTicker {
+			if err := ws.SubscribeTicker(exchangeStockType, e.GetContractType()); err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Ticker() error:"+err.Error())
+				return nil
+			}
 		}
-		if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
-			return nil
+
+		if source == constant.CacheDepth {
+			if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
+				return nil
+			}
 		}
-		if err := ws.SubscribeTrade(exchangeStockType, e.GetContractType()); err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Trade() error:"+err.Error())
-			return nil
+
+		if source == constant.CacheTrader {
+			if err := ws.SubscribeTrade(exchangeStockType, e.GetContractType()); err != nil {
+				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Trade() error:"+err.Error())
+				return nil
+			}
 		}
 	}
 	return "success"
@@ -96,7 +115,6 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 			goex.CLOSE_SELL: constant.TradeTypeShortClose,
 		},
 		exchangeTypeMap: map[string]string{
-			constant.Fmex:    goex.FMEX,
 			constant.HuoBiDm: goex.HBDM,
 		},
 		records:   make(map[string][]constant.Record),
@@ -206,7 +224,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 	}
 
 	if e.GetIO() == 1 {
-		val := e.GetCache(CacheDepth, e.GetStockType())
+		val := e.GetCache(constant.CacheDepth, e.GetStockType())
 		return val.Data
 	}
 	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
@@ -483,7 +501,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		return nil
 	}
 	if e.GetIO() == 1 {
-		val := e.GetCache(CacheTrader, e.GetStockType())
+		val := e.GetCache(constant.CacheTrader, e.GetStockType())
 		return val.Data
 	}
 	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
@@ -540,7 +558,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 	}
 	// ws
 	if e.GetIO() == 1 {
-		val := e.GetCache(CacheTicker, e.GetStockType())
+		val := e.GetCache(constant.CacheTicker, e.GetStockType())
 		return val.Data
 	}
 

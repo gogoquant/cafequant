@@ -19,7 +19,6 @@ var (
 	errHalt       = fmt.Errorf("HALT")
 	exchangeMaker = map[string]func(constant.Option) api.Exchange{ //保存所有交易所的构造函数
 		constant.HuoBiDm: api.NewHuoBiDmExchange,
-		constant.Fmex:    api.NewFmexExchange,
 		constant.HuoBi:   api.NewHuoBiExchange,
 	}
 )

@@ -1,5 +1,19 @@
 package constant
 
+const (
+	// CacheTicker ...
+	CacheTicker = "ticker"
+
+	// CacheDepth ...
+	CacheDepth = "depth"
+
+	// CacheTrader ...
+	CacheTrader = "trader"
+
+	// CacheKline ...
+	CacheKline = "kline"
+)
+
 // error constants
 const (
 	Banner                     = "QuantBot"
@@ -11,7 +25,6 @@ const (
 // exchange types
 const (
 	HuoBiDm = "HuoBiDm"
-	Fmex    = "Fmex"
 	HuoBi   = "HuoBi"
 )
 
@@ -36,7 +49,7 @@ const (
 
 // some variables
 var (
-	ExchangeTypes = []string{HuoBiDm, Fmex, HuoBi}
+	ExchangeTypes = []string{HuoBiDm, HuoBi}
 )
 
 // future userInfo string
