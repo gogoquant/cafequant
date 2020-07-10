@@ -14,6 +14,15 @@ const (
 	CacheKline = "kline"
 )
 
+const (
+	// IOONLINE  get from online
+	IOONLINE = iota
+	// IOBLOCK get from sync
+	IOBLOCK
+	// IOCACHE get from cache
+	IOCACHE
+)
+
 // error constants
 const (
 	Banner                     = "QuantBot"

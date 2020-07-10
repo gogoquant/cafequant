@@ -223,7 +223,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		return nil
 	}
 
-	if e.GetIO() == 1 {
+	if e.GetIO() != constant.IOONLINE {
 		val := e.GetCache(constant.CacheDepth, e.GetStockType())
 		return val.Data
 	}
@@ -500,7 +500,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
 		return nil
 	}
-	if e.GetIO() == 1 {
+	if e.GetIO() != constant.IOONLINE {
 		val := e.GetCache(constant.CacheTrader, e.GetStockType())
 		return val.Data
 	}
@@ -557,7 +557,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 		return nil
 	}
 	// ws
-	if e.GetIO() == 1 {
+	if e.GetIO() != constant.IOONLINE {
 		val := e.GetCache(constant.CacheTicker, e.GetStockType())
 		return val.Data
 	}
