@@ -1,11 +1,11 @@
 package draw
 
 import (
-	"github.com/go-echarts/go-echarts/charts"
 	log "gopkg.in/logger.v1"
-
 	"os"
 	"sync"
+
+	"github.com/go-echarts/go-echarts/charts"
 )
 
 // klineData ...
@@ -40,7 +40,7 @@ func (p *LineService) unLock() {
 	p.mutex.Unlock()
 }
 
-// Draw draw
+// Display draw
 func (p *LineService) Display() error {
 	go func() {
 		var file *os.File = nil

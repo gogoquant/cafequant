@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hprose/hprose-golang/rpc"
+
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 )

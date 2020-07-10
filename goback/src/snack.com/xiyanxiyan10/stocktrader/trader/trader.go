@@ -2,15 +2,17 @@ package trader
 
 import (
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/robertkrimen/otto"
+
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"strconv"
-	"time"
 )
 
 // Trader Variable
