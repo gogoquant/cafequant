@@ -3,14 +3,16 @@ package api
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 	hbex "github.com/nntaoli-project/goex/huobi"
+
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"time"
 )
 
 // FutureExchange the exchange struct of futureExchange.com

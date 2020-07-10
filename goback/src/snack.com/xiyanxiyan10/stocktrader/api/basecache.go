@@ -1,9 +1,10 @@
 package api
 
 import (
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
+
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 // BaseExchangeCache store the date from api in cahce

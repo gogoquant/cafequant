@@ -3,13 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
+
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"time"
 )
 
 // SpotExchange the exchange struct of futureExchange.com

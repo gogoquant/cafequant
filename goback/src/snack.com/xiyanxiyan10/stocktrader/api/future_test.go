@@ -3,10 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"snack.com/xiyanxiyan10/stocktrader/constant"
-
-	//"snack.com/xiyanxiyan10/stocktrader/constant"
 	"testing"
+
+	"snack.com/xiyanxiyan10/stocktrader/constant"
+	//"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 func TestFuture(t *testing.T) {
