@@ -93,7 +93,6 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 h1:Esafd1046DLD
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/nntaoli-project/goex v1.1.0 h1:IoB5q8HvW9ZdGub4a8pV5Mc3bFWfGmQ2fQB2hUX6iH4=
 github.com/nntaoli-project/goex v1.1.0/go.mod h1:dhUT0OjkjEyZY8Zj4pu6BF3ZLNRdm5myacC3JxxJWHo=
-github.com/nntaoli-project/goex v1.2.0 h1:ca/3osJz2+SeqYD3dMA4/85MpvjFhR/S86h3xOV1Il8=
 github.com/nubo/jwt v0.0.0-20150918093313-da5b79c3bbaf h1:mP7zQzhCrNQgSdCpxFxyZV/JMHbz4LJsyppAZMQVrI0=
 github.com/nubo/jwt v0.0.0-20150918093313-da5b79c3bbaf/go.mod h1:LuR7jHS+7SJ6EywD7zZiO6h0vwTBSevFk5wunVt3gf4=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=

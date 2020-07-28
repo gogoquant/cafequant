@@ -50,8 +50,8 @@ const (
 	TradeTypeSell       = "sell"
 	TradeTypeLong       = "buy"
 	TradeTypeShort      = "sell"
-	TradeTypeLongClose  = "closeBuy"
-	TradeTypeShortClose = "closeSell"
+	TradeTypeLongClose  = "closebuy"
+	TradeTypeShortClose = "closesell"
 	TradeTypeCancel     = "cancel"
 	TradeTypeHold       = "hold"
 )
