@@ -38,6 +38,16 @@ type FutureExchange struct {
 	api        goex.FutureRestAPI
 }
 
+// SetTradeTypeMap ...
+func (e *FutureExchange) SetTradeTypeMap(key int, val string) {
+	e.tradeTypeMap[key] = val
+}
+
+// SetTradeTypeMapReverse ...
+func (e *FutureExchange) SetTradeTypeMapReverse(key string, val int) {
+	e.tradeTypeMapReverse[key] = val
+}
+
 // subscribeTicker 订阅ticker
 func (e *FutureExchange) subscribeTicker(ticker *goex.FutureTicker) {
 	if ticker.Ticker != nil {
@@ -486,6 +496,7 @@ func (e *FutureExchange) GetOrders() interface{} {
 func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
 	resOrders := make([]constant.Order, 0)
 	for _, order := range orders {
+		//fmt.Printf("order otype %d\n", order.OType)
 		resOrder := constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,

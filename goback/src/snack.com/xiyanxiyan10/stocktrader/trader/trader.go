@@ -29,6 +29,10 @@ var (
 func GetTraderStatus(id int64) (status int64) {
 	if t, ok := Executor[id]; ok && t != nil {
 		status = t.Status
+		// show pending in status
+		if t.Pending == 1 {
+			status = -1
+		}
 	}
 	return
 }
@@ -164,7 +168,9 @@ func run(id int64) (err error) {
 					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 				}
 			}
+			close(trader.ctx.Interrupt)
 			trader.Status = 0
+			trader.Pending = 0
 		}()
 		trader.LastRunAt = time.Now()
 		trader.Status = 1
@@ -196,7 +202,11 @@ func stop(id int64) (err error) {
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("can not found the Trader")
 	}
+	if Executor[id].Pending == 1 {
+		return fmt.Errorf("pending Trader")
+	}
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
+	Executor[id].Pending = 1
 	return
 }
 

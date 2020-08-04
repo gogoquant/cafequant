@@ -21,6 +21,7 @@ type Trader struct {
 
 	Exchanges []Exchange `gorm:"-" json:"exchanges"`
 	Status    int64      `gorm:"-" json:"status"`
+	Pending   int64      `gorm:"-" json:"pending"`
 	Algorithm Algorithm  `gorm:"-" json:"algorithm"`
 }
 
