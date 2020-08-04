@@ -303,7 +303,7 @@ function main() {
     }, {
       title: 'Status',
       dataIndex: 'status',
-      render: (v) => (v > 0 ? <Badge status="processing" text="RUN" /> : <Badge status="default" text="HALT" />),
+      render: (v) => (v === -1 ? <Badge status="warning" text="PEND" /> : v > 0 ? <Badge status="processing" text="RUN" /> : <Badge status="default" text="HALT" />),
     }, {
       title: 'CreatedAt',
       dataIndex: 'createdAt',
