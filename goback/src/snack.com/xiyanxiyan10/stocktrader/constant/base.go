@@ -24,6 +24,7 @@ type Position struct {
 	CanCover     float64
 	FrozenAmount float64 //冻结的合约数量
 	Profit       float64 //收益
+	ProfitRate   float64 //收益率
 	ContractType string  //合约类型
 	TradeType    string  //交易类型
 	Margin       float64 // 仓位占用的保证金

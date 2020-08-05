@@ -299,7 +299,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Price = position.BuyPriceAvg
 			resPosition.Amount = position.BuyAmount
 			resPosition.MarginLevel = position.LeverRate
-			resPosition.Profit = position.BuyProfitReal
+			resPosition.ProfitRate = position.BuyProfitReal
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeBuy
 			resPosition.ContractType = position.ContractType
@@ -310,7 +310,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Price = position.SellPriceAvg
 			resPosition.Amount = position.SellAmount
 			resPosition.MarginLevel = position.LeverRate
-			resPosition.Profit = position.SellProfitReal
+			resPosition.ProfitRate = position.SellProfitReal
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeSell
 			resPosition.ContractType = e.contractType
