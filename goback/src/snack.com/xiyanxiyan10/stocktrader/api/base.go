@@ -8,7 +8,7 @@ type BaseExchange struct {
 	contractType          string             // contractType
 	direction             string             // trade type
 	stockType             string             // stockType
-	lever                 int                // lever
+	lever                 float64            // lever
 	recordsPeriodMap      map[string]int64   // recordsPeriod support
 	minAmountMap          map[string]float64 // minAmount of trade
 }
@@ -54,12 +54,12 @@ func (e *BaseExchange) GetDirection() string {
 }
 
 // SetMarginLevel set the limit calls amount per second of this exchange
-func (e *BaseExchange) SetMarginLevel(lever int) {
+func (e *BaseExchange) SetMarginLevel(lever float64) {
 	e.lever = lever
 }
 
 // GetMarginLevel set the limit calls amount per second of this exchange
-func (e *BaseExchange) GetMarginLevel() int {
+func (e *BaseExchange) GetMarginLevel() float64 {
 	return e.lever
 }
 

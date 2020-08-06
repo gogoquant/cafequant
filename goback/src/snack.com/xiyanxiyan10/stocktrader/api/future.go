@@ -100,7 +100,7 @@ func (e *FutureExchange) Subscribe(source string) interface{} {
 		}
 
 		if source == constant.CacheDepth {
-			if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType(), 0); err != nil {
+			if err := ws.SubscribeDepth(exchangeStockType, e.GetContractType()); err != nil {
 				e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Subscribe Depth() error:"+err.Error())
 				return nil
 			}
@@ -300,7 +300,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Amount = position.BuyAmount
 			resPosition.MarginLevel = position.LeverRate
 			resPosition.ProfitRate = position.BuyProfitReal
-			resPosition.Profit = position.BuyProfitReal
+			resPosition.Profit = position.BuyProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeBuy
 			resPosition.ContractType = position.ContractType
@@ -312,7 +312,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Amount = position.SellAmount
 			resPosition.MarginLevel = position.LeverRate
 			resPosition.ProfitRate = position.SellProfitReal
-			resPosition.Profit = position.SellProfitReal
+			resPosition.Profit = position.SellProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeSell
 			resPosition.ContractType = e.contractType
