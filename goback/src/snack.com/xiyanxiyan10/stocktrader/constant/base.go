@@ -19,7 +19,7 @@ var client = http.DefaultClient
 // Position struct
 type Position struct {
 	Price        float64 //价格
-	MarginLevel  int     //杠杆比例
+	MarginLevel  float64 //杠杆比例
 	Amount       float64 //总合约数量
 	CanCover     float64
 	FrozenAmount float64 //冻结的合约数量

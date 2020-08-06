@@ -21,3 +21,5 @@ require (
 	gopkg.in/logger.v1 v1.0.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )
+
+replace github.com/nntaoli-project/goex v1.1.0 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806023938-f8facd9d3f5e

@@ -300,6 +300,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Amount = position.BuyAmount
 			resPosition.MarginLevel = position.LeverRate
 			resPosition.ProfitRate = position.BuyProfitReal
+			resPosition.Profit = position.BuyProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeBuy
 			resPosition.ContractType = position.ContractType
@@ -311,6 +312,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Amount = position.SellAmount
 			resPosition.MarginLevel = position.LeverRate
 			resPosition.ProfitRate = position.SellProfitReal
+			resPosition.Profit = position.SellProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeSell
 			resPosition.ContractType = e.contractType
@@ -385,7 +387,7 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface
 		matchPrice = 1
 	}
 	openType = e.tradeTypeMapReverse[e.GetDirection()]
-	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
@@ -395,7 +397,7 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) interface
 	priceFloat := util.Float64Must(price)
 	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
-	return orderId
+	return orderID
 }
 
 // Sell sell from exchange
@@ -418,7 +420,7 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interfac
 		matchPrice = 1
 	}
 	openType = e.tradeTypeMapReverse[e.GetDirection()]
-	orderId, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
@@ -428,7 +430,7 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) interfac
 	priceFloat := util.Float64Must(price)
 	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
-	return orderId
+	return orderID
 }
 
 // GetOrder get detail of an order
