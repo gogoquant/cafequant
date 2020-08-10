@@ -12,6 +12,12 @@ const (
 
 	// CacheKline ...
 	CacheKline = "kline"
+
+	// CacheOrder ...
+	CacheOrder = "order"
+
+	// CachePosition ...
+	CachePosition = "position"
 )
 
 const (

@@ -1,5 +1,75 @@
 package api
 
+import (
+	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/model"
+)
+
+// BackTestCover define api not support backtest
+type BackTestCover struct {
+	logger model.Logger
+}
+
+// GetAccount ...
+func (e *BackTestCover) GetAccount() interface{} {
+	e.logger.Log(constant.ERROR, "GetAccount", 0, 0, "GetAccount not support")
+	return nil
+}
+
+// GetDepth ...
+func (e *BackTestCover) GetDepth(size int) interface{} {
+	e.logger.Log(constant.ERROR, "GetDepth", 0, 0, "GetDepth not support")
+	return nil
+}
+
+// Buy ...
+func (e *BackTestCover) Buy(price, amount string, msg ...interface{}) interface{} {
+	e.logger.Log(constant.ERROR, "Buy", 0, 0, "Buy not support")
+	return nil
+}
+
+// Sell ...
+func (e *BackTestCover) Sell(price, amount string, msg ...interface{}) interface{} {
+	e.logger.Log(constant.ERROR, "Sell", 0, 0, "Sell not support")
+	return nil
+}
+
+// GetOrder ...
+func (e *BackTestCover) GetOrder(id string) interface{} {
+	e.logger.Log(constant.ERROR, "GetOrder", 0, 0, "GetOrder not support")
+	return nil
+}
+
+// GetOrders ...
+func (e *BackTestCover) GetOrders() interface{} {
+	e.logger.Log(constant.ERROR, "GetOrders", 0, 0, "not support")
+	return nil
+}
+
+// GetTrades ...
+func (e *BackTestCover) GetTrades(params ...interface{}) interface{} {
+	e.logger.Log(constant.ERROR, "GetTrades", 0, 0, "GetTrades not support")
+	return nil
+}
+
+// CancelOrder ...
+func (e *BackTestCover) CancelOrder(orderID string) interface{} {
+	e.logger.Log(constant.ERROR, "CancelOrder", 0, 0, "CancelOrder not support")
+	return nil
+}
+
+// GetTicker ...
+func (e *BackTestCover) GetTicker() interface{} {
+	e.logger.Log(constant.ERROR, "GetTicker", 0, 0, "GetTicker not support")
+	return nil
+}
+
+// GetPosition ...
+func (e *BackTestCover) GetPosition() interface{} {
+	e.logger.Log(constant.ERROR, "GetPosition", 0, 0, "GetPosition not support")
+	return nil
+}
+
 // BaseExchange ...
 type BaseExchange struct {
 	BaseExchangeCachePool // cache for exchange
@@ -13,12 +83,12 @@ type BaseExchange struct {
 	minAmountMap          map[string]float64 // minAmount of trade
 }
 
-// SetIO set IO mode
+// SetID set ID
 func (e *BaseExchange) SetID(mode int) {
 	e.ID = mode
 }
 
-// GetIO get IO mode
+// GetID get ID
 func (e *BaseExchange) GetID() int {
 	return e.ID
 }
