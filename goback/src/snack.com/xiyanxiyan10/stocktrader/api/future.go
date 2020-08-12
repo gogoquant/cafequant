@@ -8,11 +8,15 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 	hbex "github.com/nntaoli-project/goex/huobi"
+	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
+	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/dataloader"
+	//"snack.com/xiyanxiyan10/stocktrader/dataloader"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+	//GetOHLCs       func(opt types.Option) types.OHLCResponse
+	//GetDepth       func(opt types.Option) types.DepthResponse
 )
 
 // FutureExchange the exchange struct of futureExchange.com
@@ -34,13 +38,30 @@ type FutureExchange struct {
 	lastSleep int64
 	lastTimes int64
 
-	stream dataloader.DataHandler
+	//stream dataloader.DataHandler
 
 	apiBuilder *builder.APIBuilder
 	api        goex.FutureRestAPI
 }
 
+// GetOHLCs ...
+func (e *FutureExchange) GetOHLCs(begin, end, Period int64) interface{} {
+	var opt dbtypes.Option
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetSymbols()
+	opt.Period = period
+	opt.BeginTime = begin
+	opt.EndTime = end
+	client := dbsdk.NewClient(constant.STOCKDBURL, constants.STOCKDBAUTH)
+	ohlc := client.GetOHLCs(opt)
+	if !ohlc.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number is %s"+ohlc.Message))
+	}
+	return ohlc.Data
+}
+
 // GetBackBar ...
+/*
 func (e *FutureExchange) GetBackBar() interface{} {
 	dataEvent, ok := e.stream.Next()
 	if !ok {
@@ -56,6 +77,7 @@ func (e *FutureExchange) GetBackBar() interface{} {
 	bar.SetTime(dataEvent.Time())
 	return bar
 }
+*/
 
 // SetTradeTypeMap ...
 func (e *FutureExchange) SetTradeTypeMap(key int, val string) {

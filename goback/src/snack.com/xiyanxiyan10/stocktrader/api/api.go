@@ -34,7 +34,8 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
-	GetBackBar() interface{}
+	//GetBackBar() interface{}
+
 }
 
 var (

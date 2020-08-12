@@ -27,6 +27,10 @@ const (
 	IOBLOCK
 	// IOCACHE get from cache
 	IOCACHE
+	// STOCKDBURL ...
+	STOCKDBURL = ""
+	// STOCKDBAUTH ...
+	STOCKDBAUTH = ""
 )
 
 // error constants
