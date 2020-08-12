@@ -74,6 +74,16 @@ type Order struct {
 	StockType  string  //货币类型
 }
 
+// OHLC is a candlestick struct
+type OHLC struct {
+	Time   int64   `json:"Time"`
+	Open   float64 `json:"Open"`
+	High   float64 `json:"High"`
+	Low    float64 `json:"Low"`
+	Close  float64 `json:"Close"`
+	Volume float64 `json:"Volume"`
+}
+
 type WsVal struct {
 	Index int
 	Key   string
