@@ -13,6 +13,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/dataloader"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
@@ -24,15 +25,16 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger     model.Logger      //利用这个对象保存日志
-	ctx        *otto.Otto        //js虚拟机
-	es         []api.Exchange    //交易所列表
-	tasks      Tasks             //任务列表
-	running    bool              // 运行中
-	ws         *constant.WsPiP   // 全局异步通道
-	mailNotice notice.MailNotice // 邮件发送
-	lineDrawer draw.LineDrawer   // 图标绘制
-	statusLog  string            // 状态日志
+	Logger      model.Logger             //利用这个对象保存日志
+	ctx         *otto.Otto               //js虚拟机
+	es          []api.Exchange           //交易所列表
+	dataloaders []dataloader.DataHandler //交易所列表
+	tasks       Tasks                    //任务列表
+	running     bool                     // 运行中
+	ws          *constant.WsPiP          // 全局异步通道
+	mailNotice  notice.MailNotice        // 邮件发送
+	lineDrawer  draw.LineDrawer          // 图标绘制
+	statusLog   string                   // 状态日志
 }
 
 //js中的一个任务,目的是可以并发工作

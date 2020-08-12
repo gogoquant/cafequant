@@ -4,6 +4,49 @@ import (
 	"time"
 )
 
+// OrderStatus defines an order status
+type OrderStatus int
+
+// different types of order status
+const (
+	OrderNone OrderStatus = iota // 0
+	OrderNew
+	OrderSubmitted
+	OrderPartiallyFilled
+	OrderFilled
+	OrderCanceled
+	OrderCancelPending
+	OrderInvalid
+)
+
+// OrderType defines which type an order is
+type OrderType int
+
+// different types of orders
+const (
+	MarketOrder OrderType = iota // 0
+	MarketOnOpenOrder
+	MarketOnCloseOrder
+	StopMarketOrder
+	LimitOrder
+	StopLimitOrder
+)
+
+// Direction defines which direction a signal indicates
+type Direction int
+
+// different types of order directions
+const (
+	// Buy
+	BOT Direction = iota // 0
+	// Sell
+	SLD
+	// Hold
+	HLD
+	// Exit
+	EXT
+)
+
 // EventHandler declares the basic event interface
 type EventHandler interface {
 	Timer

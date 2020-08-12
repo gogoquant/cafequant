@@ -8,9 +8,9 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 	hbex "github.com/nntaoli-project/goex/huobi"
-
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/dataloader"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
@@ -34,8 +34,27 @@ type FutureExchange struct {
 	lastSleep int64
 	lastTimes int64
 
+	stream dataloader.DataHandler
+
 	apiBuilder *builder.APIBuilder
 	api        goex.FutureRestAPI
+}
+
+// GetBackBar ...
+func (e *FutureExchange) GetBackBar() interface{} {
+	dataEvent, ok := e.stream.Next()
+	if !ok {
+		return nil
+	}
+	var bar dataloader.Bar
+	bar.Close = dataEvent.ClosePrice()
+	bar.High = dataEvent.HighPrice()
+	bar.Open = dataEvent.OpenPrice()
+	bar.Close = dataEvent.ClosePrice()
+	bar.Volume = dataEvent.VolumeAmount()
+	bar.SetSymbol(dataEvent.Symbol())
+	bar.SetTime(dataEvent.Time())
+	return bar
 }
 
 // SetTradeTypeMap ...

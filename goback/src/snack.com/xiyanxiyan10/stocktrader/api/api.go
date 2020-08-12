@@ -32,6 +32,9 @@ type Exchange interface {
 	SetStockType(stockType string)                             //设置货币类型
 	GetStockType() string                                      //获取货币类型
 	GetPosition() interface{}                                  //持仓量
+
+	// backtest
+	GetBackBar() interface{}
 }
 
 var (

@@ -84,22 +84,26 @@ type OHLC struct {
 	Volume float64 `json:"Volume"`
 }
 
+// WsVal 通道数据
 type WsVal struct {
 	Index int
 	Key   string
 }
 
+// WsPiP 通道具柄
 type WsPiP struct {
 	ch    chan WsVal
 	mutex sync.Mutex
 }
 
+// NewWsPip 创建通道
 func NewWsPip(cache int) *WsPiP {
 	var ws WsPiP
 	ws.ch = make(chan WsVal, cache)
 	return &ws
 }
 
+// Push 推送异步数据
 func (ws *WsPiP) Push(index int, key string) {
 	ws.mutex.Lock()
 	defer ws.mutex.Unlock()
@@ -109,6 +113,7 @@ func (ws *WsPiP) Push(index int, key string) {
 	ws.ch <- val
 }
 
+// Pop 接收异步数据
 func (ws *WsPiP) Pop() WsVal {
 	ws.mutex.Lock()
 	defer ws.mutex.Unlock()
@@ -128,16 +133,17 @@ type Record struct {
 
 // Option is an exchange option
 type Option struct {
-	Index         int
-	TraderID      int64
-	Type          string
-	Name          string
-	AccessKey     string
-	SecretKey     string
-	backTest      bool   //是否回测
-	backTestBegin int64  //回测开始时间
-	backTestEnd   int64  //回测结束时间
-	Ws            *WsPiP //全局异步通道
+	Index     int
+	TraderID  int64
+	Type      string
+	Name      string
+	AccessKey string
+	SecretKey string
+	Ws        *WsPiP //全局异步通道
+
+	Backtest      bool  // 是否开启回测
+	BackTestBegin int64 // 回测开始时间
+	BackTestEnd   int64 // 回测结束时间
 }
 
 // OrderBook struct
@@ -148,6 +154,7 @@ type OrderBook struct {
 }
 */
 
+// Ticker  ...
 type Ticker struct {
 	Last float64
 	Buy  float64
@@ -158,6 +165,7 @@ type Ticker struct {
 	Time int64
 }
 
+// Trader ...
 type Trader struct {
 	Id        int64
 	TradeType string

@@ -101,6 +101,11 @@ func (e *SpotExchange) Init() error {
 	return nil
 }
 
+// GetBackBar ...
+func (e *SpotExchange) GetBackBar() interface{} {
+	return nil
+}
+
 // SetStockTypeMap ...
 func (e *SpotExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
 	e.stockTypeMap = m

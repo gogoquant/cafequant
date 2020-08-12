@@ -4,16 +4,16 @@ import (
 	"sort"
 )
 
-// Reseter provides a resting interface.
-type Reseter interface {
-	Reset() error
-}
-
 // DataHandler is the combined data interface.
 type DataHandler interface {
 	DataLoader
 	DataStreamer
 	Reseter
+}
+
+// Reseter provides a resting interface.
+type Reseter interface {
+	Reset() error
 }
 
 // DataLoader defines how to load data into the data stream.
@@ -147,7 +147,7 @@ type DataEvent interface {
 
 // HighPrice defines the handling otf the latest Price Information
 type HighPrice interface {
-	High() float64
+	HighPrice() float64
 }
 
 // LowPrice defines the handling otf the latest Price Information
