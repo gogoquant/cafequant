@@ -1,4 +1,4 @@
-function BackOrderMap() {
+function _BackOrderMap() {
   var struct = function (key, value) {
     this.key = key;
     this.value = value;
@@ -44,7 +44,7 @@ function BackOrderMap() {
   this.isEmpty = isEmpty;
 }
 
-ExchangeBack = function() {
+_ExchangeBack = function() {
   cnt = 1;
   backorders = new BackOrderMap()  
   this.Buy = function(price, amount, extra) {
@@ -81,5 +81,40 @@ ExchangeBack = function() {
   };
 }
 
+_ExchangeReal = function() {
+  this.Buy = function(price, amount, extra) {
+    return E.Buy(price, amount, extra);
+  };
+  this.Sell = function(price, amount, extra) {
+    return E.Sell(price, amount, extra);
+  };
+  this.SetDirection = function(dir) {
+    return E.SetDirection(dir);
+  };
+  this.CancelOrder = function(dir) {
+    return E.CancelOrder(dir);
+  };
+  this.SetContractType = function(contract) {
+    return E.SetContractType(contract);
+  };
+  this.SetMarginLevel = function(contract) {
+    return E.SetMarginLevel(contract);
+  };
+  this.GetOrder = function(orderId) {
+    return E.GetOrder(orderId);
+  };
+  this.GetOrders = function() {
+    return E.GetOrders();
+  };
+  this.SetStockType = function(dir) {
+    return E.SetStockType(dir);
+  };
+};
 
-exchange = new ExchangeBack();
+var exchange = null
+
+if (BACKTEST === false){
+    exchange = new _ExchangeReal();
+}else{
+    exchange = new _ExchangeBack();
+}
