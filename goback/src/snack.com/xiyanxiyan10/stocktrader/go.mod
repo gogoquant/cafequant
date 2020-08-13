@@ -18,7 +18,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nntaoli-project/goex v1.2.2
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/sbinet/go-python v0.1.0
 	github.com/sirupsen/logrus v1.6.0 // indirect
@@ -35,7 +34,7 @@ require (
 )
 
 replace (
-	github.com/nntaoli-project/goex v1.1.0 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
+	github.com/nntaoli-project/goex v1.2.2 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
 	snack.com/xiyanxiyan10/conver => ../conver
 	snack.com/xiyanxiyan10/stockdb => ../stockdb
 )

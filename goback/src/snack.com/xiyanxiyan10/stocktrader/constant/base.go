@@ -141,7 +141,7 @@ type Option struct {
 	SecretKey string
 	Ws        *WsPiP //全局异步通道
 
-	Backtest      bool  // 是否开启回测
+	BackTest      bool  // 是否开启回测
 	BackTestBegin int64 // 回测开始时间
 	BackTestEnd   int64 // 回测结束时间
 }

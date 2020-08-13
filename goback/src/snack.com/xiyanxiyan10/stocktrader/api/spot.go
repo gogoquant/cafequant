@@ -7,6 +7,8 @@ import (
 
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
+	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
+	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -77,6 +79,80 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 		"BTC/USD": 0.001,
 	})
 	return &spotExchange
+}
+
+// BackGetOHLCs ...
+func (e *SpotExchange) BackGetOHLCs(begin, end, period int64) interface{} {
+	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number not in backtest"))
+		return nil
+	}
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetStockType()
+	opt.Period = period
+	opt.BeginTime = begin
+	opt.EndTime = end
+	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	ohlc := client.GetOHLCs(opt)
+	if !ohlc.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number is %s"+ohlc.Message))
+	}
+	return ohlc.Data
+}
+
+// BackGetTimeRange ...
+func (e *SpotExchange) BackGetTimeRange() interface{} {
+	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange error, the error number not in backtest"))
+		return nil
+	}
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetStockType()
+	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	timeRange := client.GetTimeRange(opt)
+	if !timeRange.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange, the error number is %s"+timeRange.Message))
+	}
+	return timeRange.Data
+}
+
+// BackGetPeriodRange ...
+func (e *SpotExchange) BackGetPeriodRange() interface{} {
+	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange error, the error number not in backtest"))
+		return nil
+	}
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetStockType()
+	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	timeRange := client.GetPeriodRange(opt)
+	if !timeRange.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
+	}
+	return timeRange.Data
+}
+
+// BackGetDepth ...
+func (e *SpotExchange) BackGetDepth(begin, end, period int64) interface{} {
+	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint(" GetDepth error, the error number not in backtest"))
+		return nil
+	}
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetStockType()
+	opt.Period = period
+	opt.BeginTime = begin
+	opt.EndTime = end
+	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	ohlc := client.GetDepth(opt)
+	if !ohlc.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+ohlc.Message))
+	}
+	return ohlc.Data
 }
 
 // SpotExchange get the type of this exchange

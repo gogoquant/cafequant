@@ -34,8 +34,10 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
-	//GetBackBar() interface{}
-
+	BackGetPeriodRange() interface{}                   //获取周期范围
+	BackGetTimeRange() interface{}                     //获取事件范围
+	BackGetOHLCs(begin, end, period int64) interface{} //获取OHLC
+	BackGetDepth(begin, end, period int64) interface{} //获取Depth
 }
 
 var (
