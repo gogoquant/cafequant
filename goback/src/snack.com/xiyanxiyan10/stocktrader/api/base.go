@@ -14,8 +14,8 @@ import (
 // BaseExchange ...
 type BaseExchange struct {
 	BaseExchangeCachePool // cache for exchange
-	ID                    int
-	IOMode                int                // io mode for exchange
+	id                    int
+	ioMode                int                // io mode for exchange
 	contractType          string             // contractType
 	direction             string             // trade type
 	stockType             string             // stockType
@@ -25,7 +25,7 @@ type BaseExchange struct {
 	limit                 float64
 	lastSleep             int64
 	lastTimes             int64
-	SubscribeMap          map[string][]string
+	subscribeMap          map[string][]string
 	host                  string
 	logger                model.Logger
 	option                constant.Option
@@ -33,7 +33,7 @@ type BaseExchange struct {
 
 // Subscribe ...
 func (e *BaseExchange) Subscribe(source, action string) interface{} {
-	e.SubscribeMap[source] = append(e.SubscribeMap[source], action)
+	e.subscribeMap[source] = append(e.subscribeMap[source], action)
 	return "success"
 }
 
@@ -180,23 +180,23 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 }
 
 // SetID set ID
-func (e *BaseExchange) SetID(mode int) {
-	e.ID = mode
+func (e *BaseExchange) SetID(id int) {
+	e.id = id
 }
 
 // GetID get ID
 func (e *BaseExchange) GetID() int {
-	return e.ID
+	return e.id
 }
 
 // SetIO set IO mode
 func (e *BaseExchange) SetIO(mode int) {
-	e.IOMode = mode
+	e.ioMode = mode
 }
 
 // GetIO get IO mode
 func (e *BaseExchange) GetIO() int {
-	return e.IOMode
+	return e.ioMode
 }
 
 // SetContractType set the limit calls amount per second of this exchange
