@@ -372,32 +372,16 @@ func (e *SpotExchange) GetTicker() interface{} {
 }
 
 // GetRecords get candlestick data
-// params[0] period
-// params[1] size
-// params[2] since
-func (e *SpotExchange) GetRecords(params ...interface{}) interface{} {
+func (e *SpotExchange) GetRecords(periodStr string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var size = 0
+	var size = 100
 	var since = 0
-	var periodStr = "M15"
-
-	if len(params) >= 1 && util.StringMust(params[0]) != "" {
-		periodStr = util.StringMust(params[0])
-	}
 
 	period, ok = e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
 		return nil
-	}
-
-	if len(params) >= 2 && util.IntMust(params[1]) > 0 {
-		size = util.IntMust(params[1])
-	}
-
-	if len(params) >= 3 && util.IntMust(params[2]) > 0 {
-		since = util.IntMust(params[2])
 	}
 
 	klineVec, err := e.api.GetKlineRecords(exchangeStockType, int(period), size, since)
