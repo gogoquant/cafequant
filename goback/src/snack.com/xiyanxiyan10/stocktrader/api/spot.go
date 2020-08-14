@@ -7,12 +7,9 @@ import (
 
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
-	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
@@ -27,13 +24,6 @@ type SpotExchange struct {
 	exchangeTypeMap     map[string]string
 
 	records map[string][]constant.Record
-	host    string
-	logger  model.Logger
-	option  constant.Option
-
-	limit     float64
-	lastSleep int64
-	lastTimes int64
 
 	apiBuilder *builder.APIBuilder
 	api        goex.API
@@ -56,12 +46,7 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 		exchangeTypeMap: map[string]string{
 			constant.HuoBi: goex.HUOBI_PRO,
 		},
-		records:   make(map[string][]constant.Record),
-		host:      "https://www.futureExchange.com/api/v1/",
-		logger:    model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type},
-		option:    opt,
-		limit:     10.0,
-		lastSleep: time.Now().UnixNano(),
+		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	spotExchange.SetRecordsPeriodMap(map[string]int64{
@@ -81,81 +66,7 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 	return &spotExchange
 }
 
-// BackGetOHLCs ...
-func (e *SpotExchange) BackGetOHLCs(begin, end, period int64) interface{} {
-	var opt dbtypes.Option
-	if !e.option.BackTest {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number not in backtest"))
-		return nil
-	}
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = period
-	opt.BeginTime = begin
-	opt.EndTime = end
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
-	ohlc := client.GetOHLCs(opt)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number is %s"+ohlc.Message))
-	}
-	return ohlc.Data
-}
-
-// BackGetTimeRange ...
-func (e *SpotExchange) BackGetTimeRange() interface{} {
-	var opt dbtypes.Option
-	if !e.option.BackTest {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange error, the error number not in backtest"))
-		return nil
-	}
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
-	timeRange := client.GetTimeRange(opt)
-	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange, the error number is %s"+timeRange.Message))
-	}
-	return timeRange.Data
-}
-
-// BackGetPeriodRange ...
-func (e *SpotExchange) BackGetPeriodRange() interface{} {
-	var opt dbtypes.Option
-	if !e.option.BackTest {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange error, the error number not in backtest"))
-		return nil
-	}
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
-	timeRange := client.GetPeriodRange(opt)
-	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
-	}
-	return timeRange.Data
-}
-
-// BackGetDepth ...
-func (e *SpotExchange) BackGetDepth(begin, end, period int64) interface{} {
-	var opt dbtypes.Option
-	if !e.option.BackTest {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint(" GetDepth error, the error number not in backtest"))
-		return nil
-	}
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = period
-	opt.BeginTime = begin
-	opt.EndTime = end
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
-	ohlc := client.GetDepth(opt)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+ohlc.Message))
-	}
-	return ohlc.Data
-}
-
-// SpotExchange get the type of this exchange
+// Init get the type of this exchange
 func (e *SpotExchange) Init() error {
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
@@ -207,11 +118,6 @@ func (e *SpotExchange) GetName() string {
 	return e.option.Name
 }
 
-// Subscribe ...
-func (e *SpotExchange) Subscribe(string) interface{} {
-	return nil
-}
-
 // GetDepth ...
 func (e *SpotExchange) GetDepth(size int) interface{} {
 	var resDepth constant.Depth
@@ -245,23 +151,6 @@ func (e *SpotExchange) GetDepth(size int) interface{} {
 // GetPosition ...
 func (e *SpotExchange) GetPosition() interface{} {
 	return nil
-}
-
-// SetLimit set the limit calls amount per second of this exchange
-func (e *SpotExchange) SetLimit(times interface{}) float64 {
-	e.limit = util.Float64Must(times)
-	return e.limit
-}
-
-// AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
-func (e *SpotExchange) AutoSleep() {
-	now := time.Now().UnixNano()
-	interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
-	if interval > 0.0 {
-		time.Sleep(time.Duration(util.Int64Must(interval)))
-	}
-	e.lastTimes = 0
-	e.lastSleep = now
 }
 
 // GetMinAmount get the min trade amount of this exchange

@@ -6,7 +6,7 @@ import "snack.com/xiyanxiyan10/stocktrader/constant"
 type Exchange interface {
 	SetIO(mode int)                                            //设置IO
 	GetIO() int                                                //获取IO
-	Subscribe(string) interface{}                              //订阅
+	Subscribe(string, string) interface{}                      //订阅
 	Log(...interface{})                                        //向管理台发送这个交易所的打印信息
 	GetType() string                                           //获取交易所类型
 	GetName() string                                           //获取交易所名称,自定义的
@@ -34,6 +34,9 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
+	BackGetSymbols(market string) interface{}
+	BackGetMarkets() interface{}
+	BackGetStats() interface{}
 	BackGetPeriodRange() interface{}                   //获取周期范围
 	BackGetTimeRange() interface{}                     //获取事件范围
 	BackGetOHLCs(begin, end, period int64) interface{} //获取OHLC

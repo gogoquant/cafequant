@@ -27,10 +27,6 @@ const (
 	IOBLOCK
 	// IOCACHE get from cache
 	IOCACHE
-	// STOCKDBURL ...
-	STOCKDBURL = ""
-	// STOCKDBAUTH ...
-	STOCKDBAUTH = ""
 )
 
 // error constants
@@ -52,6 +48,13 @@ const (
 	ERROR  = "ERROR"
 	INFO   = "INFO"
 	PROFIT = "PROFIT"
+)
+
+const (
+	// STOCKDBURL ...
+	STOCKDBURL = ""
+	// STOCKDBAUTH ...
+	STOCKDBAUTH = ""
 )
 
 // trade types
@@ -82,7 +85,8 @@ const (
 )
 
 const (
-	// FilePath
-	FilePath  = "files"
+	// FilePath ...
+	FilePath = "files"
+	// KLineSize ...
 	KLineSize = 100
 )
