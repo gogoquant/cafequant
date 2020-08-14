@@ -154,7 +154,7 @@ func (e *BaseExchange) BackGetPeriodRange() interface{} {
 func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
 	var opt dbtypes.Option
 	if !e.option.BackTest {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint(" GetDepth error, the error number not in backtest"))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number not in backtest"))
 		return nil
 	}
 	opt.Market = e.option.Type
