@@ -537,7 +537,7 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 func (e *FutureExchange) GetRecords(periodStr string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var size = 100
+	var size = constant.RecordSize
 	var since = 0
 
 	period, ok = e.recordsPeriodMap[periodStr]

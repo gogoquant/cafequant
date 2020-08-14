@@ -13,6 +13,7 @@ require (
 	github.com/hprose/hprose-golang v2.0.5+incompatible
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.10 // indirect
+	github.com/kirinlabs/HttpRequest v1.0.5
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

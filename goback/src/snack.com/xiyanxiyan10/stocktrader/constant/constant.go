@@ -92,3 +92,8 @@ const (
 	// KLineSize ...
 	KLineSize = 100
 )
+
+const (
+	// RecordSize ...
+	RecordSize = 100
+)

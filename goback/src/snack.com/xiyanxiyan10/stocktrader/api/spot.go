@@ -375,7 +375,7 @@ func (e *SpotExchange) GetTicker() interface{} {
 func (e *SpotExchange) GetRecords(periodStr string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var size = 100
+	var size = constant.RecordSize
 	var since = 0
 
 	period, ok = e.recordsPeriodMap[periodStr]
