@@ -2,12 +2,13 @@ package api
 
 import (
 	"fmt"
+	"time"
+
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"time"
 )
 
 // BaseExchange ...

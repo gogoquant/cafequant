@@ -70,7 +70,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	opt.Limit = 10.0
-	futureExchange.BaseExchange.Init(opt)
+	//futureExchange.BaseExchange.Init(opt)
 	futureExchange.SetRecordsPeriodMap(map[string]int64{
 		"M1":  goex.KLINE_PERIOD_1MIN,
 		"M5":  goex.KLINE_PERIOD_5MIN,
@@ -114,7 +114,8 @@ func (e *FutureExchange) ValidSell() error {
 }
 
 // Init init the instance of this exchange
-func (e *FutureExchange) Init() error {
+func (e *FutureExchange) Init(opt constant.Option) error {
+	e.BaseExchange.Init(opt)
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
 	}

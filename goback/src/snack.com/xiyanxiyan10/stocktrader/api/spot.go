@@ -67,7 +67,8 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 }
 
 // Init get the type of this exchange
-func (e *SpotExchange) Init() error {
+func (e *SpotExchange) Init(opt constant.Option) error {
+	e.BaseExchange.Init(opt)
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
 	}
