@@ -34,9 +34,9 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
-	BackGetSymbols(market string) interface{}
-	BackGetMarkets() interface{}
-	BackGetStats() interface{}
+	BackGetSymbols(market string) interface{}          //获取货币种类
+	BackGetMarkets() interface{}                       //获取交易所种类
+	BackGetStats() interface{}                         //获取数据中心数据
 	BackGetPeriodRange() interface{}                   //获取周期范围
 	BackGetTimeRange() interface{}                     //获取事件范围
 	BackGetOHLCs(begin, end, period int64) interface{} //获取OHLC
