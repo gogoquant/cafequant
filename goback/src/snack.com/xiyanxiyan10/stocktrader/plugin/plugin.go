@@ -1,4 +1,4 @@
-package trader
+package plugin
 
 import (
 	"io/ioutil"
@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/robertkrimen/otto/registry"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 )
 
 var (
@@ -16,8 +17,14 @@ var (
 	})
 )
 
-func init() {
-	filepath.Walk("plugin", func(path string, info os.FileInfo, err error) error {
+// Get 获取插件脚本
+func Get() []string {
+	return scripts
+}
+
+// Load 加载插件脚本
+func Load() {
+	filepath.Walk(config.String("plugin"), func(path string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() || !strings.HasSuffix(path, ".js") {
 			return err
 		}
