@@ -139,16 +139,17 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
-	Ws        *WsPiP //全局异步通道
+	//Ws        *WsPiP //全局异步通道
 
 	Limit     float64
 	LastSleep int64
 	LastTimes int64
 
 	host          string
-	BackTest      bool  // 是否开启回测
+	BackTest      bool  // 是否回测模式
 	BackTestBegin int64 // 回测开始时间
 	BackTestEnd   int64 // 回测结束时间
+	Period        int64 // 回测周期
 }
 
 // OrderBook struct

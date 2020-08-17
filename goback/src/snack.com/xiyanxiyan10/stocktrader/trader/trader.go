@@ -87,7 +87,8 @@ func initialize(id int64) (trader Global, err error) {
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mailNotice = notice.NewMailServer(5, 3)
 	trader.lineDrawer = draw.GetLineDrawer()
-	trader.ws = constant.NewWsPip(20)
+	// @Todo
+	//trader.ws = constant.NewWsPip(20)
 
 	// set the diagram path
 	filePath := config.String(constant.FilePath)
@@ -95,8 +96,8 @@ func initialize(id int64) (trader Global, err error) {
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
-				Index:     i,
-				Ws:        trader.ws,
+				Index: i,
+				//Ws:        trader.ws,
 				TraderID:  trader.ID,
 				Type:      e.Type,
 				Name:      e.Name,
