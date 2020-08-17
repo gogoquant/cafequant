@@ -1,8 +1,7 @@
 tornado
 jsonschema
 six
-pickle
-#tornadoredis
+pyyaml
 simplejson
 werkzeug
 pycket
