@@ -1,0 +1,84 @@
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+servers:
+# Added by API Auto Mocking Plugin
+  - description: Quant API
+    url: "http://127.0.0.1:8080/v1"
+info:
+  description: This is a simple API
+  version: "1.1.0"
+  title: Quant API
+  contact:
+    email: "xiyanxiyan10@hotmail.com"
+  license:
+    name: xiyanxiyan10
+    url: ""
+paths:
+  /users/register:
+    post:
+      summary: User create
+      operationId: usersRegister
+      tags:
+        - users
+      requestBody:
+        description: "add user"
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/User" 
+      responses:
+        "201":
+          description: "add a user success"  
+  /users/login:
+    post:
+      summary: User login
+      operationId: usersLogins
+      tags:
+        - users
+      requestBody:
+        description: "login user"
+        content:
+          application/json:
+            schema:
+              $ref: "#/definitions/UserLogin" 
+      responses:
+        "201":
+          description: "login user success"                  
+definitions:
+  UserLogin:
+    type: object
+    required:
+      - email
+      - passwd
+    properties:
+      name:
+        type: string
+      passwd:
+        type: string
+  User:
+    type: object
+    required:
+      - email
+      - name
+      - passwd
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      passwd:
+        type: string
+  Users:
+     type: array
+     items:
+      $ref: '#/definitions/User'    
+  Error:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string

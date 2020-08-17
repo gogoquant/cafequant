@@ -1,0 +1,12 @@
+tornado
+jsonschema
+six
+pickle
+#tornadoredis
+simplejson
+werkzeug
+pycket
+pygments
+pymongo
+asyncmongo
+motor
