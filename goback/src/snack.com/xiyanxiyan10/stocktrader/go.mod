@@ -9,7 +9,11 @@ require (
 	github.com/go-ini/ini v1.55.0
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gobuffalo/packr v1.30.1 // indirect
+<<<<<<< HEAD
 	github.com/gorilla/websocket v1.4.2 // indirect
+=======
+	github.com/hankchan/goctp v0.0.0-20200420075836-7b6ba0f25997
+>>>>>>> 5546f3c86688d6c04eeec3c870d42abce9a392f1
 	github.com/hprose/hprose-golang v2.0.5+incompatible
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.10 // indirect
@@ -35,7 +39,12 @@ require (
 )
 
 replace (
+<<<<<<< HEAD
 	github.com/nntaoli-project/goex v1.2.2 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
 	snack.com/xiyanxiyan10/conver => ../conver
 	snack.com/xiyanxiyan10/stockdb => ../stockdb
+=======
+	github.com/hankchan/goctp v0.0.0-20200420075836-7b6ba0f25997 => github.com/xiyanxiyan10/goctp-1 v0.0.0-20200420075836-7b6ba0f25997
+	github.com/nntaoli-project/goex v1.1.0 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
+>>>>>>> 5546f3c86688d6c04eeec3c870d42abce9a392f1
 )

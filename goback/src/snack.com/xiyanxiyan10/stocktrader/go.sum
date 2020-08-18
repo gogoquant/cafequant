@@ -180,7 +180,12 @@ github.com/valyala/bytebufferpool v1.0.0/go.mod h1:6bBcMArwyJ5K/AmCkWv1jt77kVWyC
 github.com/valyala/fasthttp v1.6.0 h1:uWF8lgKmeaIewWVPwi4GRq2P6+R46IgYZdxWtM+GtEY=
 github.com/valyala/fasthttp v1.6.0/go.mod h1:FstJa9V+Pj9vQ7OJie2qMHdwemEDaDiSdBnvPM1Su9w=
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
+<<<<<<< HEAD
 github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b/go.mod h1:Q12BUT7DqIlHRmgv3RskH+UCM/4eqVMgI0EMmlSpAXc=
+=======
+github.com/xiyanxiyan10/goctp-1 v0.0.0-20200420075836-7b6ba0f25997 h1:3qvYsDWHgccFavYbkq6bq4O7mr8wB/Ren/PsY3gNIYE=
+github.com/xiyanxiyan10/goctp-1 v0.0.0-20200420075836-7b6ba0f25997/go.mod h1:zpZdF1C+WYR35ZqBkZq8/FLO+tHpCthMgYA8CRU+AX4=
+>>>>>>> 5546f3c86688d6c04eeec3c870d42abce9a392f1
 github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375 h1:7CJvcXwm5rV3fvdtx8uU3BR+UQ1NtP5huJc//2ff0Vg=
 github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375/go.mod h1:sCb1e95fe/WBvGA8JVQc3r2XTFawUZro39mb9/qY3To=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
