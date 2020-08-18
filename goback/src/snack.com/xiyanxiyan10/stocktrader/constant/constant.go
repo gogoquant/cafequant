@@ -21,6 +21,13 @@ const (
 )
 
 const (
+	// ModeLive ...
+	ModeLive = iota
+	// ModeBack ...
+	ModeBack
+)
+
+const (
 	// IONONE ...
 	IONONE = iota
 	// IOONLINE  get from online

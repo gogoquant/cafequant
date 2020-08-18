@@ -143,6 +143,9 @@ func initialize(id int64) (trader Global, err error) {
 func err2String(err interface{}) string {
 	switch err.(type) {
 	case error:
+		if ottoError, ok := err.(*otto.Error); ok {
+			return ottoError.String()
+		}
 		return err.(error).Error()
 	case *otto.Error:
 		return err.(*otto.Error).String()
