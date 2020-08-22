@@ -11,16 +11,15 @@ import (
 )
 
 var (
-	scriptsMap = make(map[string]string)
-	scripts    = []string{}
-	entry      = registry.Register(func() string {
+	scripts = []string{}
+	entry   = registry.Register(func() string {
 		return strings.Join(scripts, "")
 	})
 )
 
 // Get 获取插件脚本
-func Get(name string) string {
-	return scriptsMap[name]
+func Get() []string {
+	return scripts
 }
 
 // Load 加载插件脚本
@@ -36,9 +35,6 @@ func Load() {
 		defer file.Close()
 		data, _ := ioutil.ReadAll(file)
 		scripts = append(scripts, string(data))
-		base := filepath.Base(path)
-		bases := strings.Split(base, ".")
-		scriptsMap[bases[0]] = string(data)
 		return nil
 	})
 }

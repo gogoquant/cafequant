@@ -10,13 +10,9 @@ require (
 	github.com/hprose/hprose-golang v2.0.5+incompatible
 	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
 	github.com/kr/pretty v0.2.0 // indirect
-	github.com/nntaoli-project/goex v1.2.2
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	snack.com/xiyanxiyan10/conver v0.0.0
 )
 
-replace (
-	github.com/nntaoli-project/goex v1.1.0 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
-	snack.com/xiyanxiyan10/conver => ../conver
-)
+replace snack.com/xiyanxiyan10/conver => ../conver

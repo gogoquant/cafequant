@@ -56,6 +56,10 @@ func (e *BaseExchange) AutoSleep() {
 
 // BackGetStats ...
 func (e *BaseExchange) BackGetStats() interface{} {
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetStats error, the error number not in backtest"))
+		return nil
+	}
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetStats()
 	if !ohlc.Success {
@@ -66,6 +70,10 @@ func (e *BaseExchange) BackGetStats() interface{} {
 
 // BackGetMarkets ...
 func (e *BaseExchange) BackGetMarkets() interface{} {
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetMarkets error, the error number not in backtest"))
+		return nil
+	}
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetStats()
 	if !ohlc.Success {
@@ -76,6 +84,10 @@ func (e *BaseExchange) BackGetMarkets() interface{} {
 
 // BackGetSymbols  ...
 func (e *BaseExchange) BackGetSymbols(market string) interface{} {
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetSymbols error, the error number not in backtest"))
+		return nil
+	}
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetStats()
 	if !ohlc.Success {
@@ -87,6 +99,10 @@ func (e *BaseExchange) BackGetSymbols(market string) interface{} {
 // BackGetOHLCs ...
 func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number not in backtest"))
+		return nil
+	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
 	opt.Period = period
@@ -103,6 +119,10 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 // BackGetTimeRange ...
 func (e *BaseExchange) BackGetTimeRange() interface{} {
 	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange error, the error number not in backtest"))
+		return nil
+	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
@@ -116,6 +136,10 @@ func (e *BaseExchange) BackGetTimeRange() interface{} {
 // BackGetPeriodRange ...
 func (e *BaseExchange) BackGetPeriodRange() interface{} {
 	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange error, the error number not in backtest"))
+		return nil
+	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
@@ -129,6 +153,10 @@ func (e *BaseExchange) BackGetPeriodRange() interface{} {
 // BackGetDepth ...
 func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
 	var opt dbtypes.Option
+	if !e.option.BackTest {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number not in backtest"))
+		return nil
+	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
 	opt.Period = period

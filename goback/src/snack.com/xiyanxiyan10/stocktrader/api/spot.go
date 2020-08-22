@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -65,25 +66,6 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 	return &spotExchange
 }
 
-// SetMode back or live
-func (e *SpotExchange) SetMode(mode int) interface{} {
-	if mode == constant.ModeLive {
-		proxyURL := config.String("proxy")
-		if proxyURL == "" {
-			e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
-		} else {
-			e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
-		}
-		if e.apiBuilder == nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "SetMode() error, the error api builder fail")
-			return nil
-		}
-		//exchangeName := e.exchangeTypeMap[e.option.Type]
-		//e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
-	}
-	return "success"
-}
-
 // Init get the type of this exchange
 func (e *SpotExchange) Init(opt constant.Option) error {
 	e.BaseExchange.Init(opt)
@@ -93,6 +75,17 @@ func (e *SpotExchange) Init(opt constant.Option) error {
 	for k, v := range e.tradeTypeMap {
 		e.tradeTypeMapReverse[v] = k
 	}
+	proxyURL := config.String("proxy")
+	if proxyURL == "" {
+		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
+	} else {
+		e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
+	}
+	if e.apiBuilder == nil {
+		return errors.New("api builder fail")
+	}
+	exchangeName := e.exchangeTypeMap[e.option.Type]
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).Build(exchangeName)
 	return nil
 }
 

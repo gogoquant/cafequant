@@ -113,25 +113,6 @@ func (e *FutureExchange) ValidSell() error {
 	return errors.New("错误sell交易方向:" + e.GetDirection())
 }
 
-// SetMode back or live
-func (e *FutureExchange) SetMode(mode int) interface{} {
-	if mode == constant.ModeLive {
-		proxyURL := config.String("proxy")
-		if proxyURL == "" {
-			e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
-		} else {
-			e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
-		}
-		if e.apiBuilder == nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "SetMode() error, the error api builder fail")
-			return nil
-		}
-		exchangeName := e.exchangeTypeMap[e.option.Type]
-		e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
-	}
-	return "success"
-}
-
 // Init init the instance of this exchange
 func (e *FutureExchange) Init(opt constant.Option) error {
 	e.BaseExchange.Init(opt)
@@ -141,6 +122,17 @@ func (e *FutureExchange) Init(opt constant.Option) error {
 	for k, v := range e.tradeTypeMap {
 		e.tradeTypeMapReverse[v] = k
 	}
+	proxyURL := config.String("proxy")
+	if proxyURL == "" {
+		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
+	} else {
+		e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
+	}
+	if e.apiBuilder == nil {
+		return errors.New("api builder fail")
+	}
+	exchangeName := e.exchangeTypeMap[e.option.Type]
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
 	return nil
 }
 
@@ -241,6 +233,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 		if position.BuyAmount > 0 {
 			resPosition.Price = position.BuyPriceAvg
 			resPosition.Amount = position.BuyAmount
+			resPosition.Available = position.SellAvailable
 			resPosition.MarginLevel = position.LeverRate
 			resPosition.ProfitRate = position.BuyProfitReal
 			resPosition.Profit = position.BuyProfit
@@ -254,6 +247,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Price = position.SellPriceAvg
 			resPosition.Amount = position.SellAmount
 			resPosition.MarginLevel = position.LeverRate
+			resPosition.Available = position.SellAvailable
 			resPosition.ProfitRate = position.SellProfitReal
 			resPosition.Profit = position.SellProfit
 			resPosition.ForcePrice = position.ForceLiquPrice

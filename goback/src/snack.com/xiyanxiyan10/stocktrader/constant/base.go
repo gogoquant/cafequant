@@ -21,7 +21,7 @@ type Position struct {
 	Price        float64 //价格
 	MarginLevel  float64 //杠杆比例
 	Amount       float64 //总合约数量
-	CanCover     float64
+	Available    float64 // 可平仓量
 	FrozenAmount float64 //冻结的合约数量
 	Profit       float64 //收益
 	ProfitRate   float64 //收益率
@@ -139,17 +139,16 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
-	//Ws        *WsPiP //全局异步通道
+	Ws        *WsPiP //全局异步通道
 
 	Limit     float64
 	LastSleep int64
 	LastTimes int64
 
 	host          string
-	BackTest      bool  // 是否回测模式
+	BackTest      bool  // 是否开启回测
 	BackTestBegin int64 // 回测开始时间
 	BackTestEnd   int64 // 回测结束时间
-	Period        int64 // 回测周期
 }
 
 // OrderBook struct
