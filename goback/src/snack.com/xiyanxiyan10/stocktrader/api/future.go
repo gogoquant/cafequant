@@ -233,9 +233,9 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 		if position.BuyAmount > 0 {
 			resPosition.Price = position.BuyPriceAvg
 			resPosition.Amount = position.BuyAmount
-			resPosition.Available = position.SellAvailable
+			resPosition.Available = position.BuyAvailable
 			resPosition.MarginLevel = position.LeverRate
-			resPosition.ProfitRate = position.BuyProfitReal
+			resPosition.ProfitRate = position.LongPnlRatio
 			resPosition.Profit = position.BuyProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeBuy
@@ -246,9 +246,9 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 		if position.SellAmount > 0 {
 			resPosition.Price = position.SellPriceAvg
 			resPosition.Amount = position.SellAmount
-			resPosition.MarginLevel = position.LeverRate
 			resPosition.Available = position.SellAvailable
-			resPosition.ProfitRate = position.SellProfitReal
+			resPosition.MarginLevel = position.LeverRate
+			resPosition.ProfitRate = position.ShortPnlRatio
 			resPosition.Profit = position.SellProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeSell
