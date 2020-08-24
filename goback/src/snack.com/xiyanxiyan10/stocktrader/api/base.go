@@ -26,9 +26,26 @@ type BaseExchange struct {
 	lastSleep             int64
 	lastTimes             int64
 	subscribeMap          map[string][]string
-	host                  string
-	logger                model.Logger
-	option                constant.Option
+
+	start  int64
+	end    int64
+	period string
+	host   string
+	logger model.Logger
+	option constant.Option
+}
+
+// SetBackTime ...
+func (e *BaseExchange) SetBackTime(start, end int64, period string) interface{} {
+	e.start = start
+	e.end = end
+	e.period = period
+	return "success"
+}
+
+// GetBackTime ...
+func (e *BaseExchange) GetBackTime() (int64, int64, string) {
+	return e.start, e.end, e.period
 }
 
 // Subscribe ...

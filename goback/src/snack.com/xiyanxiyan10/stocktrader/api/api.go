@@ -6,6 +6,8 @@ import "snack.com/xiyanxiyan10/stocktrader/constant"
 type Exchange interface {
 	SetIO(mode int)                                            //设置IO
 	GetIO() int                                                //获取IO
+	SetBackTime(start, end int64, period string) interface{}   //设置回测周期
+	GetBackTime() (int64, int64, string)                       //设置回测周期
 	Subscribe(string, string) interface{}                      //订阅
 	Log(...interface{})                                        //向管理台发送这个交易所的打印信息
 	GetType() string                                           //获取交易所类型
