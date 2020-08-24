@@ -1,4 +1,4 @@
-package plugin
+package jsplugin
 
 import (
 	"io/ioutil"

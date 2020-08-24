@@ -11,6 +11,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
+	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
 )
@@ -82,6 +83,7 @@ func initialize(id int64) (trader Global, err error) {
 		TraderID:     trader.ID,
 		ExchangeType: "global",
 	}
+
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
@@ -92,6 +94,8 @@ func initialize(id int64) (trader Global, err error) {
 	// set the diagram path
 	filePath := config.String(constant.FilePath)
 	trader.lineDrawer.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
+
+	var goExtend goplugin.GoPlugin
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
@@ -103,11 +107,18 @@ func initialize(id int64) (trader Global, err error) {
 				AccessKey: e.AccessKey,
 				SecretKey: e.SecretKey,
 			}
-			trader.es = append(trader.es, maker(opt))
+			exchange := maker(opt)
+			goExtend.AddExchange(exchange)
+			trader.es = append(trader.es, exchange)
 		}
 	}
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")
+		return
+	}
+	trader.goplugin = &goExtend
+	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
+		err = localErr
 		return
 	}
 	if localErr := trader.ctx.Set("Global", &trader); localErr != nil {

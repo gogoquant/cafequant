@@ -14,11 +14,13 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
+	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
+// Tasks ...
 type Tasks map[string][]task
 
 // Global ...
@@ -32,6 +34,7 @@ type Global struct {
 	ws         *constant.WsPiP   // 全局异步通道
 	mailNotice notice.MailNotice // 邮件发送
 	lineDrawer draw.LineDrawer   // 图标绘制
+	goplugin   goplugin.Handler  // go 插件
 	statusLog  string            // 状态日志
 }
 
