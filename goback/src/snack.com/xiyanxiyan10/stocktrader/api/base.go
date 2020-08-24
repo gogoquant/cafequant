@@ -13,26 +13,42 @@ import (
 
 // BaseExchange ...
 type BaseExchange struct {
-	BaseExchangeCachePool // cache for exchange
-	id                    int
-	ioMode                int                // io mode for exchange
-	contractType          string             // contractType
-	direction             string             // trade type
-	stockType             string             // stockType
-	lever                 float64            // lever
-	recordsPeriodMap      map[string]int64   // recordsPeriod support
-	minAmountMap          map[string]float64 // minAmount of trade
-	limit                 float64
-	lastSleep             int64
-	lastTimes             int64
-	subscribeMap          map[string][]string
+	BaseExchangeCaches                    // cache for exchange
+	id                 int                // id of the exchange
+	ioMode             int                // io mode for exchange
+	contractType       string             // contractType
+	direction          string             // trade type
+	stockType          string             // stockType
+	lever              float64            // lever
+	recordsPeriodMap   map[string]int64   // recordsPeriod support
+	minAmountMap       map[string]float64 // minAmount of trade
+	limit              float64
+	lastSleep          int64
+	lastTimes          int64
+	subscribeMap       map[string][]string
 
-	start  int64
-	end    int64
-	period string
-	host   string
-	logger model.Logger
-	option constant.Option
+	commission      float64
+	marginRate      float64
+	maintenanceRate float64
+	start           int64
+	end             int64
+	period          string
+	host            string
+	logger          model.Logger
+	option          constant.Option
+}
+
+// SetBackCommission 设置回测手续费
+func (e *BaseExchange) SetBackCommission(commission, marginRate, maintenanceRate float64) interface{} {
+	e.commission = commission
+	e.marginRate = marginRate
+	e.maintenanceRate = maintenanceRate
+	return "success"
+}
+
+// GetBackCommission 获取回测手续费
+func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
+	return e.commission, e.marginRate, e.maintenanceRate
 }
 
 // SetBackTime ...

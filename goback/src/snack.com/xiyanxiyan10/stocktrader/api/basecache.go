@@ -14,8 +14,8 @@ type BaseExchangeCache struct {
 	Mark      string
 }
 
-// BaseExchangeCachePool ...
-type BaseExchangeCachePool struct {
+// BaseExchangeCaches ...
+type BaseExchangeCaches struct {
 	mutex  sync.Mutex
 	depth  map[string]BaseExchangeCache
 	order  map[string]BaseExchangeCache
@@ -26,12 +26,12 @@ type BaseExchangeCachePool struct {
 }
 
 // Subscribe ...
-func (e *BaseExchangeCachePool) Subscribe() interface{} {
+func (e *BaseExchangeCaches) Subscribe() interface{} {
 	return nil
 }
 
 // GetCache get ws val from cache
-func (e *BaseExchangeCachePool) GetCache(key string, stockSymbol string) BaseExchangeCache {
+func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchangeCache {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 	if key == constant.CacheDepth {
@@ -53,7 +53,7 @@ func (e *BaseExchangeCachePool) GetCache(key string, stockSymbol string) BaseExc
 }
 
 // SetCache set ws val into cache
-func (e *BaseExchangeCachePool) SetCache(key string, stockSymbol string, val interface{}, mark string) {
+func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interface{}, mark string) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 	var item BaseExchangeCache
