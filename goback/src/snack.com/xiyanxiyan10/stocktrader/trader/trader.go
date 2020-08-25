@@ -87,8 +87,8 @@ func initialize(id int64) (trader Global, err error) {
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
-	trader.mailNotice = notice.NewMailServer(5, 3)
-	trader.lineDrawer = draw.GetLineDrawer()
+	trader.mailNotice = notice.NewMailHandler(5, 3)
+	trader.lineDrawer = draw.NewDrawHandler()
 	trader.ws = constant.NewWsPip(20)
 
 	// set the diagram path

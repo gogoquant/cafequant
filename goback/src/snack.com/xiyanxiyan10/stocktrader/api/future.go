@@ -170,7 +170,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		return nil
 	}
 
-	if e.GetIO() != constant.IOONLINE {
+	if e.GetIO() != constant.IOCACHE {
 		val := e.GetCache(constant.CacheDepth, e.GetStockType())
 		var nullTime time.Time
 		if val.TimeStamp == nullTime {
@@ -440,7 +440,7 @@ func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
 		return nil
 	}
-	if e.GetIO() != constant.IOONLINE {
+	if e.GetIO() != constant.IOCACHE {
 		var nullTime time.Time
 		val := e.GetCache(constant.CacheTrader, e.GetStockType())
 		if val.TimeStamp == nullTime {
@@ -502,14 +502,13 @@ func (e *FutureExchange) GetTicker() interface{} {
 		return nil
 	}
 	// ws
-	if e.GetIO() != constant.IOONLINE {
+	if e.GetIO() != constant.IOCACHE {
 		val := e.GetCache(constant.CacheTicker, e.GetStockType())
 		if val.TimeStamp == nullTime {
 			return nil
 		}
 		return val.Data
 	}
-
 	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())

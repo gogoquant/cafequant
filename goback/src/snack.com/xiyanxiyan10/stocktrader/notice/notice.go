@@ -10,7 +10,8 @@ import (
 	"github.com/go-gomail/gomail"
 )
 
-type MailNotice interface {
+// MailHandler ...
+type MailHandler interface {
 	Set(server string, port int, username string, password string)
 	Send(msg, to string) error
 	Start() error
@@ -57,8 +58,8 @@ type MailServer struct {
 	ch        chan MailMsg
 }
 
-// NewMailServer ...
-func NewMailServer(cacheSize, interval int) MailNotice {
+// NewMailHandler ...
+func NewMailHandler(cacheSize, interval int) MailHandler {
 	return &MailServer{
 		cacheSize: cacheSize,
 		interval:  interval,
@@ -68,7 +69,7 @@ func NewMailServer(cacheSize, interval int) MailNotice {
 	}
 }
 
-// NewMailServer ...
+// Set ...
 func (s *MailServer) Set(server string, port int, username string, password string) {
 	s.server = server
 	s.port = port
@@ -76,6 +77,7 @@ func (s *MailServer) Set(server string, port int, username string, password stri
 	s.password = password
 }
 
+// Send ...
 func (s *MailServer) Send(msg, to string) error {
 	select {
 	case s.ch <- MailMsg{Msg: msg, To: to}:

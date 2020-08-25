@@ -1,7 +1,7 @@
 package draw
 
-// Draw draw interface
-type LineDrawer interface {
+// DrawHandler Draw draw interface
+type DrawHandler interface {
 	//  PlotKLine draw line of the diagram
 	PlotKLine(data KlineData)
 	//  PlotLine draw kline of the diagram
@@ -16,8 +16,8 @@ type LineDrawer interface {
 	Display() error
 }
 
-// GetLineDrawer ...
-func GetLineDrawer() LineDrawer {
+// NewDrawHandler ...
+func NewDrawHandler() DrawHandler {
 	var draw LineService
 	draw.kline = []KlineData{}
 	draw.line = make(map[string][]LineData)

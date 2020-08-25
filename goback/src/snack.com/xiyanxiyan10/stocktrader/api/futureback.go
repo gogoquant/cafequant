@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
-	"time"
+	//"time"
 
 	goex "github.com/nntaoli-project/goex"
 
@@ -34,16 +34,6 @@ func (e *FutureBackExchange) SetTradeTypeMap(key int, val string) {
 func (e *FutureBackExchange) SetTradeTypeMapReverse(key string, val int) {
 	e.tradeTypeMapReverse[key] = val
 }
-
-// subscribeTicker 订阅ticker
-/*
-func (e *FutureBackExchange) subscribeTicker(ticker *goex.FutureTicker) {
-	if ticker.Ticker != nil {
-		e.SetCache(constant.CacheTicker, e.GetStockType(), e.tickerA2U(ticker.Ticker), "")
-		e.option.Ws.Push(e.GetID(), constant.CacheTicker)
-	}
-}
-*/
 
 // NewFutureBackExchange create an exchange struct of futureExchange.com
 func NewFutureBackExchange(opt constant.Option) *FutureBackExchange {
@@ -148,24 +138,23 @@ func (e *FutureBackExchange) GetName() string {
 
 // GetDepth get depth from exchange
 func (e *FutureBackExchange) GetDepth(size int) interface{} {
-	//stockType := e.GetStockType()
-	// exchangeStockType, ok := e.stockTypeMap[stockType]
-
-	//if !ok {
-	//	e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
-	//	return nil
-	//}
-
-	if e.GetIO() != constant.IOONLINE {
-		val := e.GetCache(constant.CacheDepth, e.GetStockType())
-		var nullTime time.Time
-		if val.TimeStamp == nullTime {
+	/*
+		stockType := e.GetStockType()
+		exchangeStockType, ok := e.stockTypeMap[stockType]
+		if !ok {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
 			return nil
 		}
-		return val.Data
-	}
-	//resDepth := e.depthA2U(depth)
-	//return *resDepth
+		//e.Get
+		depth, err := e.BackGetDepth(e.)
+		if err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
+			return nil
+		}
+
+		resDepth := e.depthA2U(depth)
+		return *resDepth
+	*/
 	return nil
 }
 
