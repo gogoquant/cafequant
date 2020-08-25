@@ -31,6 +31,13 @@ const (
 	IOCACHE
 )
 
+const (
+	// RUNNORMAIL ..
+	RUNNORMAIL = iota
+	// RUNBACK ...
+	RUNBACK
+)
+
 // error constants
 const (
 	Banner                     = "QuantBot"
