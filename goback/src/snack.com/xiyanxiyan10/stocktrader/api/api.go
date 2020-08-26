@@ -12,6 +12,7 @@ type Exchange interface {
 	GetType() string                                           //获取交易所类型
 	GetName() string                                           //获取交易所名称,自定义的
 	SetLimit(times interface{}) float64                        //设置交易所的API访问频率,和 E.AutoSleep() 配合使用
+	Sleep(intervals ...interface{})                            //延时
 	AutoSleep()                                                //自动休眠以满足设置的交易所的API访问频率
 	GetMinAmount(stock string) float64                         //获取交易所的最小交易数量
 	GetAccount() interface{}                                   //获取交易所的账户资金信息
@@ -35,8 +36,6 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
-
-	// Subscribe ...
 	SetBackCommission(commission, marginRate, maintenanceRate float64) interface{} //设置回测手续费
 	GetBackCommission() (float64, float64, float64)                                //获取回测手续费
 	SetBackTime(start, end int64, period string) interface{}                       //设置回测周期

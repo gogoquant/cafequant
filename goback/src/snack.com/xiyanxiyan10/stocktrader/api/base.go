@@ -87,6 +87,17 @@ func (e *BaseExchange) AutoSleep() {
 	e.lastSleep = now
 }
 
+// Sleep ...
+func (e *BaseExchange) Sleep(intervals ...interface{}) {
+	interval := int64(0)
+	if len(intervals) > 0 {
+		interval = util.Int64Must(intervals[0])
+	}
+	if interval > 0 {
+		time.Sleep(time.Duration(interval) * time.Millisecond)
+	}
+}
+
 // BackGetStats ...
 func (e *BaseExchange) BackGetStats() interface{} {
 	if !e.option.BackTest {
