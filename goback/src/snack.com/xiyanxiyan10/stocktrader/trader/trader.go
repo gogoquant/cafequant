@@ -95,7 +95,7 @@ func initialize(id int64) (trader Global, err error) {
 	filePath := config.String(constant.FilePath)
 	trader.draw.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
 
-	var goExtend goplugin.GoPlugin
+	goExtend := goplugin.NewGoPlugin()
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
@@ -116,7 +116,7 @@ func initialize(id int64) (trader Global, err error) {
 		err = fmt.Errorf("please add at least one exchange")
 		return
 	}
-	trader.goplugin = &goExtend
+	trader.goplugin = goExtend
 	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
 		err = localErr
 		return
