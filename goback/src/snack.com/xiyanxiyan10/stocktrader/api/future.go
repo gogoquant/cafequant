@@ -170,7 +170,7 @@ func (e *FutureExchange) GetName() string {
 }
 
 // GetDepth get depth from exchange
-func (e *FutureExchange) GetDepth(size int) interface{} {
+func (e *FutureExchange) GetDepth() interface{} {
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
@@ -186,7 +186,7 @@ func (e *FutureExchange) GetDepth(size int) interface{} {
 		}
 		return val.Data
 	}
-	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), size)
+	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), constant.DepthSize)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
 		return nil

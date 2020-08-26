@@ -103,4 +103,6 @@ const (
 const (
 	// RecordSize ...
 	RecordSize = 100
+	// DepthSize ...
+	DepthSize = 100
 )

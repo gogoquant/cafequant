@@ -127,7 +127,7 @@ func (e *SpotExchange) GetName() string {
 }
 
 // GetDepth ...
-func (e *SpotExchange) GetDepth(size int) interface{} {
+func (e *SpotExchange) GetDepth() interface{} {
 	var resDepth constant.Depth
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -135,7 +135,7 @@ func (e *SpotExchange) GetDepth(size int) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
 		return nil
 	}
-	depth, err := e.api.GetDepth(size, exchangeStockType)
+	depth, err := e.api.GetDepth(constant.DepthSize, exchangeStockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
 		return nil
