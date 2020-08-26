@@ -36,12 +36,12 @@ func (c *HTTPClient) Req() *HttpRequest.Request {
 }
 
 // Get ...
-func (c *HTTPClient) Get(address string, v interface{}) (*HttpRequest.Response, error) {
+func (c *HTTPClient) Get(address string, v ...interface{}) (*HttpRequest.Response, error) {
 	return c.Req().Get(address, v)
 }
 
 // Post ...
-func (c *HTTPClient) Post(address string, v interface{}) (*HttpRequest.Response, error) {
+func (c *HTTPClient) Post(address string, v ...interface{}) (*HttpRequest.Response, error) {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
