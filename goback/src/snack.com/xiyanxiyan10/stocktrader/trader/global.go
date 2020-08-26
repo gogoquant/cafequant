@@ -26,16 +26,16 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger     model.Logger       // 利用这个对象保存日志
-	ctx        *otto.Otto         // js虚拟机
-	es         []api.Exchange     // 交易所列表
-	tasks      Tasks              // 任务列表
-	running    bool               // 运行中
-	ws         *constant.WsPiP    // 全局异步通道
-	mailNotice notice.MailHandler // 邮件发送
-	lineDrawer draw.DrawHandler   // 图标绘制
-	goplugin   goplugin.Handler   // go 插件
-	statusLog  string             // 状态日志
+	Logger    model.Logger       // 利用这个对象保存日志
+	ctx       *otto.Otto         // js虚拟机
+	es        []api.Exchange     // 交易所列表
+	tasks     Tasks              // 任务列表
+	running   bool               // 运行中
+	ws        *constant.WsPiP    // 全局异步通道
+	mail      notice.MailHandler // 邮件发送
+	draw      draw.DrawHandler   // 图标绘制
+	goplugin  goplugin.Handler   // go 插件
+	statusLog string             // 状态日志
 }
 
 //js中的一个任务,目的是可以并发工作
@@ -71,13 +71,13 @@ func (g *Global) MailSet(server, portStr, username, password string) interface{}
 	if err != nil {
 		return false
 	}
-	g.mailNotice.Set(server, port, username, password)
+	g.mail.Set(server, port, username, password)
 	return true
 }
 
 // MailSend ...
 func (g *Global) MailSend(msg, to string) interface{} {
-	err := g.mailNotice.Send(msg, to)
+	err := g.mail.Send(msg, to)
 	if err != nil {
 		return false
 	}
@@ -86,7 +86,7 @@ func (g *Global) MailSend(msg, to string) interface{} {
 
 // MailStart ...
 func (g *Global) MailStart() interface{} {
-	err := g.mailNotice.Start()
+	err := g.mail.Start()
 	if err != nil {
 		return false
 	}
@@ -95,7 +95,7 @@ func (g *Global) MailStart() interface{} {
 
 // SetMail ...
 func (g *Global) MailStop() interface{} {
-	err := g.mailNotice.Stop()
+	err := g.mail.Stop()
 	if err != nil {
 		return false
 	}
@@ -104,52 +104,52 @@ func (g *Global) MailStop() interface{} {
 
 // MailStatus ...
 func (g *Global) MailStatus() interface{} {
-	return g.mailNotice.Status()
+	return g.mail.Status()
 }
 
-// LineDrawSetPath set file path for config map
+// DrawSetPath set file path for config map
 func (g *Global) DrawSetPath(path string) interface{} {
-	g.lineDrawer.SetPath(path)
+	g.draw.SetPath(path)
 	return true
 }
 
-// LineDrawGetPath get file path from config map
+// DrawGetPath get file path from config map
 func (g *Global) DrawGetPath() interface{} {
 	// get the picture path
-	path := g.lineDrawer.GetPath()
+	path := g.draw.GetPath()
 	if path == "" {
 		path = config.String("filePath")
 	}
 	return path
 }
 
-// LineDrawReset ...
+// DrawReset ...
 func (g *Global) DrawReset() interface{} {
-	g.lineDrawer.Reset()
+	g.draw.Reset()
 	return true
 }
 
-// LineDrawKline ...
+// DrawKline ...
 func (g *Global) DrawKline(time string, data [4]float32) interface{} {
 	var kline draw.KlineData
 	kline.Time = time
 	kline.Data = data
-	g.lineDrawer.PlotKLine(kline)
+	g.draw.PlotKLine(kline)
 	return true
 }
 
-// LineDrawKline ...
+// DrawLine ...
 func (g *Global) DrawLine(name string, time string, data float32) interface{} {
 	var line draw.LineData
 	line.Time = time
 	line.Data = data
-	g.lineDrawer.PlotLine(name, line)
+	g.draw.PlotLine(name, line)
 	return true
 }
 
-// LineDrawPlot ...
+// DrawPlot ...
 func (g *Global) DrawPlot() interface{} {
-	if err := g.lineDrawer.Display(); err != nil {
+	if err := g.draw.Display(); err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 		return false
 	}

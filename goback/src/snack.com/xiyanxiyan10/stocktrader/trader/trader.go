@@ -87,13 +87,13 @@ func initialize(id int64) (trader Global, err error) {
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
-	trader.mailNotice = notice.NewMailHandler(5, 3)
-	trader.lineDrawer = draw.NewDrawHandler()
+	trader.mail = notice.NewMailHandler(5, 3)
+	trader.draw = draw.NewDrawHandler()
 	trader.ws = constant.NewWsPip(20)
 
 	// set the diagram path
 	filePath := config.String(constant.FilePath)
-	trader.lineDrawer.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
+	trader.draw.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
 
 	var goExtend goplugin.GoPlugin
 	for i, e := range es {
