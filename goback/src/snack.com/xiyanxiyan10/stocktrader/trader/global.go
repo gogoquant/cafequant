@@ -38,6 +38,16 @@ type Global struct {
 	statusLog string             // 状态日志
 }
 
+// GetMail ...
+func (g *Global) GetMail() notice.MailHandler {
+	return g.mail
+}
+
+// GetDraw ...
+func (g *Global) GetDraw() draw.DrawHandler {
+	return g.draw
+}
+
 //js中的一个任务,目的是可以并发工作
 type task struct {
 	ctx  *otto.Otto    //js虚拟机
