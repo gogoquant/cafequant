@@ -193,5 +193,8 @@ type Handler interface {
 // NewGoPlugin ...
 func NewGoPlugin() *GoPlugin {
 	var goplugin GoPlugin
+	goplugin.SetStragey("echo")
+	grid, _ := NewEchoHandler()
+	goplugin.AddStragey(grid)
 	return &goplugin
 }
