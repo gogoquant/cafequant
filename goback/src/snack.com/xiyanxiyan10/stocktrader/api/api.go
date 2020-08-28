@@ -36,17 +36,17 @@ type Exchange interface {
 	GetPosition() interface{}                                  //持仓量
 
 	// backtest
-	SetBackCommission(commission, marginRate, maintenanceRate float64) interface{} //设置回测手续费
-	GetBackCommission() (float64, float64, float64)                                //获取回测手续费
-	SetBackTime(start, end int64, period string) interface{}                       //设置回测周期
-	GetBackTime() (int64, int64, string)                                           //设置回测周期
-	BackGetSymbols(market string) interface{}                                      //获取货币种类
-	BackGetMarkets() interface{}                                                   //获取交易所种类
-	BackGetStats() interface{}                                                     //获取数据中心数据
-	BackGetPeriodRange() interface{}                                               //获取周期范围
-	BackGetTimeRange() interface{}                                                 //获取事件范围
-	BackGetOHLCs(begin, end, period int64) interface{}                             //获取OHLC
-	BackGetDepth(begin, end, period int64) interface{}                             //获取Depth
+	SetBackCommission(float64, float64, float64, float64) interface{} //设置回测手续费
+	GetBackCommission() (float64, float64, float64, float64)          //获取回测手续费
+	SetBackTime(start, end int64, period string) interface{}          //设置回测周期
+	GetBackTime() (int64, int64, string)                              //设置回测周期
+	BackGetSymbols(market string) interface{}                         //获取货币种类
+	BackGetMarkets() interface{}                                      //获取交易所种类
+	BackGetStats() interface{}                                        //获取数据中心数据
+	BackGetPeriodRange() interface{}                                  //获取周期范围
+	BackGetTimeRange() interface{}                                    //获取事件范围
+	BackGetOHLCs(begin, end, period int64) interface{}                //获取OHLC
+	BackGetDepth(begin, end, period int64) interface{}                //获取Depth
 }
 
 var (

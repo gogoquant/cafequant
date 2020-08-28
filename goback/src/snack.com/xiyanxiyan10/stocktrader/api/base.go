@@ -27,7 +27,8 @@ type BaseExchange struct {
 	lastTimes          int64
 	subscribeMap       map[string][]string
 
-	commission      float64
+	taker           float64
+	maker           float64
 	marginRate      float64
 	maintenanceRate float64
 	start           int64
@@ -39,16 +40,17 @@ type BaseExchange struct {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(commission, marginRate, maintenanceRate float64) interface{} {
-	e.commission = commission
+func (e *BaseExchange) SetBackCommission(taker, maker, marginRate, maintenanceRate float64) interface{} {
 	e.marginRate = marginRate
 	e.maintenanceRate = maintenanceRate
+	e.taker = taker
+	e.maker = maker
 	return "success"
 }
 
 // GetBackCommission 获取回测手续费
-func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
-	return e.commission, e.marginRate, e.maintenanceRate
+func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64) {
+	return e.taker, e.maker, e.marginRate, e.maintenanceRate
 }
 
 // SetBackTime ...
