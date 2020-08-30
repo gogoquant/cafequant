@@ -179,7 +179,7 @@ func (e *SpotExchange) GetAccount() interface{} {
 		var subAccount constant.SubAccount
 		stockType := k.Symbol
 		subAccount.Amount = v.Amount
-		subAccount.FrozenAmount = v.ForzenAmount
+		subAccount.ForzenAmount = v.ForzenAmount
 		subAccount.LoanAmount = v.LoanAmount
 		resAccount.SubAccounts[stockType] = subAccount
 	}

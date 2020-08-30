@@ -45,7 +45,7 @@ type SubAccount struct {
 	ProfitUnreal  float64
 	RiskRate      float64 //保证金率
 	Amount        float64
-	FrozenAmount  float64
+	ForzenAmount  float64
 	LoanAmount    float64
 }
 
@@ -83,14 +83,20 @@ type Depth struct {
 
 // Order struct
 type Order struct {
-	Id         string      //订单ID
-	Price      float64     //价格
-	Amount     float64     //总量
-	DealAmount float64     //成交量
-	Fee        float64     //这个订单的交易费
-	TradeType  string      //交易类型
-	StockType  string      //货币类型
-	Status     TradeStatus // trader status
+	Id       string  //订单ID
+	Price    float64 //价格
+	AvgPrice float64
+
+	Amount     float64 //总量
+	DealAmount float64 //成交量
+	Fee        float64 //这个订单的交易费
+	TradeType  string  //交易类型
+	StockType  string  //货币类型
+
+	Time         int64
+	FinishedTime int64
+
+	Status TradeStatus // trader status
 }
 
 // OHLC is a candlestick struct
