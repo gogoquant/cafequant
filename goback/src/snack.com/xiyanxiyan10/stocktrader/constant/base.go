@@ -49,6 +49,24 @@ type SubAccount struct {
 	LoanAmount    float64
 }
 
+type TradeStatus int
+
+func (ts TradeStatus) String() string {
+	return tradeStatusSymbol[ts]
+}
+
+var tradeStatusSymbol = [...]string{"UNFINISH", "PART_FINISH", "FINISH", "CANCEL", "REJECT", "CANCEL_ING", "FAIL"}
+
+const (
+	ORDER_UNFINISH TradeStatus = iota
+	ORDER_PART_FINISH
+	ORDER_FINISH
+	ORDER_CANCEL
+	ORDER_REJECT
+	ORDER_CANCEL_ING
+	ORDER_FAIL
+)
+
 type Account struct {
 	SubAccounts map[string]SubAccount
 }
@@ -65,13 +83,14 @@ type Depth struct {
 
 // Order struct
 type Order struct {
-	Id         string  //订单ID
-	Price      float64 //价格
-	Amount     float64 //总量
-	DealAmount float64 //成交量
-	Fee        float64 //这个订单的交易费
-	TradeType  string  //交易类型
-	StockType  string  //货币类型
+	Id         string      //订单ID
+	Price      float64     //价格
+	Amount     float64     //总量
+	DealAmount float64     //成交量
+	Fee        float64     //这个订单的交易费
+	TradeType  string      //交易类型
+	StockType  string      //货币类型
+	Status     TradeStatus // trader status
 }
 
 // OHLC is a candlestick struct

@@ -1,10 +1,8 @@
 package api
 
 import (
-	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/nntaoli-project/goex"
 	"log"
 	"math"
 	"os"
@@ -12,6 +10,11 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	goex "github.com/nntaoli-project/goex"
+	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 var (
@@ -24,19 +27,19 @@ var (
 
 type ExchangeSim struct {
 	*sync.RWMutex
-	acc                  *goex.Account
+	acc                  *constant.Account
 	name                 string
 	makerFee             float64
 	takerFee             float64
-	supportCurrencyPairs []goex.CurrencyPair
-	quoteCurrency        goex.Currency
-	pendingOrders        map[string]*goex.Order
-	finishedOrders       map[string]*goex.Order
-	depthLoader          map[goex.CurrencyPair]*DepthDataLoader
-	currDepth            goex.Depth
-	idGen                *IdGen
+	supportCurrencyPairs []string
+	quoteCurrency        string
+	pendingOrders        map[string]*constant.Order
+	finishedOrders       map[string]*constant.Order
+	depthLoader          map[string]*DepthDataLoader
+	currDepth            dbtypes.OHLC
+	idGen                *util.IDGen
 
-	sortedCurrencies []goex.Currency
+	sortedCurrencies constant.Account
 }
 
 func NewExchangeSim(config ExchangeSimConfig) *ExchangeSim {
@@ -49,63 +52,35 @@ func NewExchangeSim(config ExchangeSimConfig) *ExchangeSim {
 		acc:                  &config.Account,
 		supportCurrencyPairs: config.SupportCurrencyPairs,
 		quoteCurrency:        config.QuoteCurrency,
-		pendingOrders:        make(map[string]*goex.Order, 100),
-		finishedOrders:       make(map[string]*goex.Order, 100),
-		depthLoader:          make(map[goex.CurrencyPair]*DepthDataLoader, 1),
+		pendingOrders:        make(map[string]*constant.Order, 100),
+		finishedOrders:       make(map[string]*constant.Order, 100),
+		depthLoader:          make(map[string]*DepthDataLoader, 1),
 	}
 
 	for _, pair := range config.SupportCurrencyPairs {
-		if !pair.CurrencyB.Eq(config.QuoteCurrency) {
-			panic("the CurrencyPair only one quote currency per backtest")
-		}
-		sim.depthLoader[pair] = NewDepthDataLoader(DataConfig{
-			Ex:       sim.name,
-			Pair:     pair,
-			StarTime: config.BackTestStartTime,
-			EndTime:  config.BackTestEndTime,
-			UnGzip:   config.UnGzip,
-			Size:     config.DepthSize,
-		})
+		/*
+			if !pair.CurrencyB.Eq(config.QuoteCurrency) {
+				panic("the CurrencyPair only one quote currency per backtest")
+			}
+			sim.depthLoader[pair] = NewDepthDataLoader(DataConfig{
+				Ex:       sim.name,
+				Pair:     pair,
+				StarTime: config.BackTestStartTime,
+				EndTime:  config.BackTestEndTime,
+				UnGzip:   config.UnGzip,
+				Size:     config.DepthSize,
+			})
+		*/
 	}
 
-	for _, sub := range sim.acc.SubAccounts {
-		sim.sortedCurrencies = append(sim.sortedCurrencies, sub.Currency)
+	for key, sub := range sim.acc.SubAccounts {
+		sim.sortedCurrencies.SubAccounts[key] = sub
 	}
-
-	sort.Slice(sim.sortedCurrencies, func(i, j int) bool {
-		return strings.Compare(sim.sortedCurrencies[i].Symbol, sim.sortedCurrencies[j].Symbol) > 0
-	})
-
-	var header []string
-	for _, c := range sim.sortedCurrencies {
-		header = append(header, fmt.Sprintf("%s_available", c.Symbol))
-		header = append(header, fmt.Sprintf("%s_frozen", c.Symbol))
-	}
-	header = append(header, "NetAsset")
-
-	csvFile := fmt.Sprintf(AssetSnapshotCsvFileName, sim.name)
-	f, err := os.OpenFile(csvFile, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0744)
-	if err != nil {
-		panic(err)
-	}
-
-	csvW := csv.NewWriter(f)
-	csvW.Write(header)
-	csvW.Flush()
-	f.Close()
 
 	return sim
 }
 
-func NewExchangeSimWithTomlConfig(ex string) *ExchangeSim {
-	c, err := LoadTomlConfig(fmt.Sprintf("%s_sim.toml", ex))
-	if err != nil {
-		panic("not found toml config")
-	}
-	return NewExchangeSim(c)
-}
-
-func (ex *ExchangeSim) fillOrder(isTaker bool, amount, price float64, ord *goex.Order) {
+func (ex *ExchangeSim) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currDepth.UTime.UnixNano() / int64(time.Millisecond) //set filled time
 
 	dealAmount := 0.0
@@ -121,10 +96,10 @@ func (ex *ExchangeSim) fillOrder(isTaker bool, amount, price float64, ord *goex.
 
 	ord.DealAmount += dealAmount
 	if ord.Amount == ord.DealAmount {
-		ord.Status = goex.ORDER_FINISH
+		ord.Status = constant.ORDER_FINISH
 	} else {
 		if ord.DealAmount > 0 {
-			ord.Status = goex.ORDER_PART_FINISH
+			ord.Status = constant.ORDER_PART_FINISH
 		}
 	}
 
@@ -134,10 +109,10 @@ func (ex *ExchangeSim) fillOrder(isTaker bool, amount, price float64, ord *goex.
 	}
 
 	tradeFee := 0.0
-	switch ord.Side {
-	case goex.SELL:
+	switch ord.TradeType {
+	case constant.TradeTypeSell:
 		tradeFee = dealAmount * price * fee
-	case goex.BUY:
+	case constant.TradeTypeBuy:
 		tradeFee = dealAmount * fee
 	}
 	tradeFee = math.Floor(tradeFee*100000000) / 100000000
@@ -147,35 +122,23 @@ func (ex *ExchangeSim) fillOrder(isTaker bool, amount, price float64, ord *goex.
 	ex.unFrozenAsset(tradeFee, dealAmount, price, *ord)
 }
 
-func (ex *ExchangeSim) matchOrder(ord *goex.Order, isTaker bool) {
-	switch ord.Side {
-	case goex.SELL:
-		for idx := 0; idx < len(ex.currDepth.BidList); idx++ {
-			bid := ex.currDepth.BidList[idx]
-			if bid.Price >= ord.Price && bid.Amount > 0 {
-				ex.fillOrder(isTaker, bid.Amount, bid.Price, ord)
-				if ord.Status == goex.ORDER_FINISH {
-					delete(ex.pendingOrders, ord.OrderID2)
-					ex.finishedOrders[ord.OrderID2] = ord
-					break
-				}
-			} else {
-				break
+func (ex *ExchangeSim) matchOrder(ord *constnat.Order, isTaker bool) {
+	ticker := ex.currDepth
+	switch ord.TradeType {
+	case constant.TradeTypeSell:
+		if ticker.Close >= ord.Price && ticker.Volume > 0 {
+			ex.fillOrder(isTaker, ticker.Volume, ticker.Close, ord)
+			if ord.Status == constant.ORDER_FINISH {
+				delete(ex.pendingOrders, ord.OrderID2)
+				ex.finishedOrders[ord.OrderID2] = ord
 			}
 		}
-	case goex.BUY:
-		idx := len(ex.currDepth.AskList) - 1
-		for ; idx >= 0; idx-- {
-			ask := ex.currDepth.AskList[idx]
-			if ask.Price <= ord.Price && ask.Amount > 0 {
-				ex.fillOrder(isTaker, ask.Amount, ask.Price, ord)
-				if ord.Status == goex.ORDER_FINISH {
-					delete(ex.pendingOrders, ord.OrderID2)
-					ex.finishedOrders[ord.OrderID2] = ord
-					break
-				}
-			} else {
-				break
+	case constant.TradeTypeBuy:
+		if ticker.Close <= ord.Price && ticker.Volume > 0 {
+			ex.fillOrder(isTaker, ask.Amount, ask.Price, ord)
+			if ord.Status == goex.ORDER_FINISH {
+				delete(ex.pendingOrders, ord.OrderID2)
+				ex.finishedOrders[ord.OrderID2] = ord
 			}
 		}
 	}
@@ -189,19 +152,25 @@ func (ex *ExchangeSim) match() {
 	}
 }
 
-func (ex *ExchangeSim) LimitBuy(amount, price string, currency goex.CurrencyPair) (*goex.Order, error) {
+func stockPair2Vec(pair string) []string {
+	res := strings.Split(pair, "/")
+	if len(res) < 2 {
+		return []string{"", ""}
+	}
+}
+
+func (ex *ExchangeSim) LimitBuy(amount, price, currency string) (*constant.Order, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
-	ord := goex.Order{
+	ord := constant.Order{
 		Price:     goex.ToFloat64(price),
 		Amount:    goex.ToFloat64(amount),
-		OrderID2:  ex.idGen.Get(),
-		OrderTime: int(ex.currDepth.UTime.UnixNano() / int64(time.Millisecond)),
-		Status:    goex.ORDER_UNFINISH,
-		Currency:  currency,
-		Side:      goex.BUY,
-		Type:      "limit",
+		Id:        ex.idGen.Get(),
+		OrderTime: int(ex.currDepth.Time / int64(time.Millisecond)),
+		Status:    constant.ORDER_UNFINISH,
+		StockType: currency,
+		TradeType: constant.TradeTypeBuy,
 	}
 	//ord.Cid = ord.OrderID2
 
@@ -210,7 +179,7 @@ func (ex *ExchangeSim) LimitBuy(amount, price string, currency goex.CurrencyPair
 		return nil, err
 	}
 
-	ex.pendingOrders[ord.OrderID2] = &ord
+	ex.pendingOrders[ord.Id] = &ord
 
 	ex.matchOrder(&ord, true)
 
@@ -219,19 +188,18 @@ func (ex *ExchangeSim) LimitBuy(amount, price string, currency goex.CurrencyPair
 	return &result, nil
 }
 
-func (ex *ExchangeSim) LimitSell(amount, price string, currency goex.CurrencyPair) (*goex.Order, error) {
+func (ex *ExchangeSim) LimitSell(amount, price, currency string) (*goex.Order, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
-	ord := goex.Order{
+	ord := constant.Order{
 		Price:     goex.ToFloat64(price),
 		Amount:    goex.ToFloat64(amount),
-		OrderID2:  ex.idGen.Get(),
-		OrderTime: int(ex.currDepth.UTime.UnixNano() / int64(time.Millisecond)),
-		Status:    goex.ORDER_UNFINISH,
-		Currency:  currency,
-		Side:      goex.SELL,
-		Type:      "limit",
+		Id:        ex.idGen.Get(),
+		OrderTime: int(ex.currDepth.Time / int64(time.Millisecond)),
+		Status:    constant.ORDER_UNFINISH,
+		StockType: currency,
+		TradeType: constant.TradeTypeSell,
 	}
 	//ord.Cid = ord.OrderID2
 
@@ -240,7 +208,7 @@ func (ex *ExchangeSim) LimitSell(amount, price string, currency goex.CurrencyPai
 		return nil, err
 	}
 
-	ex.pendingOrders[ord.OrderID2] = &ord
+	ex.pendingOrders[ord.Id] = &ord
 
 	ex.matchOrder(&ord, true)
 
@@ -250,15 +218,15 @@ func (ex *ExchangeSim) LimitSell(amount, price string, currency goex.CurrencyPai
 	return &result, nil
 }
 
-func (ex *ExchangeSim) MarketBuy(amount, price string, currency goex.CurrencyPair) (*goex.Order, error) {
+func (ex *ExchangeSim) MarketBuy(amount, price, currency string) (*constant.Order, error) {
 	panic("not support")
 }
 
-func (ex *ExchangeSim) MarketSell(amount, price string, currency goex.CurrencyPair) (*goex.Order, error) {
+func (ex *ExchangeSim) MarketSell(amount, price, currency string) (*constant.Order, error) {
 	panic("not support")
 }
 
-func (ex *ExchangeSim) CancelOrder(orderId string, currency goex.CurrencyPair) (bool, error) {
+func (ex *ExchangeSim) CancelOrder(orderId string, currency string) (bool, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
@@ -274,15 +242,15 @@ func (ex *ExchangeSim) CancelOrder(orderId string, currency goex.CurrencyPair) (
 
 	delete(ex.pendingOrders, ord.OrderID2)
 
-	ord.Status = goex.ORDER_CANCEL
-	ex.finishedOrders[ord.OrderID2] = ord
+	ord.Status = constant.ORDER_CANCEL
+	ex.finishedOrders[ord.Id] = ord
 
 	ex.unFrozenAsset(0, 0, 0, *ord)
 
 	return true, nil
 }
 
-func (ex *ExchangeSim) GetOneOrder(orderId string, currency goex.CurrencyPair) (*goex.Order, error) {
+func (ex *ExchangeSim) GetOneOrder(orderId, currency string) (*constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
@@ -293,7 +261,7 @@ func (ex *ExchangeSim) GetOneOrder(orderId string, currency goex.CurrencyPair) (
 
 	if ord != nil {
 		// deep copy
-		var result goex.Order
+		var result constant.Order
 		DeepCopyStruct(ord, &result)
 
 		return &result, nil
@@ -302,11 +270,11 @@ func (ex *ExchangeSim) GetOneOrder(orderId string, currency goex.CurrencyPair) (
 	return nil, NotFoundOrderError
 }
 
-func (ex *ExchangeSim) GetUnfinishOrders(currency goex.CurrencyPair) ([]goex.Order, error) {
+func (ex *ExchangeSim) GetUnfinishOrders(currency string) ([]constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
-	var unfinishedOrders []goex.Order
+	var unfinishedOrders []constant.Order
 	for _, ord := range ex.pendingOrders {
 		unfinishedOrders = append(unfinishedOrders, *ord)
 	}
@@ -314,48 +282,43 @@ func (ex *ExchangeSim) GetUnfinishOrders(currency goex.CurrencyPair) ([]goex.Ord
 	return unfinishedOrders, nil
 }
 
-func (ex *ExchangeSim) GetOrderHistorys(currency goex.CurrencyPair, currentPage, pageSize int) ([]goex.Order, error) {
+func (ex *ExchangeSim) GetOrderHistorys(currency string, currentPage, pageSize int) ([]constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
 	var orders []goex.Order
 	for _, ord := range ex.finishedOrders {
-		if ord.Currency.Eq(currency) {
+		if ord.StockType == currency {
 			orders = append(orders, *ord)
 		}
 	}
 	return orders, nil
 }
 
-func (ex *ExchangeSim) GetAccount() (*goex.Account, error) {
+func (ex *ExchangeSim) GetAccount() (*constant.Account, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
-	var account goex.Account
-	account.SubAccounts = make(map[goex.Currency]goex.SubAccount, 2)
-	for _, sub := range ex.acc.SubAccounts {
-		account.SubAccounts[sub.Currency] = goex.SubAccount{
-			Currency:     sub.Currency,
-			Amount:       sub.Amount,
-			ForzenAmount: sub.ForzenAmount,
-		}
+	var account constant.Account
+	account.SubAccounts = make(map[string]constant.SubAccount)
+	for key, sub := range ex.acc.SubAccounts {
+		account.SubAccounts[key] = sub
 	}
-
 	return &account, nil
 }
 
-func (ex *ExchangeSim) GetTicker(currency goex.CurrencyPair) (*goex.Ticker, error) {
-	ask := ex.currDepth.AskList[len(ex.currDepth.AskList)-1].Price
-	bid := ex.currDepth.BidList[0].Price
-	return &goex.Ticker{
-		Pair: currency,
-		Last: (ask + bid) / 2,
-		Sell: ask,
-		Buy:  bid,
+func (ex *ExchangeSim) GetTicker(currency string) (*constant.Ticker, error) {
+	curr := ex.currDepth
+	return &constant.Ticker{
+		Last: curr.Close,
+		Buy:  curr.Close,
+		Sell: curr.Close,
+		High: curr.High,
+		Low:  curr.Low,
 	}, nil
 }
 
-func (ex *ExchangeSim) GetDepth(size int, currency goex.CurrencyPair) (*goex.Depth, error) {
+func (ex *ExchangeSim) GetDepth(size int, currency string) (*goex.Depth, error) {
 	depth := ex.depthLoader[currency].Next()
 	if depth == nil {
 		return nil, DataFinishedError
