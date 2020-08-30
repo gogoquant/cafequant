@@ -192,6 +192,7 @@ func (e *BaseExchange) BackGetPeriodRange() interface{} {
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
+		return nil
 	}
 	return timeRange.Data
 }
@@ -212,6 +213,7 @@ func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
 	depth := client.GetDepth(opt)
 	if !depth.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
+		return nil
 	}
 	return depth.Data
 }

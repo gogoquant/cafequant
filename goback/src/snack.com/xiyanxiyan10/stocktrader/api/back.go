@@ -50,6 +50,7 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 }
 
 type ExchangeBack struct {
+	BaseExchange
 	*sync.RWMutex
 	acc                  *constant.Account
 	name                 string
@@ -305,7 +306,6 @@ func (ex *ExchangeBack) GetOrderHistorys(currency string, currentPage, pageSize 
 func (ex *ExchangeBack) GetAccount() (*constant.Account, error) {
 	ex.RLock()
 	defer ex.RUnlock()
-
 	var account constant.Account
 	account.SubAccounts = make(map[string]constant.SubAccount)
 	for key, sub := range ex.acc.SubAccounts {
@@ -315,27 +315,46 @@ func (ex *ExchangeBack) GetAccount() (*constant.Account, error) {
 }
 
 func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
-	curr := ex.currData
+	loader := ex.dataLoader[currency]
+	if loader == nil {
+		return nil, errors.New("loader not found")
+	}
+	ohlc := loader.Next()
+	if ohlc == nil {
+		return nil, DataFinishedError
+	}
+	ex.currData = *ohlc
+	ex.match()
 	return &constant.Ticker{
-		Last: curr.Close,
-		Buy:  curr.Close,
-		Sell: curr.Close,
-		High: curr.High,
-		Low:  curr.Low,
+		Last: ohlc.Close,
+		Buy:  ohlc.Close,
+		Sell: ohlc.Close,
+		High: ohlc.High,
+		Low:  ohlc.Low,
 	}, nil
 }
 
 func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	/* @Todo
-	       ohlc := ex.dataLoader[currency].Next()
-	   	if ohlc == nil {
-	   		return nil, DataFinishedError
-	   	}
-	   	ex.currData = *ohlc
-	   	ex.match()
-	   	var depth constant.Depth
-	*/
-	return nil, nil
+	val := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
+	if val == nil {
+		return nil, errors.New("Get depth fail")
+	}
+	var depth constant.Depth
+	dbdepth := val.(dbtypes.Depth)
+	for _, ask := range dbdepth.Asks {
+		var record constant.DepthRecord
+		record.Amount = ask.Amount
+		record.Price = ask.Price
+		depth.Asks = append(depth.Asks, record)
+	}
+
+	for _, bid := range dbdepth.Bids {
+		var record constant.DepthRecord
+		record.Amount = bid.Amount
+		record.Price = bid.Price
+		depth.Bids = append(depth.Bids, record)
+	}
+	return &depth, nil
 }
 
 func (ex *ExchangeBack) GetTrades(currencyPair string, since int64) ([]constant.Trader, error) {
