@@ -33,10 +33,10 @@ type ExchangeBackConfig struct {
 	SupportCurrencyPairs []string
 	QuoteCurrency        string //净值币种
 	Account              constant.Account
-	BackTestStartTime    time.Time
-	BackTestEndTime      time.Time
-	DepthSize            int  //回测多少档深度
-	UnGzip               bool //是否解压
+	BackTestStartTime    int64
+	BackTestEndTime      int64
+	DepthSize            int64 //回测多少档深度
+	UnGzip               bool  //是否解压
 }
 
 func (l *DataLoader) Next() *dbtypes.OHLC {
@@ -180,7 +180,6 @@ func (ex *ExchangeBack) LimitBuy(amount, price, currency string) (*constant.Orde
 		StockType: currency,
 		TradeType: constant.TradeTypeBuy,
 	}
-	//ord.Cid = ord.OrderID2
 
 	err := ex.frozenAsset(ord)
 	if err != nil {
@@ -209,7 +208,6 @@ func (ex *ExchangeBack) LimitSell(amount, price, currency string) (*constant.Ord
 		StockType: currency,
 		TradeType: constant.TradeTypeSell,
 	}
-	//ord.Cid = ord.OrderID2
 
 	err := ex.frozenAsset(ord)
 	if err != nil {
