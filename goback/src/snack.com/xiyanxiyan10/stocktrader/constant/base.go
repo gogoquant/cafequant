@@ -22,21 +22,23 @@ type Position struct {
 	MarginLevel  float64 //杠杆比例
 	Amount       float64 //总合约数量
 	Available    float64 // 可平仓量
-	FrozenAmount float64 //冻结的合约数量
+	ForzenAmount float64 //冻结的合约数量
 	Profit       float64 //收益
 	ProfitRate   float64 //收益率
 	ContractType string  //合约类型
 	TradeType    string  //交易类型
-	Margin       float64 // 仓位占用的保证金
+	Margin       float64 //仓位占用的保证金
 	StockType    string  //货币类型
-	ForcePrice   float64
+	ForcePrice   float64 //强制平仓价格
 }
 
+// DepthRecord ...
 type DepthRecord struct {
 	Price  float64
 	Amount float64
 }
 
+// SubAccount ...
 type SubAccount struct {
 	StockType     string
 	AccountRights float64 //账户权益
@@ -49,6 +51,7 @@ type SubAccount struct {
 	LoanAmount    float64
 }
 
+// TradeStatus ..
 type TradeStatus int
 
 func (ts TradeStatus) String() string {
@@ -92,6 +95,7 @@ type Order struct {
 	Fee        float64 //这个订单的交易费
 	TradeType  string  //交易类型
 	StockType  string  //货币类型
+	//ContractUnit int64   //对应张数
 
 	Time         int64
 	FinishedTime int64
