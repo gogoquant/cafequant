@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// DataConfig ...
 type DataConfig struct {
 	Ex       string
 	Pair     goex.CurrencyPair

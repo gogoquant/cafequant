@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
@@ -31,12 +32,24 @@ type BaseExchange struct {
 	maker           float64
 	marginRate      float64
 	maintenanceRate float64
-	start           int64
-	end             int64
-	period          string
-	host            string
-	logger          model.Logger
-	option          constant.Option
+
+	contractRate float64 // 合约每张价值
+	//currencyStandard bool    // 是否为币本位
+
+	start  int64
+	end    int64
+	period string
+	host   string
+	logger model.Logger
+	option constant.Option
+}
+
+func stockPair2Vec(pair string) []string {
+	res := strings.Split(pair, "/")
+	if len(res) < 2 {
+		return []string{"", ""}
+	}
+	return res
 }
 
 // SetBackCommission 设置回测手续费

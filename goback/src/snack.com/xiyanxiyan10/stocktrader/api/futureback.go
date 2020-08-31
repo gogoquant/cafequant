@@ -12,26 +12,8 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
-var (
-	// ErrDataFinished ...
-	ErrDataFinished = errors.New("depth data finished")
-	// ErrDataInsufficient ...
-	ErrDataInsufficient = errors.New("insufficient")
-	// ErrCancelOrderFinished ...
-	ErrCancelOrderFinished = errors.New("order finished")
-	// ErrNotFoundOrder ...
-	ErrNotFoundOrder = errors.New("not found order")
-)
-
-// DataLoader ...
-type DataLoader struct {
-	curr  int
-	size  int
-	datas []dbtypes.OHLC
-}
-
-// ExchangeBackConfig ...
-type ExchangeBackConfig struct {
+// ExchangeFutureBackConfig ...
+type ExchangeFutureBackConfig struct {
 	ExName               string
 	TakerFee             float64
 	MakerFee             float64
@@ -44,19 +26,8 @@ type ExchangeBackConfig struct {
 	UnGzip               bool  //是否解压
 }
 
-// Next ...
-func (l *DataLoader) Next() *dbtypes.OHLC {
-	nextPos := l.curr + 1
-	if nextPos >= l.size {
-		return nil
-	}
-	data := l.datas[l.curr]
-	l.curr = nextPos
-	return &data
-}
-
-// ExchangeBack ...
-type ExchangeBack struct {
+// ExchangeFutureBack ...
+type ExchangeFutureBack struct {
 	BaseExchange
 	*sync.RWMutex
 	acc                  *constant.Account
@@ -70,16 +41,14 @@ type ExchangeBack struct {
 	dataLoader           map[string]*DataLoader
 	currData             dbtypes.OHLC
 	idGen                *util.IDGen
-	contractRate         float64 // 合约每张价值
-	CurrencyStandard     bool    // 是否为币本位
 	sortedCurrencies     constant.Account
 	longPosition         map[string]constant.Position // 多仓
 	shortPosition        map[string]constant.Position // 空仓
 }
 
-// NewExchangeBack ...
-func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
-	sim := &ExchangeBack{
+// NewExchangeFutureBack ...
+func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
+	sim := &ExchangeFutureBack{
 		RWMutex:              new(sync.RWMutex),
 		idGen:                util.NewIDGen(config.ExName),
 		name:                 config.ExName,
@@ -101,7 +70,7 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 	return sim
 }
 
-func (ex *ExchangeBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
+func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
 	dealAmount := 0.0
 	remain := ord.Amount - ord.DealAmount
@@ -141,7 +110,7 @@ func (ex *ExchangeBack) fillOrder(isTaker bool, amount, price float64, ord *cons
 	ex.unFrozenAsset(tradeFee, dealAmount, price, *ord)
 }
 
-func (ex *ExchangeBack) matchOrder(ord *constant.Order, isTaker bool) {
+func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
 	ticker := ex.currData
 	switch ord.TradeType {
 	case constant.TradeTypeSell:
@@ -163,7 +132,7 @@ func (ex *ExchangeBack) matchOrder(ord *constant.Order, isTaker bool) {
 	}
 }
 
-func (ex *ExchangeBack) match() {
+func (ex *ExchangeFutureBack) match() {
 	ex.Lock()
 	defer ex.Unlock()
 	for id := range ex.pendingOrders {
@@ -172,7 +141,7 @@ func (ex *ExchangeBack) match() {
 }
 
 // LimitBuy ...
-func (ex *ExchangeBack) LimitBuy(amount, price, currency string) (*constant.Order, error) {
+func (ex *ExchangeFutureBack) LimitBuy(amount, price, currency string) (*constant.Order, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
@@ -201,7 +170,7 @@ func (ex *ExchangeBack) LimitBuy(amount, price, currency string) (*constant.Orde
 }
 
 // LimitSell ...
-func (ex *ExchangeBack) LimitSell(amount, price, currency string) (*constant.Order, error) {
+func (ex *ExchangeFutureBack) LimitSell(amount, price, currency string) (*constant.Order, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
@@ -231,17 +200,17 @@ func (ex *ExchangeBack) LimitSell(amount, price, currency string) (*constant.Ord
 }
 
 // MarketBuy ...
-func (ex *ExchangeBack) MarketBuy(amount, price, currency string) (*constant.Order, error) {
+func (ex *ExchangeFutureBack) MarketBuy(amount, price, currency string) (*constant.Order, error) {
 	panic("not support")
 }
 
 // MarketSell ...
-func (ex *ExchangeBack) MarketSell(amount, price, currency string) (*constant.Order, error) {
+func (ex *ExchangeFutureBack) MarketSell(amount, price, currency string) (*constant.Order, error) {
 	panic("not support")
 }
 
 // CancelOrder ...
-func (ex *ExchangeBack) CancelOrder(orderID string, currency string) (bool, error) {
+func (ex *ExchangeFutureBack) CancelOrder(orderID string, currency string) (bool, error) {
 	ex.Lock()
 	defer ex.Unlock()
 
@@ -266,7 +235,7 @@ func (ex *ExchangeBack) CancelOrder(orderID string, currency string) (bool, erro
 }
 
 // GetOneOrder ...
-func (ex *ExchangeBack) GetOneOrder(orderID, currency string) (*constant.Order, error) {
+func (ex *ExchangeFutureBack) GetOneOrder(orderID, currency string) (*constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
@@ -287,7 +256,7 @@ func (ex *ExchangeBack) GetOneOrder(orderID, currency string) (*constant.Order, 
 }
 
 // GetUnfinishOrders ...
-func (ex *ExchangeBack) GetUnfinishOrders(currency string) ([]constant.Order, error) {
+func (ex *ExchangeFutureBack) GetUnfinishOrders(currency string) ([]constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
@@ -300,7 +269,7 @@ func (ex *ExchangeBack) GetUnfinishOrders(currency string) ([]constant.Order, er
 }
 
 // GetOrderHistorys ...
-func (ex *ExchangeBack) GetOrderHistorys(currency string, currentPage, pageSize int) ([]constant.Order, error) {
+func (ex *ExchangeFutureBack) GetOrderHistorys(currency string, currentPage, pageSize int) ([]constant.Order, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 
@@ -314,7 +283,7 @@ func (ex *ExchangeBack) GetOrderHistorys(currency string, currentPage, pageSize 
 }
 
 // GetAccount ...
-func (ex *ExchangeBack) GetAccount() (*constant.Account, error) {
+func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 	ex.RLock()
 	defer ex.RUnlock()
 	var account constant.Account
@@ -326,7 +295,7 @@ func (ex *ExchangeBack) GetAccount() (*constant.Account, error) {
 }
 
 // GetTicker ...
-func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
+func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, error) {
 	loader := ex.dataLoader[currency]
 	if loader == nil {
 		return nil, errors.New("loader not found")
@@ -347,7 +316,7 @@ func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
 }
 
 // GetDepth ...
-func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, error) {
+func (ex *ExchangeFutureBack) GetDepth(size int, currency string) (*constant.Depth, error) {
 	val := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
 	if val == nil {
 		return nil, errors.New("Get depth fail")
@@ -371,100 +340,91 @@ func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, er
 }
 
 // GetTrades ...
-func (ex *ExchangeBack) GetTrades(currencyPair string, since int64) ([]constant.Trader, error) {
+func (ex *ExchangeFutureBack) GetTrades(currencyPair string, since int64) ([]constant.Trader, error) {
 	panic("not support")
 }
 
 // GetExchangeName ...
-func (ex *ExchangeBack) GetExchangeName() string {
+func (ex *ExchangeFutureBack) GetExchangeName() string {
 	return ex.name
 }
 
 //冻结
-func (ex *ExchangeBack) frozenAsset(order constant.Order) error {
+func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
-	CurrencyB := stocks[1]
+	ticker := ex.currData
+	price := ticker.Close
+	avaAmount := ex.acc.SubAccounts[CurrencyA].Amount
+	lever := ex.BaseExchange.lever
 	switch order.TradeType {
-	case constant.TradeTypeSell:
-		avaAmount := ex.acc.SubAccounts[order.StockType].Amount
-		if avaAmount < order.Amount {
+	case constant.TradeTypeLong, constant.TradeTypeShort:
+		if avaAmount*lever*price < order.Amount*ex.BaseExchange.maintenanceRate {
 			return ErrDataInsufficient
 		}
+		costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
-			Amount:       avaAmount - order.Amount,
-			ForzenAmount: ex.acc.SubAccounts[CurrencyA].ForzenAmount + order.Amount,
+			Amount:       avaAmount - costAmount,
+			ForzenAmount: ex.acc.SubAccounts[CurrencyA].ForzenAmount + costAmount,
 			LoanAmount:   0,
 		}
-	case constant.TradeTypeBuy:
-		avaAmount := ex.acc.SubAccounts[CurrencyB].Amount
-		need := order.Amount * order.Price
-		if avaAmount < need {
-			return ErrDataInsufficient
+	case constant.TradeTypeLongClose, constant.TradeTypeShortClose:
+		if order.TradeType == constant.TradeTypeLongClose {
+			position := ex.longPosition[CurrencyA]
+			if position.Amount < order.Amount {
+				return ErrDataInsufficient
+			}
+			position.Amount = position.Amount - order.Amount
+			position.ForzenAmount = position.ForzenAmount + order.Amount
+			ex.longPosition[CurrencyA] = position
 		}
-		ex.acc.SubAccounts[CurrencyB] = constant.SubAccount{
-			StockType:    CurrencyB,
-			Amount:       avaAmount - need,
-			ForzenAmount: ex.acc.SubAccounts[CurrencyB].ForzenAmount + need,
-			LoanAmount:   0,
+
+		if order.TradeType == constant.TradeTypeShortClose {
+			position := ex.shortPosition[CurrencyA]
+			if position.Amount < order.Amount {
+				return ErrDataInsufficient
+			}
+			position.Amount = position.Amount - order.Amount
+			position.ForzenAmount = position.ForzenAmount + order.Amount
+			ex.shortPosition[CurrencyA] = position
 		}
 	}
 	return nil
 }
 
 //解冻
-func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
+func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
-	CurrencyB := stocks[1]
 	assetA := ex.acc.SubAccounts[CurrencyA]
-	assetB := ex.acc.SubAccounts[CurrencyB]
-
+	lever := ex.BaseExchange.lever
 	switch order.TradeType {
-	case constant.TradeTypeSell:
+	case constant.TradeTypeLong, constant.TradeTypeShort:
 		if order.Status == constant.ORDER_CANCEL {
+			costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
-				Amount:       assetA.Amount + order.Amount - order.DealAmount,
-				ForzenAmount: assetA.ForzenAmount - (order.Amount - order.DealAmount),
+				Amount:       assetA.Amount + costAmount - order.DealAmount,
+				ForzenAmount: assetA.ForzenAmount - (costAmount - order.DealAmount),
 				LoanAmount:   0,
-			}
-		} else {
-			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
-				StockType:    assetA.StockType,
-				Amount:       assetA.Amount,
-				ForzenAmount: assetA.ForzenAmount - matchAmount,
-				LoanAmount:   0,
-			}
-			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
-				StockType:    assetB.StockType,
-				Amount:       assetB.Amount + matchAmount*matchPrice - fee,
-				ForzenAmount: assetB.ForzenAmount,
 			}
 		}
-
-	case constant.TradeTypeBuy:
+	case constant.TradeTypeLongClose, constant.TradeTypeShortClose:
 		if order.Status == constant.ORDER_CANCEL {
-			unFrozen := (order.Amount - order.DealAmount) * order.Price
-			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
-				StockType:    assetB.StockType,
-				Amount:       assetB.Amount + unFrozen,
-				ForzenAmount: assetB.ForzenAmount - unFrozen,
+			if order.TradeType == constant.TradeTypeLongClose {
+				position := ex.longPosition[CurrencyA]
+				position.Amount = position.Amount + order.Amount
+				position.ForzenAmount = position.ForzenAmount - order.Amount
+				ex.longPosition[CurrencyA] = position
 			}
-		} else {
-			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
-				StockType:    assetA.StockType,
-				Amount:       assetA.Amount + matchAmount - fee,
-				ForzenAmount: assetA.ForzenAmount,
-				LoanAmount:   0,
-			}
-			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
-				StockType:    assetB.StockType,
-				Amount:       assetB.Amount + matchAmount*(order.Price-matchPrice),
-				ForzenAmount: assetB.ForzenAmount - matchAmount*order.Price,
+
+			if order.TradeType == constant.TradeTypeShortClose {
+				position := ex.shortPosition[CurrencyA]
+				position.Amount = position.Amount + order.Amount
+				position.ForzenAmount = position.ForzenAmount - order.Amount
+				ex.shortPosition[CurrencyA] = position
 			}
 		}
 	}
-
 }
