@@ -12,24 +12,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
-var (
-	// ErrDataFinished ...
-	ErrDataFinished = errors.New("depth data finished")
-	// ErrDataInsufficient ...
-	ErrDataInsufficient = errors.New("insufficient")
-	// ErrCancelOrderFinished ...
-	ErrCancelOrderFinished = errors.New("order finished")
-	// ErrNotFoundOrder ...
-	ErrNotFoundOrder = errors.New("not found order")
-)
-
-// DataLoader ...
-type DataLoader struct {
-	curr  int
-	size  int
-	datas []dbtypes.OHLC
-}
-
 // ExchangeBackConfig ...
 type ExchangeBackConfig struct {
 	ExName               string
@@ -42,17 +24,6 @@ type ExchangeBackConfig struct {
 	BackTestEndTime      int64
 	DepthSize            int64 //回测多少档深度
 	UnGzip               bool  //是否解压
-}
-
-// Next ...
-func (l *DataLoader) Next() *dbtypes.OHLC {
-	nextPos := l.curr + 1
-	if nextPos >= l.size {
-		return nil
-	}
-	data := l.datas[l.curr]
-	l.curr = nextPos
-	return &data
 }
 
 // ExchangeBack ...
