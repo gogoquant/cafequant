@@ -110,8 +110,8 @@ func (ex *ExchangeFutureBack) settlePosition(stockType string) {
 		LoanAmount:   0,
 	}
 
-	shortposition.Profit = amountdiff
-	shortposition.ProfitRate = amountdiff / (shortposition.Amount + shortposition.FrozenAmount)
+	shortposition.Profit = 0 - amountdiff
+	shortposition.ProfitRate = 0 - (amountdiff / (shortposition.Amount + shortposition.FrozenAmount))
 	ex.shortPosition[CurrencyA] = shortposition
 }
 
@@ -162,6 +162,26 @@ func (ex *ExchangeFutureBack) match() {
 	defer ex.Unlock()
 	for id := range ex.pendingOrders {
 		ex.matchOrder(ex.pendingOrders[id], false)
+	}
+}
+
+func (ex *ExchangeFutureBack) coverPosition(stockType string) {
+	stocks := stockPair2Vec(stockType)
+	CurrencyA := stocks[0]
+	assetA := ex.acc.SubAccounts[CurrencyA]
+	longposition := ex.longPosition[CurrencyA]
+	shortposition := ex.longPosition[CurrencyA]
+	valdiff := longposition.Profit + shortposition.Profit
+	if valdiff+assetA.Amount+assetA.FrozenAmount < 0 {
+		//Force cover position
+		ex.longPosition[CurrencyA] = constant.Position{}
+		ex.shortPosition[CurrencyA] = constant.Position{}
+		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{}
+		for _, order := range ex.pendingOrders {
+			order.Status = constant.ORDER_CANCEL_ING
+			ex.finishedOrders[order.Id] = order
+		}
+		ex.pendingOrders = make(map[string]*constant.Order)
 	}
 }
 
@@ -332,6 +352,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	ex.currData = *ohlc
 	ex.match()
 	ex.settlePosition(currency)
+	ex.coverPosition(currency)
 	return &constant.Ticker{
 		Last: ohlc.Close,
 		Buy:  ohlc.Close,
