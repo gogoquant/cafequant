@@ -70,6 +70,34 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	return sim
 }
 
+// Ready ...
+func (e *ExchangeFutureBack) Ready(v interface{}) interface{} {
+	var account constant.Account
+	e.RWMutex = new(sync.RWMutex)
+	e.idGen = util.NewIDGen(e.GetExchangeName())
+	e.name = e.GetExchangeName()
+	e.makerFee = e.BaseExchange.maker
+	e.takerFee = e.BaseExchange.taker
+	e.acc = &account
+
+	e.pendingOrders = make(map[string]*constant.Order, 100)
+	e.finishedOrders = make(map[string]*constant.Order, 100)
+	e.dataLoader = make(map[string]*DataLoader, 1)
+	e.longPosition = make(map[string]constant.Position, 1)
+	e.shortPosition = make(map[string]constant.Position, 1)
+	for stock := range e.BaseExchange.subscribeMap {
+		var loader DataLoader
+		e.dataLoader[stock] = &loader
+		val := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		if val == nil {
+			return nil
+		}
+		ohlcs := val.([]dbtypes.OHLC)
+		e.dataLoader[stock].Load(ohlcs)
+	}
+	return "success"
+}
+
 func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.Position) float64 {
 	amount := position.Amount + position.FrozenAmount
 	price := position.Price

@@ -71,7 +71,7 @@ type BaseExchange struct {
 
 	start  int64
 	end    int64
-	period string
+	period int64
 	host   string
 	logger model.Logger
 	option constant.Option
@@ -87,7 +87,7 @@ func stockPair2Vec(pair string) []string {
 
 // SetBackCommission 设置回测手续费
 func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64) interface{} {
-	e.contractRate = e.contractRate
+	e.contractRate = contractRate
 	e.taker = taker
 	e.maker = maker
 	return "success"
@@ -99,7 +99,7 @@ func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
 }
 
 // SetBackTime ...
-func (e *BaseExchange) SetBackTime(start, end int64, period string) interface{} {
+func (e *BaseExchange) SetBackTime(start, end, period int64) interface{} {
 	e.start = start
 	e.end = end
 	e.period = period
@@ -107,7 +107,7 @@ func (e *BaseExchange) SetBackTime(start, end int64, period string) interface{} 
 }
 
 // GetBackTime ...
-func (e *BaseExchange) GetBackTime() (int64, int64, string) {
+func (e *BaseExchange) GetBackTime() (int64, int64, int64) {
 	return e.start, e.end, e.period
 }
 
@@ -203,6 +203,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 	ohlc := client.GetOHLCs(opt)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number is %s"+ohlc.Message))
+		return nil
 	}
 	return ohlc.Data
 }
