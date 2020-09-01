@@ -22,7 +22,7 @@ type Position struct {
 	MarginLevel  float64 //杠杆比例
 	Amount       float64 //总合约数量
 	Available    float64 // 可平仓量
-	ForzenAmount float64 //冻结的合约数量
+	FrozenAmount float64 //冻结的合约数量
 	Profit       float64 //收益
 	ProfitRate   float64 //收益率
 	ContractType string  //合约类型
@@ -47,7 +47,7 @@ type SubAccount struct {
 	ProfitUnreal  float64
 	RiskRate      float64 //保证金率
 	Amount        float64
-	ForzenAmount  float64
+	FrozenAmount  float64
 	LoanAmount    float64
 }
 

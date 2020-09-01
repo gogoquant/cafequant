@@ -394,7 +394,7 @@ func (ex *ExchangeBack) frozenAsset(order constant.Order) error {
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
 			Amount:       avaAmount - order.Amount,
-			ForzenAmount: ex.acc.SubAccounts[CurrencyA].ForzenAmount + order.Amount,
+			FrozenAmount: ex.acc.SubAccounts[CurrencyA].FrozenAmount + order.Amount,
 			LoanAmount:   0,
 		}
 	case constant.TradeTypeBuy:
@@ -406,7 +406,7 @@ func (ex *ExchangeBack) frozenAsset(order constant.Order) error {
 		ex.acc.SubAccounts[CurrencyB] = constant.SubAccount{
 			StockType:    CurrencyB,
 			Amount:       avaAmount - need,
-			ForzenAmount: ex.acc.SubAccounts[CurrencyB].ForzenAmount + need,
+			FrozenAmount: ex.acc.SubAccounts[CurrencyB].FrozenAmount + need,
 			LoanAmount:   0,
 		}
 	}
@@ -427,20 +427,20 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
 				Amount:       assetA.Amount + order.Amount - order.DealAmount,
-				ForzenAmount: assetA.ForzenAmount - (order.Amount - order.DealAmount),
+				FrozenAmount: assetA.FrozenAmount - (order.Amount - order.DealAmount),
 				LoanAmount:   0,
 			}
 		} else {
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
 				Amount:       assetA.Amount,
-				ForzenAmount: assetA.ForzenAmount - matchAmount,
+				FrozenAmount: assetA.FrozenAmount - matchAmount,
 				LoanAmount:   0,
 			}
 			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
 				StockType:    assetB.StockType,
 				Amount:       assetB.Amount + matchAmount*matchPrice - fee,
-				ForzenAmount: assetB.ForzenAmount,
+				FrozenAmount: assetB.FrozenAmount,
 			}
 		}
 
@@ -450,19 +450,19 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
 				StockType:    assetB.StockType,
 				Amount:       assetB.Amount + unFrozen,
-				ForzenAmount: assetB.ForzenAmount - unFrozen,
+				FrozenAmount: assetB.FrozenAmount - unFrozen,
 			}
 		} else {
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
 				Amount:       assetA.Amount + matchAmount - fee,
-				ForzenAmount: assetA.ForzenAmount,
+				FrozenAmount: assetA.FrozenAmount,
 				LoanAmount:   0,
 			}
 			ex.acc.SubAccounts[assetB.StockType] = constant.SubAccount{
 				StockType:    assetB.StockType,
 				Amount:       assetB.Amount + matchAmount*(order.Price-matchPrice),
-				ForzenAmount: assetB.ForzenAmount - matchAmount*order.Price,
+				FrozenAmount: assetB.FrozenAmount - matchAmount*order.Price,
 			}
 		}
 	}
