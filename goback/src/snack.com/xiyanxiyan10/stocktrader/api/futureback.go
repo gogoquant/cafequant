@@ -331,6 +331,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	}
 	ex.currData = *ohlc
 	ex.match()
+	ex.settlePosition(currency)
 	return &constant.Ticker{
 		Last: ohlc.Close,
 		Buy:  ohlc.Close,
