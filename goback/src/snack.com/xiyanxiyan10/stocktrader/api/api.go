@@ -4,7 +4,7 @@ import "snack.com/xiyanxiyan10/stocktrader/constant"
 
 // Exchange interface
 type Exchange interface {
-	SetMode(mode int) interface{}                              //设置mode
+	Ready(interface{}) interface{}                             //设置mode
 	SetIO(mode int)                                            //设置IO
 	GetIO() int                                                //获取IO
 	Subscribe(string, string) interface{}                      //订阅

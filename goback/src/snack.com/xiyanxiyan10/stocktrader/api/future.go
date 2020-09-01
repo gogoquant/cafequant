@@ -113,22 +113,20 @@ func (e *FutureExchange) ValidSell() error {
 	return errors.New("错误sell交易方向:" + e.GetDirection())
 }
 
-// SetMode ...
-func (e *FutureExchange) SetMode(mode int) interface{} {
-	if mode == constant.RUNNORMAIL {
-		proxyURL := config.String("proxy")
-		if proxyURL == "" {
-			e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
-		} else {
-			e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
-		}
-		if e.apiBuilder == nil {
-			e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, "build api error")
-			return nil
-		}
-		exchangeName := e.exchangeTypeMap[e.option.Type]
-		e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
+// Ready ...
+func (e *FutureExchange) Ready(v interface{}) interface{} {
+	proxyURL := config.String("proxy")
+	if proxyURL == "" {
+		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
+	} else {
+		e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
 	}
+	if e.apiBuilder == nil {
+		e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, "build api error")
+		return nil
+	}
+	exchangeName := e.exchangeTypeMap[e.option.Type]
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
 	return "success"
 }
 

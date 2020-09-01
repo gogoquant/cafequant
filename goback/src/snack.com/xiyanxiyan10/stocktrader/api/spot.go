@@ -65,22 +65,20 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 	return &spotExchange
 }
 
-// SetMode ...
-func (e *SpotExchange) SetMode(mode int) interface{} {
-	if mode == constant.RUNNORMAIL {
-		proxyURL := config.String("proxy")
-		if proxyURL == "" {
-			e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
-		} else {
-			e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
-		}
-		if e.apiBuilder == nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "api builder fail")
-			return nil
-		}
-		exchangeName := e.exchangeTypeMap[e.option.Type]
-		e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).Build(exchangeName)
+// Ready ...
+func (e *SpotExchange) Ready(v interface{}) interface{} {
+	proxyURL := config.String("proxy")
+	if proxyURL == "" {
+		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
+	} else {
+		e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
 	}
+	if e.apiBuilder == nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "api builder fail")
+		return nil
+	}
+	exchangeName := e.exchangeTypeMap[e.option.Type]
+	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).Build(exchangeName)
 	return "success"
 }
 
