@@ -62,9 +62,9 @@ type BaseExchange struct {
 	lastSleep          int64
 	lastTimes          int64
 	subscribeMap       map[string][]string
-
-	taker float64
-	maker float64
+	currencyMap        map[string]float64
+	taker              float64
+	maker              float64
 
 	contractRate float64 // 合约每张价值
 	//currencyStandard bool    // 是否为币本位
@@ -104,6 +104,16 @@ func (e *BaseExchange) SetBackTime(start, end, period int64) interface{} {
 	e.end = end
 	e.period = period
 	return "success"
+}
+
+// GetBackAccount ...
+func (e *BaseExchange) GetBackAccount() interface{} {
+	return e.currencyMap
+}
+
+// SetBackAccount ...
+func (e *BaseExchange) SetBackAccount(key string, val float64) {
+	e.currencyMap[key] = val
 }
 
 // GetBackTime ...

@@ -95,9 +95,16 @@ func (e *ExchangeFutureBack) Ready(v interface{}) interface{} {
 		ohlcs := val.([]dbtypes.OHLC)
 		e.dataLoader[stock].Load(ohlcs)
 	}
+	currencyMap := e.BaseExchange.currencyMap
+	for key, val := range currencyMap {
+		var sub constant.SubAccount
+		sub.Amount = val
+		e.acc.SubAccounts[key] = sub
+	}
 	return "success"
 }
 
+// position2ValDiff ...
 func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.Position) float64 {
 	amount := position.Amount + position.FrozenAmount
 	price := position.Price
@@ -108,6 +115,7 @@ func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.P
 	return valDiff
 }
 
+// settlePosition ...
 func (ex *ExchangeFutureBack) settlePosition() {
 	stockType := ex.BaseExchange.GetStockType()
 	ticker := ex.currData
@@ -144,6 +152,7 @@ func (ex *ExchangeFutureBack) settlePosition() {
 	ex.shortPosition[CurrencyA] = shortposition
 }
 
+// fillOrder ...
 func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
 	ord.DealAmount = ord.Amount
