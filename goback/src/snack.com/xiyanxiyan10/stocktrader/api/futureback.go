@@ -199,7 +199,7 @@ func (ex *ExchangeFutureBack) LimitBuy(amount, price, currency string) (*constan
 		Time:      ex.currData.Time / int64(time.Millisecond),
 		Status:    constant.ORDER_UNFINISH,
 		StockType: currency,
-		TradeType: constant.TradeTypeBuy,
+		TradeType: ex.BaseExchange.GetDirection(),
 	}
 
 	err := ex.frozenAsset(ord)
@@ -227,7 +227,7 @@ func (ex *ExchangeFutureBack) LimitSell(amount, price, currency string) (*consta
 		Time:      ex.currData.Time / int64(time.Millisecond),
 		Status:    constant.ORDER_UNFINISH,
 		StockType: currency,
-		TradeType: constant.TradeTypeSell,
+		TradeType: ex.BaseExchange.GetDirection(),
 	}
 
 	err := ex.frozenAsset(ord)
