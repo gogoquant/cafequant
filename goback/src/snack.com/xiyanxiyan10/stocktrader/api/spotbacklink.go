@@ -184,20 +184,10 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) interfa
 		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return nil
 	}
-	if e.ExchangeBack.GetDirection() == constant.TradeTypeLong {
-		if price == "-1" {
-			ord, err = e.ExchangeBack.MarketBuy(amount, price, stockType)
-		} else {
-			ord, err = e.ExchangeBack.LimitBuy(amount, price, stockType)
-		}
-	}
-
-	if e.ExchangeBack.GetDirection() == constant.TradeTypeShortClose {
-		if price == "-1" {
-			ord, err = e.ExchangeBack.MarketSell(amount, price, stockType)
-		} else {
-			ord, err = e.ExchangeBack.LimitSell(amount, price, stockType)
-		}
+	if price == "-1" {
+		ord, err = e.ExchangeBack.MarketBuy(amount, price, stockType)
+	} else {
+		ord, err = e.ExchangeBack.LimitBuy(amount, price, stockType)
 	}
 
 	if err != nil {
@@ -220,20 +210,10 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) interf
 		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return nil
 	}
-	if e.ExchangeBack.GetDirection() == constant.TradeTypeShort {
-		if price == "-1" {
-			ord, err = e.ExchangeBack.MarketSell(amount, price, stockType)
-		} else {
-			ord, err = e.ExchangeBack.LimitSell(amount, price, stockType)
-		}
-	}
-
-	if e.ExchangeBack.GetDirection() == constant.TradeTypeLongClose {
-		if price == "-1" {
-			ord, err = e.ExchangeBack.MarketBuy(amount, price, stockType)
-		} else {
-			ord, err = e.ExchangeBack.LimitBuy(amount, price, stockType)
-		}
+	if price == "-1" {
+		ord, err = e.ExchangeBack.MarketSell(amount, price, stockType)
+	} else {
+		ord, err = e.ExchangeBack.LimitSell(amount, price, stockType)
 	}
 
 	if err != nil {
