@@ -72,24 +72,9 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 
 func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
-	dealAmount := 0.0
-	remain := ord.Amount - ord.DealAmount
-	if remain > amount {
-		dealAmount = amount
-	} else {
-		dealAmount = remain
-	}
-
-	ratio := dealAmount / (ord.DealAmount + dealAmount)
-	ord.AvgPrice = math.Round(ratio*price+(1-ratio)*ord.AvgPrice*100000000) / 100000000
-	ord.DealAmount += dealAmount
-	if ord.Amount == ord.DealAmount {
-		ord.Status = constant.ORDER_FINISH
-	} else {
-		if ord.DealAmount > 0 {
-			ord.Status = constant.ORDER_PART_FINISH
-		}
-	}
+	ord.DealAmount = ord.Amount
+	dealAmount := ord.DealAmount
+	ord.Status = constant.ORDER_FINISH
 
 	fee := ex.makerFee
 	if isTaker {
@@ -97,12 +82,7 @@ func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord
 	}
 
 	tradeFee := 0.0
-	switch ord.TradeType {
-	case constant.TradeTypeSell:
-		tradeFee = dealAmount * price * fee
-	case constant.TradeTypeBuy:
-		tradeFee = dealAmount * fee
-	}
+	tradeFee = dealAmount * ex.contractRate * fee
 	tradeFee = math.Floor(tradeFee*100000000) / 100000000
 
 	ord.Fee += tradeFee
@@ -113,7 +93,7 @@ func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord
 func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
 	ticker := ex.currData
 	switch ord.TradeType {
-	case constant.TradeTypeSell:
+	case constant.TradeTypeLong, constant.TradeTypeShortClose:
 		if ticker.Close >= ord.Price && ticker.Volume > 0 {
 			ex.fillOrder(isTaker, ticker.Volume, ticker.Close, ord)
 			if ord.Status == constant.ORDER_FINISH {
@@ -121,7 +101,7 @@ func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
 				ex.finishedOrders[ord.Id] = ord
 			}
 		}
-	case constant.TradeTypeBuy:
+	case constant.TradeTypeShort, constant.TradeTypeLongClose:
 		if ticker.Close <= ord.Price && ticker.Volume > 0 {
 			ex.fillOrder(isTaker, ticker.Volume, ticker.Close, ord)
 			if ord.Status == constant.ORDER_FINISH {
@@ -417,6 +397,18 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 				position.Amount = position.Amount + order.Amount
 				position.ForzenAmount = position.ForzenAmount - order.Amount
 				ex.longPosition[CurrencyA] = position
+			} else {
+				position := ex.longPosition[CurrencyA]
+				position.ForzenAmount = position.ForzenAmount - order.Amount
+				ex.longPosition[CurrencyA] = position
+
+				costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
+					StockType:    assetA.StockType,
+					Amount:       assetA.Amount + costAmount + fee,
+					ForzenAmount: assetA.ForzenAmount,
+					LoanAmount:   0,
+				}
 			}
 
 			if order.TradeType == constant.TradeTypeShortClose {
@@ -424,6 +416,19 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 				position.Amount = position.Amount + order.Amount
 				position.ForzenAmount = position.ForzenAmount - order.Amount
 				ex.shortPosition[CurrencyA] = position
+			} else {
+				position := ex.longPosition[CurrencyA]
+				position.ForzenAmount = position.ForzenAmount - order.Amount
+				ex.longPosition[CurrencyA] = position
+
+				costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
+					StockType:    assetA.StockType,
+					Amount:       assetA.Amount + costAmount + fee,
+					ForzenAmount: assetA.ForzenAmount,
+					LoanAmount:   0,
+				}
+
 			}
 		}
 	}
