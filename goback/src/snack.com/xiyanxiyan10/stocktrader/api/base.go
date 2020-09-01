@@ -42,6 +42,11 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 	return &data
 }
 
+// Load ...
+func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
+	l.datas = append(l.datas, ohlcs...)
+}
+
 // BaseExchange ...
 type BaseExchange struct {
 	BaseExchangeCaches                    // cache for exchange

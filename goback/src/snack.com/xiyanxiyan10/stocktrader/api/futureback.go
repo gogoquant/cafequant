@@ -70,6 +70,51 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	return sim
 }
 
+func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.Position) float64 {
+	amount := position.Amount + position.FrozenAmount
+	price := position.Price
+	val := amount * ex.BaseExchange.contractRate
+	priceDiff := last - price
+	priceRate := priceDiff / price
+	valDiff := priceRate * val
+	return valDiff
+}
+
+func (ex *ExchangeFutureBack) settlePosition(stockType string) {
+	ticker := ex.currData
+	last := ticker.Close
+	stocks := stockPair2Vec(stockType)
+	CurrencyA := stocks[0]
+	assetA := ex.acc.SubAccounts[CurrencyA]
+
+	longposition := ex.longPosition[CurrencyA]
+	valdiff := ex.position2ValDiff(last, longposition)
+	amountdiff := valdiff * ex.contractRate / last
+	ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
+		StockType:    assetA.StockType,
+		Amount:       assetA.Amount + amountdiff,
+		FrozenAmount: assetA.FrozenAmount,
+		LoanAmount:   0,
+	}
+	longposition.Profit = amountdiff
+	longposition.ProfitRate = amountdiff / (longposition.Amount + longposition.FrozenAmount)
+	ex.longPosition[CurrencyA] = longposition
+
+	shortposition := ex.shortPosition[CurrencyA]
+	valdiff = ex.position2ValDiff(last, shortposition)
+	amountdiff = valdiff * ex.contractRate / last
+	ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
+		StockType:    assetA.StockType,
+		Amount:       assetA.Amount + amountdiff,
+		FrozenAmount: assetA.FrozenAmount,
+		LoanAmount:   0,
+	}
+
+	shortposition.Profit = amountdiff
+	shortposition.ProfitRate = amountdiff / (shortposition.Amount + shortposition.FrozenAmount)
+	ex.shortPosition[CurrencyA] = shortposition
+}
+
 func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
 	ord.DealAmount = ord.Amount
