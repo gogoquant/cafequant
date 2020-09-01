@@ -80,7 +80,8 @@ func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.P
 	return valDiff
 }
 
-func (ex *ExchangeFutureBack) settlePosition(stockType string) {
+func (ex *ExchangeFutureBack) settlePosition() {
+	stockType := ex.BaseExchange.GetStockType()
 	ticker := ex.currData
 	last := ticker.Close
 	stocks := stockPair2Vec(stockType)
@@ -165,7 +166,8 @@ func (ex *ExchangeFutureBack) match() {
 	}
 }
 
-func (ex *ExchangeFutureBack) coverPosition(stockType string) {
+func (ex *ExchangeFutureBack) coverPosition() {
+	stockType := ex.BaseExchange.GetStockType()
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
 	assetA := ex.acc.SubAccounts[CurrencyA]
@@ -206,7 +208,6 @@ func (ex *ExchangeFutureBack) LimitBuy(amount, price, currency string) (*constan
 	}
 
 	ex.pendingOrders[ord.Id] = &ord
-
 	ex.matchOrder(&ord, true)
 
 	var result constant.Order
@@ -351,8 +352,8 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	}
 	ex.currData = *ohlc
 	ex.match()
-	ex.settlePosition(currency)
-	ex.coverPosition(currency)
+	ex.settlePosition()
+	ex.coverPosition()
 	return &constant.Ticker{
 		Last: ohlc.Close,
 		Buy:  ohlc.Close,
