@@ -63,10 +63,8 @@ type BaseExchange struct {
 	lastTimes          int64
 	subscribeMap       map[string][]string
 
-	taker           float64
-	maker           float64
-	marginRate      float64
-	maintenanceRate float64
+	taker float64
+	maker float64
 
 	contractRate float64 // 合约每张价值
 	//currencyStandard bool    // 是否为币本位
@@ -88,17 +86,16 @@ func stockPair2Vec(pair string) []string {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(taker, maker, marginRate, maintenanceRate float64) interface{} {
-	e.marginRate = marginRate
-	e.maintenanceRate = maintenanceRate
+func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64) interface{} {
+	e.contractRate = e.contractRate
 	e.taker = taker
 	e.maker = maker
 	return "success"
 }
 
 // GetBackCommission 获取回测手续费
-func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64) {
-	return e.taker, e.maker, e.marginRate, e.maintenanceRate
+func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
+	return e.taker, e.maker, e.contractRate
 }
 
 // SetBackTime ...

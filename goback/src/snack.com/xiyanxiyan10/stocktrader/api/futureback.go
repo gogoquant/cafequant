@@ -407,10 +407,10 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
-		if avaAmount*lever*price < order.Amount*ex.BaseExchange.maintenanceRate {
+		if avaAmount*lever*price < order.Amount*ex.BaseExchange.contractRate {
 			return ErrDataInsufficient
 		}
-		costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
 			Amount:       avaAmount - costAmount,
@@ -450,7 +450,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
 		if order.Status == constant.ORDER_CANCEL {
-			costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+			costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
 				Amount:       assetA.Amount + costAmount - order.DealAmount,
@@ -470,7 +470,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 				position.FrozenAmount = position.FrozenAmount - order.Amount
 				ex.longPosition[CurrencyA] = position
 
-				costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+				costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
 				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 					StockType:    assetA.StockType,
 					Amount:       assetA.Amount + costAmount + fee,
@@ -489,7 +489,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 				position.FrozenAmount = position.FrozenAmount - order.Amount
 				ex.longPosition[CurrencyA] = position
 
-				costAmount := (order.Amount * ex.BaseExchange.maintenanceRate) / (lever * order.Price)
+				costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
 				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 					StockType:    assetA.StockType,
 					Amount:       assetA.Amount + costAmount + fee,
