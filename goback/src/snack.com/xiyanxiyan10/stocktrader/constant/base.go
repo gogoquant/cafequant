@@ -190,13 +190,15 @@ type OrderBook struct {
 
 // Ticker  ...
 type Ticker struct {
-	Last float64
-	Buy  float64
-	Sell float64
-	High float64
-	Low  float64
-	Vol  float64
-	Time int64
+	Last  float64
+	Buy   float64
+	Sell  float64
+	Open  float64
+	Close float64
+	High  float64
+	Low   float64
+	Vol   float64
+	Time  int64
 }
 
 // Trader ...
