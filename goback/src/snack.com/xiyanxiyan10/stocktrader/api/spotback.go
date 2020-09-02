@@ -72,6 +72,40 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 	return sim
 }
 
+// Ready ...
+func (e *ExchangeBack) Ready(v interface{}) interface{} {
+	var account constant.Account
+	e.RWMutex = new(sync.RWMutex)
+	e.idGen = util.NewIDGen(e.GetExchangeName())
+	e.name = e.GetExchangeName()
+	e.makerFee = e.BaseExchange.maker
+	e.takerFee = e.BaseExchange.taker
+	e.acc = &account
+
+	e.pendingOrders = make(map[string]*constant.Order, 100)
+	e.finishedOrders = make(map[string]*constant.Order, 100)
+	e.dataLoader = make(map[string]*DataLoader, 1)
+	e.longPosition = make(map[string]constant.Position, 1)
+	e.shortPosition = make(map[string]constant.Position, 1)
+	for stock := range e.BaseExchange.subscribeMap {
+		var loader DataLoader
+		e.dataLoader[stock] = &loader
+		val := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		if val == nil {
+			return nil
+		}
+		ohlcs := val.([]dbtypes.OHLC)
+		e.dataLoader[stock].Load(ohlcs)
+	}
+	currencyMap := e.BaseExchange.currencyMap
+	for key, val := range currencyMap {
+		var sub constant.SubAccount
+		sub.Amount = val
+		e.acc.SubAccounts[key] = sub
+	}
+	return "success"
+}
+
 func (ex *ExchangeBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
 	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
 	dealAmount := 0.0
