@@ -24,6 +24,16 @@ var (
 	ErrNotFoundOrder = errors.New("not found order")
 )
 
+// DataConfig ...
+type DataConfig struct {
+	Ex       string
+	Pair     string
+	StarTime time.Time
+	EndTime  time.Time
+	Size     int //多少档深度数据
+	UnGzip   bool
+}
+
 // DataLoader ...
 type DataLoader struct {
 	curr  int
