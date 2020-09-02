@@ -24,6 +24,7 @@ var (
 		constant.HuoBiDm:     api.NewHuoBiDmExchange,
 		constant.HuoBiDmBack: api.NewHuoBiDmBackExchange,
 		constant.HuoBi:       api.NewHuoBiExchange,
+		constant.HuoBiBack:   api.NewHuoBiBackExchange,
 	}
 )
 
