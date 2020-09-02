@@ -48,8 +48,9 @@ const (
 
 // exchange types
 const (
-	HuoBiDm = "HuoBiDm"
-	HuoBi   = "HuoBi"
+	HuoBiDm     = "HuoBiDm"
+	HuoBiDmBack = "HuoBiDMBack"
+	HuoBi       = "HuoBi"
 )
 
 // log types
@@ -80,7 +81,7 @@ const (
 
 // some variables
 var (
-	ExchangeTypes = []string{HuoBiDm, HuoBi}
+	ExchangeTypes = []string{HuoBiDm, HuoBiDmBack, HuoBi}
 )
 
 // future userInfo string

@@ -46,8 +46,8 @@ type ExchangeFutureBack struct {
 	shortPosition        map[string]constant.Position // 空仓
 }
 
-// NewExchangeFutureBack ...
-func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
+// NewExchangeFutureBack2Config ...
+func NewExchangeFutureBack2Config(config ExchangeBackConfig) *ExchangeFutureBack {
 	sim := &ExchangeFutureBack{
 		RWMutex:              new(sync.RWMutex),
 		idGen:                util.NewIDGen(config.ExName),
@@ -67,6 +67,12 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	for key, sub := range sim.acc.SubAccounts {
 		sim.sortedCurrencies.SubAccounts[key] = sub
 	}
+	return sim
+}
+
+// NewExchangeFutureBack ...
+func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
+	sim := &ExchangeFutureBack{}
 	return sim
 }
 
