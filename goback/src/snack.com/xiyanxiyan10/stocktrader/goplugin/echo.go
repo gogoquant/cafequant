@@ -27,7 +27,7 @@ func (e *EchoStragey) Init(...interface{}) interface{} {
 }
 
 // Call ...
-func (e *EchoStragey) Call(...interface{}) interface{} {
+func (e *EchoStragey) Call(name string, v ...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	return nil
 }
