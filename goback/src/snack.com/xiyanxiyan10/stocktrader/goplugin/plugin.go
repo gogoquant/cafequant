@@ -58,7 +58,7 @@ type GoStrageyHandler interface {
 
 // GoPlugin ...
 type GoPlugin struct {
-	Name      string
+	name      string
 	Logger    *model.Logger // 利用这个对象保存日志
 	Exchanges []api.Exchange
 	Mail      notice.MailHandler // 邮件发送
@@ -68,12 +68,12 @@ type GoPlugin struct {
 
 // SetStragey ...
 func (p *GoPlugin) SetStragey(name string) {
-	p.Name = name
+	p.name = name
 }
 
 // GetStragey ...
 func (p *GoPlugin) GetStragey() string {
-	return p.Name
+	return p.name
 }
 
 // AddExchange ...
