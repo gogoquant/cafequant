@@ -52,7 +52,6 @@ type GoStrageyHandler interface {
 	AddLogger(logger *model.Logger)
 
 	Init(...interface{}) interface{}
-	Set(string, interface{}) interface{}
 	Call(string, ...interface{}) interface{}
 	Exit(...interface{}) interface{}
 }
@@ -150,22 +149,6 @@ func (p *GoPlugin) Init(v ...interface{}) (res interface{}) {
 	return handler.Init(v)
 }
 
-// Set ...
-func (p *GoPlugin) Set(name string, v interface{}) (res interface{}) {
-	res = nil
-	defer func() {
-		if err := recover(); err != nil {
-			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Set fail:%v", err)
-		}
-	}()
-	handler, ok := p.strageys[p.GetStragey()]
-	if !ok {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Set fail:get name")
-		return nil
-	}
-	return handler.Set(name, v)
-}
-
 // Call ...
 func (p *GoPlugin) Call(name string, v ...interface{}) interface{} {
 	defer func() {
@@ -198,12 +181,10 @@ func (p *GoPlugin) Exit(v ...interface{}) interface{} {
 
 // Handler ...
 type Handler interface {
-	AddStragey(v GoStrageyHandler)
 	LoadStragey() interface{}
 	SetStragey(string)
 	GetStragey() string
 	Init(v ...interface{}) interface{}
-	Set(string, interface{}) interface{}
 	Call(name string, v ...interface{}) interface{}
 	Exit(v ...interface{}) interface{}
 }

@@ -14,6 +14,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
+	"snack.com/xiyanxiyan10/stocktrader/pythonplugin"
 )
 
 // Trader Variable
@@ -98,9 +99,11 @@ func initialize(id int64) (trader Global, err error) {
 	trader.draw.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
 
 	goExtend := goplugin.NewGoPlugin()
+	pythonExtend := pythonplugin.NewPythonPlugin()
 	goExtend.AddMail(trader.mail)
 	goExtend.AddDraw(trader.draw)
 	goExtend.Logger = &trader.Logger
+	pythonExtend.Logger = &trader.Logger
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
@@ -122,6 +125,7 @@ func initialize(id int64) (trader Global, err error) {
 		return
 	}
 	trader.goplugin = goExtend
+	trader.pythonplugin = pythonExtend
 	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
 		err = localErr
 		return
