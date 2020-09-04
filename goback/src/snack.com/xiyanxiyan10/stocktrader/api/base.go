@@ -96,11 +96,10 @@ func stockPair2Vec(pair string) []string {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64) interface{} {
+func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64) {
 	e.contractRate = contractRate
 	e.taker = taker
 	e.maker = maker
-	return "success"
 }
 
 // GetBackCommission 获取回测手续费

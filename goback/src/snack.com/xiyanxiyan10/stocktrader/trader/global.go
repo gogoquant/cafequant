@@ -17,7 +17,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"snack.com/xiyanxiyan10/stocktrader/pythonplugin"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
@@ -27,17 +26,16 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger       model.Logger       // 利用这个对象保存日志
-	ctx          *otto.Otto         // js虚拟机
-	es           []api.Exchange     // 交易所列表
-	tasks        Tasks              // 任务列表
-	running      bool               // 运行中
-	ws           *constant.WsPiP    // 全局异步通道
-	mail         notice.MailHandler // 邮件发送
-	draw         draw.DrawHandler   // 图标绘制
-	goplugin     goplugin.Handler   // go 插件
-	pythonplugin pythonplugin.Handler
-	statusLog    string // 状态日志
+	Logger    model.Logger       // 利用这个对象保存日志
+	ctx       *otto.Otto         // js虚拟机
+	es        []api.Exchange     // 交易所列表
+	tasks     Tasks              // 任务列表
+	running   bool               // 运行中
+	ws        *constant.WsPiP    // 全局异步通道
+	mail      notice.MailHandler // 邮件发送
+	draw      draw.DrawHandler   // 图标绘制
+	goplugin  goplugin.Handler   // go 插件
+	statusLog string             // 状态日志
 }
 
 // GetMail ...
