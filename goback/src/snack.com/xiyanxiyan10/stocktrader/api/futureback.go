@@ -39,6 +39,7 @@ type ExchangeFutureBack struct {
 	pendingOrders        map[string]*constant.Order
 	finishedOrders       map[string]*constant.Order
 	dataLoader           map[string]*DataLoader
+	stockTypeMap         map[string]goex.CurrencyPair
 	currData             dbtypes.OHLC
 	idGen                *util.IDGen
 	sortedCurrencies     constant.Account
@@ -398,6 +399,8 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	ex.settlePosition()
 	ex.coverPosition()
 	return &constant.Ticker{
+		Vol:  ohlc.Volume,
+		Time: ohlc.Time,
 		Last: ohlc.Close,
 		Buy:  ohlc.Close,
 		Sell: ohlc.Close,
@@ -543,4 +546,38 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 			}
 		}
 	}
+}
+
+// GetRecords get candlestick data
+func (e *ExchangeFutureBack) GetRecords(periodStr string) interface{} {
+	var period int64 = -1
+	var size = constant.RecordSize
+	period, ok := e.recordsPeriodMap[periodStr]
+	if !ok {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
+		return nil
+	}
+
+	val := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
+	if val != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
+		return nil
+	}
+	vec := val.([]dbtypes.OHLC)
+
+	if len(vec) > size {
+		vec = vec[0 : size-1]
+	}
+	var records []constant.Record
+	for _, kline := range vec {
+		records = append([]constant.Record{{
+
+			Open:   kline.Open,
+			High:   kline.High,
+			Low:    kline.Low,
+			Close:  kline.Close,
+			Volume: kline.Volume,
+		}}, records...)
+	}
+	return records
 }
