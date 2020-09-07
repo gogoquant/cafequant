@@ -17,7 +17,7 @@ type ExchangePython interface {
 	Sleep(args *py.Tuple) (ret *py.Base, err error)           //延时
 	AutoSleep(args *py.Tuple) (ret *py.Base, err error)       //自动休眠以满足设置的交易所的API访问频率
 	GetAccount(args *py.Tuple) (ret *py.Base, err error)      //获取交易所的账户资金信息
-	GetDept(args *py.Tuple) (ret *py.Base, err error)         //返回买卖深度表
+	GetDepth(args *py.Tuple) (ret *py.Base, err error)        //返回买卖深度表
 	Buy(args *py.Tuple) (ret *py.Base, err error)             //买
 	Sell(args *py.Tuple) (ret *py.Base, err error)            //卖
 	GetOrder(args *py.Tuple) (ret *py.Base, err error)        //返回订单信息
