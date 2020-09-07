@@ -43,3 +43,7 @@ type ExchangePython interface {
 	//SetBackTime(args *py.Tuple) (ret *py.Base, err error)       //设置回测周期
 	//GetBackTime(args *py.Tuple) (ret *py.Base, err error)       //设置回测周期
 }
+
+var (
+	constructor = map[string]func(constant.Option) ExchangePython{}
+)
