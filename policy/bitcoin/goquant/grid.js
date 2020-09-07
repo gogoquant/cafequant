@@ -67,42 +67,6 @@ var STATE_END_CLOSE = 'end_close';
 var ORDER_TYPE_BUY = 0;
 var ORDER_TYPE_SELL = 1;
 
-ExchangeDebug = function() {
-  cnt = 1;
-  this.Buy = function(price, amount, extra) {
-    G.Log('Buy price: ' + price + ', amount: ' + amount + ', extra:' + extra);
-    cnt += 1;
-    return cnt;
-  };
-  this.Sell = function(price, amount, extra) {
-    G.Log('Sell price: ' + price + ', amount: ' + amount + ', extra:' + extra);
-    cnt++;
-    return cnt;
-  };
-  this.CancelOrder = function(dir) {
-    G.Log('cancel order:', dir);
-    return cnt;
-  };
-  this.SetContractType = function(contract) {
-    return E.SetContractType(contract);
-  };
-  this.SetMarginLevel = function(contract) {
-    return E.SetMarginLevel(contract);
-  };
-  this.GetOrder = function(orderId) {
-    return E.GetOrder(orderId);
-  };
-  this.GetOrders = function() {
-    return E.GetOrders();
-  };
-  this.SetDirection = function(dir) {
-    return E.SetDirection(dir);
-  };
-  this.SetStockType = function(dir) {
-    return E.SetStockType(dir);
-  };
-};
-
 ExchangeReal = function() {
   this.Buy = function(price, amount, extra) {
     return E.Buy(price, amount, extra);
@@ -242,7 +206,7 @@ TradeRobot.prototype.Interval = function() {
 };
 
 function ValidItem(val) {
-  if (typeof val === undefined || val == null) {
+  if (typeof val === 'undefined' || val === null) {
     return false;
   }
   return true;
