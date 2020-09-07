@@ -160,9 +160,9 @@ func (e *SpotExchange) GetPosition() interface{} {
 }
 
 // GetMinAmount get the min trade amount of this exchange
-func (e *SpotExchange) GetMinAmount(stock string) float64 {
-	return e.minAmountMap[stock]
-}
+//func (e *SpotExchange) GetMinAmount(stock string) float64 {
+//	return e.minAmountMap[stock]
+//}
 
 // GetAccount get the account detail of this exchange
 func (e *SpotExchange) GetAccount() interface{} {

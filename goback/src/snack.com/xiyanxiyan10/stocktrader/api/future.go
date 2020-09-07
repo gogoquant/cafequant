@@ -267,9 +267,9 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 }
 
 // GetMinAmount get the min trade amount of this exchange
-func (e *FutureExchange) GetMinAmount(stock string) float64 {
-	return e.minAmountMap[stock]
-}
+//func (e *FutureExchange) GetMinAmount(stock string) float64 {
+//	return e.minAmountMap[stock]
+//}
 
 // GetAccount get the account detail of this exchange
 func (e *FutureExchange) GetAccount() interface{} {
