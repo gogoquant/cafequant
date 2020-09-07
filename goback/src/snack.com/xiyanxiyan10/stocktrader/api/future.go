@@ -439,47 +439,6 @@ func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
 	return resOrders
 }
 
-// GetTrades get all filled orders recently
-func (e *FutureExchange) GetTrades(params ...interface{}) interface{} {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
-		return nil
-	}
-	if e.GetIO() != constant.IOCACHE {
-		var nullTime time.Time
-		val := e.GetCache(constant.CacheTrader, e.GetStockType())
-		if val.TimeStamp == nullTime {
-			return nil
-		}
-		return val.Data
-	}
-	APITraders, err := e.api.GetTrades(e.GetContractType(), exchangeStockType, 0)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is ", err.Error())
-		return nil
-	}
-	traders := e.tradesA2U(APITraders)
-	return traders
-}
-
-// tradesA2U ...
-func (e *FutureExchange) tradesA2U(APITraders []goex.Trade) []constant.Trader {
-	var traders []constant.Trader
-	for _, APITrader := range APITraders {
-		trader := constant.Trader{
-			Id:        APITrader.Tid,
-			TradeType: e.tradeTypeMap[int(APITrader.Type)],
-			Amount:    APITrader.Amount,
-			Price:     APITrader.Price,
-			StockType: e.stockTypeMapReverse[APITrader.Pair],
-			Time:      APITrader.Date,
-		}
-		traders = append(traders, trader)
-	}
-	return traders
-}
-
 // CancelOrder cancel an order
 func (e *FutureExchange) CancelOrder(orderID string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]

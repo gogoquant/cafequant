@@ -305,32 +305,6 @@ func (e *SpotExchange) GetOrders() interface{} {
 	return resOrders
 }
 
-// GetTrades get all filled orders recently
-func (e *SpotExchange) GetTrades(params ...interface{}) interface{} {
-	var traders []constant.Trader
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is stockType")
-		return nil
-	}
-	APITraders, err := e.api.GetTrades(exchangeStockType, 0)
-	if err != nil {
-		return nil
-	}
-	for _, APITrader := range APITraders {
-		trader := constant.Trader{
-			Id:        APITrader.Tid,
-			TradeType: e.tradeTypeMap[int(APITrader.Type)],
-			Amount:    APITrader.Amount,
-			Price:     APITrader.Price,
-			StockType: e.stockTypeMapReverse[APITrader.Pair],
-			Time:      APITrader.Date,
-		}
-		traders = append(traders, trader)
-	}
-	return traders
-}
-
 // CancelOrder cancel an order
 func (e *SpotExchange) CancelOrder(orderID string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]

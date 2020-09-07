@@ -284,12 +284,6 @@ func (e *ExchangeFutureBackLink) GetOrders() interface{} {
 	return orders
 }
 
-// GetTrades get all filled orders recently
-func (e *ExchangeFutureBackLink) GetTrades(params ...interface{}) interface{} {
-	e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetTrades() error, the error number is ", "not support")
-	return nil
-}
-
 // CancelOrder cancel an order
 func (e *ExchangeFutureBackLink) CancelOrder(orderID string) interface{} {
 	result, err := e.ExchangeFutureBack.CancelOrder(orderID, e.GetStockType())

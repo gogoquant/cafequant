@@ -375,11 +375,6 @@ func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, er
 	return &depth, nil
 }
 
-// GetTrades ...
-func (ex *ExchangeBack) GetTrades(currencyPair string, since int64) ([]constant.Trader, error) {
-	panic("not support")
-}
-
 // GetExchangeName ...
 func (ex *ExchangeBack) GetExchangeName() string {
 	return ex.name
