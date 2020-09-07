@@ -75,8 +75,7 @@ type BaseExchange struct {
 	currencyMap        map[string]float64
 	taker              float64
 	maker              float64
-
-	contractRate float64 // 合约每张价值
+	contractRate       float64 // 合约每张价值
 	//currencyStandard bool    // 是否为币本位
 
 	start  int64

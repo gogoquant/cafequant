@@ -4,10 +4,10 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	log "gopkg.in/logger.v1"
 	"time"
 
 	"github.com/go-gomail/gomail"
+	log "gopkg.in/logger.v1"
 )
 
 // MailHandler ...

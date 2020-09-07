@@ -7,6 +7,20 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
+// BackTime ...
+type BackTime struct {
+	Start  int64
+	End    int64
+	Period int64
+}
+
+// BackCommission ...
+type BackCommission struct {
+	Taker        float64
+	Maker        float64
+	ContractRate float64 // 合约每张价值
+}
+
 // ExchangePythonLink ...
 type ExchangePythonLink struct {
 	api Exchange
@@ -350,11 +364,72 @@ func (e *ExchangePythonLink) GetPosition(args *py.Tuple) (ret *py.Base, err erro
 
 }
 
-/*
-func (e *ExchangePythonLink) GetBackAccount(args *py.Tuple) (ret *py.Base, err error)
-func (e *ExchangePythonLink) SetBackAccount(args *py.Tuple) (ret *py.Base, err error)
-func (e *ExchangePythonLink) SetBackCommission(args *py.Tuple) (ret *py.Base, err error)
-func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, err error)
-func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err error)
-func (e *ExchangePythonLink) GetBackTime(args *py.Tuple) (ret *py.Base, err error)
-*/
+func (e *ExchangePythonLink) GetBackAccount(args *py.Tuple) (ret *py.Base, err error) {
+	s := e.api.GetBackAccount()
+	if s == nil {
+		return py.IncNone(), errors.New("get backaccount fail")
+	}
+	account := s.(map[string]float64)
+	val, ok := pyutil.NewVar(records)
+	if !ok {
+		return py.IncNone(), errors.New("get newvar fail")
+	}
+	return val, nil
+}
+
+func (e *ExchangePythonLink) SetBackAccount(args *py.Tuple) (ret *py.Base, err error) {
+	var key string
+	var val float64
+	err = py.ParseV(args, &key, &val)
+	if err != nil {
+		return py.IncNone(), errors.New("parse param fail")
+	}
+	e.api.SetBackAccount(key, val)
+	return py.IncNone(), nil
+}
+
+func (e *ExchangePythonLink) SetBackCommission(args *py.Tuple) (ret *py.Base, err error) {
+	var start, end, period float64
+	err = py.ParseV(args, &start, &end, &period)
+	if err != nil {
+		return py.IncNone(), errors.New("parse param fail")
+	}
+	e.api.SetBackCommission(start, end, period)
+	return py.IncNone(), nil
+}
+
+func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, err error) {
+	var commission BackCommission
+	taker, maker, rate := e.api.GetBackCommission()
+	commission.Taker = taker
+	commission.Maker = maker
+	commission.ContractRate = rate
+	val, ok := pyutil.NewVar(commission)
+	if !ok {
+		return py.IncNone(), errors.New("get newvar fail")
+	}
+	return val, nil
+}
+
+func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err error) {
+	var start, end, period int64
+	err = py.ParseV(args, &start, &end, &period)
+	if err != nil {
+		return py.IncNone(), errors.New("parse param fail")
+	}
+	e.api.SetBackTime(start, end, period)
+	return py.IncNone(), nil
+}
+
+func (e *ExchangePythonLink) GetBackTime(args *py.Tuple) (ret *py.Base, err error) {
+	var backTime BackTime
+	start, end, period := e.api.GetBackTime()
+	backTime.Start = start
+	backTime.End = end
+	backTime.Period = period
+	val, ok := pyutil.NewVar(backTime)
+	if !ok {
+		return py.IncNone(), errors.New("get newvar fail")
+	}
+	return val, nil
+}
