@@ -571,7 +571,6 @@ func (e *ExchangeFutureBack) GetRecords(periodStr string) interface{} {
 	var records []constant.Record
 	for _, kline := range vec {
 		records = append([]constant.Record{{
-
 			Open:   kline.Open,
 			High:   kline.High,
 			Low:    kline.Low,

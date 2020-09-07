@@ -418,7 +418,7 @@ func (ex *ExchangeBack) frozenAsset(order constant.Order) error {
 	return nil
 }
 
-//解冻
+// unFrozenAsset 解冻
 func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
@@ -472,4 +472,37 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 		}
 	}
 
+}
+
+// GetRecords get candlestick data
+func (e *ExchangeBack) GetRecords(periodStr string) interface{} {
+	var period int64 = -1
+	var size = constant.RecordSize
+	period, ok := e.recordsPeriodMap[periodStr]
+	if !ok {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
+		return nil
+	}
+
+	val := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
+	if val != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
+		return nil
+	}
+	vec := val.([]dbtypes.OHLC)
+
+	if len(vec) > size {
+		vec = vec[0 : size-1]
+	}
+	var records []constant.Record
+	for _, kline := range vec {
+		records = append([]constant.Record{{
+			Open:   kline.Open,
+			High:   kline.High,
+			Low:    kline.Low,
+			Close:  kline.Close,
+			Volume: kline.Volume,
+		}}, records...)
+	}
+	return records
 }
