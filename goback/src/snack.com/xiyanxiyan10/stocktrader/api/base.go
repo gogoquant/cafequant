@@ -172,7 +172,7 @@ func (e *BaseExchange) BackGetStats() interface{} {
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetStats()
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetStats error, the error number is %s"+ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
 	}
 	return ohlc.Data
 }
@@ -186,7 +186,7 @@ func (e *BaseExchange) BackGetMarkets() interface{} {
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetStats()
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetMarkets error, the error number is %s"+ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
 	}
 	return ohlc.Data
 }
@@ -200,7 +200,7 @@ func (e *BaseExchange) BackGetSymbols(market string) interface{} {
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetSymbols(market)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetSymbols error, the error number is %s"+ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
 	}
 	return ohlc.Data
 }
@@ -220,7 +220,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	ohlc := client.GetOHLCs(opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number is %s"+ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
 		return nil
 	}
 	return ohlc.Data
@@ -238,7 +238,7 @@ func (e *BaseExchange) BackGetTimeRange() interface{} {
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
 	timeRange := client.GetTimeRange(opt)
 	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange, the error number is %s"+timeRange.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
 	}
 	return timeRange.Data
 }
