@@ -438,7 +438,7 @@ func (ex *ExchangeFutureBack) GetExchangeName() string {
 	return ex.name
 }
 
-//冻结
+// frozenAsset 冻结
 func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
@@ -482,7 +482,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	return nil
 }
 
-//解冻
+// unFrozenAsset 解冻
 func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
