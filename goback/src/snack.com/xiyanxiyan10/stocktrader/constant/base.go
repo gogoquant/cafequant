@@ -21,7 +21,7 @@ type Position struct {
 	Price        float64 //价格
 	MarginLevel  float64 //杠杆比例
 	Amount       float64 //总合约数量
-	Available    float64 // 可平仓量
+	Available    float64 //可平仓量
 	FrozenAmount float64 //冻结的合约数量
 	Profit       float64 //收益
 	ProfitRate   float64 //收益率
