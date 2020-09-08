@@ -16,7 +16,6 @@ type ExchangePython interface {
 	GetName(args *py.Tuple) (ret *py.Base, err error)         //获取交易所名称,自定义的
 	SetLimit(args *py.Tuple) (ret *py.Base, err error)        //设置交易所的API访问频率,和 E.AutoSleep() 配合使用
 	Sleep(args *py.Tuple) (ret *py.Base, err error)           //延时
-	AutoSleep(args *py.Tuple) (ret *py.Base, err error)       //自动休眠以满足设置的交易所的API访问频率
 	GetAccount(args *py.Tuple) (ret *py.Base, err error)      //获取交易所的账户资金信息
 	GetDepth(args *py.Tuple) (ret *py.Base, err error)        //返回买卖深度表
 	Buy(args *py.Tuple) (ret *py.Base, err error)             //买
@@ -35,6 +34,7 @@ type ExchangePython interface {
 	SetStockType(args *py.Tuple) (ret *py.Base, err error)    //设置货币类型
 	GetStockType(args *py.Tuple) (ret *py.Base, err error)    //获取货币类型
 	GetPosition(args *py.Tuple) (ret *py.Base, err error)     //持仓量
+	//AutoSleep(args *py.Tuple) (ret *py.Base, err error)       //自动休眠以满足设置的交易所的API访问频率
 
 	// backtest
 	//GetBackAccount(args *py.Tuple) (ret *py.Base, err error)
