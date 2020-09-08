@@ -498,6 +498,23 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 				FrozenAmount: assetA.FrozenAmount - (costAmount - order.DealAmount),
 				LoanAmount:   0,
 			}
+		} else {
+			if order.TradeType == constant.TradeTypeLong {
+				position := ex.longPosition[CurrencyA]
+				position.Price = (position.Price * position.Amount / (position.Amount + order.Amount))
+				position.Amount = position.Amount + order.Amount
+				ex.longPosition[CurrencyA] = position
+			} else {
+				position := ex.shortPosition[CurrencyA]
+				position.Price = (position.Price * position.Amount / (position.Amount + order.Amount))
+				position.Amount = position.Amount + order.Amount
+				ex.shortPosition[CurrencyA] = position
+			}
+			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
+				StockType:    assetA.StockType,
+				FrozenAmount: assetA.FrozenAmount - order.Amount,
+				LoanAmount:   0,
+			}
 		}
 	case constant.TradeTypeLongClose, constant.TradeTypeShortClose:
 		if order.Status == constant.ORDER_CANCEL {
