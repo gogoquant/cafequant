@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/qiniu/py"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 // ExchangePython interface
@@ -45,5 +46,5 @@ type ExchangePython interface {
 }
 
 var (
-	constructor = map[string]func(constant.Option) ExchangePython{}
+	constructorPython = map[string]func(constant.Option) ExchangePython{}
 )

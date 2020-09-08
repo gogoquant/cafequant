@@ -364,19 +364,21 @@ func (e *ExchangePythonLink) GetPosition(args *py.Tuple) (ret *py.Base, err erro
 
 }
 
+// GetBackAccount ...
 func (e *ExchangePythonLink) GetBackAccount(args *py.Tuple) (ret *py.Base, err error) {
 	s := e.api.GetBackAccount()
 	if s == nil {
 		return py.IncNone(), errors.New("get backaccount fail")
 	}
 	account := s.(map[string]float64)
-	val, ok := pyutil.NewVar(records)
+	val, ok := pyutil.NewVar(account)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
 	return val, nil
 }
 
+// SetBackAccount ...
 func (e *ExchangePythonLink) SetBackAccount(args *py.Tuple) (ret *py.Base, err error) {
 	var key string
 	var val float64
@@ -388,6 +390,7 @@ func (e *ExchangePythonLink) SetBackAccount(args *py.Tuple) (ret *py.Base, err e
 	return py.IncNone(), nil
 }
 
+// SetBackCommission ...
 func (e *ExchangePythonLink) SetBackCommission(args *py.Tuple) (ret *py.Base, err error) {
 	var start, end, period float64
 	err = py.ParseV(args, &start, &end, &period)
@@ -398,6 +401,7 @@ func (e *ExchangePythonLink) SetBackCommission(args *py.Tuple) (ret *py.Base, er
 	return py.IncNone(), nil
 }
 
+// GetBackCommission ...
 func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, err error) {
 	var commission BackCommission
 	taker, maker, rate := e.api.GetBackCommission()
@@ -411,6 +415,7 @@ func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, er
 	return val, nil
 }
 
+// SetBackTime ...
 func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err error) {
 	var start, end, period int64
 	err = py.ParseV(args, &start, &end, &period)
@@ -421,6 +426,7 @@ func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err erro
 	return py.IncNone(), nil
 }
 
+// GetBackTime ...
 func (e *ExchangePythonLink) GetBackTime(args *py.Tuple) (ret *py.Base, err error) {
 	var backTime BackTime
 	start, end, period := e.api.GetBackTime()
