@@ -198,7 +198,7 @@ func (e *BaseExchange) BackGetSymbols(market string) interface{} {
 		return nil
 	}
 	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
-	ohlc := client.GetStats()
+	ohlc := client.GetSymbols(market)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetSymbols error, the error number is %s"+ohlc.Message))
 	}

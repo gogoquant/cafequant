@@ -77,6 +77,15 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	return sim
 }
 
+func isContain(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
+}
+
 // Ready ...
 func (e *ExchangeFutureBack) Ready(v interface{}) interface{} {
 	var account constant.Account
@@ -92,10 +101,37 @@ func (e *ExchangeFutureBack) Ready(v interface{}) interface{} {
 	e.dataLoader = make(map[string]*DataLoader, 1)
 	e.longPosition = make(map[string]constant.Position, 1)
 	e.shortPosition = make(map[string]constant.Position, 1)
+	val := e.BaseExchange.BackGetSymbols(e.BaseExchange.option.Type)
+	if val == nil {
+		return nil
+	}
+	markets := val.([]string)
 	for stock := range e.BaseExchange.subscribeMap {
 		var loader DataLoader
 		e.dataLoader[stock] = &loader
-		val := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		if isContain(markets, stock) == false {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "stock not found in BackGetSymbols()")
+			return nil
+		}
+		val := e.BaseExchange.BackGetTimeRange()
+		if val == nil {
+			return nil
+		}
+		timeRange := val.([2]int64)
+		if e.BaseExchange.start < timeRange[0] || e.BaseExchange.end > timeRange[1] {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "time range not in %d - %d", timeRange[0], timeRange[1])
+			return nil
+		}
+		val = e.BaseExchange.BackGetPeriodRange()
+		if val == nil {
+			return nil
+		}
+		periodRange := val.([2]int64)
+		if e.BaseExchange.period < periodRange[0] || e.BaseExchange.period > periodRange[1] {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in %d - %d", periodRange[0], periodRange[1])
+			return nil
+		}
+		val = e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
 		if val == nil {
 			return nil
 		}
