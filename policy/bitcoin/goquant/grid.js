@@ -403,15 +403,18 @@ function totProfit(positions) {
   return buyProfitRate + sellProfitRate;
 }
 
-function GridTrader() {
+function GridTrader(dir) {
+  var traderDir = dir;
   var vId = 0;
   var realId;
   var found;
-  var orderBooks = new Object();
-  var hisBooks = new Object();
-  var orderBooksLen = 0;
-  var hisBooksLen = 0;
   var profitPrice = -1;
+
+  var lenObj;
+  var waitOpenOrderBooks = {};
+  var waitCoverOrderBooks = {};
+  var waitCloseOrderBooks = {};
+  var closedOrderBooks = {};
   var orderId;
 
   this.SetProfitPrice = function(price) {
@@ -423,44 +426,25 @@ function GridTrader() {
   };
 
   this.BooksLen = function() {
-    var obj = new Object();
-
-    obj.wait_open = 0;
-    obj.wait_cover = 0;
-    obj.wait_close = 0;
-    obj.history = hisBooksLen;
-    obj.curr = orderBooksLen;
-    for (orderId in orderBooks) {
-      var order = orderBooks[orderId];
-
-      if (order.Status == STATE_WAIT_OPEN) {
-        obj.wait_open++;
-      }
-      if (order.Status == STATE_WAIT_COVER) {
-        obj.wait_cover++;
-      }
-
-      if (order.Status == STATE_WAIT_CLOSE) {
-        obj.wait_close++;
-      }
-    }
-    return obj;
+    lenObj.waitOpen = waitOpenOrderBooks.length;
+    lenObj.waitCover = waitCoverOrderBooks.length;
+    lenObj.waitClose = waitCloseOrderBooks.length;
+    lenObj.history = closedOrderBooks.length;
+    return lenObj;
   };
 
   this.Debug = function() {
-    G.Log('Orders List:');
-    for (orderId in orderBooks) {
-      G.Log(orderBooks[orderId]);
-    }
-    G.Log('HisOrders List:');
-    for (orderId in hisBooks) {
-      G.Log(hisBooks[orderId]);
+    G.Log('waitOpenOrderBooks List:');
+    for (orderId in waitOpenOrderBooks) {
+      G.Log(waitOpenOrderBooks[orderId]);
     }
     return;
   };
 
   this.Buy = function(price, amount, extra) {
-    G.Log('Buy price: ' + price + ', amount: ' + amount + ', extra:' + extra);
+    G.Log(
+      'buy price: ' + price + ',' + 'amount: ' + amount + ', extra:' + extra
+    );
 
     if (typeof extra === 'undefined') {
       extra = '';
@@ -468,7 +452,7 @@ function GridTrader() {
       extra = valuesToString(arguments, 2);
     }
     vId++;
-    var orderId = 'V' + vId;
+    orderId = 'V' + vId;
 
     orderBooks[orderId] = {
       Type: ORDER_TYPE_BUY,
