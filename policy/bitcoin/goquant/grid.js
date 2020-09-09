@@ -1,3 +1,5 @@
+// 对冲双网格
+//
 // Coin type
 var Coin = 'BTC/USD';
 // 箱体上沿
