@@ -3,6 +3,7 @@ module snack.com/xiyanxiyan10/stocktrader
 go 1.13
 
 require (
+	github.com/blinkbean/dingtalk v0.0.0-20200822153748-8cf931f926ab
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-echarts/go-echarts v0.0.0-20190915064101-cbb3b43ade5d
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df

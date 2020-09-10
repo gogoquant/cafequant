@@ -31,10 +31,10 @@ type Global struct {
 	es        []api.Exchange     // 交易所列表
 	tasks     Tasks              // 任务列表
 	running   bool               // 运行中
-	ws        *constant.WsPiP    // 全局异步通道
 	mail      notice.MailHandler // 邮件发送
+	ding      notice.DingHandler // dingtalk
 	draw      draw.DrawHandler   // 图标绘制
-	goplugin  goplugin.Handler   // go 插件
+	goplugin  goplugin.GoHandler // go 插件
 	statusLog string             // 状态日志
 }
 
@@ -70,51 +70,38 @@ func (g *Global) Sleep(intervals ...interface{}) {
 	}
 }
 
-// Wait ch ...
-func (g *Global) Wait() interface{} {
-	return g.ws.Pop()
+// DingSet ...
+func (g *Global) DingSet(token, key string) interface{} {
+	g.ding.Set(token, key)
+	return "success"
+}
+
+// DingSend ...
+func (g *Global) DingSend(msg string) interface{} {
+	err := g.ding.Send(msg)
+	if err != nil {
+		return nil
+	}
+	return "success"
 }
 
 // MailSet ...
-func (g *Global) MailSet(server, portStr, username, password string) interface{} {
+func (g *Global) MailSet(to, server, portStr, username, password string) interface{} {
 	port, err := util.Int(portStr)
 	if err != nil {
-		return false
+		return nil
 	}
-	g.mail.Set(server, port, username, password)
-	return true
+	g.mail.Set(to, server, port, username, password)
+	return "success"
 }
 
 // MailSend ...
-func (g *Global) MailSend(msg, to string) interface{} {
-	err := g.mail.Send(msg, to)
+func (g *Global) MailSend(msg string) interface{} {
+	err := g.mail.Send(msg)
 	if err != nil {
-		return false
+		return nil
 	}
-	return true
-}
-
-// MailStart ...
-func (g *Global) MailStart() interface{} {
-	err := g.mail.Start()
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-// SetMail ...
-func (g *Global) MailStop() interface{} {
-	err := g.mail.Stop()
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-// MailStatus ...
-func (g *Global) MailStatus() interface{} {
-	return g.mail.Status()
+	return "success"
 }
 
 // DrawSetPath set file path for config map

@@ -95,7 +95,8 @@ func initialize(id int64) (trader Global, err error) {
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
-	trader.mail = notice.NewMailHandler(5, 3)
+	trader.mail = notice.NewMailHandler()
+	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
 	//trader.ws = constant.NewWsPip(20)
 
