@@ -23,7 +23,11 @@ func NewDingHandler() DingHandler {
 
 // Set ...
 func (s *DingServer) Set(token, key string) {
-	s.token = append(s.token, token)
+	if token == "" {
+		s.token = make([]string, 1)
+	} else {
+		s.token = append(s.token, token)
+	}
 	s.key = key
 }
 

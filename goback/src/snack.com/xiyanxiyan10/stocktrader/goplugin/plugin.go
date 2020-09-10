@@ -179,8 +179,8 @@ func (p *GoPlugin) Exit(v ...interface{}) interface{} {
 	return handler.Exit(v)
 }
 
-// Handler ...
-type Handler interface {
+// GoHandler ...
+type GoHandler interface {
 	LoadStragey() interface{}
 	SetStragey(string)
 	GetStragey() string
