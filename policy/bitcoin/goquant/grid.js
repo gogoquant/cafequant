@@ -16,10 +16,8 @@ var Precision = 1;
 var OpenProtect = 1;
 // 对冲仓位差
 var PositionDiff = 4;
-// 买单数量
-var BAmountOnce = 2;
-// 卖单数量
-var SAmountOnce = 2;
+// 数量
+var GridAmount = 2;
 // 止损后模式
 var StopLossAfterMode = 0;
 // 止损盈亏损率
@@ -43,7 +41,7 @@ var ContractVal = 100;
 // 杠杆
 var MarginLevel = 20;
 // 合约列表
-var ContractVec = ['this_week', 'next_week', 'quarter'];
+//var ContractVec = ['this_week', 'next_week', 'quarter'];
 // 货币支持类型
 var CoinVec = ['BTC/USD'];
 
