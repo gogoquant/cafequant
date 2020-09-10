@@ -21,6 +21,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nntaoli-project/goex v1.2.2
 	github.com/qiniu/py v1.2.2
+	github.com/qiniu/x v1.10.5
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect

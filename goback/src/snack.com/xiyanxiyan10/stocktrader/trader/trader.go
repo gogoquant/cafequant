@@ -2,11 +2,9 @@ package trader
 
 import (
 	"fmt"
-	"strconv"
-	"time"
-
+	"github.com/qiniu/py"
+	"github.com/qiniu/x/log"
 	"github.com/robertkrimen/otto"
-
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -14,6 +12,8 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
+	"strconv"
+	"time"
 )
 
 // Trader Variable
@@ -60,6 +60,106 @@ func Switch(id int64) (err error) {
 		return stop(id)
 	}
 	return run(id)
+}
+
+// initializePy ...
+func initializePy(trader *Global) (err error) {
+	return
+}
+
+// run ...
+func runPy(id int64) (err error) {
+	trader, err := initialize(id)
+	if err != nil {
+		return
+	}
+	err = initializePy(&trader)
+	if err != nil {
+		return
+	}
+
+	go func() {
+		defer func() {
+			if err := recover(); err != nil && err != errHalt {
+				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+			}
+			/*
+				if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
+					if _, err := exit.Call(exit); err != nil {
+						trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+					}
+				}
+			*/
+			//close(trader.ctx.Interrupt)
+			trader.Status = 0
+			trader.Pending = 0
+		}()
+		trader.LastRunAt = time.Now()
+		trader.Status = 1
+		gomod, err := py.NewGoModule("exchange", "", trader.Exchanges[0])
+		if err != nil {
+			log.Fatal("NewGoModule failed:", err)
+			return
+		}
+		defer gomod.Decref()
+
+		gomode, err := py.NewGoModule("E", "", trader.Exchanges[0])
+		if err != nil {
+			log.Fatal("NewGoModule failed:", err)
+			return
+		}
+		defer gomode.Decref()
+
+		code, err := py.Compile(trader.Algorithm.Script, "", py.FileInput)
+		if err != nil {
+			log.Fatal("Compile failed:", err)
+			return
+		}
+		defer code.Decref()
+
+		mod, err := py.ExecCodeModule("pycode", code.Obj())
+		if err != nil {
+			log.Fatal("ExecCodeModule failed:", err)
+			return
+		}
+		defer mod.Decref()
+	}()
+	Executor[trader.ID] = &trader
+	return
+}
+
+// initializeJs ...
+func initializeJs(trader *Global) (err error) {
+	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("Global", &trader); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("G", &trader); localErr != nil {
+		err = localErr
+		return
+	}
+
+	if localErr := trader.ctx.Set("Exchange", trader.es[0]); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("E", trader.es[0]); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("Exchanges", trader.es); localErr != nil {
+		err = localErr
+		return
+	}
+	if localErr := trader.ctx.Set("Es", trader.es); localErr != nil {
+		err = localErr
+		return
+	}
+	return
 }
 
 //initialize 核心是初始化js运行环境，及其可以调用的api
@@ -111,8 +211,7 @@ func initialize(id int64) (trader Global, err error) {
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
 			opt := constant.Option{
-				Index: i,
-				//Ws:        trader.ws,
+				Index:     i,
 				TraderID:  trader.ID,
 				Type:      e.Type,
 				Name:      e.Name,
@@ -129,35 +228,6 @@ func initialize(id int64) (trader Global, err error) {
 		return
 	}
 	trader.goplugin = goExtend
-	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("Global", &trader); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("G", &trader); localErr != nil {
-		err = localErr
-		return
-	}
-
-	if localErr := trader.ctx.Set("Exchange", trader.es[0]); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("E", trader.es[0]); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("Exchanges", trader.es); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("Es", trader.es); localErr != nil {
-		err = localErr
-		return
-	}
 	return
 }
 
@@ -178,6 +248,10 @@ func err2String(err interface{}) string {
 // run ...
 func run(id int64) (err error) {
 	trader, err := initialize(id)
+	if err != nil {
+		return
+	}
+	err = initializeJs(&trader)
 	if err != nil {
 		return
 	}

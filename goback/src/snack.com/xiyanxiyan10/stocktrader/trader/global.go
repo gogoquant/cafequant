@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/qiniu/py"
 	"github.com/robertkrimen/otto"
-
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -28,6 +28,7 @@ type Global struct {
 	model.Trader
 	Logger    model.Logger       // 利用这个对象保存日志
 	ctx       *otto.Otto         // js虚拟机
+	ctpy      *py.Module         // py虚拟机
 	es        []api.Exchange     // 交易所列表
 	tasks     Tasks              // 任务列表
 	running   bool               // 运行中
@@ -147,7 +148,7 @@ func (g *Global) DrawLine(name string, time string, data float32) interface{} {
 // DrawPlot ...
 func (g *Global) DrawPlot() interface{} {
 	if err := g.draw.Display(); err != nil {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
 		return false
 	}
 	return true
