@@ -90,20 +90,20 @@ func runPy(id int64) (err error) {
 					}
 				}
 			*/
-			//close(trader.ctx.Interrupt)
+			close(trader.ctx.Interrupt)
 			trader.Status = 0
 			trader.Pending = 0
 		}()
 		trader.LastRunAt = time.Now()
 		trader.Status = 1
-		gomod, err := py.NewGoModule("exchange", "", trader.Exchanges[0])
+		gomod, err := py.NewGoModule("exchange", "", trader.espy[0])
 		if err != nil {
 			log.Fatal("NewGoModule failed:", err)
 			return
 		}
 		defer gomod.Decref()
 
-		gomode, err := py.NewGoModule("E", "", trader.Exchanges[0])
+		gomode, err := py.NewGoModule("E", "", trader.espy[0])
 		if err != nil {
 			log.Fatal("NewGoModule failed:", err)
 			return
@@ -221,6 +221,18 @@ func initialize(id int64) (trader Global, err error) {
 			exchange := maker(opt)
 			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
+		}
+		if maker, ok := pyexchangeMaker[e.Type]; ok {
+			opt := constant.Option{
+				Index:     i,
+				TraderID:  trader.ID,
+				Type:      e.Type,
+				Name:      e.Name,
+				AccessKey: e.AccessKey,
+				SecretKey: e.SecretKey,
+			}
+			exchange := maker(opt)
+			trader.espy = append(trader.espy, exchange)
 		}
 	}
 	if len(trader.es) == 0 {
