@@ -9,6 +9,7 @@ type Algorithm struct {
 	ID          int64      `gorm:"primary_key" json:"id"`
 	UserID      int64      `gorm:"index" json:"userId"`
 	Name        string     `gorm:"type:varchar(200)" json:"name"`
+	Type        string     `gorm:"type:varchar(200)" json:"type"`
 	Description string     `gorm:"type:text" json:"description"`
 	Script      string     `gorm:"type:text" json:"script"`
 	EvnDefault  string     `gorm:"type:text" json:"evnDefault"`

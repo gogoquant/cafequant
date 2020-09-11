@@ -114,3 +114,10 @@ const (
 	// GoHandler ...
 	GoHandler = "NewHandler"
 )
+
+const (
+	// ScriptJs ...
+	ScriptJs = "js"
+	// ScriptPython ...
+	ScriptPython = "python"
+)

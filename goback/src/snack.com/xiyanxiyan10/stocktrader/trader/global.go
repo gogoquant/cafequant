@@ -26,18 +26,19 @@ type Tasks map[string][]task
 // Global ...
 type Global struct {
 	model.Trader
-	Logger    model.Logger         // 利用这个对象保存日志
-	ctx       *otto.Otto           // js虚拟机
-	ctpy      *py.Module           // py虚拟机
-	es        []api.Exchange       // 交易所列表
-	espy      []api.ExchangePython // python exchange
-	tasks     Tasks                // 任务列表
-	running   bool                 // 运行中
-	mail      notice.MailHandler   // 邮件发送
-	ding      notice.DingHandler   // dingtalk
-	draw      draw.DrawHandler     // 图标绘制
-	goplugin  goplugin.GoHandler   // go 插件
-	statusLog string               // 状态日志
+	Logger     model.Logger         // 利用这个对象保存日志
+	ctx        *otto.Otto           // js虚拟机
+	ctpy       *py.Module           // py虚拟机
+	es         []api.Exchange       // 交易所列表
+	espy       []api.ExchangePython // 交易所python接口列表
+	tasks      Tasks                // 任务列表
+	running    bool                 // 运行中
+	scriptType string               // 脚本语言
+	mail       notice.MailHandler   // 邮件发送
+	ding       notice.DingHandler   // dingtalk
+	draw       draw.DrawHandler     // 图标绘制
+	goplugin   goplugin.GoHandler   // go 插件
+	statusLog  string               // 状态日志
 }
 
 // GetMail ...

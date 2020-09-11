@@ -68,8 +68,8 @@ func initializePy(trader *Global) (err error) {
 }
 
 // run ...
-func runPy(id int64) (err error) {
-	trader, err := initialize(id)
+func runPy(trader Global, id int64) (err error) {
+	trader, err = initialize(id)
 	if err != nil {
 		return
 	}
@@ -109,6 +109,15 @@ func runPy(id int64) (err error) {
 			return
 		}
 		defer gomode.Decref()
+
+		var gpy GlobalPython
+		gpy.global = &trader
+		globalmode, err := py.NewGoModule("G", "", gpy)
+		if err != nil {
+			log.Fatal("NewGoModule failed:", err)
+			return
+		}
+		defer globalmode.Decref()
 
 		code, err := py.Compile(trader.Algorithm.Script, "", py.FileInput)
 		if err != nil {
@@ -192,6 +201,7 @@ func initialize(id int64) (trader Global, err error) {
 		ExchangeType: "global",
 	}
 
+	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
@@ -263,6 +273,18 @@ func run(id int64) (err error) {
 	if err != nil {
 		return
 	}
+	if trader.scriptType == constant.ScriptJs {
+		return runJs(trader, id)
+	}
+
+	if trader.scriptType == constant.ScriptPython {
+		return runPy(trader, id)
+	}
+	return runJs(trader, id)
+}
+
+// runJs ...
+func runJs(trader Global, id int64) (err error) {
 	err = initializeJs(&trader)
 	if err != nil {
 		return
