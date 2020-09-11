@@ -94,11 +94,6 @@ func (e *SpotExchange) Init(opt constant.Option) error {
 	return nil
 }
 
-// GetBackBar ...
-func (e *SpotExchange) GetBackBar() interface{} {
-	return nil
-}
-
 // SetStockTypeMap ...
 func (e *SpotExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
 	e.stockTypeMap = m
@@ -184,6 +179,7 @@ func (e *SpotExchange) GetAccount() interface{} {
 	return resAccount
 }
 
+// Buy ...
 func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var order *goex.Order
@@ -213,6 +209,7 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{}
 	return order.Cid
 }
 
+// Sell ...
 func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{} {
 	var err error
 	var order *goex.Order
