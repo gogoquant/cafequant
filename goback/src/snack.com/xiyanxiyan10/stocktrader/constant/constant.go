@@ -83,6 +83,7 @@ const (
 // some variables
 var (
 	ExchangeTypes = []string{HuoBiDm, HuoBiDmBack, HuoBi, HuoBiBack}
+	ScriptTypes   = []string{ScriptJs, ScriptPython}
 )
 
 // future userInfo string

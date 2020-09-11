@@ -38,6 +38,13 @@ func (algorithm) List(size, page int64, order string, ctx rpc.Context) (resp res
 	return
 }
 
+// ScriptTypes ...
+func (algorithm) ScriptTypes(_ string, ctx rpc.Context) (resp response) {
+	resp.Data = constant.ScriptTypes
+	resp.Success = true
+	return
+}
+
 // Put
 func (algorithm) Put(req model.Algorithm, ctx rpc.Context) (resp response) {
 	username := ctx.GetString("username")
@@ -59,6 +66,7 @@ func (algorithm) Put(req model.Algorithm, ctx rpc.Context) (resp response) {
 		algorithm.Name = req.Name
 		algorithm.Description = req.Description
 		algorithm.Script = req.Script
+		algorithm.Type = req.Type
 		algorithm.EvnDefault = req.EvnDefault
 		if err := model.DB.Save(&algorithm).Error; err != nil {
 			resp.Message = fmt.Sprint(err)
