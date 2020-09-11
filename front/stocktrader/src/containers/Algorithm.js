@@ -137,6 +137,7 @@ class Algorithm extends React.Component {
       info = {
         id: 0,
         name: 'New Algorithm Name',
+        type: 'js',
         description: '',
         script: `// This is an example algorithm
 
@@ -274,6 +275,10 @@ function main() {
     }, {
       title: 'Description',
       dataIndex: 'description',
+      render: (v) => v.substr(0, 36),
+    }, {
+      title: 'Type',
+      dataIndex: 'type',
       render: (v) => v.substr(0, 36),
     }, {
       title: 'CreatedAt',

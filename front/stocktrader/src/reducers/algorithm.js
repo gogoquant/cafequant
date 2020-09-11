@@ -5,6 +5,7 @@ const ALGORITHM_INIT = {
   loading: false,
   total: 0,
   list: [],
+  types: [],
   cache: {},
   message: '',
 };
@@ -15,6 +16,21 @@ function algorithm(state = ALGORITHM_INIT, action) {
       return assign({}, state, {
         loading: false,
         message: '',
+      });
+    case actions.SCRIPT_TYPES_REQUEST:
+      return assign({}, state, {
+        loading: true,
+      });
+    case actions.SCRIPT_TYPES_SUCCESS:
+      console.log("success get types data:", action)    
+      return assign({}, state, {
+        loading: false,
+        types: action.types,
+      });
+    case actions.SCRIPT_TYPES_FAILURE:
+      return assign({}, state, {
+        loading: false,
+        message: action.message,
       });
     case actions.ALGORITHM_LIST_REQUEST:
       return assign({}, state, {

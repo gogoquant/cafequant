@@ -1,6 +1,45 @@
 import * as actions from '../constants/actions';
 import { Client } from 'hprose-js';
 
+function scriptTypesRequest() {
+  return { type: actions.SCRIPT_TYPES_REQUEST };
+}
+
+function scriptTypesSuccess(types) {
+  return { type: actions.SCRIPT_TYPES_SUCCESS, types };
+}
+
+function scriptTypesFailure(message) {
+  return { type: actions.SCRIPT_TYPES_FAILURE, message };
+}
+
+export function ScriptTypes() {
+  return (dispatch, getState) => {
+    const cluster = localStorage.getItem('cluster');
+
+    dispatch(scriptTypesRequest());
+    if (!cluster) {
+      dispatch(scriptTypesFailure('No authorization'));
+      return;
+    }
+
+    const client = Client.create(`${cluster}/api`, {  Algorithm: ['ScriptTypes'] });
+
+    client.Algorithm.ScriptTypes(null, (resp) => {
+      if (resp.success) {
+        dispatch(scriptTypesSuccess(resp.data));
+      } else {
+        dispatch(scriptTypesFailure(resp.message));
+      }
+    }, (resp, err) => {
+      dispatch(scriptTypesFailure('Server error'));
+      console.log('【Hprose】 Algorithm.Types Error:', resp, err);
+    });
+  };
+}
+
+// List
+
 // List
 
 function algorithmListRequest() {

@@ -1,10 +1,11 @@
-import { ResetError } from '../actions';
-import { AlgorithmPut } from '../actions/algorithm';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { browserHistory } from 'react-router';
-import { Row, Col, Tooltip, Input, Button, notification } from 'antd';
-import MonacoEditor from 'react-monaco-editor';
+import { ResetError } from "../actions";
+import { AlgorithmPut } from "../actions/algorithm";
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { browserHistory } from "react-router";
+import { Select, Row, Col, Tooltip, Input, Button, notification } from "antd";
+import MonacoEditor from "react-monaco-editor";
+import { ScriptTypes } from "../actions/algorithm";
 
 class AlgorithmEdit extends Component {
   constructor(props) {
@@ -12,14 +13,15 @@ class AlgorithmEdit extends Component {
 
     this.state = {
       innerHeight: window.innerHeight > 500 ? window.innerHeight : 500,
-      messageErrorKey: '',
-      name: '',
-      description: '',
-      script: '',
+      messageErrorKey: "",
+      name: "",
+      description: "",
+      script: ""
     };
 
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
+    this.handleTypeChange = this.handleTypeChange.bind(this);
     this.handleScriptChange = this.handleScriptChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
@@ -30,40 +32,43 @@ class AlgorithmEdit extends Component {
     const { algorithm } = nextProps;
 
     if (!algorithm.cache.name) {
-      browserHistory.push('/algorithm');
+      browserHistory.push("/algorithm");
     }
 
     if (!messageErrorKey && algorithm.message) {
       this.setState({
-        messageErrorKey: 'algorithmEditError',
+        messageErrorKey: "algorithmEditError"
       });
-      notification['error']({
-        key: 'algorithmEditError',
-        message: 'Error',
+      notification["error"]({
+        key: "algorithmEditError",
+        message: "Error",
         description: String(algorithm.message),
         onClose: () => {
           if (this.state.messageErrorKey) {
-            this.setState({ messageErrorKey: '' });
+            this.setState({ messageErrorKey: "" });
           }
           dispatch(ResetError());
-        },
+        }
       });
     }
   }
 
   componentWillMount() {
     const { name } = this.state;
-    const { algorithm } = this.props;
+    const { dispatch, algorithm } = this.props;
 
     if (!algorithm.cache.name) {
-      browserHistory.push('/algorithm');
+      browserHistory.push("/algorithm");
     }
 
+    dispatch(ScriptTypes());
     if (!name) {
+      console.log("algorithm cache is:", algorithm.cache)
       this.setState({
         name: algorithm.cache.name,
         description: algorithm.cache.description,
         script: algorithm.cache.script,
+        type: algorithm.cache.type,
       });
     }
   }
@@ -80,18 +85,24 @@ class AlgorithmEdit extends Component {
     this.setState({ description: e.target.value });
   }
 
+  handleTypeChange(e) {
+    this.setState({ type: e });
+  }
+
   handleScriptChange(script) {
     this.setState({ script });
   }
 
   handleSubmit() {
     const { dispatch, algorithm } = this.props;
-    const { name, description, script } = this.state;
+    const { name, description, script, type } = this.state;
+    console.log("type is:", type)  
     const req = {
       id: algorithm.cache.id,
       name,
+      type,
       description,
-      script,
+      script
     };
 
     dispatch(AlgorithmPut(req));
@@ -103,7 +114,8 @@ class AlgorithmEdit extends Component {
 
   render() {
     const { innerHeight, name, description, script } = this.state;
-
+    const { algorithm } = this.props;
+    console.log("get algorithm from container:", algorithm)
     return (
       <div className="container">
         <Row type="flex" justify="space-between">
@@ -117,18 +129,15 @@ class AlgorithmEdit extends Component {
             </Tooltip>
           </Col>
           <Col span={6} className="right-operations">
-            <Button
-              type="primary"
-              disabled={!name}
-              onClick={this.handleSubmit}
-            >Submit</Button>
-            <Button
-              type="ghost"
-              onClick={this.handleCancel}
-            >Cancel</Button>
+            <Button type="primary" disabled={!name} onClick={this.handleSubmit}>
+              Submit
+            </Button>
+            <Button type="ghost" onClick={this.handleCancel}>
+              Cancel
+            </Button>
           </Col>
         </Row>
-        <Row style={{marginTop: 18}}>
+        <Row style={{ marginTop: 18 }}>
           <Tooltip placement="bottomLeft" title="Algorithm Description">
             <Input
               rows={1}
@@ -138,7 +147,14 @@ class AlgorithmEdit extends Component {
               onChange={this.handleDescriptionChange}
             />
           </Tooltip>
-        </Row>
+      </Row>
+      <Row span={{ marginTop: 18 }}>
+          <Tooltip placement="bottomLeft" title="Types Description">
+           <Select onChange={this.handleTypeChange} defaultValue={algorithm.cache.type}>
+                {algorithm.types.map((v, i) => <Option key={i} value={v}>{v}</Option>)}
+            </Select>
+          </Tooltip>
+          </Row>
         <Row style={{ marginTop: 18 }}>
           <MonacoEditor
             width="100%"
@@ -154,8 +170,8 @@ class AlgorithmEdit extends Component {
   }
 }
 
-const mapStateToProps = (state) => ({
-  algorithm: state.algorithm,
+const mapStateToProps = state => ({
+  algorithm: state.algorithm
 });
 
 export default connect(mapStateToProps)(AlgorithmEdit);
