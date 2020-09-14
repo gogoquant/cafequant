@@ -120,11 +120,11 @@ func runPy(trader Global, id int64) (err error) {
 			if err := recover(); err != nil && err != errHalt {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
-			ret1, err := pyutil.CallMethod(mod.Obj(), "exit")
+			ret, err := pyutil.CallMethod(mod.Obj(), "exit")
 			if err != nil {
 				log.Fatal("exit failed:", err)
 			}
-			defer ret1.Decref()
+			defer ret.Decref()
 			close(trader.ctx.Interrupt)
 			trader.Status = 0
 			trader.Pending = 0
