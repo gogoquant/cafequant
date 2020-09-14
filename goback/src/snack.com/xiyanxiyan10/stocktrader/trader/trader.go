@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"errors"
 	"fmt"
 	"github.com/qiniu/py"
 	"github.com/qiniu/py/pyutil"
@@ -71,10 +72,6 @@ func initializePy(trader *Global) (err error) {
 
 // run ...
 func runPy(trader Global, id int64) (err error) {
-	trader, err = initialize(id)
-	if err != nil {
-		return
-	}
 	err = initializePy(&trader)
 	if err != nil {
 		return
@@ -274,9 +271,34 @@ func err2String(err interface{}) string {
 	}
 }
 
+// runCheck ...
+func runCheck(id int64, script string) (err error) {
+	if script != constant.ScriptPython {
+		return
+	}
+	for i := range Executor {
+		t := Executor[i]
+		if t != nil {
+			continue
+		}
+		if t.Status < 1 {
+			continue
+		}
+		if t.scriptType == constant.ScriptPython {
+			err = errors.New("python scripts only run one")
+			return
+		}
+	}
+	return
+}
+
 // run ...
 func run(id int64) (err error) {
 	trader, err := initialize(id)
+	if err != nil {
+		return
+	}
+	err = runCheck(id, trader.scriptType)
 	if err != nil {
 		return
 	}

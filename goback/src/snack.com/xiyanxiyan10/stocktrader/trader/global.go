@@ -39,6 +39,7 @@ type Global struct {
 	draw       draw.DrawHandler     // 图标绘制
 	goplugin   goplugin.GoHandler   // go 插件
 	statusLog  string               // 状态日志
+
 }
 
 // GetMail ...
