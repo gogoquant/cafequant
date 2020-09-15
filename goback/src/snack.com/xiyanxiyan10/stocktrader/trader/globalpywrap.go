@@ -159,3 +159,18 @@ func (g *GlobalPython) DrawPlot(args *py.Tuple) (ret *py.Base, err error) {
 	}
 	return py.IncNone(), nil
 }
+
+// LogFile ...
+func (g *GlobalPython) LogFile(args *py.Tuple) (ret *py.Base, err error) {
+	var name, content string
+	err = py.ParseV(args, &name, &content)
+	if err != nil {
+		return
+	}
+	ans := g.global.LogFile(name, content)
+	if ans == nil {
+		err = errors.New("Logfile fail")
+		return
+	}
+	return
+}

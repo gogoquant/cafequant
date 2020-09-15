@@ -3,13 +3,11 @@ package trader
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"reflect"
-	"sync"
-	"time"
-
 	"github.com/qiniu/py"
 	"github.com/robertkrimen/otto"
+	"log"
+	"os"
+	"reflect"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -18,6 +16,8 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+	"sync"
+	"time"
 )
 
 // Tasks ...
@@ -287,4 +287,26 @@ func (g *Global) ExecTasks(group otto.Value) (results []interface{}) {
 	wg.Wait()
 	g.running = false
 	return
+}
+
+// LogFile ...
+func (g *Global) LogFile(name, strContent string) interface{} {
+	fd, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not open the file:", err)
+		return nil
+	}
+	fdContent := strContent
+	buf := []byte(fdContent)
+	_, err = fd.Write(buf)
+	if err != nil {
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not write the file:", err)
+		return nil
+	}
+	err = fd.Close()
+	if err != nil {
+		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not close the file:", err)
+		return nil
+	}
+	return "success"
 }
