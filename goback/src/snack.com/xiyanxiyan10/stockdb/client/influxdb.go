@@ -628,7 +628,7 @@ func (driver *influxdb) result2depth(result client.Result, opt types.Option) (da
 			}
 		}
 		d.dif = d.high - d.low
-		// user depth from user only one period one ticker
+		// build depth from user only one period one ticker
 		if ext != "" && len(result.Series) == 1 {
 			err := json.Unmarshal([]byte(ext), &data)
 			if err != nil {
@@ -636,6 +636,7 @@ func (driver *influxdb) result2depth(result client.Result, opt types.Option) (da
 				return
 			}
 		} else {
+			// build depth from ticker
 			if d.dif > 0.0 {
 				for i := 0; i <= 10; i++ {
 					price := d.low + d.dif/10*conver.Float64Must(i)
