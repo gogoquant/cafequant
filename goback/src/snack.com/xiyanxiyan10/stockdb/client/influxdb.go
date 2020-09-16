@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/influxdata/influxdb1-client/v2"
 	"snack.com/xiyanxiyan10/conver"
@@ -135,6 +136,7 @@ func (driver *influxdb) records2BatchPoints(data []types.OHLC, opt types.Option)
 		for i := 0; i < 4; i++ {
 			tags[i]["id"] = fmt.Sprint(opt.Period)
 			fields[i]["period"] = opt.Period
+			fields[i]["ext"] = datum.Ext
 			fields[i]["amount"] = datum.Volume / 4.0
 			pt, err := client.NewPoint("symbol_"+opt.Symbol, tags[i], fields[i], time.Unix(datum.Time+timeOffsets[i], 0))
 			if err != nil {
@@ -585,7 +587,7 @@ func (driver *influxdb) getDepthQuery(opt types.Option) (q client.Query) {
 	if opt.BeginTime <= 0 || opt.BeginTime > ranges[1] {
 		opt.BeginTime = ranges[1]
 	}
-	raw := fmt.Sprintf(`SELECT price, amount, type FROM "symbol_%v" WHERE time >= %vs AND
+	raw := fmt.Sprintf(`SELECT price, amount, type, ext FROM "symbol_%v" WHERE time >= %vs AND
 		time <= %vs LIMIT 300`, opt.Symbol, opt.BeginTime, opt.BeginTime+opt.Period)
 	q = client.NewQuery(raw, "market_"+opt.Market, "s")
 	return q
@@ -594,6 +596,7 @@ func (driver *influxdb) getDepthQuery(opt types.Option) (q client.Query) {
 // result2depth parse result to market depth
 func (driver *influxdb) result2depth(result client.Result, opt types.Option) (data types.Depth) {
 	if len(result.Series) > 0 {
+		var ext = ""
 		serie := result.Series[0]
 		d := struct {
 			open   float64
@@ -619,21 +622,34 @@ func (driver *influxdb) result2depth(result client.Result, opt types.Option) (da
 				d.low = price
 			}
 			d.volume += conver.Float64Must(serie.Values[i][2])
+			tmp := conver.StringMust(serie.Values[i][3])
+			if tmp != "" && ext != "" {
+				ext = tmp
+			}
 		}
 		d.dif = d.high - d.low
-		if d.dif > 0.0 {
-			for i := 0; i <= 10; i++ {
-				price := d.low + d.dif/10*conver.Float64Must(i)
-				if i == 0 || price <= d.open {
-					data.Bids = append([]types.OrderBook{{
-						Price:  price,
-						Amount: d.volume / 10.0,
-					}}, data.Bids...)
-				} else if i == 10 || price >= d.open {
-					data.Asks = append(data.Asks, types.OrderBook{
-						Price:  price,
-						Amount: d.volume / 10.0,
-					})
+		// user depth from user only one period one ticker
+		if ext != "" && len(result.Series) == 1 {
+			err := json.Unmarshal([]byte(ext), &data)
+			if err != nil {
+				log.Log(log.ErrorLog, "unmarshal fail:", err)
+				return
+			}
+		} else {
+			if d.dif > 0.0 {
+				for i := 0; i <= 10; i++ {
+					price := d.low + d.dif/10*conver.Float64Must(i)
+					if i == 0 || price <= d.open {
+						data.Bids = append([]types.OrderBook{{
+							Price:  price,
+							Amount: d.volume / 10.0,
+						}}, data.Bids...)
+					} else if i == 10 || price >= d.open {
+						data.Asks = append(data.Asks, types.OrderBook{
+							Price:  price,
+							Amount: d.volume / 10.0,
+						})
+					}
 				}
 			}
 		}

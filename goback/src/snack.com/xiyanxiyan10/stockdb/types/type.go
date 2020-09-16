@@ -49,6 +49,7 @@ type OHLC struct {
 	Low    float64 `json:"Low"`
 	Close  float64 `json:"Close"`
 	Volume float64 `json:"Volume"`
+	Ext    string  `json:"ext"`
 }
 
 // Order is an order record struct
