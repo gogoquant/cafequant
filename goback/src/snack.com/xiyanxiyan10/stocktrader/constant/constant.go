@@ -63,9 +63,9 @@ const (
 
 const (
 	// STOCKDBURL ...
-	STOCKDBURL = ""
+	STOCKDBURL = "stockdburl"
 	// STOCKDBAUTH ...
-	STOCKDBAUTH = ""
+	STOCKDBAUTH = "stockdbpwd"
 )
 
 // trade types

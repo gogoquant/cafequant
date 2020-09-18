@@ -3,9 +3,9 @@ package draw
 // DrawHandler Draw draw interface
 type DrawHandler interface {
 	//  PlotKLine draw line of the diagram
-	PlotKLine(data KlineData)
+	PlotKLine(time string, a, b, c, d float32)
 	//  PlotLine draw kline of the diagram
-	PlotLine(name string, data LineData)
+	PlotLine(name string, time string, v float32)
 	//  reset diagram
 	Reset()
 	//  set path store diagram

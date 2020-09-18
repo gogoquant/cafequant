@@ -6,7 +6,6 @@ import (
 	"github.com/qiniu/py/pyutil"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"time"
 )
 
@@ -120,33 +119,24 @@ func (g *GlobalPython) DrawReset(args *py.Tuple) (ret *py.Base, err error) {
 // DrawKline ...
 func (g *GlobalPython) DrawKline(args *py.Tuple) (ret *py.Base, err error) {
 	var time string
-	var kline draw.KlineData
 	var a, b, c, d float32
 	err = py.ParseV(args, &time, &a, &b, &c, &d)
 	if err != nil {
 		return
 	}
-	kline.Data[0] = a
-	kline.Data[1] = b
-	kline.Data[2] = c
-	kline.Data[3] = d
-	kline.Time = time
-	g.global.draw.PlotKLine(kline)
+	g.global.draw.PlotKLine(time, a, b, c, d)
 	return py.IncNone(), nil
 }
 
 // DrawLine ...
 func (g *GlobalPython) DrawLine(args *py.Tuple) (ret *py.Base, err error) {
-	var line draw.LineData
 	var time, name string
 	var data float32
 	err = py.ParseV(args, &name, &time, &data)
 	if err != nil {
 		return
 	}
-	line.Time = time
-	line.Data = data
-	g.global.draw.PlotLine(name, line)
+	g.global.draw.PlotLine(name, time, data)
 	return py.IncNone(), nil
 }
 

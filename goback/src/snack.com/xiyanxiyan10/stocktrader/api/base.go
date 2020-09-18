@@ -8,6 +8,7 @@ import (
 
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -169,7 +170,7 @@ func (e *BaseExchange) BackGetStats() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetStats error, the error number not in backtest"))
 		return nil
 	}
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetStats()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
@@ -183,7 +184,7 @@ func (e *BaseExchange) BackGetMarkets() interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetMarkets error, the error number not in backtest"))
 		return nil
 	}
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetStats()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
@@ -197,7 +198,7 @@ func (e *BaseExchange) BackGetSymbols(market string) interface{} {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetSymbols error, the error number not in backtest"))
 		return nil
 	}
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetSymbols(market)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
@@ -217,13 +218,35 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 	opt.Period = period
 	opt.BeginTime = begin
 	opt.EndTime = end
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetOHLCs(opt)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
 		return nil
 	}
 	return ohlc.Data
+}
+
+// BackPutOHLC ...
+func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) interface{} {
+	var opt dbtypes.Option
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetStockType()
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
+	var datum dbtypes.OHLC
+	datum.Time = time
+	datum.Open = open
+	datum.High = high
+	datum.Low = low
+	datum.Close = closed
+	datum.Volume = volume
+	datum.Ext = ext
+	ohlc := client.PutOHLC(datum, opt)
+	if !ohlc.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
+		return nil
+	}
+	return "success"
 }
 
 // BackGetTimeRange ...
@@ -235,7 +258,7 @@ func (e *BaseExchange) BackGetTimeRange() interface{} {
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetTimeRange(opt)
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
@@ -252,7 +275,7 @@ func (e *BaseExchange) BackGetPeriodRange() interface{} {
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
@@ -273,7 +296,7 @@ func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
 	opt.Period = period
 	opt.BeginTime = begin
 	opt.EndTime = end
-	client := dbsdk.NewClient(constant.STOCKDBURL, constant.STOCKDBAUTH)
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	depth := client.GetDepth(opt)
 	if !depth.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))

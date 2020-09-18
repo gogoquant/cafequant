@@ -131,20 +131,14 @@ func (g *Global) DrawReset() interface{} {
 }
 
 // DrawKline ...
-func (g *Global) DrawKline(time string, data [4]float32) interface{} {
-	var kline draw.KlineData
-	kline.Time = time
-	kline.Data = data
-	g.draw.PlotKLine(kline)
+func (g *Global) DrawKline(time string, a, b, c, d float32) interface{} {
+	g.draw.PlotKLine(time, a, b, c, d)
 	return true
 }
 
 // DrawLine ...
 func (g *Global) DrawLine(name string, time string, data float32) interface{} {
-	var line draw.LineData
-	line.Time = time
-	line.Data = data
-	g.draw.PlotLine(name, line)
+	g.draw.PlotLine(name, time, data)
 	return true
 }
 

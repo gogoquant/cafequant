@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/charts"
 )
 
-// klineData ...
+// KlineData ...
 type KlineData struct {
 	Time string
 	Data [4]float32
@@ -110,14 +110,20 @@ func (p *LineService) prevLine() {
 }
 
 // PlotKLine Plot kline into pix
-func (p *LineService) PlotKLine(data KlineData) {
+func (p *LineService) PlotKLine(time string, a, b, c, d float32) {
+	var data KlineData
+	data.Time = time
+	data.Data[0], data.Data[1], data.Data[2], data.Data[3] = a, b, c, d
 	p.lock()
 	p.kline = append(p.kline, data)
 	p.unLock()
 }
 
 // PlotLine Plot line into pix
-func (p *LineService) PlotLine(name string, data LineData) {
+func (p *LineService) PlotLine(name string, time string, v float32) {
+	var data LineData
+	data.Time = time
+	data.Data = v
 	p.lock()
 	p.line[name] = append(p.line[name], data)
 	p.unLock()
