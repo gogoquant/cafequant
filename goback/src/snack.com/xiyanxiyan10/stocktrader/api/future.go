@@ -114,7 +114,7 @@ func (e *FutureExchange) ValidSell() error {
 }
 
 // Ready ...
-func (e *FutureExchange) Ready(v interface{}) interface{} {
+func (e *FutureExchange) Ready() interface{} {
 	proxyURL := config.String("proxy")
 	if proxyURL == "" {
 		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
@@ -176,7 +176,7 @@ func (e *FutureExchange) GetDepth() interface{} {
 		return nil
 	}
 
-	if e.GetIO() != constant.IOCACHE {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheDepth, e.GetStockType())
 		var nullTime time.Time
 		if val.TimeStamp == nullTime {
@@ -467,7 +467,7 @@ func (e *FutureExchange) GetTicker() interface{} {
 		return nil
 	}
 	// ws
-	if e.GetIO() != constant.IOCACHE {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheTicker, e.GetStockType())
 		if val.TimeStamp == nullTime {
 			return nil

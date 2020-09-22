@@ -73,7 +73,7 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 }
 
 // Ready ...
-func (e *ExchangeBack) Ready(v interface{}) interface{} {
+func (e *ExchangeBack) Ready() interface{} {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())

@@ -66,7 +66,7 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 }
 
 // Ready ...
-func (e *SpotExchange) Ready(v interface{}) interface{} {
+func (e *SpotExchange) Ready() interface{} {
 	proxyURL := config.String("proxy")
 	if proxyURL == "" {
 		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)

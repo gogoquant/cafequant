@@ -87,7 +87,7 @@ func isContain(items []string, item string) bool {
 }
 
 // Ready ...
-func (e *ExchangeFutureBack) Ready(v interface{}) interface{} {
+func (e *ExchangeFutureBack) Ready() interface{} {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())

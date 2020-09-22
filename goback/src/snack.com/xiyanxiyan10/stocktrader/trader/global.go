@@ -23,6 +23,21 @@ import (
 // Tasks ...
 type Tasks map[string][]task
 
+// GlobalHandler ...
+type GlobalHandler interface {
+	Sleep(intervals ...interface{})
+	DingSet(token, key string) interface{}
+	DingSend(msg string) interface{}
+	MailSet(to, server, portStr, username, password string) interface{}
+	MailSend(msg string) interface{}
+	DrawSetPath(path string) interface{}
+	DrawGetPath() interface{}
+	DrawReset() interface{}
+	DrawKline(time string, a, b, c, d float32) interface{}
+	DrawLine(name string, time string, data float32) interface{}
+	DrawPlot() interface{}
+}
+
 // Global ...
 type Global struct {
 	model.Trader

@@ -37,7 +37,7 @@ func NewExchangePython(e func(opt constant.Option) Exchange) func(opt constant.O
 
 // Ready ...
 func (e *ExchangePythonLink) Ready(args *py.Tuple) (ret *py.Base, err error) {
-	e.api.Ready(nil)
+	e.api.Ready()
 	return py.IncNone(), nil
 }
 

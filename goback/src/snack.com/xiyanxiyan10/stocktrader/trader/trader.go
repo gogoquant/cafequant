@@ -143,15 +143,15 @@ func runPy(trader Global, id int64) (err error) {
 
 // initializeJs ...
 func initializeJs(trader *Global) (err error) {
-	if localErr := trader.ctx.Set("Go", &trader.goplugin); localErr != nil {
+	if localErr := trader.ctx.Set("Go", trader.goplugin); localErr != nil {
 		err = localErr
 		return
 	}
-	if localErr := trader.ctx.Set("Global", &trader); localErr != nil {
+	if localErr := trader.ctx.Set("Global", GlobalHandler(trader)); localErr != nil {
 		err = localErr
 		return
 	}
-	if localErr := trader.ctx.Set("G", &trader); localErr != nil {
+	if localErr := trader.ctx.Set("G", GlobalHandler(trader)); localErr != nil {
 		err = localErr
 		return
 	}
