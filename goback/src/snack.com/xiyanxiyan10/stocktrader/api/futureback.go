@@ -74,6 +74,7 @@ func NewExchangeFutureBack2Config(config ExchangeBackConfig) *ExchangeFutureBack
 // NewExchangeFutureBack ...
 func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	sim := &ExchangeFutureBack{}
+	sim.back = true
 	return sim
 }
 

@@ -17,7 +17,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/notice"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"sync"
-	"time"
 )
 
 // Tasks ...
@@ -25,7 +24,6 @@ type Tasks map[string][]task
 
 // GlobalHandler ...
 type GlobalHandler interface {
-	Sleep(intervals ...interface{})
 	DingSet(token, key string) interface{}
 	DingSend(msg string) interface{}
 	MailSet(to, server, portStr, username, password string) interface{}
@@ -79,21 +77,6 @@ type task struct {
 	ctx  *otto.Otto    //js虚拟机
 	fn   otto.Value    //代表该任务的js函数
 	args []interface{} //函数的参数
-}
-
-// Sleep ...
-func (g *Global) Sleep(intervals ...interface{}) {
-	interval := int64(0)
-	if len(intervals) > 0 {
-		interval = util.Int64Must(intervals[0])
-	}
-	if interval > 0 {
-		time.Sleep(time.Duration(interval) * time.Millisecond)
-	} else {
-		for _, e := range g.es {
-			e.AutoSleep()
-		}
-	}
 }
 
 // DingSet ...

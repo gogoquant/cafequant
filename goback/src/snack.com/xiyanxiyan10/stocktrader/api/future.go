@@ -76,6 +76,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		"BTC/USD": 0.001,
 	})
 	futureExchange.SetID(opt.Index)
+	futureExchange.back = false
 	return &futureExchange
 }
 

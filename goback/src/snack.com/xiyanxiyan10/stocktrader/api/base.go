@@ -63,6 +63,7 @@ type BaseExchange struct {
 	BaseExchangeCaches                    // cache for exchange
 	id                 int                // id of the exchange
 	ioMode             int                // io mode for exchange
+	back               bool               // back or online
 	contractType       string             // contractType
 	direction          string             // trade type
 	stockType          string             // stockType
@@ -160,6 +161,9 @@ func (e *BaseExchange) SetLimit(times interface{}) float64 {
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
 func (e *BaseExchange) AutoSleep() {
+	if e.back {
+		return
+	}
 	now := time.Now().UnixNano()
 	interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
@@ -171,6 +175,9 @@ func (e *BaseExchange) AutoSleep() {
 
 // Sleep ...
 func (e *BaseExchange) Sleep(intervals ...interface{}) {
+	if e.back {
+		return
+	}
 	interval := int64(0)
 	if len(intervals) > 0 {
 		interval = util.Int64Must(intervals[0])
