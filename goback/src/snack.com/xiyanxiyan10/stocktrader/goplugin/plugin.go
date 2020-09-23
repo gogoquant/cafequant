@@ -59,11 +59,11 @@ type GoStrageyHandler interface {
 // GoPlugin ...
 type GoPlugin struct {
 	name      string
-	Logger    *model.Logger // 利用这个对象保存日志
-	Exchanges []api.Exchange
-	Mail      notice.MailHandler // 邮件发送
-	Draw      draw.DrawHandler   // 图标绘制
-	strageys  map[string]GoStrageyHandler
+	Logger    *model.Logger               // 利用这个对象保存日志
+	Exchanges []api.Exchange              // 交易所列表
+	Mail      notice.MailHandler          // 邮件发送
+	Draw      draw.DrawHandler            // 图标绘制
+	strageys  map[string]GoStrageyHandler // 策略集合
 }
 
 // SetStragey ...
