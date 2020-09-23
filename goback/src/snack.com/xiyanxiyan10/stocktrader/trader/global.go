@@ -50,7 +50,7 @@ type Global struct {
 	tasks      Tasks                // 任务列表
 	running    bool                 // 运行中
 	scriptType string               // 脚本语言
-	ws         *constant.WsPiP      // websocket
+	ws         constant.PIPHandler  // websocket
 	mail       notice.MailHandler   // 邮件发送
 	ding       notice.DingHandler   // dingtalk
 	draw       draw.DrawHandler     // 图标绘制

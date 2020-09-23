@@ -213,7 +213,7 @@ func initialize(id int64) (trader Global, err error) {
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
-	trader.ws = constant.NewWsPiP(20)
+	trader.ws = constant.NewWsPIP(20)
 
 	// set the diagram path
 	filePath := config.String(constant.FilePath)

@@ -112,22 +112,29 @@ type OHLC struct {
 	Volume float64 `json:"Volume"`
 }
 
-// WsPiP 通道具柄
-type WsPiP struct {
+// WsPIP 通道具柄
+type WsPIP struct {
 	ch  chan int
 	run bool
 }
 
-// NewWsPiP 创建通道
-func NewWsPiP(cache int) *WsPiP {
-	var ws WsPiP
+// PIPHandler ...
+type PIPHandler interface {
+	Push(index int)
+	Pop() int
+	Close()
+}
+
+// NewWsPIP 创建通道
+func NewWsPIP(cache int) PIPHandler {
+	var ws WsPIP
 	ws.run = true
 	ws.ch = make(chan int, cache)
 	return &ws
 }
 
 // Push 推送异步数据
-func (ws *WsPiP) Push(index int) {
+func (ws *WsPIP) Push(index int) {
 	if ws.run == false {
 		return
 	}
@@ -139,7 +146,7 @@ func (ws *WsPiP) Push(index int) {
 }
 
 // Pop 接收异步数据
-func (ws *WsPiP) Pop() int {
+func (ws *WsPIP) Pop() int {
 	if ws.run == false {
 		return -1
 	}
@@ -148,7 +155,7 @@ func (ws *WsPiP) Pop() int {
 }
 
 // Close 接收异步数据
-func (ws *WsPiP) Close() {
+func (ws *WsPIP) Close() {
 	close(ws.ch)
 	ws.run = false
 }
@@ -171,7 +178,7 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
-	Ws        *WsPiP //全局异步通道
+	Ws        *WsPIP //全局异步通道
 
 	Limit     float64
 	LastSleep int64
