@@ -39,16 +39,6 @@ func (e *FutureExchange) SetTradeTypeMapReverse(key string, val int) {
 	e.tradeTypeMapReverse[key] = val
 }
 
-// subscribeTicker 订阅ticker
-/*
-func (e *FutureExchange) subscribeTicker(ticker *goex.FutureTicker) {
-	if ticker.Ticker != nil {
-		e.SetCache(constant.CacheTicker, e.GetStockType(), e.tickerA2U(ticker.Ticker), "")
-		e.option.Ws.Push(e.GetID(), constant.CacheTicker)
-	}
-}
-*/
-
 // NewFutureExchange create an exchange struct of futureExchange.com
 func NewFutureExchange(opt constant.Option) *FutureExchange {
 	futureExchange := FutureExchange{

@@ -131,7 +131,11 @@ func (ws *WsPiP) Push(index int) {
 	if ws.run == false {
 		return
 	}
-	ws.ch <- index
+	// nonblock write, incase user not use pop
+	select {
+	case ws.ch <- index:
+	default:
+	}
 }
 
 // Pop 接收异步数据
