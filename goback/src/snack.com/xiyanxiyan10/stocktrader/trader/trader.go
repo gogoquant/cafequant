@@ -125,6 +125,7 @@ func runPy(trader Global, id int64) (err error) {
 				log.Fatal("exit failed:", err)
 			}
 			defer ret.Decref()
+			trader.ws.Close()
 			close(trader.ctx.Interrupt)
 			trader.Status = 0
 			trader.Pending = 0
@@ -212,7 +213,7 @@ func initialize(id int64) (trader Global, err error) {
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
-	//trader.ws = constant.NewWsPip(20)
+	trader.ws = constant.NewWsPiP(20)
 
 	// set the diagram path
 	filePath := config.String(constant.FilePath)
@@ -328,6 +329,7 @@ func runJs(trader Global, id int64) (err error) {
 					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 				}
 			}
+			trader.ws.Close()
 			close(trader.ctx.Interrupt)
 			trader.Status = 0
 			trader.Pending = 0

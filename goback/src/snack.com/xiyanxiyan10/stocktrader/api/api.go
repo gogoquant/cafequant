@@ -7,7 +7,8 @@ type Exchange interface {
 	Ready() interface{}                                        //设置mode
 	SetIO(mode int)                                            //设置IO
 	GetIO() int                                                //获取IO
-	Subscribe(string, string) interface{}                      //订阅
+	GetSubscribe() interface{}                                 //获取订阅
+	SetSubscribe(string, string) interface{}                   //订阅
 	Log(...interface{})                                        //向管理台发送这个交易所的打印信息
 	GetType() string                                           //获取交易所类型
 	GetName() string                                           //获取交易所名称,自定义的

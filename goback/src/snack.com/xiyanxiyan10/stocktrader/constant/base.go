@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"sync"
 )
 
 var client = http.DefaultClient
@@ -113,41 +112,41 @@ type OHLC struct {
 	Volume float64 `json:"Volume"`
 }
 
-// WsVal 通道数据
-type WsVal struct {
-	Index int
-	Key   string
-}
-
 // WsPiP 通道具柄
 type WsPiP struct {
-	ch    chan WsVal
-	mutex sync.Mutex
+	ch  chan int
+	run bool
 }
 
-// NewWsPip 创建通道
-func NewWsPip(cache int) *WsPiP {
+// NewWsPiP 创建通道
+func NewWsPiP(cache int) *WsPiP {
 	var ws WsPiP
-	ws.ch = make(chan WsVal, cache)
+	ws.run = true
+	ws.ch = make(chan int, cache)
 	return &ws
 }
 
 // Push 推送异步数据
-func (ws *WsPiP) Push(index int, key string) {
-	ws.mutex.Lock()
-	defer ws.mutex.Unlock()
-	var val WsVal
-	val.Index = index
-	val.Key = key
-	ws.ch <- val
+func (ws *WsPiP) Push(index int) {
+	if ws.run == false {
+		return
+	}
+	ws.ch <- index
 }
 
 // Pop 接收异步数据
-func (ws *WsPiP) Pop() WsVal {
-	ws.mutex.Lock()
-	defer ws.mutex.Unlock()
+func (ws *WsPiP) Pop() int {
+	if ws.run == false {
+		return -1
+	}
 	val := <-ws.ch
 	return val
+}
+
+// Close 接收异步数据
+func (ws *WsPiP) Close() {
+	close(ws.ch)
+	ws.run = false
 }
 
 // Record struct

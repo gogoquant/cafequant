@@ -36,6 +36,7 @@ type GlobalHandler interface {
 	DrawKline(time string, a, b, c, d float32) interface{}
 	DrawLine(name string, time string, data float32) interface{}
 	DrawPlot() interface{}
+	Wait() int
 }
 
 // Global ...
@@ -49,12 +50,18 @@ type Global struct {
 	tasks      Tasks                // 任务列表
 	running    bool                 // 运行中
 	scriptType string               // 脚本语言
+	ws         *constant.WsPiP      // websocket
 	mail       notice.MailHandler   // 邮件发送
 	ding       notice.DingHandler   // dingtalk
 	draw       draw.DrawHandler     // 图标绘制
 	goplugin   goplugin.GoHandler   // go 插件
 	statusLog  string               // 状态日志
+}
 
+// Wait ...
+func (g *Global) Wait() int {
+	val := g.ws.Pop()
+	return val
 }
 
 // GetMail ...

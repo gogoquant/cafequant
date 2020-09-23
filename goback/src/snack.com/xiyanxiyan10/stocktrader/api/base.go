@@ -130,8 +130,24 @@ func (e *BaseExchange) GetBackTime() (int64, int64, int64) {
 	return e.start, e.end, e.period
 }
 
-// Subscribe ...
-func (e *BaseExchange) Subscribe(source, action string) interface{} {
+// GetSubscribe ...
+func (e *BaseExchange) GetSubscribe() interface{} {
+	return e.subscribeMap
+}
+
+// IsSubscribe ...
+func (e *BaseExchange) IsSubscribe(source, action string) bool {
+	actions := e.subscribeMap[source]
+	for _, tmp := range actions {
+		if tmp == action {
+			return true
+		}
+	}
+	return false
+}
+
+// SetSubscribe ...
+func (e *BaseExchange) SetSubscribe(source, action string) interface{} {
 	e.subscribeMap[source] = append(e.subscribeMap[source], action)
 	return "success"
 }
