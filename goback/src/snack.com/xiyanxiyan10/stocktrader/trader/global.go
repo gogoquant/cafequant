@@ -17,6 +17,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/notice"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"sync"
+	"time"
 )
 
 // Tasks ...
@@ -40,6 +41,7 @@ type GlobalHandler interface {
 // Global ...
 type Global struct {
 	model.Trader
+	back       bool                 // 是否为回测模式
 	Logger     model.Logger         // 利用这个对象保存日志
 	ctx        *otto.Otto           // js虚拟机
 	ctpy       *py.Module           // py虚拟机
@@ -54,6 +56,24 @@ type Global struct {
 	draw       draw.DrawHandler     // 图标绘制
 	goplugin   goplugin.GoHandler   // go 插件
 	statusLog  string               // 状态日志
+}
+
+// Sleep ...
+func (g *Global) Sleep(intervals ...interface{}) {
+	if g.back {
+		return
+	}
+	interval := int64(0)
+	if len(intervals) > 0 {
+		interval = util.Int64Must(intervals[0])
+	}
+	if interval > 0 {
+		time.Sleep(time.Duration(interval) * time.Millisecond)
+	} else {
+		for _, e := range g.es {
+			e.AutoSleep()
+		}
+	}
 }
 
 // Wait ...

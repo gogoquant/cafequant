@@ -6,11 +6,23 @@ import (
 	"github.com/qiniu/py/pyutil"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"time"
 )
 
 // GlobalPython ...
 type GlobalPython struct {
 	global *Global
+}
+
+// Sleep ...
+func (g *GlobalPython) Sleep(args *py.Tuple) (ret *py.Base, err error) {
+	var i int64
+	err = py.ParseV(args, &i)
+	if err != nil {
+		return
+	}
+	time.Sleep(time.Duration(i) * time.Millisecond)
+	return py.IncNone(), nil
 }
 
 // DingSet ...

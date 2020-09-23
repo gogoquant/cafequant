@@ -5,6 +5,7 @@ import "snack.com/xiyanxiyan10/stocktrader/constant"
 // Exchange interface
 type Exchange interface {
 	Ready() interface{}                                        //设置mode
+	IsBack() bool                                              //is back exchange
 	SetIO(mode int)                                            //设置IO
 	GetIO() int                                                //获取IO
 	GetSubscribe() interface{}                                 //获取订阅

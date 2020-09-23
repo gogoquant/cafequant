@@ -254,6 +254,19 @@ func initialize(id int64) (trader Global, err error) {
 		err = fmt.Errorf("please add at least one exchange")
 		return
 	}
+	var backtot = 0
+	for i := range trader.es {
+		if trader.es[i].IsBack() {
+			backtot++
+		}
+	}
+	if backtot == 0 {
+		trader.back = false
+	} else if len(trader.es) == backtot {
+		trader.back = true
+	} else {
+		err = fmt.Errorf("please use exchanges all back or all online")
+	}
 	trader.goplugin = goExtend
 	return
 }

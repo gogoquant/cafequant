@@ -147,6 +147,11 @@ func (e *BaseExchange) IsSubscribe(source, action string) bool {
 	return false
 }
 
+// IsBack ...
+func (e *BaseExchange) IsBack() bool {
+	return e.back
+}
+
 // SetSubscribe ...
 func (e *BaseExchange) SetSubscribe(source, action string) interface{} {
 	e.subscribeMap[source] = append(e.subscribeMap[source], action)
