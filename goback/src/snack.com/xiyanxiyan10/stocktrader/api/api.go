@@ -24,7 +24,7 @@ type Exchange interface {
 	GetOrders() interface{}                                    //返回所有的未完成订单列表
 	CancelOrder(orderID string) interface{}                    //取消一笔订单
 	GetTicker() interface{}                                    //获取交易所的最新市场行情数据
-	GetRecords(periodStr string) interface{}                   //返回交易所的最新K线数据列表
+	GetRecords(periodStr, maStr string) interface{}            //返回交易所的最新K线数据列表
 	SetContractType(contractType string)                       //设置合约周期
 	GetContractType() string                                   //获取合约周期
 	SetDirection(direction string)                             //设置交易方向

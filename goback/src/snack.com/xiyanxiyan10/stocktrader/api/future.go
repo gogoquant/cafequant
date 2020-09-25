@@ -491,7 +491,7 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 }
 
 // GetRecords get candlestick data
-func (e *FutureExchange) GetRecords(periodStr string) interface{} {
+func (e *FutureExchange) GetRecords(periodStr, maStr string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
 	var size = constant.RecordSize

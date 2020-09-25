@@ -309,7 +309,7 @@ func (e *ExchangeFutureBackLink) GetTicker() interface{} {
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeFutureBackLink) GetRecords(periodStr string) interface{} {
+func (e *ExchangeFutureBackLink) GetRecords(periodStr, maStr string) interface{} {
 	e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
 	return nil
 }

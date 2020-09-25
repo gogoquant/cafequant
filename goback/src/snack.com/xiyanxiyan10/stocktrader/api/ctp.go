@@ -108,6 +108,6 @@ func (e *CTPExchange) GetTicker() interface{} {
 }
 
 // GetRecords get candlestick data
-func (e *CTPExchange) GetRecords(periodStr string) interface{} {
+func (e *CTPExchange) GetRecords(periodStr, maStr string) interface{} {
 	return nil
 }

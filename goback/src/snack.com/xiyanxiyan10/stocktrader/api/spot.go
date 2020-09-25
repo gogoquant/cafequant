@@ -349,7 +349,7 @@ func (e *SpotExchange) GetTicker() interface{} {
 }
 
 // GetRecords get candlestick data
-func (e *SpotExchange) GetRecords(periodStr string) interface{} {
+func (e *SpotExchange) GetRecords(periodStr, maStr string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
 	var size = constant.RecordSize

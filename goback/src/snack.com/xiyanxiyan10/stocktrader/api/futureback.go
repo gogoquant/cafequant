@@ -598,7 +598,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeFutureBack) GetRecords(periodStr string) interface{} {
+func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) interface{} {
 	var period int64 = -1
 	var size = constant.RecordSize
 	period, ok := e.recordsPeriodMap[periodStr]
