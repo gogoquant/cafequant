@@ -23,7 +23,6 @@ const (
 const (
 	// IONONE ...
 	IONONE = iota
-	// IOONLINE  get from online
 	// IOBLOCK get from sync
 	IOBLOCK
 	// IOCACHE get from cache
