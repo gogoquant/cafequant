@@ -19,7 +19,7 @@ type DrawHandler interface {
 // NewDrawHandler ...
 func NewDrawHandler() DrawHandler {
 	var draw LineService
-	draw.kline = []KlineData{}
+	draw.kline = []KLineData{}
 	draw.line = make(map[string][]LineData)
 	return &draw
 }

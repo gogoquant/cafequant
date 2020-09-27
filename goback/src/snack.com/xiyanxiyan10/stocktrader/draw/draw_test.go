@@ -10,7 +10,7 @@ func TestDraw(*testing.T) {
 	draw := GetLineDrawer()
 	draw.SetPath("/tmp/line.html")
 
-	var klineVec = [...]KlineData{
+	var klineVec = [...]KLineData{
 		{Time: "2018/1/24 09:09:09", Data: [4]float32{2320.26, 2320.26, 2287.3, 2362.94}},
 		{Time: "2018/1/25 09:09:09", Data: [4]float32{2300, 2291.3, 2288.26, 2308.38}},
 		{Time: "2018/1/28 09:09:09", Data: [4]float32{2295.35, 2346.5, 2295.35, 2346.92}},

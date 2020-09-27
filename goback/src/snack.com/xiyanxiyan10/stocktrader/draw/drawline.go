@@ -8,8 +8,8 @@ import (
 	"github.com/go-echarts/go-echarts/charts"
 )
 
-// KlineData ...
-type KlineData struct {
+// KLineData ...
+type KLineData struct {
 	Time string
 	Data [4]float32
 }
@@ -26,7 +26,7 @@ type LineService struct {
 	mutex      sync.Mutex
 	lineChart  *charts.Line
 	klineChart *charts.Kline
-	kline      []KlineData
+	kline      []KLineData
 	line       map[string][]LineData
 }
 
@@ -111,7 +111,7 @@ func (p *LineService) prevLine() {
 
 // PlotKLine Plot kline into pix
 func (p *LineService) PlotKLine(time string, a, b, c, d float32) {
-	var data KlineData
+	var data KLineData
 	data.Time = time
 	data.Data[0], data.Data[1], data.Data[2], data.Data[3] = a, b, c, d
 	p.lock()
@@ -132,7 +132,7 @@ func (p *LineService) PlotLine(name string, time string, v float32) {
 // Reset Reset pix
 func (p *LineService) Reset() {
 	p.lock()
-	p.kline = []KlineData{}
+	p.kline = []KLineData{}
 	p.line = make(map[string][]LineData)
 	p.unLock()
 }
