@@ -50,6 +50,7 @@ const (
 	HuoBiDmBack = "HuoBiDmBack"
 	HuoBi       = "HuoBi"
 	HuoBiBack   = "HuoBiBack"
+	SZ          = "SZ"
 )
 
 // log types
@@ -80,7 +81,7 @@ const (
 
 // some variables
 var (
-	ExchangeTypes = []string{HuoBiDm, HuoBiDmBack, HuoBi, HuoBiBack}
+	ExchangeTypes = []string{HuoBiDm, HuoBiDmBack, HuoBi, HuoBiBack, SZ}
 	ScriptTypes   = []string{ScriptJs, ScriptPython}
 )
 

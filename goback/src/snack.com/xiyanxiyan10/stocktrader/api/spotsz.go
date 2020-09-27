@@ -163,8 +163,8 @@ type SZExchange struct {
 	records map[string][]constant.Record
 }
 
-// NewSZExchange create an exchange struct of futureExchange.com
-func NewSZExchange(opt constant.Option) *SZExchange {
+// NewSZSpotExchange create an exchange struct of futureExchange.com
+func NewSZSpotExchange(opt constant.Option) *SZExchange {
 	spotExchange := SZExchange{
 		records: make(map[string][]constant.Record),
 	}

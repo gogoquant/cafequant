@@ -28,12 +28,14 @@ var (
 		constant.HuoBiDmBack: api.NewHuoBiDmBackExchange,
 		constant.HuoBi:       api.NewHuoBiExchange,
 		constant.HuoBiBack:   api.NewHuoBiBackExchange,
+		constant.SZ:          api.NewSZExchange,
 	}
 	pyexchangeMaker = map[string]func(constant.Option) api.ExchangePython{ //保存所有交易所的构造函数
 		constant.HuoBiDm:     api.NewExchangePython(api.NewHuoBiDmExchange),
 		constant.HuoBiDmBack: api.NewExchangePython(api.NewHuoBiDmBackExchange),
 		constant.HuoBi:       api.NewExchangePython(api.NewHuoBiExchange),
 		constant.HuoBiBack:   api.NewExchangePython(api.NewHuoBiBackExchange),
+		constant.SZ:          api.NewExchangePython(api.NewSZExchange),
 	}
 )
 
