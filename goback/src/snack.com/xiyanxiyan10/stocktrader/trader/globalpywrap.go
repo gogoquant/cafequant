@@ -116,8 +116,8 @@ func (g *GlobalPython) DrawReset(args *py.Tuple) (ret *py.Base, err error) {
 	return py.IncNone(), nil
 }
 
-// DrawKline ...
-func (g *GlobalPython) DrawKline(args *py.Tuple) (ret *py.Base, err error) {
+// DrawKLine ...
+func (g *GlobalPython) DrawKLine(args *py.Tuple) (ret *py.Base, err error) {
 	var time string
 	var a, b, c, d float32
 	err = py.ParseV(args, &time, &a, &b, &c, &d)

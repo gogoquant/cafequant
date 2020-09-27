@@ -32,7 +32,7 @@ type GlobalHandler interface {
 	DrawSetPath(path string) interface{}
 	DrawGetPath() interface{}
 	DrawReset() interface{}
-	DrawKline(time string, a, b, c, d float32) interface{}
+	DrawKLine(time string, a, b, c, d float32) interface{}
 	DrawLine(name string, time string, data float32) interface{}
 	DrawPlot() interface{}
 	Wait() int
@@ -155,8 +155,8 @@ func (g *Global) DrawReset() interface{} {
 	return true
 }
 
-// DrawKline ...
-func (g *Global) DrawKline(time string, a, b, c, d float32) interface{} {
+// DrawKLine ...
+func (g *Global) DrawKLine(time string, a, b, c, d float32) interface{} {
 	g.draw.PlotKLine(time, a, b, c, d)
 	return true
 }
