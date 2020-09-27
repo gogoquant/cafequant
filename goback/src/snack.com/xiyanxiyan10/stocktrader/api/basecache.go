@@ -46,7 +46,7 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchan
 		return e.trader[stockSymbol]
 	}
 
-	if key == constant.CacheKline {
+	if key == constant.CacheKLine {
 		return e.kline[stockSymbol]
 	}
 	return BaseExchangeCache{}
@@ -74,7 +74,7 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 		e.trader[stockSymbol] = item
 	}
 
-	if key == constant.CacheKline {
+	if key == constant.CacheKLine {
 		e.kline[stockSymbol] = item
 	}
 }
