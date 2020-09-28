@@ -16,6 +16,9 @@ const (
 	// CacheOrder ...
 	CacheOrder = "order"
 
+	// CacheRecord ...
+	CacheRecord = "record"
+
 	// CachePosition ...
 	CachePosition = "position"
 )
