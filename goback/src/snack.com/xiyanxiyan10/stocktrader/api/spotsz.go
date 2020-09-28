@@ -65,7 +65,7 @@ func pareseRecords(str string, ma int) []constant.Record {
 			record.Volume = util.Float64Must(maps["volume"])
 
 			record.MaPrice = util.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
-			record.MaVolume = util.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
+			record.MaVolume = util.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
 			records = append(records, record)
 		}
 	}
@@ -111,7 +111,7 @@ func getTickerAndDepth(no string) (string, error) {
 func parseTicker(data string) *constant.Ticker {
 	var ticker constant.Ticker
 	arr := strings.Split(data, ",")
-	if len(arr) < 31 {
+	if len(arr) < 32 {
 		return nil
 	}
 	ticker.Open = util.Float64Must(arr[1])
