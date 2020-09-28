@@ -36,7 +36,7 @@ require (
 	gopkg.in/logger.v1 v1.0.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	snack.com/xiyanxiyan10/conver v0.0.0
-	snack.com/xiyanxiyan10/stockdb v0.0.0-00010101000000-000000000000
+	snack.com/xiyanxiyan10/stockdb v0.0.0
 )
 
 replace (
