@@ -62,7 +62,6 @@ func pareseRecords(str string, ma int) []constant.Record {
 			record.Close = util.Float64Must(maps["close"])
 			record.High = util.Float64Must(maps["high"])
 			record.Low = util.Float64Must(maps["low"])
-			record.Close = util.Float64Must(maps["close"])
 			record.Volume = util.Float64Must(maps["volume"])
 
 			record.MaPrice = util.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
@@ -220,22 +219,6 @@ func (e *SZExchange) GetName() string {
 	return e.option.Name
 }
 
-// GetDepth ...
-func (e *SZExchange) GetDepth() interface{} {
-	stockType := e.GetStockType()
-	res, err := getTickerAndDepth(stockType)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
-		return nil
-	}
-	depth := parseDepth(res)
-	if depth == nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is depth parse fail")
-		return nil
-	}
-	return depth
-}
-
 // GetPosition ...
 func (e *SZExchange) GetPosition() interface{} {
 	return nil
@@ -308,4 +291,20 @@ func (e *SZExchange) GetRecords(periodStr, maStr string) interface{} {
 		return nil
 	}
 	return pareseRecords(res, ma)
+}
+
+// GetDepth ...
+func (e *SZExchange) GetDepth() interface{} {
+	stockType := e.GetStockType()
+	res, err := getTickerAndDepth(stockType)
+	if err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
+		return nil
+	}
+	depth := parseDepth(res)
+	if depth == nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is depth parse fail")
+		return nil
+	}
+	return depth
 }
