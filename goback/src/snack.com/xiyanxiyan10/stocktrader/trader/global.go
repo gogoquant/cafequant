@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -15,7 +16,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 	"sync"
 	"time"
 )
@@ -65,7 +65,7 @@ func (g *Global) Sleep(intervals ...interface{}) {
 	}
 	interval := int64(0)
 	if len(intervals) > 0 {
-		interval = util.Int64Must(intervals[0])
+		interval = conver.Int64Must(intervals[0])
 	}
 	if interval > 0 {
 		time.Sleep(time.Duration(interval) * time.Millisecond)
@@ -116,7 +116,7 @@ func (g *Global) DingSend(msg string) interface{} {
 
 // MailSet ...
 func (g *Global) MailSet(to, server, portStr, username, password string) interface{} {
-	port, err := util.Int(portStr)
+	port, err := conver.Int(portStr)
 	if err != nil {
 		return nil
 	}
@@ -190,7 +190,7 @@ func (g *Global) Log(messages ...interface{}) {
 func (g *Global) LogProfit(messages ...interface{}) {
 	profit := 0.0
 	if len(messages) > 0 {
-		profit = util.Float64Must(messages[0])
+		profit = conver.Float64Must(messages[0])
 	}
 	g.Logger.Log(constant.PROFIT, "", 0.0, profit, messages[1:]...)
 }

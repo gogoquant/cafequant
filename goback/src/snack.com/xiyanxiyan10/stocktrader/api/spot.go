@@ -7,9 +7,9 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 
+	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // SpotExchange the exchange struct of futureExchange.com
@@ -187,7 +187,7 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{}
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is stockType")
 		return nil
 	}
 	var matchPrice = 0
@@ -201,11 +201,11 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) interface{}
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return nil
 	}
-	priceFloat := util.Float64Must(price)
-	amountFloat := util.Float64Must(amount)
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return order.Cid
 }
@@ -217,7 +217,7 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is stockType")
 		return nil
 	}
 	var matchPrice = 0
@@ -231,11 +231,11 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return nil
 	}
-	priceFloat := util.Float64Must(price)
-	amountFloat := util.Float64Must(amount)
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return order.Cid
 }
@@ -244,12 +244,12 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) interface{
 func (e *SpotExchange) GetOrder(id string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id), "GetOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id), "GetOrder() error, the error number is stockType")
 		return nil
 	}
 	order, err := e.api.GetOneOrder(id, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
 		return nil
 	}
 
@@ -307,18 +307,18 @@ func (e *SpotExchange) GetOrders() interface{} {
 func (e *SpotExchange) CancelOrder(orderID string) interface{} {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
 		return nil
 	}
 	result, err := e.api.CancelOrder(orderID, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
 		return nil
 	}
 	if !result {
 		return nil
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() success")
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() success")
 	return true
 }
 
@@ -343,7 +343,7 @@ func (e *SpotExchange) GetTicker() interface{} {
 		High: exTicker.High,
 		Low:  exTicker.Low,
 		Vol:  exTicker.Vol,
-		Time: util.Int64Must(tickStr),
+		Time: conver.Int64Must(tickStr),
 	}
 	return ticker
 }

@@ -7,8 +7,8 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"io/ioutil"
 	"net/http"
+	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 	"strconv"
 	"strings"
 	"time"
@@ -58,14 +58,14 @@ func pareseRecords(str string, ma int) []constant.Record {
 	for _, row := range rows {
 		if maps, ok := row.(map[string]interface{}); ok {
 			var record constant.Record
-			record.Open = util.Float64Must(maps["open"])
-			record.Close = util.Float64Must(maps["close"])
-			record.High = util.Float64Must(maps["high"])
-			record.Low = util.Float64Must(maps["low"])
-			record.Volume = util.Float64Must(maps["volume"])
+			record.Open = conver.Float64Must(maps["open"])
+			record.Close = conver.Float64Must(maps["close"])
+			record.High = conver.Float64Must(maps["high"])
+			record.Low = conver.Float64Must(maps["low"])
+			record.Volume = conver.Float64Must(maps["volume"])
 
-			record.MaPrice = util.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
-			record.MaVolume = util.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
+			record.MaPrice = conver.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
+			record.MaVolume = conver.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
 			records = append(records, record)
 		}
 	}
@@ -114,14 +114,14 @@ func parseTicker(data string) *constant.Ticker {
 	if len(arr) < 32 {
 		return nil
 	}
-	ticker.Open = util.Float64Must(arr[1])
-	ticker.Close = util.Float64Must(arr[2])
-	ticker.Last = util.Float64Must(arr[3])
-	ticker.High = util.Float64Must(arr[4])
-	ticker.Low = util.Float64Must(arr[5])
-	ticker.Buy = util.Float64Must(arr[6])
-	ticker.Sell = util.Float64Must(arr[7])
-	ticker.Vol = util.Float64Must(arr[8])
+	ticker.Open = conver.Float64Must(arr[1])
+	ticker.Close = conver.Float64Must(arr[2])
+	ticker.Last = conver.Float64Must(arr[3])
+	ticker.High = conver.Float64Must(arr[4])
+	ticker.Low = conver.Float64Must(arr[5])
+	ticker.Buy = conver.Float64Must(arr[6])
+	ticker.Sell = conver.Float64Must(arr[7])
+	ticker.Vol = conver.Float64Must(arr[8])
 	t := arr[30] + " " + arr[31]
 	stamp, _ := time.ParseInLocation(timeTemplate1, t, time.Local)
 	ticker.Time = stamp.Unix()
@@ -137,12 +137,12 @@ func parseDepth(data string) *constant.Depth {
 	}
 	for i := 0 + 10; i < 5; i++ {
 		var record constant.DepthRecord
-		record.Amount = util.Float64Must(arr[10+2*i])
-		record.Price = util.Float64Must(arr[10+2*i+1])
+		record.Amount = conver.Float64Must(arr[10+2*i])
+		record.Price = conver.Float64Must(arr[10+2*i+1])
 		depth.Bids = append(depth.Bids, record)
 
-		record.Amount = util.Float64Must(arr[20+2*i])
-		record.Price = util.Float64Must(arr[20+2*i+1])
+		record.Amount = conver.Float64Must(arr[20+2*i])
+		record.Price = conver.Float64Must(arr[20+2*i+1])
 		depth.Bids = append(depth.Bids, record)
 	}
 	t := arr[30] + " " + arr[31]

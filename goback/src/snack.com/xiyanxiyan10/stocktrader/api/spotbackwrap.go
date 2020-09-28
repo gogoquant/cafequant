@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	goex "github.com/nntaoli-project/goex"
+	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // ExchangeBackLink ...
@@ -181,7 +181,7 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) interfa
 	var ord *constant.Order
 	stockType := e.GetStockType()
 	if err := e.ValidBuy(); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return nil
 	}
 	if price == "-1" {
@@ -191,11 +191,11 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) interfa
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return nil
 	}
-	priceFloat := util.Float64Must(price)
-	amountFloat := util.Float64Must(amount)
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return ord.Id
 
@@ -207,7 +207,7 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) interf
 	var ord *constant.Order
 	stockType := e.GetStockType()
 	if err := e.ValidSell(); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return nil
 	}
 	if price == "-1" {
@@ -217,11 +217,11 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) interf
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return nil
 	}
-	priceFloat := util.Float64Must(price)
-	amountFloat := util.Float64Must(amount)
+	priceFloat := conver.Float64Must(price)
+	amountFloat := conver.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
 	return ord.Id
 }
@@ -230,7 +230,7 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) interf
 func (e *ExchangeBackLink) GetOrder(id string) interface{} {
 	order, err := e.ExchangeBack.GetOneOrder(id, e.GetStockType())
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
 	}
 	return order
 }
@@ -268,13 +268,13 @@ func (e *ExchangeBackLink) GetOrders() interface{} {
 func (e *ExchangeBackLink) CancelOrder(orderID string) interface{} {
 	result, err := e.ExchangeBack.CancelOrder(orderID, e.GetStockType())
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
 		return nil
 	}
 	if !result {
 		return nil
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() success")
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() success")
 	return true
 }
 

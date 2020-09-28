@@ -35,12 +35,13 @@ require (
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/logger.v1 v1.0.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	snack.com/xiyanxiyan10/conver v0.0.0
 	snack.com/xiyanxiyan10/stockdb v0.0.0-00010101000000-000000000000
 )
 
 replace (
 	github.com/nntaoli-project/goex v1.2.2 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
 	github.com/qiniu/py v1.2.2 => github.com/xiyanxiyan10/py v0.0.0-20200907052829-5727a2a1895d
-	snack.com/xiyanxiyan10/conver => ../conver
+	snack.com/xiyanxiyan10/conver v0.0.0 => ../conver
 	snack.com/xiyanxiyan10/stockdb => ../stockdb
 )

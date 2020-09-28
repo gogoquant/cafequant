@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"snack.com/xiyanxiyan10/conver"
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 var (
@@ -160,7 +160,7 @@ func (e *BaseExchange) SetSubscribe(source, action string) interface{} {
 
 // SetLimit set the limit calls amount per second of this exchange
 func (e *BaseExchange) SetLimit(times interface{}) float64 {
-	e.limit = util.Float64Must(times)
+	e.limit = conver.Float64Must(times)
 	return e.limit
 }
 
@@ -170,9 +170,9 @@ func (e *BaseExchange) AutoSleep() {
 		return
 	}
 	now := time.Now().UnixNano()
-	interval := 1e+9/e.limit*util.Float64Must(e.lastTimes) - util.Float64Must(now-e.lastSleep)
+	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
 	if interval > 0.0 {
-		time.Sleep(time.Duration(util.Int64Must(interval)))
+		time.Sleep(time.Duration(conver.Int64Must(interval)))
 	}
 	e.lastTimes = 0
 	e.lastSleep = now
@@ -185,7 +185,7 @@ func (e *BaseExchange) Sleep(intervals ...interface{}) {
 	}
 	interval := int64(0)
 	if len(intervals) > 0 {
-		interval = util.Int64Must(intervals[0])
+		interval = conver.Int64Must(intervals[0])
 	}
 	if interval > 0 {
 		time.Sleep(time.Duration(interval) * time.Millisecond)
