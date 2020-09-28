@@ -24,18 +24,18 @@ var (
 	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
 	errHalt       = fmt.Errorf("HALT")
 	exchangeMaker = map[string]func(constant.Option) api.Exchange{ //保存所有交易所的构造函数
-		constant.HuoBiDm:     api.NewHuoBiDmExchange,
-		constant.HuoBiDmBack: api.NewHuoBiDmBackExchange,
-		constant.HuoBi:       api.NewHuoBiExchange,
-		constant.HuoBiBack:   api.NewHuoBiBackExchange,
-		constant.SZ:          api.NewSZExchange,
+		constant.HuoBiDm:    api.NewHuoBiDmExchange,
+		constant.HuoBi:      api.NewHuoBiExchange,
+		constant.SZ:         api.NewSZExchange,
+		constant.SpotBack:   api.NewSpotBackExchange,
+		constant.FutureBack: api.NewFutureBackExchange,
 	}
 	pyexchangeMaker = map[string]func(constant.Option) api.ExchangePython{ //保存所有交易所的构造函数
-		constant.HuoBiDm:     api.NewExchangePython(api.NewHuoBiDmExchange),
-		constant.HuoBiDmBack: api.NewExchangePython(api.NewHuoBiDmBackExchange),
-		constant.HuoBi:       api.NewExchangePython(api.NewHuoBiExchange),
-		constant.HuoBiBack:   api.NewExchangePython(api.NewHuoBiBackExchange),
-		constant.SZ:          api.NewExchangePython(api.NewSZExchange),
+		constant.HuoBiDm:    api.NewExchangePython(api.NewHuoBiDmExchange),
+		constant.HuoBi:      api.NewExchangePython(api.NewHuoBiExchange),
+		constant.SZ:         api.NewExchangePython(api.NewSZExchange),
+		constant.SpotBack:   api.NewExchangePython(api.NewSpotBackExchange),
+		constant.FutureBack: api.NewExchangePython(api.NewFutureBackExchange),
 	}
 )
 

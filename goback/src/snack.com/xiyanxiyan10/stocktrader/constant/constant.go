@@ -49,11 +49,11 @@ const (
 
 // exchange types
 const (
-	HuoBiDm     = "HuoBiDm"
-	HuoBiDmBack = "HuoBiDmBack"
-	HuoBi       = "HuoBi"
-	HuoBiBack   = "HuoBiBack"
-	SZ          = "SZ"
+	HuoBiDm    = "HuoBiDm"
+	HuoBi      = "HuoBi"
+	SZ         = "SZ"
+	SpotBack   = "SpotBack"
+	FutureBack = "FutureBack"
 )
 
 // log types
@@ -84,7 +84,7 @@ const (
 
 // some variables
 var (
-	ExchangeTypes = []string{HuoBiDm, HuoBiDmBack, HuoBi, HuoBiBack, SZ}
+	ExchangeTypes = []string{HuoBiDm, FutureBack, HuoBi, SpotBack, SZ}
 	ScriptTypes   = []string{ScriptJs, ScriptPython}
 )
 

@@ -8,6 +8,13 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
+// NewSpotBackExchange create an exchange struct of futureExchange.com
+func NewSpotBackExchange(opt constant.Option) Exchange {
+	exchange := NewExchangeBackLink(opt)
+	_ = exchange.Init(opt)
+	return exchange
+}
+
 // ExchangeBackLink ...
 type ExchangeBackLink struct {
 	ExchangeBack
