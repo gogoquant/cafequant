@@ -42,7 +42,7 @@ type Exchange interface {
 	GetBackCommission() (float64, float64, float64)                                          //获取回测手续费
 	SetBackTime(start, end, period int64) interface{}                                        //设置回测周期
 	GetBackTime() (int64, int64, int64)                                                      //设置回测周期
-	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) interface{} // 推送数据到数据仓库
+	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) interface{} //推送数据到数据仓库
 
 	BackGetSymbols(market string) interface{} //获取货币种类
 	BackGetMarkets() interface{}              //获取交易所种类
