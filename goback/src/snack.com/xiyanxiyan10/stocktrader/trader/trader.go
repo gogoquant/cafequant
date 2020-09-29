@@ -3,11 +3,14 @@ package trader
 import (
 	"errors"
 	"fmt"
+	"runtime"
+	"strconv"
+	"time"
+
 	"github.com/qiniu/py"
 	"github.com/qiniu/py/pyutil"
 	"github.com/qiniu/x/log"
 	"github.com/robertkrimen/otto"
-	"runtime"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -15,8 +18,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"strconv"
-	"time"
 )
 
 // Trader Variable
@@ -30,13 +31,7 @@ var (
 		constant.SpotBack:   api.NewSpotBackExchange,
 		constant.FutureBack: api.NewFutureBackExchange,
 	}
-	pyexchangeMaker = map[string]func(constant.Option) api.ExchangePython{ //保存所有交易所的构造函数
-		constant.HuoBiDm:    api.NewExchangePython(api.NewHuoBiDmExchange),
-		constant.HuoBi:      api.NewExchangePython(api.NewHuoBiExchange),
-		constant.SZ:         api.NewExchangePython(api.NewSZExchange),
-		constant.SpotBack:   api.NewExchangePython(api.NewSpotBackExchange),
-		constant.FutureBack: api.NewExchangePython(api.NewFutureBackExchange),
-	}
+	pyexchangeMaker map[string]func(constant.Option) api.ExchangePython
 )
 
 // GetTraderStatus ...
@@ -395,3 +390,10 @@ func stop(id int64) (err error) {
 //		}
 //	}
 //}
+
+func init() {
+	pyexchangeMaker = make(map[string]func(constant.Option) api.ExchangePython)
+	for key, funcs := range exchangeMaker {
+		pyexchangeMaker[key] = api.NewExchangePython(funcs)
+	}
+}
