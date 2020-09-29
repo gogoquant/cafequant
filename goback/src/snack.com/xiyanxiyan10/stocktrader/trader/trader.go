@@ -313,12 +313,14 @@ func run(id int64) (err error) {
 	if err != nil {
 		return
 	}
-	if trader.scriptType == constant.ScriptJs {
-		return runJs(trader, id)
-	}
 
-	if trader.scriptType == constant.ScriptPython {
+	switch trader.scriptType {
+	case constant.ScriptPython:
 		return runPy(trader, id)
+	case constant.ScriptJs:
+	default:
+		return runJs(trader, id)
+
 	}
 	return runJs(trader, id)
 }
