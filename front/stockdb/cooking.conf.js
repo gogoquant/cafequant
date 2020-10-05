@@ -10,7 +10,7 @@ cooking.set({
 
   // development
   devServer: {
-    port: 8080,
+    port: 10080,
     publicPath: '/'
   },
 

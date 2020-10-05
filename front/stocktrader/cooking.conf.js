@@ -13,7 +13,7 @@ cooking.set({
   // development
   devServer: {
     hostname: '127.0.0.1',
-    port: 8080,
+    port: 10081,
     publicPath: '/'
   },
 

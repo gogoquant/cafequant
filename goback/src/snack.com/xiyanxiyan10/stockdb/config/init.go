@@ -16,7 +16,7 @@ const (
 
 func init() {
 	io.Register(types.Response{}, "Response", "json")
-	confPath := os.Getenv("STOCK_CONFIG")
+	confPath := os.Getenv("STOCKDB_CONFIG")
 	if confPath == "" {
 		confPath = "/tmp/stockdb.ini"
 	}
