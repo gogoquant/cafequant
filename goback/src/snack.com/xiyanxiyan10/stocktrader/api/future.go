@@ -117,7 +117,7 @@ func (e *FutureExchange) Ready() interface{} {
 		}
 		defaultTimeOut = timeout
 	}
-	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(time.Duration(defaultTimeOut) * time.Second)
+	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(time.Duration(defaultTimeOut) * time.Millisecond)
 	proxyURL := config.String("proxy")
 	if proxyURL != "" {
 		e.apiBuilder = e.apiBuilder.HttpProxy(proxyURL)
