@@ -329,6 +329,7 @@ func run(id int64) (err error) {
 func runJs(trader Global, id int64) (err error) {
 	err = initializeJs(&trader)
 	if err != nil {
+
 		return
 	}
 	go func() {
