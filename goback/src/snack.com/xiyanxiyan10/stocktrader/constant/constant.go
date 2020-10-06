@@ -116,6 +116,8 @@ const (
 	DepthSize = 100
 	// GoHandler ...
 	GoHandler = "NewHandler"
+	// DefaultTimeOut ...
+	DefaultTimeOut = 2
 )
 
 const (

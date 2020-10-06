@@ -64,8 +64,8 @@ func pareseRecords(str string, ma int) []constant.Record {
 			record.Low = conver.Float64Must(maps["low"])
 			record.Volume = conver.Float64Must(maps["volume"])
 
-			record.MaPrice = conver.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
-			record.MaVolume = conver.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
+			//record.MaPrice = conver.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
+			//record.MaVolume = conver.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
 			records = append(records, record)
 		}
 	}

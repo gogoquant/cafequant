@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	goex "github.com/nntaoli-project/goex"
@@ -106,11 +107,20 @@ func (e *FutureExchange) ValidSell() error {
 
 // Ready ...
 func (e *FutureExchange) Ready() interface{} {
+	defaultTimeOut := constant.DefaultTimeOut
+	timeOutStr := config.String("timeout")
+	if timeOutStr != "" {
+		timeout, err := strconv.Atoi(timeOutStr)
+		if err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "Ready() error, the error number is ", err.Error())
+			return nil
+		}
+		defaultTimeOut = timeout
+	}
+	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(time.Duration(defaultTimeOut) * time.Second)
 	proxyURL := config.String("proxy")
-	if proxyURL == "" {
-		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
-	} else {
-		e.apiBuilder = builder.NewAPIBuilder().HttpProxy(proxyURL).HttpTimeout(2 * time.Second)
+	if proxyURL != "" {
+		e.apiBuilder = e.apiBuilder.HttpProxy(proxyURL)
 	}
 	if e.apiBuilder == nil {
 		e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, "build api error")
