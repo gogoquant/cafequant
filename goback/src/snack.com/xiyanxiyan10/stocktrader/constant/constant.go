@@ -25,11 +25,11 @@ const (
 
 const (
 	// IONONE ...
-	IONONE = iota
+	IONONE = "online"
 	// IOBLOCK get from sync
-	IOBLOCK
+	IOBLOCK = "block"
 	// IOCACHE get from cache
-	IOCACHE
+	IOCACHE = "cache"
 )
 
 const (
@@ -113,7 +113,7 @@ const (
 	// RecordSize ...
 	RecordSize = 100
 	// DepthSize ...
-	DepthSize = 100
+	DepthSize = 10
 	// GoHandler ...
 	GoHandler = "NewHandler"
 	// DefaultTimeOut ...

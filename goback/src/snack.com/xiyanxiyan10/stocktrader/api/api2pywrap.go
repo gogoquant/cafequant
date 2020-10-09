@@ -43,7 +43,7 @@ func (e *ExchangePythonLink) Ready(args *py.Tuple) (ret *py.Base, err error) {
 
 // SetIO ...
 func (e *ExchangePythonLink) SetIO(args *py.Tuple) (ret *py.Base, err error) {
-	var i int
+	var i string
 	err = py.ParseV(args, &i)
 	if err != nil {
 		return

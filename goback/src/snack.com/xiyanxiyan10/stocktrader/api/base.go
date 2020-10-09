@@ -62,7 +62,7 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 type BaseExchange struct {
 	BaseExchangeCaches                    // cache for exchange
 	id                 int                // id of the exchange
-	ioMode             int                // io mode for exchange
+	ioMode             string             // io mode for exchange
 	back               bool               // back or online
 	contractType       string             // contractType
 	direction          string             // trade type
@@ -353,12 +353,12 @@ func (e *BaseExchange) GetID() int {
 }
 
 // SetIO set IO mode
-func (e *BaseExchange) SetIO(mode int) {
+func (e *BaseExchange) SetIO(mode string) {
 	e.ioMode = mode
 }
 
 // GetIO get IO mode
-func (e *BaseExchange) GetIO() int {
+func (e *BaseExchange) GetIO() string {
 	return e.ioMode
 }
 

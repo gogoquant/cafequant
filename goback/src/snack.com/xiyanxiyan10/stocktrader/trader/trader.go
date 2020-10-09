@@ -3,6 +3,7 @@ package trader
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"runtime"
 	"strconv"
 	"time"
@@ -271,14 +272,14 @@ func initialize(id int64) (trader Global, err error) {
 // err2String 捕获策略的错误信息并转化为对应的字符串
 func err2String(err interface{}) string {
 	switch err.(type) {
-	case error:
-		return err.(error).Error()
 	case *otto.Error:
 		return err.(*otto.Error).String()
+	case error:
+		return err.(error).Error()
 	case string:
 		return err.(string)
 	default:
-		return "err unknown"
+		return "err unknown type:" + reflect.TypeOf(err).Name()
 	}
 }
 
