@@ -44,6 +44,7 @@ func (user User) ListLog(id, size, page int64) (total int64, logs []Log, err err
 type Logger struct {
 	TraderID     int64
 	ExchangeType string
+	Back         bool // just printf if is 1
 }
 
 // Log ...
@@ -74,6 +75,10 @@ func (l Logger) Log(method string, stockType string, price, amount float64, mess
 			Amount:       amount,
 			Message:      message,
 		}
-		DB.Create(&log)
+		if l.Back {
+			fmt.Printf("%s\n", message)
+		} else {
+			DB.Create(&log)
+		}
 	}(now)
 }
