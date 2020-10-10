@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"time"
-
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"time"
 )
 
 // Log struct
@@ -76,7 +75,12 @@ func (l Logger) Log(method string, stockType string, price, amount float64, mess
 			Message:      message,
 		}
 		if l.Back {
-			fmt.Printf("%s\n", message)
+			b, err := json.Marshal(log)
+			if err != nil {
+				fmt.Println("Umarshal failed:", err)
+				return
+			}
+			fmt.Printf("%s\n", string(b))
 		} else {
 			DB.Create(&log)
 		}
