@@ -2,14 +2,14 @@ package api
 
 import (
 	"errors"
-	"math"
-	"sync"
-	"time"
-
+	"fmt"
 	goex "github.com/nntaoli-project/goex"
+	"math"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+	"sync"
+	"time"
 )
 
 // ExchangeBackConfig ...
@@ -74,7 +74,7 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 }
 
 // Ready ...
-func (e *ExchangeBack) Ready() interface{} {
+func (e *ExchangeBack) Ready() error {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())
@@ -91,11 +91,10 @@ func (e *ExchangeBack) Ready() interface{} {
 	for stock := range e.BaseExchange.subscribeMap {
 		var loader DataLoader
 		e.dataLoader[stock] = &loader
-		val := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
-		if val == nil {
-			return nil
+		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		if err != nil {
+			return err
 		}
-		ohlcs := val.([]dbtypes.OHLC)
 		e.dataLoader[stock].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
@@ -104,7 +103,7 @@ func (e *ExchangeBack) Ready() interface{} {
 		sub.Amount = val
 		e.acc.SubAccounts[key] = sub
 	}
-	return "success"
+	return nil
 }
 
 func (ex *ExchangeBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
@@ -354,12 +353,11 @@ func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
 
 // GetDepth ...
 func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	val := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
-	if val == nil {
-		return nil, errors.New("Get depth fail")
+	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
+	if err != nil {
+		return nil, err
 	}
 	var depth constant.Depth
-	dbdepth := val.(dbtypes.Depth)
 	for _, ask := range dbdepth.Asks {
 		var record constant.DepthRecord
 		record.Amount = ask.Amount
@@ -471,22 +469,20 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeBack) GetRecords(periodStr, maStr string) interface{} {
+func (e *ExchangeBack) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
 	var period int64 = -1
 	var size = constant.RecordSize
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil
+		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 
-	val := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
-	if val != nil {
+	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
+	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
-		return nil
+		return nil, err
 	}
-	vec := val.([]dbtypes.OHLC)
-
 	if len(vec) > size {
 		vec = vec[0 : size-1]
 	}
@@ -500,5 +496,5 @@ func (e *ExchangeBack) GetRecords(periodStr, maStr string) interface{} {
 			Volume: kline.Volume,
 		}}, records...)
 	}
-	return records
+	return records, nil
 }

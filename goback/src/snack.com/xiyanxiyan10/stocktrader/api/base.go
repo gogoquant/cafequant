@@ -109,15 +109,14 @@ func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
 }
 
 // SetBackTime ...
-func (e *BaseExchange) SetBackTime(start, end, period int64) interface{} {
+func (e *BaseExchange) SetBackTime(start, end, period int64) {
 	e.start = start
 	e.end = end
 	e.period = period
-	return "success"
 }
 
 // GetBackAccount ...
-func (e *BaseExchange) GetBackAccount() interface{} {
+func (e *BaseExchange) GetBackAccount() map[string]float64 {
 	return e.currencyMap
 }
 
@@ -132,7 +131,7 @@ func (e *BaseExchange) GetBackTime() (int64, int64, int64) {
 }
 
 // GetSubscribe ...
-func (e *BaseExchange) GetSubscribe() interface{} {
+func (e *BaseExchange) GetSubscribe() map[string][]string {
 	return e.subscribeMap
 }
 
@@ -153,9 +152,8 @@ func (e *BaseExchange) IsBack() bool {
 }
 
 // SetSubscribe ...
-func (e *BaseExchange) SetSubscribe(source, action string) interface{} {
+func (e *BaseExchange) SetSubscribe(source, action string) {
 	e.subscribeMap[source] = append(e.subscribeMap[source], action)
-	return "success"
 }
 
 // SetLimit set the limit calls amount per second of this exchange
@@ -193,53 +191,56 @@ func (e *BaseExchange) Sleep(intervals ...interface{}) {
 }
 
 // BackGetStats ...
-func (e *BaseExchange) BackGetStats() interface{} {
+func (e *BaseExchange) BackGetStats() error {
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetStats error, the error number not in backtest"))
-		return nil
+		return errors.New("GetStats error, the error number not in backtest")
 	}
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetStats()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
+		return errors.New(fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
 	}
-	return ohlc.Data
+	return nil
 }
 
 // BackGetMarkets ...
-func (e *BaseExchange) BackGetMarkets() interface{} {
+func (e *BaseExchange) BackGetMarkets() ([]dbtypes.Stats, error) {
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetMarkets error, the error number not in backtest"))
-		return nil
+		return nil, errors.New(fmt.Sprint("GetMarkets error, the error number not in backtest"))
 	}
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetStats()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
+		return nil, errors.New(fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
 	}
-	return ohlc.Data
+	return ohlc.Data, nil
 }
 
 // BackGetSymbols  ...
-func (e *BaseExchange) BackGetSymbols(market string) interface{} {
+func (e *BaseExchange) BackGetSymbols(market string) ([]string, error) {
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetSymbols error, the error number not in backtest"))
-		return nil
+		return nil, fmt.Errorf("GetSymbols error, the error number not in backtest")
 	}
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetSymbols(market)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
+		return nil, fmt.Errorf("GetSymbols error, the error number is %s", ohlc.Message)
 	}
-	return ohlc.Data
+	return ohlc.Data, nil
 }
 
 // BackGetOHLCs ...
-func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
+func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, error) {
 	var opt dbtypes.Option
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetOHLCs error, the error number not in backtest"))
-		return nil
+		return nil, fmt.Errorf("GetOHLCs error, the error number not in backtest")
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
@@ -250,13 +251,13 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) interface{} {
 	ohlc := client.GetOHLCs(opt)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
-		return nil
+		return nil, fmt.Errorf("GetOHLCs error, the error number is %s", ohlc.Message)
 	}
-	return ohlc.Data
+	return ohlc.Data, nil
 }
 
 // BackPutOHLC ...
-func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) interface{} {
+func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) error {
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
@@ -272,17 +273,17 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
-		return nil
+		return fmt.Errorf("GetOHLCs error, the error number is %s", ohlc.Message)
 	}
-	return "success"
+	return nil
 }
 
 // BackGetTimeRange ...
-func (e *BaseExchange) BackGetTimeRange() interface{} {
+func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	var opt dbtypes.Option
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetTimeRange error, the error number not in backtest"))
-		return nil
+		return [2]int64{}, fmt.Errorf("GetTimeRange error, the error number not in backtest")
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
@@ -291,15 +292,15 @@ func (e *BaseExchange) BackGetTimeRange() interface{} {
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
 	}
-	return timeRange.Data
+	return timeRange.Data, nil
 }
 
 // BackGetPeriodRange ...
-func (e *BaseExchange) BackGetPeriodRange() interface{} {
+func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 	var opt dbtypes.Option
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange error, the error number not in backtest"))
-		return nil
+		return [2]int64{}, fmt.Errorf("GetPeriodRange error, the error number not in backtest")
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
@@ -307,17 +308,17 @@ func (e *BaseExchange) BackGetPeriodRange() interface{} {
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
-		return nil
+		return [2]int64{}, fmt.Errorf("GetPeriodRange, the error number is:" + timeRange.Message)
 	}
-	return timeRange.Data
+	return timeRange.Data, nil
 }
 
 // BackGetDepth ...
-func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
+func (e *BaseExchange) BackGetDepth(begin, end, period int64) (dbtypes.Depth, error) {
 	var opt dbtypes.Option
 	if !e.option.BackTest {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number not in backtest"))
-		return nil
+		return dbtypes.Depth{}, fmt.Errorf("GetDepth error, the error number not in backtest")
 	}
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
@@ -328,9 +329,9 @@ func (e *BaseExchange) BackGetDepth(begin, end, period int64) interface{} {
 	depth := client.GetDepth(opt)
 	if !depth.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
-		return nil
+		return dbtypes.Depth{}, fmt.Errorf("GetDepth error, the error number not in backtest")
 	}
-	return depth.Data
+	return depth.Data, nil
 }
 
 // Init ...

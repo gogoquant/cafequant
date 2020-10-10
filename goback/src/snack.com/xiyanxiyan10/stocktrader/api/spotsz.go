@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"github.com/axgle/mahonia"
 	simplejson "github.com/bitly/go-simplejson"
 	goex "github.com/nntaoli-project/goex"
@@ -194,8 +195,8 @@ func NewSZSpotExchange(opt constant.Option) *SZExchange {
 }
 
 // Ready ...
-func (e *SZExchange) Ready() interface{} {
-	return "success"
+func (e *SZExchange) Ready() error {
+	return nil
 }
 
 // Init get the type of this exchange
@@ -220,91 +221,91 @@ func (e *SZExchange) GetName() string {
 }
 
 // GetPosition ...
-func (e *SZExchange) GetPosition() interface{} {
-	return nil
+func (e *SZExchange) GetPosition() ([]constant.Position, error) {
+	return nil, fmt.Errorf("not support")
 }
 
 // GetAccount get the account detail of this exchange
-func (e *SZExchange) GetAccount() interface{} {
-	return nil
+func (e *SZExchange) GetAccount() (*constant.Account, error) {
+	return nil, fmt.Errorf("not support")
 }
 
 // Buy ...
-func (e *SZExchange) Buy(price, amount string, msg ...interface{}) interface{} {
-	return nil
+func (e *SZExchange) Buy(price, amount string, msg ...interface{}) (string, error) {
+	return "", fmt.Errorf("not support")
 }
 
 // Sell ...
-func (e *SZExchange) Sell(price, amount string, msg ...interface{}) interface{} {
-	return nil
+func (e *SZExchange) Sell(price, amount string, msg ...interface{}) (string, error) {
+	return "", fmt.Errorf("not support")
 }
 
 // GetOrder get details of an order
-func (e *SZExchange) GetOrder(id string) interface{} {
-	return nil
+func (e *SZExchange) GetOrder(id string) (*constant.Order, error) {
+	return nil, fmt.Errorf("not support")
 }
 
 // GetOrders get all unfilled orders
-func (e *SZExchange) GetOrders() interface{} {
-	return nil
+func (e *SZExchange) GetOrders() ([]constant.Order, error) {
+	return nil, fmt.Errorf("not support")
 }
 
 // CancelOrder cancel an order
-func (e *SZExchange) CancelOrder(orderID string) interface{} {
-	return nil
+func (e *SZExchange) CancelOrder(orderID string) (bool, error) {
+	return false, fmt.Errorf("not support")
 }
 
 // GetTicker get market ticker
-func (e *SZExchange) GetTicker() interface{} {
+func (e *SZExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
 	res, err := getTickerAndDepth(stockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
-		return nil
+		return nil, fmt.Errorf("GetTicker() error, the error number is ", err.Error())
 	}
 	ticker := parseTicker(res)
 	if ticker == nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ticker parse fail")
-		return nil
+		return nil, fmt.Errorf("GetTicker() error, the error number is ticker parse fail")
 	}
-	return ticker
+	return ticker, nil
 }
 
 // GetRecords get candlestick data
-func (e *SZExchange) GetRecords(periodStr, maStr string) interface{} {
+func (e *SZExchange) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
 	exchangeStockType := e.GetStockType()
 	var period int64 = -1
 	var size = constant.RecordSize
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil
+		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 	ma, err := strconv.Atoi(maStr)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil
+		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 	res, err := getRecords(exchangeStockType, int(period), ma, size)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
-		return nil
+		return nil, fmt.Errorf("GetRecords() error, the error number is ", err.Error())
 	}
-	return pareseRecords(res, ma)
+	return pareseRecords(res, ma), nil
 }
 
 // GetDepth ...
-func (e *SZExchange) GetDepth() interface{} {
+func (e *SZExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
 	res, err := getTickerAndDepth(stockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
-		return nil
+		return nil, fmt.Errorf("GetDepth() error, the error number is ", err.Error())
 	}
 	depth := parseDepth(res)
 	if depth == nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is depth parse fail")
-		return nil
+		return nil, fmt.Errorf("GetDepth() error, the error number is depth parse fail")
 	}
-	return depth
+	return depth, nil
 }

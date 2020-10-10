@@ -2,14 +2,14 @@ package api
 
 import (
 	"errors"
-	"math"
-	"sync"
-	"time"
-
+	"fmt"
 	goex "github.com/nntaoli-project/goex"
+	"math"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+	"sync"
+	"time"
 )
 
 // ExchangeFutureBackConfig ...
@@ -88,7 +88,7 @@ func isContain(items []string, item string) bool {
 }
 
 // Ready ...
-func (e *ExchangeFutureBack) Ready() interface{} {
+func (e *ExchangeFutureBack) Ready() error {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())
@@ -102,41 +102,37 @@ func (e *ExchangeFutureBack) Ready() interface{} {
 	e.dataLoader = make(map[string]*DataLoader, 1)
 	e.longPosition = make(map[string]constant.Position, 1)
 	e.shortPosition = make(map[string]constant.Position, 1)
-	val := e.BaseExchange.BackGetSymbols(e.BaseExchange.option.Type)
-	if val == nil {
-		return nil
+	markets, err := e.BaseExchange.BackGetSymbols(e.BaseExchange.option.Type)
+	if err == nil {
+		return err
 	}
-	markets := val.([]string)
 	for stock := range e.BaseExchange.subscribeMap {
 		var loader DataLoader
 		e.dataLoader[stock] = &loader
 		if isContain(markets, stock) == false {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "stock not found in BackGetSymbols()")
-			return nil
+			return fmt.Errorf("stock not found in BackGetSymbols()")
 		}
-		val := e.BaseExchange.BackGetTimeRange()
-		if val == nil {
-			return nil
+		timeRange, err := e.BaseExchange.BackGetTimeRange()
+		if err != nil {
+			return err
 		}
-		timeRange := val.([2]int64)
 		if e.BaseExchange.start < timeRange[0] || e.BaseExchange.end > timeRange[1] {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "time range not in %d - %d", timeRange[0], timeRange[1])
-			return nil
+			return fmt.Errorf("time range not in %d - %d", timeRange[0], timeRange[1])
 		}
-		val = e.BaseExchange.BackGetPeriodRange()
-		if val == nil {
-			return nil
+		periodRange, err := e.BaseExchange.BackGetPeriodRange()
+		if err != nil {
+			return err
 		}
-		periodRange := val.([2]int64)
 		if e.BaseExchange.period < periodRange[0] || e.BaseExchange.period > periodRange[1] {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in %d - %d", periodRange[0], periodRange[1])
-			return nil
+			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
-		val = e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
-		if val == nil {
-			return nil
+		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		if err != nil {
+			return err
 		}
-		ohlcs := val.([]dbtypes.OHLC)
 		e.dataLoader[stock].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
@@ -145,7 +141,7 @@ func (e *ExchangeFutureBack) Ready() interface{} {
 		sub.Amount = val
 		e.acc.SubAccounts[key] = sub
 	}
-	return "success"
+	return nil
 }
 
 // position2ValDiff ...
@@ -448,12 +444,11 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 
 // GetDepth ...
 func (ex *ExchangeFutureBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	val := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
-	if val == nil {
-		return nil, errors.New("Get depth fail")
+	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
+	if err != nil {
+		return nil, err
 	}
 	var depth constant.Depth
-	dbdepth := val.(dbtypes.Depth)
 	for _, ask := range dbdepth.Asks {
 		var record constant.DepthRecord
 		record.Amount = ask.Amount
@@ -598,22 +593,20 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) interface{} {
+func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
 	var period int64 = -1
 	var size = constant.RecordSize
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil
+		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 
-	val := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
-	if val != nil {
+	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
+	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
-		return nil
+		return nil, err
 	}
-	vec := val.([]dbtypes.OHLC)
-
 	if len(vec) > size {
 		vec = vec[0 : size-1]
 	}
@@ -627,5 +620,5 @@ func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) interface{} {
 			Volume: kline.Volume,
 		}}, records...)
 	}
-	return records
+	return records, nil
 }

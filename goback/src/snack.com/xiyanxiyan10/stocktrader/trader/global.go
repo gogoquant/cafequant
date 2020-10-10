@@ -25,16 +25,16 @@ type Tasks map[string][]task
 
 // GlobalHandler ...
 type GlobalHandler interface {
-	DingSet(token, key string) interface{}
-	DingSend(msg string) interface{}
-	MailSet(to, server, portStr, username, password string) interface{}
-	MailSend(msg string) interface{}
-	DrawSetPath(path string) interface{}
-	DrawGetPath() interface{}
-	DrawReset() interface{}
-	DrawKLine(time string, a, b, c, d float32) interface{}
-	DrawLine(name string, time string, data float32) interface{}
-	DrawPlot() interface{}
+	DingSet(token, key string) error
+	DingSend(msg string) error
+	MailSet(to, server, portStr, username, password string) error
+	MailSend(msg string) error
+	DrawSetPath(path string)
+	DrawGetPath() string
+	DrawReset()
+	DrawKLine(time string, a, b, c, d float32)
+	DrawLine(name string, time string, data float32)
+	DrawPlot() error
 	Wait() int
 }
 
@@ -100,47 +100,38 @@ type task struct {
 }
 
 // DingSet ...
-func (g *Global) DingSet(token, key string) interface{} {
+func (g *Global) DingSet(token, key string) error {
 	g.ding.Set(token, key)
-	return "success"
+	return nil
 }
 
 // DingSend ...
-func (g *Global) DingSend(msg string) interface{} {
-	err := g.ding.Send(msg)
-	if err != nil {
-		return nil
-	}
-	return "success"
+func (g *Global) DingSend(msg string) error {
+	return g.ding.Send(msg)
 }
 
 // MailSet ...
-func (g *Global) MailSet(to, server, portStr, username, password string) interface{} {
+func (g *Global) MailSet(to, server, portStr, username, password string) error {
 	port, err := conver.Int(portStr)
 	if err != nil {
-		return nil
+		return err
 	}
 	g.mail.Set(to, server, port, username, password)
-	return "success"
+	return nil
 }
 
 // MailSend ...
-func (g *Global) MailSend(msg string) interface{} {
-	err := g.mail.Send(msg)
-	if err != nil {
-		return nil
-	}
-	return "success"
+func (g *Global) MailSend(msg string) error {
+	return g.mail.Send(msg)
 }
 
 // DrawSetPath set file path for config map
-func (g *Global) DrawSetPath(path string) interface{} {
+func (g *Global) DrawSetPath(path string) {
 	g.draw.SetPath(path)
-	return true
 }
 
 // DrawGetPath get file path from config map
-func (g *Global) DrawGetPath() interface{} {
+func (g *Global) DrawGetPath() string {
 	// get the picture path
 	path := g.draw.GetPath()
 	if path == "" {
@@ -150,30 +141,27 @@ func (g *Global) DrawGetPath() interface{} {
 }
 
 // DrawReset ...
-func (g *Global) DrawReset() interface{} {
+func (g *Global) DrawReset() {
 	g.draw.Reset()
-	return true
 }
 
 // DrawKLine ...
-func (g *Global) DrawKLine(time string, a, b, c, d float32) interface{} {
+func (g *Global) DrawKLine(time string, a, b, c, d float32) {
 	g.draw.PlotKLine(time, a, b, c, d)
-	return true
 }
 
 // DrawLine ...
-func (g *Global) DrawLine(name string, time string, data float32) interface{} {
+func (g *Global) DrawLine(name string, time string, data float32) {
 	g.draw.PlotLine(name, time, data)
-	return true
 }
 
 // DrawPlot ...
-func (g *Global) DrawPlot() interface{} {
+func (g *Global) DrawPlot() error {
 	if err := g.draw.Display(); err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 // Console ...
@@ -309,23 +297,23 @@ func (g *Global) ExecTasks(group otto.Value) (results []interface{}) {
 }
 
 // LogFile ...
-func (g *Global) LogFile(name, strContent string) interface{} {
+func (g *Global) LogFile(name, strContent string) error {
 	fd, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not open the file:", err)
-		return nil
+		return err
 	}
 	fdContent := strContent
 	buf := []byte(fdContent)
 	_, err = fd.Write(buf)
 	if err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not write the file:", err)
-		return nil
+		return err
 	}
 	err = fd.Close()
 	if err != nil {
 		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not close the file:", err)
-		return nil
+		return err
 	}
-	return "success"
+	return nil
 }

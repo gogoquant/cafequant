@@ -127,12 +127,11 @@ func (e *ExchangePythonLink) Sleep(args *py.Tuple) (ret *py.Base, err error) {
 
 // GetAccount ...
 func (e *ExchangePythonLink) GetAccount(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetAccount()
-	if s == nil {
-		return py.IncNone(), errors.New("get account fail")
+	account, err := e.api.GetAccount()
+	if err != nil {
+		return py.IncNone(), err
 	}
-	account := s.(constant.Account)
-	val, ok := pyutil.NewVar(account)
+	val, ok := pyutil.NewVar(*account)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -141,12 +140,11 @@ func (e *ExchangePythonLink) GetAccount(args *py.Tuple) (ret *py.Base, err error
 
 // GetDepth ...
 func (e *ExchangePythonLink) GetDepth(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetDepth()
-	if s == nil {
-		return py.IncNone(), errors.New("get depth fail")
+	depth, err := e.api.GetDepth()
+	if err == nil {
+		return py.IncNone(), err
 	}
-	depth := s.(constant.Depth)
-	val, ok := pyutil.NewVar(depth)
+	val, ok := pyutil.NewVar(*depth)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -161,11 +159,10 @@ func (e *ExchangePythonLink) Buy(args *py.Tuple) (ret *py.Base, err error) {
 	if err != nil {
 		return
 	}
-	s := e.api.Buy(price, amount, msgs)
-	if s == nil {
-		return py.IncNone(), errors.New("buy fail")
+	ID, err := e.api.Buy(price, amount, msgs)
+	if err != nil {
+		return py.IncNone(), err
 	}
-	ID := s.(string)
 	val, ok := pyutil.NewVar(ID)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
@@ -181,11 +178,10 @@ func (e *ExchangePythonLink) Sell(args *py.Tuple) (ret *py.Base, err error) {
 	if err != nil {
 		return
 	}
-	s := e.api.Sell(price, amount, msgs)
-	if s == nil {
-		return py.IncNone(), errors.New("sell fail")
+	ID, err := e.api.Sell(price, amount, msgs)
+	if err != nil {
+		return py.IncNone(), err
 	}
-	ID := s.(string)
 	val, ok := pyutil.NewVar(ID)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
@@ -200,12 +196,11 @@ func (e *ExchangePythonLink) GetOrder(args *py.Tuple) (ret *py.Base, err error) 
 	if err != nil {
 		return
 	}
-	s := e.api.GetOrder(ID)
-	if s == nil {
+	order, err := e.api.GetOrder(ID)
+	if err != nil {
 		return py.IncNone(), errors.New("get order fail")
 	}
-	order := s.(constant.Order)
-	val, ok := pyutil.NewVar(order)
+	val, ok := pyutil.NewVar(*order)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -214,11 +209,10 @@ func (e *ExchangePythonLink) GetOrder(args *py.Tuple) (ret *py.Base, err error) 
 
 // GetOrders ...
 func (e *ExchangePythonLink) GetOrders(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetOrders()
-	if s == nil {
-		return py.IncNone(), errors.New("get orders fail")
+	orders, err := e.api.GetOrders()
+	if err != nil {
+		return py.IncNone(), err
 	}
-	orders := s.([]constant.Order)
 	val, ok := pyutil.NewVar(orders)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
@@ -233,21 +227,20 @@ func (e *ExchangePythonLink) CancelOrder(args *py.Tuple) (ret *py.Base, err erro
 	if err != nil {
 		return py.IncNone(), errors.New("cancel order fail")
 	}
-	s := e.api.CancelOrder(ID)
-	if s == nil {
-		return py.IncNone(), errors.New("cancel order fail")
+	_, err = e.api.CancelOrder(ID)
+	if err != nil {
+		return py.IncNone(), err
 	}
 	return py.IncNone(), nil
 }
 
 // GetTicker ...
 func (e *ExchangePythonLink) GetTicker(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetTicker()
-	if s == nil {
-		return py.IncNone(), errors.New("get ticker fail")
+	ticker, err := e.api.GetTicker()
+	if err != nil {
+		return py.IncNone(), err
 	}
-	ticker := s.(constant.Ticker)
-	val, ok := pyutil.NewVar(ticker)
+	val, ok := pyutil.NewVar(*ticker)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -262,11 +255,10 @@ func (e *ExchangePythonLink) GetRecords(args *py.Tuple) (ret *py.Base, err error
 	if err != nil {
 		return py.IncNone(), errors.New("parse param fail")
 	}
-	s := e.api.GetRecords(period, ma)
-	if s == nil {
-		return py.IncNone(), errors.New("get records fail")
+	records, err := e.api.GetRecords(period, ma)
+	if err != nil {
+		return py.IncNone(), err
 	}
-	records := s.([]constant.Record)
 	val, ok := pyutil.NewVar(records)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
@@ -361,12 +353,11 @@ func (e *ExchangePythonLink) GetStockType(args *py.Tuple) (ret *py.Base, err err
 
 // GetPosition ...
 func (e *ExchangePythonLink) GetPosition(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetPosition()
-	if s == nil {
-		return py.IncNone(), errors.New("get position fail")
+	position, err := e.api.GetPosition()
+	if err != nil {
+		return py.IncNone(), err
 	}
-	records := s.([]constant.Position)
-	val, ok := pyutil.NewVar(records)
+	val, ok := pyutil.NewVar(position)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -376,11 +367,10 @@ func (e *ExchangePythonLink) GetPosition(args *py.Tuple) (ret *py.Base, err erro
 
 // GetBackAccount ...
 func (e *ExchangePythonLink) GetBackAccount(args *py.Tuple) (ret *py.Base, err error) {
-	s := e.api.GetBackAccount()
-	if s == nil {
+	account := e.api.GetBackAccount()
+	if err != nil {
 		return py.IncNone(), errors.New("get backaccount fail")
 	}
-	account := s.(map[string]float64)
 	val, ok := pyutil.NewVar(account)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
