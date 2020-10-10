@@ -1,6 +1,7 @@
 package goplugin
 
 import (
+	"fmt"
 	"plugin"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
@@ -101,8 +102,7 @@ func (p *GoPlugin) AddStragey(v GoStrageyHandler) {
 }
 
 // LoadStragey ...
-func (p *GoPlugin) LoadStragey() (res interface{}) {
-	res = nil
+func (p *GoPlugin) LoadStragey() error {
 	defer func() {
 		if err := recover(); err != nil {
 			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
@@ -112,25 +112,25 @@ func (p *GoPlugin) LoadStragey() (res interface{}) {
 	handler, err := plugin.Open(config.String(constant.GoPluginPath+"/") + name + ".so")
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
-		return nil
+		return err
 	}
 	s, err := handler.Lookup(constant.GoHandler)
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
-		return nil
+		return err
 	}
 	newHandler, ok := s.(StrageyNew)
 	if !ok {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail convert handler")
-		return nil
+		return fmt.Errorf("LoadStragey() fail convert handler")
 	}
 	strageyHandler, err := newHandler()
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
-		return nil
+		return err
 	}
 	p.AddStragey(strageyHandler)
-	return "success"
+	return nil
 }
 
 // Init ...
@@ -181,7 +181,7 @@ func (p *GoPlugin) Exit(v ...interface{}) interface{} {
 
 // GoHandler ...
 type GoHandler interface {
-	LoadStragey() interface{}
+	LoadStragey() error
 	SetStragey(string)
 	GetStragey() string
 	Init(v ...interface{}) interface{}

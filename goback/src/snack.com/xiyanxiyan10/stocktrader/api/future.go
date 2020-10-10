@@ -519,7 +519,7 @@ func (e *FutureExchange) GetRecords(periodStr, maStr string) ([]constant.Record,
 	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, int(period), size, since)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetRecords() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetRecords() error, the error number is:%s", err.Error())
 	}
 	timeLast := int64(0)
 	if len(e.records[periodStr]) > 0 {
