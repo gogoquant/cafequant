@@ -26,6 +26,7 @@ require (
 	github.com/qiniu/py v1.2.2
 	github.com/qiniu/x v1.10.5
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
+	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59 // indirect
