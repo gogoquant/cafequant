@@ -220,6 +220,7 @@ func initialize(id int64) (trader Global, err error) {
 	goExtend := goplugin.NewGoPlugin()
 	goExtend.AddMail(trader.mail)
 	goExtend.AddDraw(trader.draw)
+	goExtend.AddDing(trader.ding)
 	goExtend.Logger = &trader.Logger
 	for i, e := range es {
 		if maker, ok := exchangeMaker[e.Type]; ok {
