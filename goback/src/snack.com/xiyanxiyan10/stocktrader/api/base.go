@@ -3,15 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
-	"strings"
-	"time"
-
 	"snack.com/xiyanxiyan10/conver"
+	dbconstant "snack.com/xiyanxiyan10/stockdb/constant"
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"strings"
+	"time"
 )
 
 var (
@@ -60,24 +60,26 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 
 // BaseExchange ...
 type BaseExchange struct {
-	BaseExchangeCaches                    // cache for exchange
-	id                 int                // id of the exchange
-	ioMode             string             // io mode for exchange
-	back               bool               // back or online
-	contractType       string             // contractType
-	direction          string             // trade type
-	stockType          string             // stockType
-	lever              float64            // lever
-	recordsPeriodMap   map[string]int64   // recordsPeriod support
-	minAmountMap       map[string]float64 // minAmount of trade
-	limit              float64
-	lastSleep          int64
-	lastTimes          int64
-	subscribeMap       map[string][]string
-	currencyMap        map[string]float64
-	taker              float64
-	maker              float64
-	contractRate       float64 // 合约每张价值
+	BaseExchangeCaches         // cache for exchange
+	id                 int     // id of the exchange
+	ioMode             string  // io mode for exchange
+	back               bool    // back or online
+	contractType       string  // contractType
+	direction          string  // trade type
+	stockType          string  // stockType
+	lever              float64 // lever
+	recordsPeriodMap   map[string]int64
+
+	// recordsPeriod support
+	minAmountMap map[string]float64 // minAmount of trade
+	limit        float64
+	lastSleep    int64
+	lastTimes    int64
+	subscribeMap map[string][]string
+	currencyMap  map[string]float64
+	taker        float64
+	maker        float64
+	contractRate float64 // 合约每张价值
 	//currencyStandard bool    // 是否为币本位
 
 	start  int64
@@ -223,14 +225,14 @@ func (e *BaseExchange) BackGetMarkets() ([]dbtypes.Stats, error) {
 }
 
 // BackGetSymbols  ...
-func (e *BaseExchange) BackGetSymbols(market string) ([]string, error) {
+func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetSymbols(market)
+	ohlc := client.GetSymbols(e.GetStockType())
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetSymbols error, the error number is %s", ohlc.Message)
@@ -261,7 +263,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, e
 }
 
 // BackPutOHLC ...
-func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string) error {
+func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error {
 	defer func() {
 		if r := recover(); r != nil {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
@@ -270,6 +272,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
+	opt.Period = e.recordsPeriodMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC
 	datum.Time = time
@@ -353,6 +356,17 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	e.option = opt
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
+	e.SetRecordsPeriodMap(map[string]int64{
+		"M1":  dbconstant.Minute,
+		"M5":  5 * dbconstant.Minute,
+		"M15": 15 * dbconstant.Minute,
+		"M30": 30 * dbconstant.Minute,
+		"H1":  dbconstant.Hour,
+		"H2":  2 * dbconstant.Hour,
+		"H4":  4 * dbconstant.Hour,
+		"D1":  dbconstant.Day,
+		"W1":  dbconstant.Week,
+	})
 	return nil
 }
 

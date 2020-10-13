@@ -102,7 +102,7 @@ func (e *ExchangeFutureBack) Ready() error {
 	e.dataLoader = make(map[string]*DataLoader, 1)
 	e.longPosition = make(map[string]constant.Position, 1)
 	e.shortPosition = make(map[string]constant.Position, 1)
-	markets, err := e.BaseExchange.BackGetSymbols(e.BaseExchange.option.Type)
+	markets, err := e.BaseExchange.BackGetSymbols()
 	if err == nil {
 		return err
 	}
