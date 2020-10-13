@@ -55,7 +55,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("get records fail:%v", err)
 		}
-		fmt.Printf("get records %v", records)
+		global.Log("get records:", records)
 		global.Sleep(1000)
 	}
 
