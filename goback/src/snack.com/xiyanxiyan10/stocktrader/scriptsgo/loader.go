@@ -55,8 +55,9 @@ func main() {
 		if err != nil {
 			fmt.Printf("get records fail:%v", err)
 		}
-		global.Log("get records:", records)
+		fmt.Printf("get records:%v", records)
 		global.Sleep(1000)
+		huobiExchange.BackGetStats()
 	}
 
 }

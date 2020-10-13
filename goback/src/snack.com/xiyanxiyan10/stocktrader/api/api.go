@@ -49,10 +49,11 @@ type Exchange interface {
 	BackGetSymbols(market string) ([]string, error)                                    //获取货币种类
 	BackGetMarkets() ([]dbtypes.Stats, error)                                          //获取交易所种类
 	BackGetStats() error                                                               //获取数据中心数据
-	//BackGetPeriodRange() interface{}                         //获取周期范围
-	//BackGetTimeRange() interface{}                           //获取事件范围
-	//BackGetOHLCs(begin, end, period int64) interface{}       //获取OHLC
-	//BackGetDepth(begin, end, period int64) interface{}       //获取Depth
+
+	BackGetPeriodRange() ([2]int64, error)                         //获取周期范围
+	BackGetTimeRange() ([2]int64, error)                           //获取事件范围
+	BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, error) //获取OHLC
+	BackGetDepth(begin, end, period int64) (dbtypes.Depth, error)  //获取Depth
 }
 
 var (
