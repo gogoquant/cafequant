@@ -336,7 +336,7 @@ func (e *BaseExchange) BackGetDepth(begin, end, period int64) (dbtypes.Depth, er
 
 // Init ...
 func (e *BaseExchange) Init(opt constant.Option) error {
-	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type}
+	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.LogBack}
 	e.option = opt
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
