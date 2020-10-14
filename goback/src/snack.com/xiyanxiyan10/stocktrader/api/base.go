@@ -232,7 +232,7 @@ func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetSymbols(e.GetStockType())
+	ohlc := client.GetSymbols(e.option.Type)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetSymbols error, the error number is %s", ohlc.Message)

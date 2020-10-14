@@ -2,10 +2,28 @@ package main
 
 import (
 	"fmt"
+	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/trader"
 )
+
+func putOHLC(exchange api.Exchange, records []constant.Record, period string) error {
+	records, err := exchange.GetRecords(period, "")
+	if err != nil {
+		fmt.Printf("get records fail:%v", err)
+		return err
+	}
+	fmt.Printf("get records:%v", records)
+	for _, record := range records {
+		err = exchange.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "", period)
+		if err != nil {
+			fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
+			return err
+		}
+	}
+	return nil
+}
 
 func main() {
 	var logger model.Logger
@@ -40,21 +58,6 @@ func main() {
 		fmt.Printf("link to stockdb fail:%s", err.Error())
 		return
 	}
-	/*
-		records, err := huobiExchange.GetRecords(Period, "")
-		if err != nil {
-			fmt.Printf("get records fail:%v", err)
-			return
-		}
-		fmt.Printf("get records:%v", records)
-			for _, record := range records {
-				err = huobiExchange.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "", Period)
-				if err != nil {
-					fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
-					return
-				}
-			}
-	*/
 	markets, err := huobiExchange.BackGetMarkets()
 	if err != nil {
 		fmt.Printf("fail to get markets:%s", err.Error())
