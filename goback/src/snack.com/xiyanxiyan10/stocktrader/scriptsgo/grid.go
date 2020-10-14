@@ -33,7 +33,8 @@ func main() {
 	exchange.SetIO(IO)
 	exchange.SetContractType(Constract)
 	exchange.SetStockType(Symbol)
-	exchange.Ready()
+	exchange.SetSubscribe(Symbol, "ticker")
+	//exchange.Ready()
 
 	//global.Sleep(1000)
 	err := exchange.BackGetStats()

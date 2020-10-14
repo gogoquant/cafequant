@@ -96,6 +96,7 @@ func (e *ExchangeFutureBack) Ready() error {
 	e.makerFee = e.BaseExchange.maker
 	e.takerFee = e.BaseExchange.taker
 	e.acc = &account
+	e.acc.SubAccounts = make(map[string]constant.SubAccount)
 
 	e.pendingOrders = make(map[string]*constant.Order, 100)
 	e.finishedOrders = make(map[string]*constant.Order, 100)
@@ -103,7 +104,7 @@ func (e *ExchangeFutureBack) Ready() error {
 	e.longPosition = make(map[string]constant.Position, 1)
 	e.shortPosition = make(map[string]constant.Position, 1)
 	markets, err := e.BaseExchange.BackGetSymbols()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	for stock := range e.BaseExchange.subscribeMap {
@@ -425,7 +426,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	}
 	ohlc := loader.Next()
 	if ohlc == nil {
-		return nil, ErrDataFinished
+		return nil, nil
 	}
 	ex.currData = *ohlc
 	ex.match()

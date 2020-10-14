@@ -56,6 +56,7 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 // Load ...
 func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 	l.datas = append(l.datas, ohlcs...)
+	l.size = len(l.datas)
 }
 
 // BaseExchange ...
@@ -155,6 +156,9 @@ func (e *BaseExchange) IsBack() bool {
 
 // SetSubscribe ...
 func (e *BaseExchange) SetSubscribe(source, action string) {
+	if e.subscribeMap == nil {
+		e.subscribeMap = make(map[string][]string)
+	}
 	e.subscribeMap[source] = append(e.subscribeMap[source], action)
 }
 
