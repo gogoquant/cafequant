@@ -10,7 +10,7 @@ import (
 
 // NewFutureBackExchange create an exchange struct of futureExchange.com
 func NewFutureBackExchange(opt constant.Option) Exchange {
-	exchange := NewExchangeBackLink(opt)
+	exchange := NewExchangeFutureBackLink(opt)
 	_ = exchange.Init(opt)
 	return exchange
 }

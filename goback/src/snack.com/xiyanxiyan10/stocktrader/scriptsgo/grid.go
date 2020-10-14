@@ -7,12 +7,13 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/trader"
 )
 
+// main ...
 func main() {
 	var logger model.Logger
 	var opt constant.Option
 	var Constract = "quarter"
 	var Symbol = "BTC/USD"
-	//var Period = "M30"
+	var Period = "M30"
 	var IO = "online"
 	var global trader.Global
 
@@ -71,5 +72,25 @@ func main() {
 		return
 	}
 	fmt.Printf("success to get periodRange:%v", periodRange)
+	exchange.SetBackTime(timeRange[0], timeRange[1], Period)
+	exchange.SetBackCommission(0, 0, 100)
+	err = exchange.Ready()
+	if err != nil {
+		fmt.Printf("fail to back ready:%s", err.Error())
+		return
+	}
+	for {
+		ticker, err := exchange.GetTicker()
+		if err != nil {
+			fmt.Printf("fail to get ticker:%s", err.Error())
+			return
+		}
+		if ticker == nil {
+			break
+		}
+
+		fmt.Printf("get ticker:%v\n", ticker)
+
+	}
 	return
 }

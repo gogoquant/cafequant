@@ -111,10 +111,10 @@ func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
 }
 
 // SetBackTime ...
-func (e *BaseExchange) SetBackTime(start, end, period int64) {
+func (e *BaseExchange) SetBackTime(start, end int64, period string) {
 	e.start = start
 	e.end = end
-	e.period = period
+	e.period = e.recordsPeriodMap[period]
 }
 
 // GetBackAccount ...

@@ -417,7 +417,8 @@ func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, er
 
 // SetBackTime ...
 func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err error) {
-	var start, end, period int64
+	var start, end int64
+	var period string
 	err = py.ParseV(args, &start, &end, &period)
 	if err != nil {
 		return py.IncNone(), errors.New("parse param fail")
