@@ -85,9 +85,10 @@ type Depth struct {
 
 // Order struct
 type Order struct {
-	Id       string  //订单ID
-	Price    float64 //价格
-	AvgPrice float64
+	Id        string  //订单ID
+	Price     float64 //价格
+	OpenPrice float64 //open price
+	AvgPrice  float64
 
 	Amount     float64 //总量
 	DealAmount float64 //成交量

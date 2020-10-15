@@ -75,15 +75,15 @@ func main() {
 	}
 	fmt.Printf("success to get periodRange:%v", periodRange)
 	exchange.SetBackTime(timeRange[0], timeRange[1], Period)
-	exchange.SetBackCommission(0, 0, 100, true)
+	exchange.SetBackCommission(0, 0, 100, 0.001, true)
 	exchange.SetBackAccount(Coin, 1.0)
-	exchange.SetMarginLevel(2)
+	exchange.SetMarginLevel(5)
 	err = exchange.Ready()
 	if err != nil {
 		fmt.Printf("fail to back ready:%s", err.Error())
 		return
 	}
-	for {
+	for i := 0; i < 10; i++ {
 		ticker, err := exchange.GetTicker()
 		if err != nil {
 			fmt.Printf("fail to get ticker:%s", err.Error())
@@ -94,7 +94,54 @@ func main() {
 		}
 		fmt.Printf("get ticker:%v\n", ticker)
 		exchange.SetDirection("buy")
-		exchange.Buy("12000", "10", "buy")
+		ID, err := exchange.Buy("12000", "10", "buy")
+		if err != nil {
+			fmt.Printf("fail to buy ticker:%s", err.Error())
+		} else {
+			fmt.Printf("buy order put success\n" + ID)
+			/*
+				_, err := exchange.CancelOrder(ID)
+				if err != nil {
+					fmt.Printf("cancel order fail:%s", err.Error())
+				}
+			*/
+		}
+	}
+
+	for i := 0; i < 2; i++ {
+		ticker, err := exchange.GetTicker()
+		if err != nil {
+			fmt.Printf("fail to get ticker:%s\n", err.Error())
+			return
+		}
+		if ticker == nil {
+			break
+		}
+		exchange.SetDirection("closebuy")
+		ID, err := exchange.Sell("9000", "5", "closebuy")
+		if err != nil {
+			fmt.Printf("fail to closebuy ticker:%s\n", err.Error())
+		} else {
+			fmt.Printf("closebuy order put success\n" + ID)
+			/*
+				_, err := exchange.CancelOrder(ID)
+				if err != nil {
+					fmt.Printf("cancel order fail:%s\n", err.Error())
+
+				}
+			*/
+		}
+	}
+	for i := 0; i < 1; i++ {
+		ticker, err := exchange.GetTicker()
+		if err != nil {
+			fmt.Printf("fail to get ticker:%s\n", err.Error())
+			return
+		}
+		if ticker == nil {
+			break
+		}
+
 	}
 	return
 }

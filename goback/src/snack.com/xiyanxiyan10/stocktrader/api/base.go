@@ -78,6 +78,8 @@ type BaseExchange struct {
 	lastTimes    int64
 	subscribeMap map[string][]string
 	currencyMap  map[string]float64
+
+	coverRate    float64
 	taker        float64
 	maker        float64
 	coin         bool
@@ -101,16 +103,17 @@ func stockPair2Vec(pair string) []string {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64, coin bool) {
+func (e *BaseExchange) SetBackCommission(taker, maker, contractRate, coverRate float64, coin bool) {
 	e.contractRate = contractRate
 	e.taker = taker
 	e.maker = maker
 	e.coin = coin
+	e.coverRate = coverRate
 }
 
 // GetBackCommission 获取回测手续费
-func (e *BaseExchange) GetBackCommission() (float64, float64, float64, bool) {
-	return e.taker, e.maker, e.contractRate, e.coin
+func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64, bool) {
+	return e.taker, e.maker, e.contractRate, e.coverRate, e.coin
 }
 
 // SetBackTime ...

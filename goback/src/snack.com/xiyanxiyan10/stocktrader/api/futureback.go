@@ -191,11 +191,21 @@ func (e *ExchangeFutureBack) Ready() error {
 func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.Position) float64 {
 	amount := position.Amount + position.FrozenAmount
 	price := position.Price
-	val := amount * ex.BaseExchange.contractRate
 	priceDiff := last - price
 	priceRate := priceDiff / (price + MinFloat)
-	valDiff := priceRate * val
+	valDiff := priceRate * amount
 	return valDiff
+}
+
+func (e *ExchangeFutureBack) settlePositionProfit(last float64, position *constant.Position, asset *constant.SubAccount, dir int) {
+	valdiff := e.position2ValDiff(last, *position)
+	amountdiff := valdiff * e.contractRate / (last + MinFloat)
+	if dir == 1 {
+		amountdiff = 0 - amountdiff
+	}
+	asset.Amount = asset.Amount + amountdiff
+	position.Profit = amountdiff
+	position.ProfitRate = valdiff / ((position.Amount + position.FrozenAmount) + MinFloat)
 }
 
 // settlePosition ...
@@ -205,36 +215,20 @@ func (ex *ExchangeFutureBack) settlePosition() {
 	last := ticker.Close
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
-	assetA := ex.acc.SubAccounts[CurrencyA]
+	asset := ex.acc.SubAccounts[CurrencyA]
 
 	if _, ok := ex.longPosition[CurrencyA]; ok {
-		longposition := ex.longPosition[CurrencyA]
-		valdiff := ex.position2ValDiff(last, longposition)
-		amountdiff := valdiff * ex.contractRate / (last + MinFloat)
-		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
-			StockType:    assetA.StockType,
-			Amount:       assetA.Amount + amountdiff,
-			FrozenAmount: assetA.FrozenAmount,
-			LoanAmount:   0,
-		}
-		longposition.Profit = amountdiff
-		longposition.ProfitRate = amountdiff / ((longposition.Amount + longposition.FrozenAmount) + MinFloat)
-		ex.longPosition[CurrencyA] = longposition
+		position := ex.longPosition[CurrencyA]
+		ex.settlePositionProfit(last, &position, &asset, 0)
+		ex.acc.SubAccounts[CurrencyA] = asset
+		ex.longPosition[CurrencyA] = position
 	}
 
 	if _, ok := ex.shortPosition[CurrencyA]; ok {
-		shortposition := ex.shortPosition[CurrencyA]
-		valdiff := ex.position2ValDiff(last, shortposition)
-		amountdiff := valdiff * ex.contractRate / (last + MinFloat)
-		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
-			StockType:    assetA.StockType,
-			Amount:       assetA.Amount + amountdiff,
-			FrozenAmount: assetA.FrozenAmount,
-			LoanAmount:   0,
-		}
-		shortposition.Profit = 0 - amountdiff
-		shortposition.ProfitRate = 0 - (amountdiff / (shortposition.Amount + shortposition.FrozenAmount + MinFloat))
-		ex.shortPosition[CurrencyA] = shortposition
+		position := ex.shortPosition[CurrencyA]
+		ex.settlePositionProfit(last, &position, &asset, 0)
+		ex.acc.SubAccounts[CurrencyA] = asset
+		ex.shortPosition[CurrencyA] = position
 	}
 }
 
@@ -293,11 +287,14 @@ func (ex *ExchangeFutureBack) coverPosition() {
 	stockType := ex.BaseExchange.GetStockType()
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
-	assetA := ex.acc.SubAccounts[CurrencyA]
+	asset := ex.acc.SubAccounts[CurrencyA]
 	longposition := ex.longPosition[CurrencyA]
 	shortposition := ex.longPosition[CurrencyA]
-	valdiff := longposition.Profit + shortposition.Profit
-	if valdiff+assetA.Amount+assetA.FrozenAmount < 0 {
+	lft := asset.Amount
+	rht := 0.0
+	rht = rht + (longposition.Amount*ex.BaseExchange.contractRate)/(longposition.Price+MinFloat)
+	rht = rht + (shortposition.Amount*ex.BaseExchange.contractRate)/(shortposition.Price+MinFloat)
+	if lft/(rht+MinFloat) < ex.coverRate {
 		//Force cover position
 		ex.longPosition[CurrencyA] = constant.Position{}
 		ex.shortPosition[CurrencyA] = constant.Position{}
@@ -317,6 +314,7 @@ func (ex *ExchangeFutureBack) LimitBuy(amount, price, currency string) (*constan
 
 	ord := constant.Order{
 		Price:     goex.ToFloat64(price),
+		OpenPrice: ex.currData.Close,
 		Amount:    goex.ToFloat64(amount),
 		Id:        ex.idGen.Get(),
 		Time:      ex.currData.Time / int64(time.Millisecond),
@@ -523,19 +521,26 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	CurrencyA := stocks[0]
 	ticker := ex.currData
 	var price float64 = 1
-	// 币本位取当前币价换算
-	if ex.coin {
-		price = ticker.Close
-	}
+	price = ticker.Close
 	avaAmount := ex.acc.SubAccounts[CurrencyA].Amount
+	// 减去未实现收益
+	//avaAmount
+	longposition := ex.longPosition[CurrencyA]
+	shortposition := ex.shortPosition[CurrencyA]
+	if longposition.Profit > 0 {
+		avaAmount -= longposition.Profit
+	}
+
+	if shortposition.Profit > 0 {
+		avaAmount -= shortposition.Profit
+	}
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
 		if avaAmount*lever*price < order.Amount*ex.BaseExchange.contractRate {
-			return fmt.Errorf("insufficient symbol:%s, currency:%f, lever:%v, price:%f, amount:%v, contractRate:%v",
-				CurrencyA, avaAmount, lever, price, order.Amount, ex.BaseExchange.contractRate)
+			return ErrDataInsufficient
 		}
-		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever*order.Price + MinFloat)
+		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever*price + MinFloat)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
 			Amount:       avaAmount - costAmount,
@@ -574,8 +579,8 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
+		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.OpenPrice)
 		if order.Status == constant.ORDER_CANCEL {
-			costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
 				Amount:       assetA.Amount + costAmount - order.DealAmount,
@@ -585,62 +590,52 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 		} else {
 			if order.TradeType == constant.TradeTypeLong {
 				position := ex.longPosition[CurrencyA]
-				position.Price = (position.Price * position.Amount / (position.Amount + order.Amount))
+				position.Price = (position.Price*position.Amount + order.OpenPrice*order.Amount) / (position.Amount + order.Amount + MinFloat)
 				position.Amount = position.Amount + order.Amount
 				ex.longPosition[CurrencyA] = position
+				//fmt.Printf("set long position as:%v\n", position)
 			} else {
 				position := ex.shortPosition[CurrencyA]
-				position.Price = (position.Price * position.Amount / (position.Amount + order.Amount))
+				position.Price = (position.Price*position.Amount + order.OpenPrice*order.Amount) / (position.Amount + order.Amount + MinFloat)
 				position.Amount = position.Amount + order.Amount
 				ex.shortPosition[CurrencyA] = position
+				//fmt.Printf("set short position as:%v\n", position)
 			}
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
-				FrozenAmount: assetA.FrozenAmount - order.Amount,
+				FrozenAmount: assetA.FrozenAmount - costAmount,
+				Amount:       assetA.Amount,
 				LoanAmount:   0,
 			}
 		}
 	case constant.TradeTypeLongClose, constant.TradeTypeShortClose:
+		var position constant.Position
+		if order.TradeType == constant.TradeTypeLongClose {
+			position = ex.longPosition[CurrencyA]
+		} else {
+			position = ex.shortPosition[CurrencyA]
+		}
 		if order.Status == constant.ORDER_CANCEL {
-			if order.TradeType == constant.TradeTypeLongClose {
-				position := ex.longPosition[CurrencyA]
-				position.Amount = position.Amount + order.Amount
-				position.FrozenAmount = position.FrozenAmount - order.Amount
-				ex.longPosition[CurrencyA] = position
-			} else {
-				position := ex.longPosition[CurrencyA]
-				position.FrozenAmount = position.FrozenAmount - order.Amount
-				ex.longPosition[CurrencyA] = position
-
-				costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
-				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
-					StockType:    assetA.StockType,
-					Amount:       assetA.Amount + costAmount + fee,
-					FrozenAmount: assetA.FrozenAmount,
-					LoanAmount:   0,
-				}
-			}
-
-			if order.TradeType == constant.TradeTypeShortClose {
-				position := ex.shortPosition[CurrencyA]
-				position.Amount = position.Amount + order.Amount
-				position.FrozenAmount = position.FrozenAmount - order.Amount
-				ex.shortPosition[CurrencyA] = position
-			} else {
-				position := ex.longPosition[CurrencyA]
-				position.FrozenAmount = position.FrozenAmount - order.Amount
-				ex.longPosition[CurrencyA] = position
-
-				costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
-				ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
-					StockType:    assetA.StockType,
-					Amount:       assetA.Amount + costAmount + fee,
-					FrozenAmount: assetA.FrozenAmount,
-					LoanAmount:   0,
-				}
-
+			position.Amount = position.Amount + order.Amount
+			position.FrozenAmount = position.FrozenAmount - order.Amount
+		} else {
+			//ex.longPosition[CurrencyA] = position
+			position.FrozenAmount = position.FrozenAmount - order.Amount
+			ex.longPosition[CurrencyA] = position
+			costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.OpenPrice)
+			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
+				StockType:    assetA.StockType,
+				Amount:       assetA.Amount + costAmount + fee,
+				FrozenAmount: assetA.FrozenAmount,
+				LoanAmount:   0,
 			}
 		}
+		if order.TradeType == constant.TradeTypeLongClose {
+			ex.longPosition[CurrencyA] = position
+		} else {
+			ex.shortPosition[CurrencyA] = position
+		}
+
 	}
 }
 
@@ -654,13 +649,13 @@ func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) ([]constant.Rec
 		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 
-	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
+	vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.currData.Time, period)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
 		return nil, err
 	}
 	if len(vec) > size {
-		vec = vec[0 : size-1]
+		vec = vec[len(vec)-size:]
 	}
 	var records []constant.Record
 	for _, kline := range vec {
