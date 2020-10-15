@@ -94,7 +94,7 @@ func main() {
 		}
 		fmt.Printf("get ticker:%v\n", ticker)
 		exchange.SetDirection("buy")
-		exchange.Buy("5000", "10", "buy")
+		exchange.Buy("12000", "10", "buy")
 	}
 	return
 }
