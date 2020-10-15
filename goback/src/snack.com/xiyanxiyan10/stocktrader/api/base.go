@@ -80,6 +80,7 @@ type BaseExchange struct {
 	currencyMap  map[string]float64
 	taker        float64
 	maker        float64
+	coin         bool
 	contractRate float64 // 合约每张价值
 	//currencyStandard bool    // 是否为币本位
 
@@ -100,15 +101,16 @@ func stockPair2Vec(pair string) []string {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64) {
+func (e *BaseExchange) SetBackCommission(taker, maker, contractRate float64, coin bool) {
 	e.contractRate = contractRate
 	e.taker = taker
 	e.maker = maker
+	e.coin = coin
 }
 
 // GetBackCommission 获取回测手续费
-func (e *BaseExchange) GetBackCommission() (float64, float64, float64) {
-	return e.taker, e.maker, e.contractRate
+func (e *BaseExchange) GetBackCommission() (float64, float64, float64, bool) {
+	return e.taker, e.maker, e.contractRate, e.coin
 }
 
 // SetBackTime ...
@@ -371,6 +373,7 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 		"D1":  dbconstant.Day,
 		"W1":  dbconstant.Week,
 	})
+	e.currencyMap = make(map[string]float64)
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
@@ -10,6 +11,11 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"sync"
 	"time"
+)
+
+const (
+	//MinFloat ...
+	MinFloat = 0.000000000001
 )
 
 // ExchangeFutureBackConfig ...
@@ -58,11 +64,11 @@ func NewExchangeFutureBack2Config(config ExchangeBackConfig) *ExchangeFutureBack
 		acc:                  &config.Account,
 		supportCurrencyPairs: config.SupportCurrencyPairs,
 		quoteCurrency:        config.QuoteCurrency,
-		pendingOrders:        make(map[string]*constant.Order, 100),
-		finishedOrders:       make(map[string]*constant.Order, 100),
-		dataLoader:           make(map[string]*DataLoader, 1),
-		longPosition:         make(map[string]constant.Position, 1),
-		shortPosition:        make(map[string]constant.Position, 1),
+		pendingOrders:        make(map[string]*constant.Order, 0),
+		finishedOrders:       make(map[string]*constant.Order, 0),
+		dataLoader:           make(map[string]*DataLoader, 0),
+		longPosition:         make(map[string]constant.Position, 0),
+		shortPosition:        make(map[string]constant.Position, 0),
 	}
 
 	for key, sub := range sim.acc.SubAccounts {
@@ -76,6 +82,43 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 	sim := &ExchangeFutureBack{}
 	sim.back = true
 	return sim
+}
+
+// Debug ..,
+func (e *ExchangeFutureBack) Debug() error {
+	fmt.Printf("---FutureBack info start---\n")
+	fmt.Printf("longPosition:\n")
+	v, err := json.Marshal(e.longPosition)
+	if err != nil {
+		fmt.Printf("convert longPosition err :%s\n", err.Error())
+		return err
+	}
+	fmt.Printf("%s\n", string(v))
+	fmt.Printf("shortPosition:\n")
+	v, err = json.Marshal(e.shortPosition)
+	if err != nil {
+		fmt.Printf("convert shortPosition err :%s\n", err.Error())
+		return err
+	}
+	fmt.Printf("%s\n", string(v))
+	fmt.Printf("account:\n")
+	if e.acc != nil {
+		v, err = json.Marshal(e.acc)
+		if err != nil {
+			fmt.Printf("convert account err :%s\n", err.Error())
+			return err
+		}
+		fmt.Printf("%s\n", string(v))
+	}
+	fmt.Printf("pendingOrders:\n")
+	v, err = json.Marshal(e.pendingOrders)
+	if err != nil {
+		fmt.Printf("convert pending orders err :%s\n", err.Error())
+		return err
+	}
+	fmt.Printf("%s\n", string(v))
+	fmt.Printf("---FutureBack info end---\n")
+	return nil
 }
 
 func isContain(items []string, item string) bool {
@@ -97,12 +140,11 @@ func (e *ExchangeFutureBack) Ready() error {
 	e.takerFee = e.BaseExchange.taker
 	e.acc = &account
 	e.acc.SubAccounts = make(map[string]constant.SubAccount)
-
-	e.pendingOrders = make(map[string]*constant.Order, 100)
-	e.finishedOrders = make(map[string]*constant.Order, 100)
-	e.dataLoader = make(map[string]*DataLoader, 1)
-	e.longPosition = make(map[string]constant.Position, 1)
-	e.shortPosition = make(map[string]constant.Position, 1)
+	e.pendingOrders = make(map[string]*constant.Order, 0)
+	e.finishedOrders = make(map[string]*constant.Order, 0)
+	e.dataLoader = make(map[string]*DataLoader, 0)
+	e.longPosition = make(map[string]constant.Position, 0)
+	e.shortPosition = make(map[string]constant.Position, 0)
 	markets, err := e.BaseExchange.BackGetSymbols()
 	if err != nil {
 		return err
@@ -151,7 +193,7 @@ func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.P
 	price := position.Price
 	val := amount * ex.BaseExchange.contractRate
 	priceDiff := last - price
-	priceRate := priceDiff / price
+	priceRate := priceDiff / (price + MinFloat)
 	valDiff := priceRate * val
 	return valDiff
 }
@@ -165,32 +207,35 @@ func (ex *ExchangeFutureBack) settlePosition() {
 	CurrencyA := stocks[0]
 	assetA := ex.acc.SubAccounts[CurrencyA]
 
-	longposition := ex.longPosition[CurrencyA]
-	valdiff := ex.position2ValDiff(last, longposition)
-	amountdiff := valdiff * ex.contractRate / last
-	ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
-		StockType:    assetA.StockType,
-		Amount:       assetA.Amount + amountdiff,
-		FrozenAmount: assetA.FrozenAmount,
-		LoanAmount:   0,
-	}
-	longposition.Profit = amountdiff
-	longposition.ProfitRate = amountdiff / (longposition.Amount + longposition.FrozenAmount)
-	ex.longPosition[CurrencyA] = longposition
-
-	shortposition := ex.shortPosition[CurrencyA]
-	valdiff = ex.position2ValDiff(last, shortposition)
-	amountdiff = valdiff * ex.contractRate / last
-	ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
-		StockType:    assetA.StockType,
-		Amount:       assetA.Amount + amountdiff,
-		FrozenAmount: assetA.FrozenAmount,
-		LoanAmount:   0,
+	if _, ok := ex.longPosition[CurrencyA]; ok {
+		longposition := ex.longPosition[CurrencyA]
+		valdiff := ex.position2ValDiff(last, longposition)
+		amountdiff := valdiff * ex.contractRate / (last + MinFloat)
+		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
+			StockType:    assetA.StockType,
+			Amount:       assetA.Amount + amountdiff,
+			FrozenAmount: assetA.FrozenAmount,
+			LoanAmount:   0,
+		}
+		longposition.Profit = amountdiff
+		longposition.ProfitRate = amountdiff / ((longposition.Amount + longposition.FrozenAmount) + MinFloat)
+		ex.longPosition[CurrencyA] = longposition
 	}
 
-	shortposition.Profit = 0 - amountdiff
-	shortposition.ProfitRate = 0 - (amountdiff / (shortposition.Amount + shortposition.FrozenAmount))
-	ex.shortPosition[CurrencyA] = shortposition
+	if _, ok := ex.shortPosition[CurrencyA]; ok {
+		shortposition := ex.shortPosition[CurrencyA]
+		valdiff := ex.position2ValDiff(last, shortposition)
+		amountdiff := valdiff * ex.contractRate / (last + MinFloat)
+		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
+			StockType:    assetA.StockType,
+			Amount:       assetA.Amount + amountdiff,
+			FrozenAmount: assetA.FrozenAmount,
+			LoanAmount:   0,
+		}
+		shortposition.Profit = 0 - amountdiff
+		shortposition.ProfitRate = 0 - (amountdiff / (shortposition.Amount + shortposition.FrozenAmount + MinFloat))
+		ex.shortPosition[CurrencyA] = shortposition
+	}
 }
 
 // fillOrder ...
@@ -218,7 +263,7 @@ func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
 	ticker := ex.currData
 	switch ord.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShortClose:
-		if ticker.Close >= ord.Price && ticker.Volume > 0 {
+		if ticker.Close <= ord.Price && ticker.Volume > 0 {
 			ex.fillOrder(isTaker, ticker.Volume, ticker.Close, ord)
 			if ord.Status == constant.ORDER_FINISH {
 				delete(ex.pendingOrders, ord.Id)
@@ -226,7 +271,7 @@ func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
 			}
 		}
 	case constant.TradeTypeShort, constant.TradeTypeLongClose:
-		if ticker.Close <= ord.Price && ticker.Volume > 0 {
+		if ticker.Close >= ord.Price && ticker.Volume > 0 {
 			ex.fillOrder(isTaker, ticker.Volume, ticker.Close, ord)
 			if ord.Status == constant.ORDER_FINISH {
 				delete(ex.pendingOrders, ord.Id)
@@ -432,6 +477,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	ex.match()
 	ex.settlePosition()
 	ex.coverPosition()
+	ex.Debug()
 	return &constant.Ticker{
 		Vol:  ohlc.Volume,
 		Time: ohlc.Time,
@@ -476,15 +522,20 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
 	ticker := ex.currData
-	price := ticker.Close
+	var price float64 = 1
+	// 币本位取当前币价换算
+	if ex.coin {
+		price = ticker.Close
+	}
 	avaAmount := ex.acc.SubAccounts[CurrencyA].Amount
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
 		if avaAmount*lever*price < order.Amount*ex.BaseExchange.contractRate {
-			return ErrDataInsufficient
+			return fmt.Errorf("insufficient symbol:%s, currency:%f, lever:%v, price:%f, amount:%v, contractRate:%v",
+				CurrencyA, avaAmount, lever, price, order.Amount, ex.BaseExchange.contractRate)
 		}
-		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.Price)
+		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever*order.Price + MinFloat)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
 			Amount:       avaAmount - costAmount,

@@ -19,6 +19,7 @@ type BackCommission struct {
 	Taker        float64
 	Maker        float64
 	ContractRate float64 // 合约每张价值
+	Coin         bool
 }
 
 // ExchangePythonLink ...
@@ -397,17 +398,18 @@ func (e *ExchangePythonLink) SetBackCommission(args *py.Tuple) (ret *py.Base, er
 	if err != nil {
 		return py.IncNone(), errors.New("parse param fail")
 	}
-	e.api.SetBackCommission(start, end, period)
+	e.api.SetBackCommission(start, end, period, true)
 	return py.IncNone(), nil
 }
 
 // GetBackCommission ...
 func (e *ExchangePythonLink) GetBackCommission(args *py.Tuple) (ret *py.Base, err error) {
 	var commission BackCommission
-	taker, maker, rate := e.api.GetBackCommission()
+	taker, maker, rate, coin := e.api.GetBackCommission()
 	commission.Taker = taker
 	commission.Maker = maker
 	commission.ContractRate = rate
+	commission.Coin = coin
 	val, ok := pyutil.NewVar(commission)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")

@@ -15,6 +15,7 @@ func main() {
 	var Symbol = "BTC/USD"
 	var Period = "M30"
 	var IO = "online"
+	var Coin = "BTC"
 	var global trader.Global
 
 	logger.Back = true
@@ -74,7 +75,9 @@ func main() {
 	}
 	fmt.Printf("success to get periodRange:%v", periodRange)
 	exchange.SetBackTime(timeRange[0], timeRange[1], Period)
-	exchange.SetBackCommission(0, 0, 100)
+	exchange.SetBackCommission(0, 0, 100, true)
+	exchange.SetBackAccount(Coin, 1.0)
+	exchange.SetMarginLevel(2)
 	err = exchange.Ready()
 	if err != nil {
 		fmt.Printf("fail to back ready:%s", err.Error())
@@ -89,9 +92,9 @@ func main() {
 		if ticker == nil {
 			break
 		}
-
 		fmt.Printf("get ticker:%v\n", ticker)
-
+		exchange.SetDirection("buy")
+		exchange.Buy("5000", "10", "buy")
 	}
 	return
 }
