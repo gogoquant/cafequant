@@ -8,7 +8,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/trader"
 )
 
-func putOHLC(exchange api.Exchange, records []constant.Record, period string) error {
+func putOHLC(exchange api.Exchange, period string) error {
 	records, err := exchange.GetRecords(period, "")
 	if err != nil {
 		fmt.Printf("get records fail:%v", err)
@@ -64,6 +64,11 @@ func main() {
 		return
 	}
 	fmt.Printf("success to get records:%v", records)
+	err = putOHLC(exchange, "M5")
+	if err != nil {
+		fmt.Printf("put ohlcs fail:%s", err.Error())
+		return
+	}
 	return
 	markets, err := exchange.BackGetMarkets()
 	if err != nil {
