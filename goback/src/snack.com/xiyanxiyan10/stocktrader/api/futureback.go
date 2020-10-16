@@ -172,7 +172,7 @@ func (e *ExchangeFutureBack) Ready() error {
 		if err != nil {
 			return err
 		}
-		if e.BaseExchange.period < periodRange[0] || e.BaseExchange.period > periodRange[1] {
+		if e.recordsPeriodDbMap[e.BaseExchange.period] < periodRange[0] || e.recordsPeriodDbMap[e.BaseExchange.period] > periodRange[1] {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in %d - %d", periodRange[0], periodRange[1])
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
@@ -517,7 +517,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 
 // GetDepth ...
 func (ex *ExchangeFutureBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
+	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, "M5")
 	if err != nil {
 		return nil, err
 	}
@@ -671,14 +671,8 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeFutureBack) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
-	var period int64 = -1
+func (e *ExchangeFutureBack) GetRecords(period, maStr string) ([]constant.Record, error) {
 	var size = constant.RecordSize
-	period, ok := e.recordsPeriodMap[periodStr]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
-	}
 
 	vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.currData.Time, period)
 	if err != nil {

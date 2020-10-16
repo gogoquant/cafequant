@@ -48,17 +48,6 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
-	spotExchange.SetRecordsPeriodMap(map[string]int64{
-		"M1":  goex.KLINE_PERIOD_1MIN,
-		"M5":  goex.KLINE_PERIOD_5MIN,
-		"M15": goex.KLINE_PERIOD_15MIN,
-		"M30": goex.KLINE_PERIOD_30MIN,
-		"H1":  goex.KLINE_PERIOD_1H,
-		"H2":  goex.KLINE_PERIOD_4H,
-		"H4":  goex.KLINE_PERIOD_4H,
-		"D1":  goex.KLINE_PERIOD_1DAY,
-		"W1":  goex.KLINE_PERIOD_1WEEK,
-	})
 	spotExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})

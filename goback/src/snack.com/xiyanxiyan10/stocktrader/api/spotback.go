@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"math"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
@@ -353,7 +352,7 @@ func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
 
 // GetDepth ...
 func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, ex.currData.Time)
+	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, "M5")
 	if err != nil {
 		return nil, err
 	}
@@ -469,14 +468,8 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeBack) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
-	var period int64 = -1
+func (e *ExchangeBack) GetRecords(period, maStr string) ([]constant.Record, error) {
 	var size = constant.RecordSize
-	period, ok := e.recordsPeriodMap[periodStr]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
-	}
 
 	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
 	if err != nil {

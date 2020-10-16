@@ -11,7 +11,7 @@ import (
 type BackTime struct {
 	Start  int64
 	End    int64
-	Period int64
+	Period string
 }
 
 // BackCommission ...

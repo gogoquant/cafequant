@@ -70,6 +70,7 @@ type BaseExchange struct {
 	stockType          string  // stockType
 	lever              float64 // lever
 	recordsPeriodMap   map[string]int64
+	recordsPeriodDbMap map[string]int64
 
 	// recordsPeriod support
 	minAmountMap map[string]float64 // minAmount of trade
@@ -88,7 +89,7 @@ type BaseExchange struct {
 
 	start  int64
 	end    int64
-	period int64
+	period string
 	host   string
 	logger model.Logger
 	option constant.Option
@@ -120,7 +121,7 @@ func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64, 
 func (e *BaseExchange) SetBackTime(start, end int64, period string) {
 	e.start = start
 	e.end = end
-	e.period = e.recordsPeriodMap[period]
+	e.period = period
 }
 
 // GetBackAccount ...
@@ -134,7 +135,7 @@ func (e *BaseExchange) SetBackAccount(key string, val float64) {
 }
 
 // GetBackTime ...
-func (e *BaseExchange) GetBackTime() (int64, int64, int64) {
+func (e *BaseExchange) GetBackTime() (int64, int64, string) {
 	return e.start, e.end, e.period
 }
 
@@ -250,7 +251,7 @@ func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 }
 
 // BackGetOHLCs ...
-func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, error) {
+func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
@@ -259,7 +260,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, e
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
-	opt.Period = period
+	opt.Period = e.recordsPeriodDbMap[period]
 	opt.BeginTime = begin
 	opt.EndTime = end
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -281,7 +282,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
-	opt.Period = e.recordsPeriodMap[period]
+	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC
 	datum.Time = time
@@ -337,7 +338,7 @@ func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 }
 
 // BackGetDepth ...
-func (e *BaseExchange) BackGetDepth(begin, end, period int64) (dbtypes.Depth, error) {
+func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.Depth, error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -347,7 +348,7 @@ func (e *BaseExchange) BackGetDepth(begin, end, period int64) (dbtypes.Depth, er
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
-	opt.Period = period
+	opt.Period = e.recordsPeriodDbMap[period]
 	opt.BeginTime = begin
 	opt.EndTime = end
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -365,7 +366,7 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	e.option = opt
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
-	e.SetRecordsPeriodMap(map[string]int64{
+	e.recordsPeriodDbMap = map[string]int64{
 		"M1":  dbconstant.Minute,
 		"M5":  5 * dbconstant.Minute,
 		"M15": 15 * dbconstant.Minute,
@@ -375,7 +376,7 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 		"H4":  4 * dbconstant.Hour,
 		"D1":  dbconstant.Day,
 		"W1":  dbconstant.Week,
-	})
+	}
 	e.currencyMap = make(map[string]float64)
 	return nil
 }

@@ -61,17 +61,6 @@ func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
 	}
 	opt.Limit = 10.0
 	//futureExchange.BaseExchange.Init(opt)
-	futureExchange.SetRecordsPeriodMap(map[string]int64{
-		"M1":  goex.KLINE_PERIOD_1MIN,
-		"M5":  goex.KLINE_PERIOD_5MIN,
-		"M15": goex.KLINE_PERIOD_15MIN,
-		"M30": goex.KLINE_PERIOD_30MIN,
-		"H1":  goex.KLINE_PERIOD_1H,
-		"H2":  goex.KLINE_PERIOD_4H,
-		"H4":  goex.KLINE_PERIOD_4H,
-		"D1":  goex.KLINE_PERIOD_1DAY,
-		"W1":  goex.KLINE_PERIOD_1WEEK,
-	})
 	futureExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})

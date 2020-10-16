@@ -1,10 +1,24 @@
 package api
 
-import "snack.com/xiyanxiyan10/stocktrader/constant"
+import (
+	goex "github.com/nntaoli-project/goex"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
+)
 
 // NewSZExchange create an exchange struct of futureExchange.com
 func NewSZExchange(opt constant.Option) Exchange {
 	exchange := NewSZSpotExchange(opt)
+	exchange.SetRecordsPeriodMap(map[string]int64{
+		"M1":  goex.KLINE_PERIOD_1MIN,
+		"M5":  goex.KLINE_PERIOD_5MIN,
+		"M15": goex.KLINE_PERIOD_15MIN,
+		"M30": goex.KLINE_PERIOD_30MIN,
+		"H1":  goex.KLINE_PERIOD_1H,
+		"H2":  goex.KLINE_PERIOD_4H,
+		"H4":  goex.KLINE_PERIOD_4H,
+		"D1":  goex.KLINE_PERIOD_1DAY,
+		"W1":  goex.KLINE_PERIOD_1WEEK,
+	})
 	_ = exchange.Init(opt)
 	return exchange
 }

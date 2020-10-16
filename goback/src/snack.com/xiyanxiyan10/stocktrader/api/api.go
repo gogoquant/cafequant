@@ -44,16 +44,16 @@ type Exchange interface {
 	SetBackCommission(float64, float64, float64, float64, bool)                                       //设置回测手续费
 	GetBackCommission() (float64, float64, float64, float64, bool)                                    //获取回测手续费
 	SetBackTime(start, end int64, period string)                                                      //设置回测周期
-	GetBackTime() (int64, int64, int64)                                                               //设置回测周期
+	GetBackTime() (int64, int64, string)                                                              //设置回测周期
 	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error //推送数据到数据仓库
 	BackGetSymbols() ([]string, error)                                                                //获取货币种类
 	BackGetMarkets() ([]dbtypes.Stats, error)                                                         //获取交易所种类
 	BackGetStats() error                                                                              //获取数据中心数据
 
-	BackGetPeriodRange() ([2]int64, error)                         //获取周期范围
-	BackGetTimeRange() ([2]int64, error)                           //获取事件范围
-	BackGetOHLCs(begin, end, period int64) ([]dbtypes.OHLC, error) //获取OHLC
-	BackGetDepth(begin, end, period int64) (dbtypes.Depth, error)  //获取Depth
+	BackGetPeriodRange() ([2]int64, error)                                //获取周期范围
+	BackGetTimeRange() ([2]int64, error)                                  //获取事件范围
+	BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error) //获取OHLC
+	BackGetDepth(begin, end int64, period string) (dbtypes.Depth, error)  //获取Depth
 }
 
 var (

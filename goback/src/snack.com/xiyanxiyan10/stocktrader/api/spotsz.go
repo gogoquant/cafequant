@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/axgle/mahonia"
 	simplejson "github.com/bitly/go-simplejson"
-	goex "github.com/nntaoli-project/goex"
 	"io/ioutil"
 	"net/http"
 	"snack.com/xiyanxiyan10/conver"
@@ -168,25 +167,6 @@ func NewSZSpotExchange(opt constant.Option) *SZExchange {
 	spotExchange := SZExchange{
 		records: make(map[string][]constant.Record),
 	}
-	spotExchange.SetRecordsPeriodMap(map[string]int64{
-		"M1":  60,
-		"M5":  300,
-		"M15": 900,
-		"M30": 1800,
-		"H1":  3600,
-		"H2":  7200,
-	})
-	spotExchange.SetRecordsPeriodMap(map[string]int64{
-		"M1":  goex.KLINE_PERIOD_1MIN,
-		"M5":  goex.KLINE_PERIOD_5MIN,
-		"M15": goex.KLINE_PERIOD_15MIN,
-		"M30": goex.KLINE_PERIOD_30MIN,
-		"H1":  goex.KLINE_PERIOD_1H,
-		"H2":  goex.KLINE_PERIOD_4H,
-		"H4":  goex.KLINE_PERIOD_4H,
-		"D1":  goex.KLINE_PERIOD_1DAY,
-		"W1":  goex.KLINE_PERIOD_1WEEK,
-	})
 	spotExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})

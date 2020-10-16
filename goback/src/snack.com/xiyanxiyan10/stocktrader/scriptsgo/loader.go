@@ -45,20 +45,27 @@ func main() {
 	opt.LogBack = true
 
 	maker := trader.ExchangeMaker[opt.Type]
-	huobiExchange := maker(opt)
+	exchange := maker(opt)
 
-	huobiExchange.SetIO(IO)
-	huobiExchange.SetContractType(Constract)
-	huobiExchange.SetStockType(Symbol)
-	huobiExchange.Ready()
+	exchange.SetIO(IO)
+	exchange.SetContractType(Constract)
+	exchange.SetStockType(Symbol)
+	exchange.Ready()
 
 	//global.Sleep(1000)
-	err := huobiExchange.BackGetStats()
+	err := exchange.BackGetStats()
 	if err != nil {
 		fmt.Printf("link to stockdb fail:%s", err.Error())
 		return
 	}
-	markets, err := huobiExchange.BackGetMarkets()
+	records, err := exchange.GetRecords("M5", "")
+	if err != nil {
+		fmt.Printf("get records fail:%s", err.Error())
+		return
+	}
+	fmt.Printf("success to get records:%v", records)
+	return
+	markets, err := exchange.BackGetMarkets()
 	if err != nil {
 		fmt.Printf("fail to get markets:%s", err.Error())
 		return
@@ -66,21 +73,21 @@ func main() {
 	fmt.Printf("success to get markets:%v", markets)
 
 	if len(markets) > 0 {
-		symbols, err := huobiExchange.BackGetSymbols()
+		symbols, err := exchange.BackGetSymbols()
 		if err != nil {
 			fmt.Printf("fail to get symbol:%s", err.Error())
 			return
 		}
 		fmt.Printf("success to get symbol:%v", symbols)
 
-		timeRange, err := huobiExchange.BackGetTimeRange()
+		timeRange, err := exchange.BackGetTimeRange()
 		if err != nil {
 			fmt.Printf("fail to get timeRange:%s", err.Error())
 			return
 		}
 		fmt.Printf("success to get timeRange:%v", timeRange)
 
-		periodRange, err := huobiExchange.BackGetPeriodRange()
+		periodRange, err := exchange.BackGetPeriodRange()
 		if err != nil {
 			fmt.Printf("fail to get periodRange:%s", err.Error())
 			return
