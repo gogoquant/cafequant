@@ -83,7 +83,7 @@ func main() {
 		fmt.Printf("fail to back ready:%s", err.Error())
 		return
 	}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		ticker, err := exchange.GetTicker()
 		if err != nil {
 			fmt.Printf("fail to get ticker:%s", err.Error())
