@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-const (
-	//MinFloat ...
-	MinFloat = 0.000000000001
-)
-
 // ExchangeFutureBackConfig ...
 type ExchangeFutureBackConfig struct {
 	ExName               string
@@ -87,8 +82,17 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 // Debug ..,
 func (e *ExchangeFutureBack) Debug() error {
 	fmt.Printf("---FutureBack info start---\n")
+	fmt.Printf("currTicker:\n")
+	v, err := json.Marshal(e.currData)
+	if err != nil {
+		fmt.Printf("convert ticker err :%s\n", err.Error())
+		return err
+	}
+	fmt.Printf("%s\n", string(v))
+	marginRatio, rht := e.marginRatio()
+	fmt.Printf("marginRatio :%f hold %f\n", marginRatio, rht)
 	fmt.Printf("longPosition:\n")
-	v, err := json.Marshal(e.longPosition)
+	v, err = json.Marshal(e.longPosition)
 	if err != nil {
 		fmt.Printf("convert longPosition err :%s\n", err.Error())
 		return err
@@ -192,20 +196,20 @@ func (ex *ExchangeFutureBack) position2ValDiff(last float64, position constant.P
 	amount := position.Amount + position.FrozenAmount
 	price := position.Price
 	priceDiff := last - price
-	priceRate := priceDiff / (price + MinFloat)
+	priceRate := util.SafefloatDivide(priceDiff, price)
 	valDiff := priceRate * amount
 	return valDiff
 }
 
 func (e *ExchangeFutureBack) settlePositionProfit(last float64, position *constant.Position, asset *constant.SubAccount, dir int) {
 	valdiff := e.position2ValDiff(last, *position)
-	amountdiff := valdiff * e.contractRate / (last + MinFloat)
+	amountdiff := util.SafefloatDivide(valdiff*e.contractRate, last)
 	if dir == 1 {
 		amountdiff = 0 - amountdiff
 	}
 	asset.Amount = asset.Amount + amountdiff
 	position.Profit = amountdiff
-	position.ProfitRate = valdiff / ((position.Amount + position.FrozenAmount) + MinFloat)
+	position.ProfitRate = util.SafefloatDivide(valdiff, position.Amount+position.FrozenAmount)
 }
 
 // settlePosition ...
@@ -226,7 +230,7 @@ func (ex *ExchangeFutureBack) settlePosition() {
 
 	if _, ok := ex.shortPosition[CurrencyA]; ok {
 		position := ex.shortPosition[CurrencyA]
-		ex.settlePositionProfit(last, &position, &asset, 0)
+		ex.settlePositionProfit(last, &position, &asset, 1)
 		ex.acc.SubAccounts[CurrencyA] = asset
 		ex.shortPosition[CurrencyA] = position
 	}
@@ -287,14 +291,9 @@ func (ex *ExchangeFutureBack) coverPosition() {
 	stockType := ex.BaseExchange.GetStockType()
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
-	asset := ex.acc.SubAccounts[CurrencyA]
-	longposition := ex.longPosition[CurrencyA]
-	shortposition := ex.longPosition[CurrencyA]
-	lft := asset.Amount
-	rht := 0.0
-	rht = rht + (longposition.Amount*ex.BaseExchange.contractRate)/(longposition.Price+MinFloat)
-	rht = rht + (shortposition.Amount*ex.BaseExchange.contractRate)/(shortposition.Price+MinFloat)
-	if lft/(rht+MinFloat) < ex.coverRate {
+	marginRatio, rht := ex.marginRatio()
+	if rht > 0.0 && marginRatio < ex.coverRate {
+		fmt.Printf("force cover %f -> %f\n", marginRatio, ex.coverRate)
 		//Force cover position
 		ex.longPosition[CurrencyA] = constant.Position{}
 		ex.shortPosition[CurrencyA] = constant.Position{}
@@ -305,6 +304,28 @@ func (ex *ExchangeFutureBack) coverPosition() {
 		}
 		ex.pendingOrders = make(map[string]*constant.Order)
 	}
+	if position, ok := ex.longPosition[CurrencyA]; ok && position.Amount == 0 {
+		delete(ex.longPosition, CurrencyA)
+	}
+
+	if position, ok := ex.shortPosition[CurrencyA]; ok && position.Amount == 0 {
+		delete(ex.shortPosition, CurrencyA)
+	}
+}
+
+func (ex *ExchangeFutureBack) marginRatio() (float64, float64) {
+	stockType := ex.BaseExchange.GetStockType()
+	stocks := stockPair2Vec(stockType)
+	CurrencyA := stocks[0]
+	asset := ex.acc.SubAccounts[CurrencyA]
+	longposition := ex.longPosition[CurrencyA]
+	shortposition := ex.shortPosition[CurrencyA]
+	lft := asset.Amount
+	rht := 0.0
+	rht = rht + util.SafefloatDivide(longposition.Amount*ex.BaseExchange.contractRate, longposition.Price)
+	rht = rht + util.SafefloatDivide(shortposition.Amount*ex.BaseExchange.contractRate, shortposition.Price)
+	rht = rht + asset.FrozenAmount*ex.lever
+	return util.SafefloatDivide(lft, rht), rht
 }
 
 // LimitBuy ...
@@ -343,6 +364,7 @@ func (ex *ExchangeFutureBack) LimitSell(amount, price, currency string) (*consta
 
 	ord := constant.Order{
 		Price:     goex.ToFloat64(price),
+		OpenPrice: ex.currData.Close,
 		Amount:    goex.ToFloat64(amount),
 		Id:        ex.idGen.Get(),
 		Time:      ex.currData.Time / int64(time.Millisecond),
@@ -456,6 +478,10 @@ func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 	var account constant.Account
 	account.SubAccounts = make(map[string]constant.SubAccount)
 	for key, sub := range ex.acc.SubAccounts {
+		longposition := ex.longPosition[key]
+		shortposition := ex.shortPosition[key]
+		sub.ProfitUnreal += longposition.Profit
+		sub.ProfitUnreal += shortposition.Profit
 		account.SubAccounts[key] = sub
 	}
 	return &account, nil
@@ -540,7 +566,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 		if avaAmount*lever*price < order.Amount*ex.BaseExchange.contractRate {
 			return ErrDataInsufficient
 		}
-		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever*price + MinFloat)
+		costAmount := util.SafefloatDivide(order.Amount*ex.BaseExchange.contractRate, lever*price)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
 			StockType:    CurrencyA,
 			Amount:       avaAmount - costAmount,
@@ -579,7 +605,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
-		costAmount := (order.Amount * ex.BaseExchange.contractRate) / (lever * order.OpenPrice)
+		costAmount := util.SafefloatDivide(order.Amount*ex.BaseExchange.contractRate, lever*order.OpenPrice)
 		if order.Status == constant.ORDER_CANCEL {
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
@@ -590,13 +616,15 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 		} else {
 			if order.TradeType == constant.TradeTypeLong {
 				position := ex.longPosition[CurrencyA]
-				position.Price = (position.Price*position.Amount + order.OpenPrice*order.Amount) / (position.Amount + order.Amount + MinFloat)
+				position.Price = util.SafefloatDivide(position.Price*position.Amount+order.OpenPrice*order.Amount,
+					position.Amount+order.Amount)
 				position.Amount = position.Amount + order.Amount
 				ex.longPosition[CurrencyA] = position
 				//fmt.Printf("set long position as:%v\n", position)
 			} else {
 				position := ex.shortPosition[CurrencyA]
-				position.Price = (position.Price*position.Amount + order.OpenPrice*order.Amount) / (position.Amount + order.Amount + MinFloat)
+				position.Price = util.SafefloatDivide(position.Price*position.Amount+order.OpenPrice*order.Amount,
+					position.Amount+order.Amount)
 				position.Amount = position.Amount + order.Amount
 				ex.shortPosition[CurrencyA] = position
 				//fmt.Printf("set short position as:%v\n", position)

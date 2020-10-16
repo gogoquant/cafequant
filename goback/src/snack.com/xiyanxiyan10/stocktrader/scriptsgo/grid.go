@@ -93,8 +93,8 @@ func main() {
 			break
 		}
 		fmt.Printf("get ticker:%v\n", ticker)
-		exchange.SetDirection("buy")
-		ID, err := exchange.Buy("12000", "10", "buy")
+		exchange.SetDirection("sell")
+		ID, err := exchange.Sell("9000", "10", "buy")
 		if err != nil {
 			fmt.Printf("fail to buy ticker:%s", err.Error())
 		} else {
@@ -118,7 +118,7 @@ func main() {
 			break
 		}
 		exchange.SetDirection("closebuy")
-		ID, err := exchange.Sell("9000", "5", "closebuy")
+		ID, err := exchange.Sell("11000", "5", "closebuy")
 		if err != nil {
 			fmt.Printf("fail to closebuy ticker:%s\n", err.Error())
 		} else {
@@ -132,7 +132,7 @@ func main() {
 			*/
 		}
 	}
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 1000; i++ {
 		ticker, err := exchange.GetTicker()
 		if err != nil {
 			fmt.Printf("fail to get ticker:%s\n", err.Error())

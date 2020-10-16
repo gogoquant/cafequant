@@ -5,6 +5,14 @@ import (
 	"fmt"
 )
 
+// SafefloatDivide ...
+func SafefloatDivide(lft, rht float64) float64 {
+	if rht == 0.0 {
+		return lft
+	}
+	return lft / rht
+}
+
 func converError(val interface{}, t string) error {
 	return fmt.Errorf("conver error, the %T{%v} can not conver to a %v", val, val, t)
 }
