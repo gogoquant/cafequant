@@ -25,14 +25,14 @@ import (
 var (
 	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
 	errHalt       = fmt.Errorf("HALT")
-	ExchangeMaker = map[string]func(constant.Option) api.Exchange{ //保存所有交易所的构造函数
+	ExchangeMaker = map[string]func(constant.Option) (api.Exchange, error){ //保存所有交易所的构造函数
 		constant.HuoBiDm:    api.NewHuoBiDmExchange,
 		constant.HuoBi:      api.NewHuoBiExchange,
 		constant.SZ:         api.NewSZExchange,
 		constant.SpotBack:   api.NewSpotBackExchange,
 		constant.FutureBack: api.NewFutureBackExchange,
 	}
-	pyexchangeMaker map[string]func(constant.Option) api.ExchangePython
+	pyexchangeMaker map[string]func(constant.Option) (api.ExchangePython, error)
 )
 
 // GetTraderStatus ...
@@ -233,7 +233,11 @@ func initialize(id int64) (trader Global, err error) {
 				SecretKey: e.SecretKey,
 				LogBack:   false,
 			}
-			exchange := maker(opt)
+			exchange, errD := maker(opt)
+			if errD != nil {
+				err = errD
+				return
+			}
 			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
 		}
@@ -247,7 +251,11 @@ func initialize(id int64) (trader Global, err error) {
 				SecretKey: e.SecretKey,
 				LogBack:   false,
 			}
-			exchange := maker(opt)
+			exchange, errD := maker(opt)
+			if errD != nil {
+				err = errD
+				return
+			}
 			trader.espy = append(trader.espy, exchange)
 		}
 	}
@@ -399,7 +407,7 @@ func stop(id int64) (err error) {
 //}
 
 func init() {
-	pyexchangeMaker = make(map[string]func(constant.Option) api.ExchangePython)
+	pyexchangeMaker = make(map[string]func(constant.Option) (api.ExchangePython, error))
 	for key, funcs := range ExchangeMaker {
 		pyexchangeMaker[key] = api.NewExchangePython(funcs)
 	}

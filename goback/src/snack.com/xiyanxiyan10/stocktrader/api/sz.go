@@ -6,7 +6,7 @@ import (
 )
 
 // NewSZExchange create an exchange struct of futureExchange.com
-func NewSZExchange(opt constant.Option) Exchange {
+func NewSZExchange(opt constant.Option) (Exchange, error) {
 	exchange := NewSZSpotExchange(opt)
 	exchange.SetRecordsPeriodMap(map[string]int64{
 		"M1":  goex.KLINE_PERIOD_1MIN,
@@ -19,6 +19,8 @@ func NewSZExchange(opt constant.Option) Exchange {
 		"D1":  goex.KLINE_PERIOD_1DAY,
 		"W1":  goex.KLINE_PERIOD_1WEEK,
 	})
-	_ = exchange.Init(opt)
-	return exchange
+	if err := exchange.Init(opt); err != nil {
+		return nil, err
+	}
+	return exchange, nil
 }

@@ -9,10 +9,12 @@ import (
 )
 
 // NewFutureBackExchange create an exchange struct of futureExchange.com
-func NewFutureBackExchange(opt constant.Option) Exchange {
+func NewFutureBackExchange(opt constant.Option) (Exchange, error) {
 	exchange := NewExchangeFutureBackLink(opt)
-	_ = exchange.Init(opt)
-	return exchange
+	if err := exchange.Init(opt); err != nil {
+		return nil, err
+	}
+	return exchange, nil
 }
 
 // ExchangeFutureBackLink ...

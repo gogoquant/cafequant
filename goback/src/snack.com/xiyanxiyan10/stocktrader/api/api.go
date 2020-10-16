@@ -57,5 +57,5 @@ type Exchange interface {
 }
 
 var (
-	constructor = map[string]func(constant.Option) Exchange{}
+	constructor = map[string]func(constant.Option) (Exchange, error){}
 )

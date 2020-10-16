@@ -29,8 +29,11 @@ func main() {
 	opt.LogBack = true
 
 	maker := trader.ExchangeMaker[constant.FutureBack]
-	exchange := maker(opt)
-
+	exchange, err := maker(opt)
+	if err != nil {
+		fmt.Printf("init exchange fail:%s", err.Error())
+		return
+	}
 	exchange.SetIO(IO)
 	exchange.SetContractType(Constract)
 	exchange.SetStockType(Symbol)
@@ -38,7 +41,7 @@ func main() {
 	//exchange.Ready()
 
 	//global.Sleep(1000)
-	err := exchange.BackGetStats()
+	err = exchange.BackGetStats()
 	if err != nil {
 		fmt.Printf("link to stockdb fail:%s", err.Error())
 		return

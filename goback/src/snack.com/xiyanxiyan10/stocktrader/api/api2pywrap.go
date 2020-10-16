@@ -29,11 +29,15 @@ type ExchangePythonLink struct {
 }
 
 // NewExchangePython create an exchange struct of futureExchange.com
-func NewExchangePython(e func(opt constant.Option) Exchange) func(opt constant.Option) ExchangePython {
-	return func(opt constant.Option) ExchangePython {
+func NewExchangePython(e func(opt constant.Option) (Exchange, error)) func(opt constant.Option) (ExchangePython, error) {
+	return func(opt constant.Option) (ExchangePython, error) {
 		var ex ExchangePythonLink
-		ex.api = e(opt)
-		return &ex
+		api, err := e(opt)
+		if err != nil {
+			return nil, err
+		}
+		ex.api = api
+		return &ex, nil
 	}
 }
 
