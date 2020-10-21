@@ -26,6 +26,7 @@ func getRecords(symbol string, period, ma, size int) (string, error) {
 	client := &http.Client{}
 	url := recordURL
 	url = url + "symbol=" + symbol + "&scale=" + strconv.Itoa(period) + "&ma=" + strconv.Itoa(ma) + "&datalen=" + strconv.Itoa(size)
+	fmt.Printf("call address:%s\n", url)
 	reqest, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
@@ -41,6 +42,9 @@ func getRecords(symbol string, period, ma, size int) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	//fmt.Printf("get records []byte:%v\n", data)
+	//fmt.Printf("get records string:%s\n", string(data))
 	return string(data), nil
 }
 
@@ -259,17 +263,23 @@ func (e *SZExchange) GetRecords(periodStr, maStr string) ([]constant.Record, err
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
+		return nil, fmt.Errorf("GetRecords() error, the error number is period:%s", periodStr)
 	}
-	ma, err := strconv.Atoi(maStr)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
+	var ma int
+	if maStr != "" {
+		tmp, err := strconv.Atoi(maStr)
+		if err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
+			return nil, fmt.Errorf("GetRecords() error, the error number is conver:%s", err.Error())
+		}
+		ma = tmp
+	} else {
+		ma = 5
 	}
 	res, err := getRecords(exchangeStockType, int(period), ma, size)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetRecords() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())
 	}
 	return pareseRecords(res, ma), nil
 }

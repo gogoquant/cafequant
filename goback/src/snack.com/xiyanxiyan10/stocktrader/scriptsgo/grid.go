@@ -51,7 +51,7 @@ func main() {
 		fmt.Printf("fail to get markets:%s", err.Error())
 		return
 	}
-	fmt.Printf("success to get markets:%v", markets)
+	fmt.Printf("success to get markets:%v\n", markets)
 
 	if len(markets) <= 0 {
 		fmt.Printf("markets not found")
