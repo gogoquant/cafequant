@@ -61,4 +61,18 @@ func main() {
 		return
 	}
 	fmt.Printf("success to get records:%v", records)
+
+	ticker, err := exchange.GetTicker()
+	if err != nil {
+		fmt.Printf("get ticker fail:%s", err.Error())
+		return
+	}
+	fmt.Printf("success to get ticker:%v", ticker)
+
+	depth, err := exchange.GetDepth()
+	if err != nil {
+		fmt.Printf("get depth fail:%s", err.Error())
+		return
+	}
+	fmt.Printf("success to get depth:%v", depth)
 }
