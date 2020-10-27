@@ -142,7 +142,7 @@ func parseDepth(data string) (*constant.Depth, error) {
 
 		record.Amount = conver.Float64Must(arr[20+2*i])
 		record.Price = conver.Float64Must(arr[20+2*i+1])
-		depth.Bids = append(depth.Bids, record)
+		depth.Asks = append(depth.Asks, record)
 	}
 	t := arr[30] + " " + arr[31]
 	stamp, err := time.ParseInLocation(timeTemplate1, t, time.Local)
