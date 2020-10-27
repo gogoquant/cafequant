@@ -181,7 +181,6 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
-	Ws        *WsPIP //全局异步通道
 
 	Limit     float64
 	LastSleep int64
