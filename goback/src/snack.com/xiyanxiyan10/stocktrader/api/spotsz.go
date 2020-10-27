@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"github.com/axgle/mahonia"
 	simplejson "github.com/bitly/go-simplejson"
@@ -79,15 +78,8 @@ func pareseRecords(str string, ma int) []constant.Record {
 // getTickerAndDepth ...
 func getTickerAndDepth(no string) (string, error) {
 	client := &http.Client{}
-	url := ""
-	if strings.HasPrefix(no, "60") || strings.HasPrefix(no, "51") {
-		url = tickerURL + "sh" + no
-	} else if strings.HasPrefix(no, "00") || strings.HasPrefix(no, "30") {
-		url = tickerURL + "sz" + no
-	} else {
-		return "", errors.New("Unknown stock")
-	}
-
+	url := tickerURL + no
+	fmt.Printf("ticker call address:%s\n", url)
 	reqest, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
@@ -112,11 +104,11 @@ func getTickerAndDepth(no string) (string, error) {
 }
 
 // parseTicker ...
-func parseTicker(data string) *constant.Ticker {
+func parseTicker(data string) (*constant.Ticker, error) {
 	var ticker constant.Ticker
 	arr := strings.Split(data, ",")
 	if len(arr) < 32 {
-		return nil
+		return nil, fmt.Errorf("arr len too smail:%d", len(arr))
 	}
 	ticker.Open = conver.Float64Must(arr[1])
 	ticker.Close = conver.Float64Must(arr[2])
@@ -127,19 +119,22 @@ func parseTicker(data string) *constant.Ticker {
 	ticker.Sell = conver.Float64Must(arr[7])
 	ticker.Vol = conver.Float64Must(arr[8])
 	t := arr[30] + " " + arr[31]
-	stamp, _ := time.ParseInLocation(timeTemplate1, t, time.Local)
+	stamp, err := time.ParseInLocation(timeTemplate1, t, time.Local)
+	if err != nil {
+		return nil, err
+	}
 	ticker.Time = stamp.Unix()
-	return &ticker
+	return &ticker, nil
 }
 
 // parseDepth ...
-func parseDepth(data string) *constant.Depth {
+func parseDepth(data string) (*constant.Depth, error) {
 	var depth constant.Depth
 	arr := strings.Split(data, ",")
 	if len(arr) < 31 {
-		return nil
+		return nil, fmt.Errorf("len too samall")
 	}
-	for i := 0 + 10; i < 5; i++ {
+	for i := 0; i < 5; i++ {
 		var record constant.DepthRecord
 		record.Amount = conver.Float64Must(arr[10+2*i])
 		record.Price = conver.Float64Must(arr[10+2*i+1])
@@ -150,9 +145,12 @@ func parseDepth(data string) *constant.Depth {
 		depth.Bids = append(depth.Bids, record)
 	}
 	t := arr[30] + " " + arr[31]
-	stamp, _ := time.ParseInLocation(timeTemplate1, t, time.Local)
+	stamp, err := time.ParseInLocation(timeTemplate1, t, time.Local)
+	if err != nil {
+		return nil, err
+	}
 	depth.Time = stamp.Unix()
-	return &depth
+	return &depth, nil
 }
 
 // SZExchange the exchange struct of futureExchange.com
@@ -245,9 +243,13 @@ func (e *SZExchange) GetTicker() (*constant.Ticker, error) {
 	res, err := getTickerAndDepth(stockType)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetTicker() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetTicker() error, the error number is %s ", err.Error())
 	}
-	ticker := parseTicker(res)
+	ticker, err := parseTicker(res)
+	if err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetTicker() error, the error number is %s ", err.Error())
+	}
 	if ticker == nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ticker parse fail")
 		return nil, fmt.Errorf("GetTicker() error, the error number is ticker parse fail")
@@ -278,7 +280,7 @@ func (e *SZExchange) GetRecords(periodStr, maStr string) ([]constant.Record, err
 	}
 	res, err := getRecords(exchangeStockType, int(period), ma, size)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is%s\n", err.Error())
 		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())
 	}
 	return pareseRecords(res, ma), nil
@@ -289,12 +291,12 @@ func (e *SZExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
 	res, err := getTickerAndDepth(stockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetDepth() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is:%s\n", err.Error())
+		return nil, fmt.Errorf("GetDepth() error, the error number is %s", err.Error())
 	}
-	depth := parseDepth(res)
-	if depth == nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is depth parse fail")
+	depth, err := parseDepth(res)
+	if err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is:%s\n", err.Error())
 		return nil, fmt.Errorf("GetDepth() error, the error number is depth parse fail")
 	}
 	return depth, nil

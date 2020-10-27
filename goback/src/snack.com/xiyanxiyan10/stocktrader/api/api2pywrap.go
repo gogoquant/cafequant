@@ -43,7 +43,10 @@ func NewExchangePython(e func(opt constant.Option) (Exchange, error)) func(opt c
 
 // Ready ...
 func (e *ExchangePythonLink) Ready(args *py.Tuple) (ret *py.Base, err error) {
-	e.api.Ready()
+	err = e.api.Ready()
+	if err != nil {
+		return py.IncNone(), nil
+	}
 	return py.IncNone(), nil
 }
 
@@ -52,7 +55,7 @@ func (e *ExchangePythonLink) SetIO(args *py.Tuple) (ret *py.Base, err error) {
 	var i string
 	err = py.ParseV(args, &i)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
 	e.api.SetIO(i)
 	return py.IncNone(), nil
@@ -73,8 +76,9 @@ func (e *ExchangePythonLink) Subscribe(args *py.Tuple) (ret *py.Base, err error)
 	var stock, action string
 	err = py.ParseV(args, &stock, &action)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
+	e.api.SetSubscribe(stock, action)
 	return py.IncNone(), nil
 }
 
@@ -83,7 +87,7 @@ func (e *ExchangePythonLink) Log(args *py.Tuple) (ret *py.Base, err error) {
 	var msgs []interface{}
 	err = py.ParseV(args, &msgs)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
 	e.api.Log(msgs...)
 	return py.IncNone(), nil
@@ -114,20 +118,20 @@ func (e *ExchangePythonLink) SetLimit(args *py.Tuple) (ret *py.Base, err error) 
 	var vars []interface{}
 	err = py.ParseV(args, &vars)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
-	e.api.Log(vars...)
+	e.api.SetLimit(vars)
 	return py.IncNone(), nil
 }
 
 // Sleep ...
 func (e *ExchangePythonLink) Sleep(args *py.Tuple) (ret *py.Base, err error) {
-	var action int64
-	err = py.ParseV(args, &action)
+	var vars []interface{}
+	err = py.ParseV(args, &vars)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
-	e.api.Sleep(action)
+	e.api.Sleep(vars)
 	return py.IncNone(), nil
 }
 
@@ -160,10 +164,10 @@ func (e *ExchangePythonLink) GetDepth(args *py.Tuple) (ret *py.Base, err error) 
 // Buy ...
 func (e *ExchangePythonLink) Buy(args *py.Tuple) (ret *py.Base, err error) {
 	var price, amount string
-	var msgs []string
+	var msgs []interface{}
 	err = py.ParseV(args, &price, &amount, &msgs)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
 	ID, err := e.api.Buy(price, amount, msgs)
 	if err != nil {
@@ -179,10 +183,10 @@ func (e *ExchangePythonLink) Buy(args *py.Tuple) (ret *py.Base, err error) {
 // Sell ...
 func (e *ExchangePythonLink) Sell(args *py.Tuple) (ret *py.Base, err error) {
 	var price, amount string
-	var msgs []string
+	var msgs []interface{}
 	err = py.ParseV(args, &price, &amount, &msgs)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
 	ID, err := e.api.Sell(price, amount, msgs)
 	if err != nil {
@@ -200,7 +204,7 @@ func (e *ExchangePythonLink) GetOrder(args *py.Tuple) (ret *py.Base, err error) 
 	var ID string
 	err = py.ParseV(args, &ID)
 	if err != nil {
-		return
+		return py.IncNone(), err
 	}
 	order, err := e.api.GetOrder(ID)
 	if err != nil {
@@ -259,26 +263,25 @@ func (e *ExchangePythonLink) GetRecords(args *py.Tuple) (ret *py.Base, err error
 	var ma string
 	err = py.ParseV(args, &period, &ma)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	records, err := e.api.GetRecords(period, ma)
 	if err != nil {
 		return py.IncNone(), err
 	}
-	val, ok := pyutil.NewVar(records)
+	val, ok := pyutil.NewVar(&records)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
 	return val, nil
-
 }
 
 // SetContractType ...
 func (e *ExchangePythonLink) SetContractType(args *py.Tuple) (ret *py.Base, err error) {
 	var s string
-	err = py.ParseV(args, &s)
+	err = py.Parse(args, &s)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	e.api.SetContractType(s)
 	return py.IncNone(), nil
@@ -297,9 +300,9 @@ func (e *ExchangePythonLink) GetContractType(args *py.Tuple) (ret *py.Base, err 
 // SetDirection ...
 func (e *ExchangePythonLink) SetDirection(args *py.Tuple) (ret *py.Base, err error) {
 	var s string
-	err = py.ParseV(args, &s)
+	err = py.Parse(args, &s)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	e.api.SetDirection(s)
 	return py.IncNone(), nil
@@ -318,9 +321,9 @@ func (e *ExchangePythonLink) GetDirection(args *py.Tuple) (ret *py.Base, err err
 // SetMarginLevel ...
 func (e *ExchangePythonLink) SetMarginLevel(args *py.Tuple) (ret *py.Base, err error) {
 	var s float64
-	err = py.ParseV(args, &s)
+	err = py.Parse(args, &s)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	e.api.SetMarginLevel(s)
 	return py.IncNone(), nil
@@ -339,9 +342,9 @@ func (e *ExchangePythonLink) GetMarginLevel(args *py.Tuple) (ret *py.Base, err e
 // SetStockType ...
 func (e *ExchangePythonLink) SetStockType(args *py.Tuple) (ret *py.Base, err error) {
 	var s string
-	err = py.ParseV(args, &s)
+	err = py.Parse(args, &s)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	e.api.SetStockType(s)
 	return py.IncNone(), nil
@@ -363,7 +366,7 @@ func (e *ExchangePythonLink) GetPosition(args *py.Tuple) (ret *py.Base, err erro
 	if err != nil {
 		return py.IncNone(), err
 	}
-	val, ok := pyutil.NewVar(position)
+	val, ok := pyutil.NewVar(&position)
 	if !ok {
 		return py.IncNone(), errors.New("get newvar fail")
 	}
@@ -429,7 +432,7 @@ func (e *ExchangePythonLink) SetBackTime(args *py.Tuple) (ret *py.Base, err erro
 	var period string
 	err = py.ParseV(args, &start, &end, &period)
 	if err != nil {
-		return py.IncNone(), errors.New("parse param fail")
+		return py.IncNone(), err
 	}
 	e.api.SetBackTime(start, end, period)
 	return py.IncNone(), nil
