@@ -281,3 +281,13 @@ func main() {
 	// .Join() 如果后面有其它需要处理的功能可以不写，但必须保证程序不能退出，Join 就是保证程序不退出的
 }
 */
+
+type CtpHandler interface {
+	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode string)
+	Start() error
+}
+
+// NewCtp ...
+func NewCtp() CtpHandler {
+	return &CtpMaster
+}
