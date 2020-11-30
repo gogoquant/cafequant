@@ -1,4 +1,4 @@
-package main
+package sdkctp
 
 /*
 #include <stdio.h>
