@@ -222,7 +222,7 @@ func (client *CtpClient) GetTraderRequestId() int {
 }
 
 // SetTradeAccount ...
-func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode string) {
+func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string) {
 	ctp.MdFront = append(ctp.MdFront, MdFront...)
 	ctp.TraderFront = append(ctp.TraderFront, TraderFront...)
 	ctp.BrokerID = BrokerID
@@ -232,6 +232,7 @@ func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, I
 	ctp.AuthCode = AuthCode
 	ctp.OrderBuy = '0'
 	ctp.OrderSell = '1'
+	ctp.StreamFile = StreamFile
 	//ctp.MdSpi = FtdcMdSpi{}
 	//ctp.TraderSpi = FtdcTraderSpi{}
 }
@@ -402,7 +403,7 @@ func main() {
 */
 
 type CtpHandler interface {
-	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode string)
+	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string)
 	Start() error
 }
 
