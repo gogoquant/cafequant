@@ -209,6 +209,12 @@ type CtpClient struct {
 	IsMdLogin bool
 }
 
+// 获得行情请求编号
+func (client *CtpClient) GetMdRequestId() int {
+	client.MdRequestId += 1
+	return client.MdRequestId
+}
+
 // 获得交易请求编号
 func (client *CtpClient) GetTraderRequestId() int {
 	client.TraderRequestId += 1
