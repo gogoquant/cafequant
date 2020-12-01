@@ -7,28 +7,21 @@ import (
 	"time"
 )
 
-// 获得交易请求编号
-func GetTraderRequestId() int {
-	Ctp.TraderRequestId += 1
-	return Ctp.TraderRequestId
-}
-
 // 当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
 // 服务器已断线，该函数也会被调用。【api 会自动初始化程序，并重新登陆】
 func (p *FtdcTraderSpi) OnFrontDisconnected(nReason int) {
-
-	Ctp.IsTraderLogin = false
-	Ctp.IsTraderInit = false
-	Ctp.IsTraderInitFinish = false
-
+	client := p.Master.Client
+	client.IsTraderLogin = false
+	client.IsTraderInit = false
+	client.IsTraderInitFinish = false
 	log.Println("交易服务器已断线，尝试重新连接中...")
 }
 
 // 发送请求日志（仅查询类的函数需要调用）
 func (p *FtdcTraderSpi) ReqMsg(Msg string) {
-
+	client := p.Master.Client
 	// 交易程序未初始化完成时，执行查询类的函数需要有1.5秒间隔
-	if !Ctp.IsTraderInitFinish {
+	if !client.IsTraderInitFinish {
 		time.Sleep(time.Millisecond * 1500)
 	}
 
@@ -38,38 +31,40 @@ func (p *FtdcTraderSpi) ReqMsg(Msg string) {
 
 // 当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 func (p *FtdcTraderSpi) OnFrontConnected() {
+	client := p.Master.Client
+	MdSpi := p.Master.MdSpi
 
 	TraderStr := "=================================================================================================\n" +
 		"= 交易模块初始化成功，API 版本：" + goctp.CThostFtdcTraderApiGetApiVersion() + "\n" +
 		"================================================================================================="
 	fmt.Println(TraderStr)
 
-	Ctp.IsTraderInit = true
-
+	client.IsTraderInit = true
+	AppID := client.AppID
+	AuthCode := client.AuthCode
 	// 填写了 AppID 与 AuthCode 则进行客户端认证
 	if AppID != "" && AuthCode != "" {
-
 		p.ReqAuthenticate()
 	} else {
-
 		MdSpi.ReqUserLogin()
-
 		p.ReqUserLogin()
 	}
 }
 
 // 客户端认证
 func (p *FtdcTraderSpi) ReqAuthenticate() {
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 
 	log.Println("客户端认证中...")
 
 	req := goctp.NewCThostFtdcReqAuthenticateField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetUserID(Ctp.InvestorID)
-	req.SetAppID(Ctp.AppID)
-	req.SetAuthCode(Ctp.AuthCode)
+	req.SetBrokerID(client.BrokerID)
+	req.SetUserID(client.InvestorID)
+	req.SetAppID(client.AppID)
+	req.SetAuthCode(client.AuthCode)
 
-	iResult := Ctp.TraderApi.ReqAuthenticate(req, GetTraderRequestId())
+	iResult := TraderApi.ReqAuthenticate(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("发送客户端认证请求失败！", iResult)
@@ -78,7 +73,7 @@ func (p *FtdcTraderSpi) ReqAuthenticate() {
 
 // 客户端认证响应
 func (p *FtdcTraderSpi) OnRspAuthenticate(pRspAuthenticateField goctp.CThostFtdcRspAuthenticateField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-
+	MdSpi := p.Master.MdSpi
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 
 		log.Println("客户端认证成功！")
@@ -91,17 +86,18 @@ func (p *FtdcTraderSpi) OnRspAuthenticate(pRspAuthenticateField goctp.CThostFtdc
 
 // 用户登录请求
 func (p *FtdcTraderSpi) ReqUserLogin() {
-
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 	time.Sleep(time.Second * 1)
 
 	log.Println("交易系统账号登陆中...")
 
 	req := goctp.NewCThostFtdcReqUserLoginField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetUserID(Ctp.InvestorID)
-	req.SetPassword(Ctp.Password)
+	req.SetBrokerID(client.BrokerID)
+	req.SetUserID(client.InvestorID)
+	req.SetPassword(client.Password)
 
-	iResult := Ctp.TraderApi.ReqUserLogin(req, GetTraderRequestId())
+	iResult := TraderApi.ReqUserLogin(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("发送用户登录请求失败！", iResult)
@@ -109,12 +105,14 @@ func (p *FtdcTraderSpi) ReqUserLogin() {
 }
 
 func (p *FtdcTraderSpi) OnRspUserLogin(pRspUserLogin goctp.CThostFtdcRspUserLoginField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 
-		Ctp.IsTraderLogin = true
+		client.IsTraderLogin = true
 
-		log.Printf("交易账号已登录，当前交易日：%v\n", Ctp.TraderApi.GetTradingDay())
+		log.Printf("交易账号已登录，当前交易日：%v\n", TraderApi.GetTradingDay())
 
 		p.ReqSettlementInfoConfirm()
 	}
@@ -122,14 +120,15 @@ func (p *FtdcTraderSpi) OnRspUserLogin(pRspUserLogin goctp.CThostFtdcRspUserLogi
 
 // 投资者结算单确认
 func (p *FtdcTraderSpi) ReqSettlementInfoConfirm() int {
-
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 	p.ReqMsg("投资者结算单确认中...")
 
 	req := goctp.NewCThostFtdcSettlementInfoConfirmField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetBrokerID(client.BrokerID)
+	req.SetInvestorID(client.InvestorID)
 
-	iResult := Ctp.TraderApi.ReqSettlementInfoConfirm(req, GetTraderRequestId())
+	iResult := TraderApi.ReqSettlementInfoConfirm(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("确认投资者结算单失败！", iResult)
@@ -150,13 +149,14 @@ func (p *FtdcTraderSpi) OnRspSettlementInfoConfirm(pSettlementInfoConfirm goctp.
 
 // 请求查询合约
 func (p *FtdcTraderSpi) ReqQryInstrument() int {
-
+	TraderApi := p.Master.TraderApi
+	client := p.Master.Client
 	p.ReqMsg("查询合约中...")
 
 	req := goctp.NewCThostFtdcQryInstrumentField()
 	req.SetInstrumentID("")
 
-	iResult := Ctp.TraderApi.ReqQryInstrument(req, GetTraderRequestId())
+	iResult := TraderApi.ReqQryInstrument(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("查询合约失败！", iResult)
@@ -168,6 +168,8 @@ func (p *FtdcTraderSpi) ReqQryInstrument() int {
 // 请求查询合约响应
 func (p *FtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumentField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
+	client := p.Master.Client
+	MapInstrumentInfos := p.Master.MapInstrumentInfos
 	if !p.IsErrorRspInfo(pRspInfo) {
 
 		var mInstrumentInfo InstrumentInfoStruct
@@ -219,7 +221,7 @@ func (p *FtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumen
 
 			log.Printf("获得合约记录 %v 条\n", MapInstrumentInfoSize)
 
-			if !Ctp.IsTraderInitFinish {
+			if !client.IsTraderInitFinish {
 				// 请求查询资金账户
 				p.ReqQryTradingAccount()
 			}
@@ -230,13 +232,15 @@ func (p *FtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumen
 // 请求查询资金账户
 func (p *FtdcTraderSpi) ReqQryTradingAccount() int {
 
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 	p.ReqMsg("查询资金账户中...")
 
 	req := goctp.NewCThostFtdcQryTradingAccountField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetBrokerID(client.BrokerID)
+	req.SetInvestorID(client.InvestorID)
 
-	iResult := Ctp.TraderApi.ReqQryTradingAccount(req, GetTraderRequestId())
+	iResult := TraderApi.ReqQryTradingAccount(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("查询资金账户失败！", iResult)
@@ -248,6 +252,7 @@ func (p *FtdcTraderSpi) ReqQryTradingAccount() int {
 // 请求查询资金账户响应
 func (p *FtdcTraderSpi) OnRspQryTradingAccount(pTradingAccount goctp.CThostFtdcTradingAccountField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
+	client := p.Master.Client
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 
 		var mAccountInfo AccountInfoStruct
@@ -316,7 +321,7 @@ func (p *FtdcTraderSpi) OnRspQryTradingAccount(pTradingAccount goctp.CThostFtdcT
 			"-------------------------------------------------------------------------------------------------"
 		fmt.Println(AccountInfoStr)
 
-		if !Ctp.IsTraderInitFinish {
+		if !client.IsTraderInitFinish {
 			// 请求查询投资者报单（委托单）
 			p.ReqQryOrder()
 		}
@@ -325,14 +330,16 @@ func (p *FtdcTraderSpi) OnRspQryTradingAccount(pTradingAccount goctp.CThostFtdcT
 
 // 请求查询投资者报单（委托单）
 func (p *FtdcTraderSpi) ReqQryOrder() int {
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 
 	p.ReqMsg("查询投资者报单中...")
 
 	req := goctp.NewCThostFtdcQryOrderField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetBrokerID(client.BrokerID)
+	req.SetInvestorID(client.InvestorID)
 
-	iResult := Ctp.TraderApi.ReqQryOrder(req, GetTraderRequestId())
+	iResult := TraderApi.ReqQryOrder(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("查询投资者报单失败！", iResult)
@@ -343,7 +350,8 @@ func (p *FtdcTraderSpi) ReqQryOrder() int {
 
 // 请求查询投资者报单响应
 func (p *FtdcTraderSpi) OnRspQryOrder(pOrder goctp.CThostFtdcOrderField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-
+	MapOrderList := p.Master.MapOrderList
+	Ctp := p.Master.Client
 	if !p.IsErrorRspInfo(pRspInfo) {
 
 		// 如果 没有数据 pOrder 等于0
@@ -394,14 +402,15 @@ func (p *FtdcTraderSpi) OnRspQryOrder(pOrder goctp.CThostFtdcOrderField, pRspInf
 
 // 请求查询投资者持仓（汇总）
 func (p *FtdcTraderSpi) ReqQryInvestorPosition() int {
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
 
 	p.ReqMsg("查询投资者持仓中...")
-
 	req := goctp.NewCThostFtdcQryInvestorPositionField()
-	req.SetBrokerID(Ctp.BrokerID)
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetBrokerID(client.BrokerID)
+	req.SetInvestorID(client.InvestorID)
 
-	iResult := Ctp.TraderApi.ReqQryInvestorPosition(req, GetTraderRequestId())
+	iResult := TraderApi.ReqQryInvestorPosition(req, client.GetTraderRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("查询投资者持仓失败！", iResult)
@@ -415,6 +424,9 @@ func (p *FtdcTraderSpi) ReqQryInvestorPosition() int {
 // 请求查询投资者持仓（汇总）响应
 func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostFtdcInvestorPositionField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
+	Ctp := p.Master.Client
+	MdSpi := p.Master.MdSpi
+	//TraderApi := p.Master.TraderApi
 	if !p.IsErrorRspInfo(pRspInfo) {
 
 		// 没有数据 pInvestorPosition 会等于 0
@@ -448,7 +460,7 @@ func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostF
 
 // 报单通知（委托单）
 func (p *FtdcTraderSpi) OnRtnOrder(pOrder goctp.CThostFtdcOrderField) {
-
+	MapOrderList := p.Master.MapOrderList
 	// 报单编号
 	OrderSysID := pOrder.GetOrderSysID()
 
@@ -576,9 +588,9 @@ func (p *FtdcTraderSpi) OnHeartBeatWarning(nTimeLapse int) {
 
 // 开仓
 func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
-
-	iRequestID := GetTraderRequestId()
-
+	client := p.Master.Client
+	iRequestID := client.GetTraderRequestId()
+	TraderApi := p.Master.TraderApi
 	mInstrumentInfo, mapRes := GetInstrumentInfo(Input.InstrumentID)
 	if !mapRes {
 		fmt.Println("开仓失败，合约不存在！")
@@ -588,9 +600,9 @@ func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
 	req := goctp.NewCThostFtdcInputOrderField()
 
 	// 经纪公司代码
-	req.SetBrokerID(Ctp.BrokerID)
+	req.SetBrokerID(client.BrokerID)
 	// 投资者代码
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetInvestorID(client.InvestorID)
 	// 合约代码
 	req.SetInstrumentID(Input.InstrumentID)
 	// 报单引用
@@ -624,7 +636,7 @@ func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
 	// 用户强评标志: 否
 	req.SetUserForceClose(0)
 
-	iResult := Ctp.TraderApi.ReqOrderInsert(req, iRequestID)
+	iResult := TraderApi.ReqOrderInsert(req, iRequestID)
 
 	if iResult != 0 {
 		ReqFailMsg("提交报单失败！", iResult)
@@ -636,8 +648,9 @@ func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
 
 // 平仓
 func (p *FtdcTraderSpi) OrderClose(Input InputOrderStruct) int {
-
-	iRequestID := GetTraderRequestId()
+	client := p.Master.Client
+	TraderApi := p.Master.TraderApi
+	iRequestID := client.GetTraderRequestId()
 
 	mInstrumentInfo, mapRes := GetInstrumentInfo(Input.InstrumentID)
 	if !mapRes {
@@ -660,9 +673,9 @@ func (p *FtdcTraderSpi) OrderClose(Input InputOrderStruct) int {
 	req := goctp.NewCThostFtdcInputOrderField()
 
 	// 经纪公司代码
-	req.SetBrokerID(Ctp.BrokerID)
+	req.SetBrokerID(client.BrokerID)
 	// 投资者代码
-	req.SetInvestorID(Ctp.InvestorID)
+	req.SetInvestorID(client.InvestorID)
 	// 合约代码
 	req.SetInstrumentID(Input.InstrumentID)
 	// 报单引用
@@ -696,7 +709,7 @@ func (p *FtdcTraderSpi) OrderClose(Input InputOrderStruct) int {
 	// 用户强评标志: 否
 	req.SetUserForceClose(0)
 
-	iResult := Ctp.TraderApi.ReqOrderInsert(req, iRequestID)
+	iResult := TraderApi.ReqOrderInsert(req, iRequestID)
 
 	if iResult != 0 {
 		ReqFailMsg("提交报单失败！", iResult)
@@ -708,8 +721,10 @@ func (p *FtdcTraderSpi) OrderClose(Input InputOrderStruct) int {
 
 // 撤消报单
 func (p *FtdcTraderSpi) OrderCancel(InstrumentID string, OrderSysID string) int {
-
-	iRequestID := GetTraderRequestId()
+	client := p.Master.Client
+	MapOrderList := p.Master.MapOrderList
+	TraderApi := p.Master.TraderApi
+	iRequestID := client.GetTraderRequestId()
 
 	mapKey := InstrumentID + "_" + OrderSysID
 
@@ -743,7 +758,7 @@ func (p *FtdcTraderSpi) OrderCancel(InstrumentID string, OrderSysID string) int 
 	// 操作标志
 	req.SetActionFlag(goctp.THOST_FTDC_AF_Delete)
 
-	iResult := Ctp.TraderApi.ReqOrderAction(req, iRequestID)
+	iResult := TraderApi.ReqOrderAction(req, iRequestID)
 
 	if iResult != 0 {
 		ReqFailMsg("提交报单失败！", iResult)

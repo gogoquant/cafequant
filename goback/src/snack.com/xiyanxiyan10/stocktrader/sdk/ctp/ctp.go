@@ -10,14 +10,20 @@ import (
 
 // CtpMaster
 type CtpMaster struct {
+	// 行情模块 api
+	MdApi goctp.CThostFtdcMdApi
+
+	// 交易模块 api
+	TraderApi goctp.CThostFtdcTraderApi
+
 	// ctp 句柄及配置项
-	Ctp CtpClient
+	Client *CtpClient
 
 	// 行情模块函数 句柄
-	MdSpi FtdcMdSpi
+	MdSpi *FtdcMdSpi
 
 	// 交易模块函数 句柄
-	TraderSpi FtdcTraderSpi
+	TraderSpi *FtdcTraderSpi
 
 	// 交易所合约详情列表 InstrumentInfoStruct
 	MapInstrumentInfos sync.Map
@@ -55,23 +61,16 @@ type CtpMaster struct {
 
 // Ctp 行情 spi 回调函数
 type FtdcMdSpi struct {
-	Client CtpClient
+	Master *CtpMaster
 }
 
 // Ctp 交易 spi 回调函数
 type FtdcTraderSpi struct {
-	Client CtpClient
+	Master *CtpMaster
 }
 
 // Ctp 客户端 行情、交易模块 全局变量
 type CtpClient struct {
-
-	// 行情模块 api
-	MdApi goctp.CThostFtdcMdApi
-
-	// 交易模块 api
-	TraderApi goctp.CThostFtdcTraderApi
-
 	BrokerID   string
 	InvestorID string
 	Password   string
@@ -105,10 +104,16 @@ type CtpClient struct {
 	IsMdLogin bool
 }
 
+// 获得交易请求编号
+func (client *CtpClient) GetTraderRequestId() int {
+	client.TraderRequestId += 1
+	return client.TraderRequestId
+}
+
 // SetTradeAccount ...
 func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode string) {
-	ctp.MdFront = append(ctp.MdFront, MdFront)
-	ctp.TraderFront = append(ctp.TraderFront, TraderFront)
+	ctp.MdFront = append(ctp.MdFront, MdFront...)
+	ctp.TraderFront = append(ctp.TraderFront, TraderFront...)
 	ctp.BrokerID = BrokerID
 	ctp.InvestorID = InvestorID
 	ctp.Password = Password
@@ -116,8 +121,8 @@ func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, I
 	ctp.AuthCode = AuthCode
 	ctp.OrderBuy = '0'
 	ctp.OrderSell = '1'
-	ctp.MdSpi = FtdcMdSpi{}
-	ctp.TraderSpi = FtdcTraderSpi{}
+	//ctp.MdSpi = FtdcMdSpi{}
+	//ctp.TraderSpi = FtdcTraderSpi{}
 }
 
 func (ctp *CtpMaster) Start() error {
@@ -131,10 +136,12 @@ func (ctp *CtpMaster) Start() error {
 			fmt.Println("创建目录失败，请检查是否有操作权限")
 		}
 	}
+	ctp.MdApi = goctp.CThostFtdcMdApiCreateFtdcMdApi(ctp.StreamFile)
+	ctp.TraderApi = goctp.CThostFtdcTraderApiCreateFtdcTraderApi(ctp.StreamFile)
 
-	client = CtpClient{
-		MdApi:              goctp.CThostFtdcMdApiCreateFtdcMdApi(StreamFile),
-		TraderApi:          goctp.CThostFtdcTraderApiCreateFtdcTraderApi(StreamFile),
+	client := &CtpClient{
+		//MdApi:              goctp.CThostFtdcMdApiCreateFtdcMdApi(ctp.StreamFile),
+		//TraderApi:          goctp.CThostFtdcTraderApiCreateFtdcTraderApi(ctp.StreamFile),
 		BrokerID:           ctp.BrokerID,
 		InvestorID:         ctp.InvestorID,
 		Password:           ctp.Password,
@@ -147,26 +154,27 @@ func (ctp *CtpMaster) Start() error {
 		IsMdLogin:          false,
 		IsTraderLogin:      false,
 	}
-
-	client.MdApi.RegisterSpi(goctp.NewDirectorCThostFtdcMdSpi(&FtdcMdSpi{Client: client}))
-
+	ctp.Client = client
+	ctp.MdSpi = &FtdcMdSpi{Master: ctp}
+	ctp.MdApi.RegisterSpi(goctp.NewDirectorCThostFtdcMdSpi(ctp.MdSpi))
 	for _, val := range ctp.MdFront {
-		client.MdApi.RegisterFront(val)
+		ctp.MdApi.RegisterFront(val)
 	}
-	client.MdApi.Init()
+	ctp.MdApi.Init()
 
-	client.TraderApi.RegisterSpi(goctp.NewDirectorCThostFtdcTraderSpi(&FtdcTraderSpi{Client: client}))
+	ctp.TraderSpi = &FtdcTraderSpi{Master: ctp}
+	ctp.TraderApi.RegisterSpi(goctp.NewDirectorCThostFtdcTraderSpi(ctp.TraderSpi))
 
 	for _, val := range ctp.TraderFront {
-		client.TraderApi.RegisterFront(val)
+		ctp.TraderApi.RegisterFront(val)
 	}
 
-	client.TraderApi.SubscribePublicTopic(goctp.THOST_TERT_QUICK)
-	client.TraderApi.SubscribePrivateTopic(goctp.THOST_TERT_QUICK)
-	ctp.CtpClient = client
+	ctp.TraderApi.SubscribePublicTopic(goctp.THOST_TERT_QUICK)
+	ctp.TraderApi.SubscribePrivateTopic(goctp.THOST_TERT_QUICK)
 
-	client.TraderApi.Init()
-	client.TraderApi.Join()
+	ctp.TraderApi.Init()
+	ctp.TraderApi.Join()
+	return nil
 	// .Join() 如果后面有其它需要处理的功能可以不写，但必须保证程序不能退出，Join 就是保证程序不退出的
 }
 
@@ -289,5 +297,5 @@ type CtpHandler interface {
 
 // NewCtp ...
 func NewCtp() CtpHandler {
-	return &CtpMaster
+	return &CtpMaster{}
 }

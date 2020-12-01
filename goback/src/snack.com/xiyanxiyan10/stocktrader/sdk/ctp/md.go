@@ -13,12 +13,6 @@ import (
 	"unsafe"
 )
 
-// 获得行情请求编号
-func (p *FtdcMdSpi) GetMdRequestId() int {
-	Ctp.MdRequestId += 1
-	return Ctp.MdRequestId
-}
-
 // 当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
 // 服务器已断线，该函数也会被调用。【api 会自动初始化程序，并重新登陆】
 func (p *FtdcMdSpi) OnFrontDisconnected(nReason int) {
@@ -34,7 +28,7 @@ func (p *FtdcMdSpi) OnFrontConnected() {
 	fmt.Println(MdStr)
 
 	// 登录（如果行情模块在交易模块后初始化则直接登录行情）
-	if Ctp.IsTraderInit {
+	if p.Client.IsTraderInit {
 		p.ReqUserLogin()
 	}
 }
