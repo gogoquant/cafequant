@@ -245,7 +245,7 @@ func (ctp *CtpMaster) Start() error {
 	if !fileExists {
 		err := os.Mkdir(ctp.StreamFile, os.ModePerm)
 		if err != nil {
-			fmt.Println("创建目录失败，请检查是否有操作权限")
+			fmt.Println("创建目录" + ctp.StreamFile + "失败，请检查是否有操作权限")
 		}
 	}
 	ctp.MdApi = goctp.CThostFtdcMdApiCreateFtdcMdApi(ctp.StreamFile)
