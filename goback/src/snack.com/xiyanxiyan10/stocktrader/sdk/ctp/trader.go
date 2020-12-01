@@ -423,7 +423,7 @@ func (p *FtdcTraderSpi) ReqQryInvestorPosition() int {
 
 // 请求查询投资者持仓（汇总）响应
 func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostFtdcInvestorPositionField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-
+	master := p.Master
 	Ctp := p.Master.Client
 	MdSpi := p.Master.MdSpi
 	//TraderApi := p.Master.TraderApi
@@ -435,7 +435,7 @@ func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostF
 		if pInvestorPositionCode != "0" {
 
 			// 获得持仓结构体数据
-			mInvestorPosition := GetInvestorPositionStruct(pInvestorPosition)
+			mInvestorPosition := master.GetInvestorPositionStruct(pInvestorPosition)
 
 			if mInvestorPosition.Position != 0 {
 				fmt.Printf("- 合约：%v   \t%v:%v   \t总持仓：%v   \t持仓均价：%v   \t持仓盈亏：%v\n", mInvestorPosition.InstrumentID, mInvestorPosition.PositionDateTitle, mInvestorPosition.PosiDirectionTitle, mInvestorPosition.Position, mInvestorPosition.OpenCost, mInvestorPosition.PositionProfit)
@@ -798,64 +798,6 @@ func GetOrderListStruct(pOrder goctp.CThostFtdcOrderField) OrderListStruct {
 	return mOrder
 }
 
-// 获得持仓结构体数据
-func GetInvestorPositionStruct(pInvestorPosition goctp.CThostFtdcInvestorPositionField) InvestorPositionStruct {
-
-	var mInvestorPosition InvestorPositionStruct
-
-	// 检查合约详情是否存在
-	mInstrumentInfo, mapRes := GetInstrumentInfo(pInvestorPosition.GetInstrumentID())
-	if !mapRes {
-		fmt.Printf("合约 %v 不存在！\n", pInvestorPosition.GetInstrumentID())
-		return mInvestorPosition
-	}
-
-	// 合约乘数
-	var VolumeMultiple int = mInstrumentInfo.VolumeMultiple
-
-	// 开仓成本
-	var OpenCost float64 = pInvestorPosition.GetOpenCost() / float64(pInvestorPosition.GetPosition()*VolumeMultiple)
-
-	mInvestorPosition.BrokerID = pInvestorPosition.GetBrokerID()
-	mInvestorPosition.InvestorID = pInvestorPosition.GetInvestorID()
-	mInvestorPosition.InstrumentID = pInvestorPosition.GetInstrumentID()
-	mInvestorPosition.InstrumentName = mInstrumentInfo.InstrumentName
-	mInvestorPosition.PosiDirection = string(pInvestorPosition.GetPosiDirection())
-	mInvestorPosition.PosiDirectionTitle = GetPosiDirectionTitle(mInvestorPosition.PosiDirection)
-	mInvestorPosition.HedgeFlag = string(pInvestorPosition.GetHedgeFlag())
-	mInvestorPosition.HedgeFlagTitle = GetHedgeFlagTitle(mInvestorPosition.HedgeFlag)
-	mInvestorPosition.PositionDate = string(pInvestorPosition.GetPositionDate())
-	mInvestorPosition.PositionDateTitle = GetPositionDateTitle(mInvestorPosition.PositionDate)
-	mInvestorPosition.Position = pInvestorPosition.GetPosition()
-	mInvestorPosition.YdPosition = pInvestorPosition.GetYdPosition()
-	mInvestorPosition.TodayPosition = pInvestorPosition.GetTodayPosition()
-	mInvestorPosition.LongFrozen = pInvestorPosition.GetLongFrozen()
-	mInvestorPosition.ShortFrozen = pInvestorPosition.GetShortFrozen()
-
-	// 冻结的持仓量（多空并成一个字段）
-	if mInvestorPosition.PosiDirection == string(goctp.THOST_FTDC_PD_Long) {
-		// 多头冻结的持仓量
-		mInvestorPosition.ShortVolume = pInvestorPosition.GetShortFrozen()
-	} else {
-		// 空头冻结的持仓量
-		mInvestorPosition.ShortVolume = pInvestorPosition.GetLongFrozen()
-	}
-
-	mInvestorPosition.OpenVolume = pInvestorPosition.GetOpenVolume()
-	mInvestorPosition.CloseVolume = pInvestorPosition.GetCloseVolume()
-	mInvestorPosition.PositionCost = Decimal(pInvestorPosition.GetPositionCost(), 2)
-	mInvestorPosition.Commission = Decimal(pInvestorPosition.GetCommission(), 2)
-	mInvestorPosition.CloseProfit = pInvestorPosition.GetCloseProfit()
-	mInvestorPosition.PositionProfit = Decimal(pInvestorPosition.GetPositionProfit(), 2)
-	mInvestorPosition.PreSettlementPrice = pInvestorPosition.GetPreSettlementPrice()
-	mInvestorPosition.SettlementPrice = Decimal(pInvestorPosition.GetSettlementPrice(), 2)
-	mInvestorPosition.SettlementID = pInvestorPosition.GetSettlementID()
-	mInvestorPosition.OpenCost = Decimal(OpenCost, 2)
-	mInvestorPosition.ExchangeID = pInvestorPosition.GetExchangeID()
-
-	return mInvestorPosition
-}
-
 // 获得期货合约列表【只有期货，不含期权】
 func GetFuturesList() []string {
 	var InstrumentList []string
@@ -872,23 +814,4 @@ func GetFuturesList() []string {
 	})
 
 	return InstrumentList
-}
-
-/**
- * 计算盈亏
- *
- * @param   InstrumentID  string  合约
- * @param   OpenPrice     float64 开仓价格
- * @param   LastPrice     float64 最新价|平仓价格
- * @param   Number        int     数量
- * @param   PosiDirection string  持仓方向[2：买，3：卖]
- */
-func GetPositionProfit(InstrumentID string, OpenPrice float64, LastPrice float64, Number int, PosiDirection string) float64 {
-
-	InstrumentInfo, _ := GetInstrumentInfo(InstrumentID)
-	if PosiDirection == "2" {
-		return ((LastPrice - OpenPrice) * float64(InstrumentInfo.VolumeMultiple)) * float64(Number)
-	} else {
-		return ((OpenPrice - LastPrice) * float64(InstrumentInfo.VolumeMultiple)) * float64(Number)
-	}
 }
