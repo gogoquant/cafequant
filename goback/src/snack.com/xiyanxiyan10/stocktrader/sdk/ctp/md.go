@@ -21,28 +21,30 @@ func (p *FtdcMdSpi) OnFrontDisconnected(nReason int) {
 
 // 当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
 func (p *FtdcMdSpi) OnFrontConnected() {
-
+	client := p.Master.Client
 	MdStr := "=================================================================================================\n" +
 		"= 行情模块初始化成功，API 版本：" + goctp.CThostFtdcMdApiGetApiVersion() + "\n" +
 		"================================================================================================="
 	fmt.Println(MdStr)
 
 	// 登录（如果行情模块在交易模块后初始化则直接登录行情）
-	if p.Client.IsTraderInit {
+	if client.IsTraderInit {
 		p.ReqUserLogin()
 	}
 }
 
 // 行情用户登录
 func (p *FtdcMdSpi) ReqUserLogin() {
+	client := p.Master.Client
+	MdApi := p.Master.MdApi
 	log.Println("行情系统账号登陆中...")
 
 	req := goctp.NewCThostFtdcReqUserLoginField()
-	req.SetBrokerID(BrokerID)
-	req.SetUserID(InvestorID)
-	req.SetPassword(Password)
+	req.SetBrokerID(client.BrokerID)
+	req.SetUserID(client.InvestorID)
+	req.SetPassword(client.Password)
 
-	iResult := Ctp.MdApi.ReqUserLogin(req, p.GetMdRequestId())
+	iResult := MdApi.ReqUserLogin(req, client.GetMdRequestId())
 
 	if iResult != 0 {
 		ReqFailMsg("发送用户登录请求失败！", iResult)
@@ -51,15 +53,15 @@ func (p *FtdcMdSpi) ReqUserLogin() {
 
 // 登录请求响应
 func (p *FtdcMdSpi) OnRspUserLogin(pRspUserLogin goctp.CThostFtdcRspUserLoginField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-
+	MdApi := p.Master.MdApi
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
-		log.Printf("行情系统登陆成功，当前交易日： %v\n", Ctp.MdApi.GetTradingDay())
+		log.Printf("行情系统登陆成功，当前交易日： %v\n", MdApi.GetTradingDay())
 	}
 }
 
 // 订阅行情
 func (p *FtdcMdSpi) SubscribeMarketData(InstrumentID []string) int {
-
+	MdApi := p.Master.MdApi
 	if len(InstrumentID) == 0 {
 		log.Println("没有指定需要订阅的行情数据")
 		return 0
@@ -75,7 +77,7 @@ func (p *FtdcMdSpi) SubscribeMarketData(InstrumentID []string) int {
 		args = append(args, char)
 	}
 
-	iResult := Ctp.MdApi.SubscribeMarketData((*string)(unsafe.Pointer(&args[0])), len(InstrumentID))
+	iResult := MdApi.SubscribeMarketData((*string)(unsafe.Pointer(&args[0])), len(InstrumentID))
 
 	if iResult != 0 {
 		ReqFailMsg("发送订阅行情请求失败！", iResult)
@@ -94,6 +96,7 @@ func (p *FtdcMdSpi) OnRspSubMarketData(pSpecificInstrument goctp.CThostFtdcSpeci
 // 退订行情
 func (p *FtdcMdSpi) UnSubscribeMarketData(InstrumentID []string) int {
 
+	MdApi := p.Master.MdApi
 	if len(InstrumentID) == 0 {
 		log.Println("没有指定需要退订的行情数据")
 		return 0
@@ -109,7 +112,7 @@ func (p *FtdcMdSpi) UnSubscribeMarketData(InstrumentID []string) int {
 		args = append(args, char)
 	}
 
-	iResult := Ctp.MdApi.UnSubscribeMarketData((*string)(unsafe.Pointer(&args[0])), len(InstrumentID))
+	iResult := MdApi.UnSubscribeMarketData((*string)(unsafe.Pointer(&args[0])), len(InstrumentID))
 
 	if iResult != 0 {
 		ReqFailMsg("发送退订行情请求失败！", iResult)
