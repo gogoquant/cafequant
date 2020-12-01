@@ -59,6 +59,16 @@ type CtpMaster struct {
 	RunMode string
 }
 
+// 获得合约详情信息
+func (ctp *CtpMaster) GetInstrumentInfo(InstrumentID string) (InstrumentInfoStruct, bool) {
+	if v, ok := ctp.MapInstrumentInfos.Load(InstrumentID); ok {
+		return v.(InstrumentInfoStruct), true
+	} else {
+		var mInstrumentInfo InstrumentInfoStruct
+		return mInstrumentInfo, false
+	}
+}
+
 // Ctp 行情 spi 回调函数
 type FtdcMdSpi struct {
 	Master *CtpMaster

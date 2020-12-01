@@ -591,7 +591,8 @@ func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
 	client := p.Master.Client
 	iRequestID := client.GetTraderRequestId()
 	TraderApi := p.Master.TraderApi
-	mInstrumentInfo, mapRes := GetInstrumentInfo(Input.InstrumentID)
+	master := p.Master
+	mInstrumentInfo, mapRes := master.GetInstrumentInfo(Input.InstrumentID)
 	if !mapRes {
 		fmt.Println("开仓失败，合约不存在！")
 		return 0
@@ -648,11 +649,12 @@ func (p *FtdcTraderSpi) OrderOpen(Input InputOrderStruct) int {
 
 // 平仓
 func (p *FtdcTraderSpi) OrderClose(Input InputOrderStruct) int {
+	master := p.Master
 	client := p.Master.Client
 	TraderApi := p.Master.TraderApi
 	iRequestID := client.GetTraderRequestId()
 
-	mInstrumentInfo, mapRes := GetInstrumentInfo(Input.InstrumentID)
+	mInstrumentInfo, mapRes := master.GetInstrumentInfo(Input.InstrumentID)
 	if !mapRes {
 		fmt.Println("平仓失败，合约不存在！")
 		return 0
@@ -852,16 +854,6 @@ func GetInvestorPositionStruct(pInvestorPosition goctp.CThostFtdcInvestorPositio
 	mInvestorPosition.ExchangeID = pInvestorPosition.GetExchangeID()
 
 	return mInvestorPosition
-}
-
-// 获得合约详情信息
-func GetInstrumentInfo(InstrumentID string) (InstrumentInfoStruct, bool) {
-	if v, ok := MapInstrumentInfos.Load(InstrumentID); ok {
-		return v.(InstrumentInfoStruct), true
-	} else {
-		var mInstrumentInfo InstrumentInfoStruct
-		return mInstrumentInfo, false
-	}
 }
 
 // 获得期货合约列表【只有期货，不含期权】
