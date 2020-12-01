@@ -797,21 +797,3 @@ func GetOrderListStruct(pOrder goctp.CThostFtdcOrderField) OrderListStruct {
 
 	return mOrder
 }
-
-// 获得期货合约列表【只有期货，不含期权】
-func GetFuturesList() []string {
-	var InstrumentList []string
-	MapInstrumentInfos.Range(func(k, v interface{}) bool {
-
-		val := v.(InstrumentInfoStruct)
-
-		// 类型为期货的合约
-		if val.ProductClass == "1" {
-			InstrumentList = append(InstrumentList, val.InstrumentID)
-		}
-
-		return true
-	})
-
-	return InstrumentList
-}
