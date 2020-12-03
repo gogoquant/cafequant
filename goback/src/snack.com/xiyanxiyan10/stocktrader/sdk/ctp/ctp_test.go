@@ -15,6 +15,10 @@ func TestCtp(t *testing.T) {
 		t.Log("ctp start err:" + err.Error())
 		return
 	}
+
+	time.Sleep(10 * time.Second)
+	ctp.SubscribeMarketData([]string{"IC1704"})
+	ctp.ReqQryInstrument()
 	for {
 		time.Sleep(10 * time.Second)
 		t.Log(ctp.GetFuturesList())

@@ -410,10 +410,20 @@ func main() {
 }
 */
 
+func (master *CtpMaster) SubscribeMarketData(vals []string) int {
+	return master.MdSpi.SubscribeMarketData(vals)
+}
+
+func (master *CtpMaster) ReqQryInstrument() int {
+	return master.TraderSpi.ReqQryInstrument()
+}
+
 type CtpHandler interface {
 	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string)
 	Start() error
 	GetFuturesList() []string
+	ReqQryInstrument() int
+	SubscribeMarketData(vals []string) int
 }
 
 // NewCtp ...
