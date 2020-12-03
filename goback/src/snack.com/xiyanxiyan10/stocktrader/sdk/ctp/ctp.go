@@ -248,6 +248,9 @@ func (ctp *CtpMaster) Start() error {
 			fmt.Println("创建目录(" + ctp.StreamFile + ")失败，请检查是否有操作权限")
 		}
 	}
+
+	log.Println("创建临时文件存放路径")
+
 	ctp.MdApi = goctp.CThostFtdcMdApiCreateFtdcMdApi(ctp.StreamFile)
 	ctp.TraderApi = goctp.CThostFtdcTraderApiCreateFtdcTraderApi(ctp.StreamFile)
 
@@ -268,12 +271,15 @@ func (ctp *CtpMaster) Start() error {
 	}
 	ctp.Client = client
 	ctp.MdSpi = &FtdcMdSpi{Master: ctp}
+
+	log.Println("初始化MdApi")
 	ctp.MdApi.RegisterSpi(goctp.NewDirectorCThostFtdcMdSpi(ctp.MdSpi))
 	for _, val := range ctp.MdFront {
 		ctp.MdApi.RegisterFront(val)
 	}
 	ctp.MdApi.Init()
 
+	log.Println("初始化TraderApi")
 	ctp.TraderSpi = &FtdcTraderSpi{Master: ctp}
 	ctp.TraderApi.RegisterSpi(goctp.NewDirectorCThostFtdcTraderSpi(ctp.TraderSpi))
 
@@ -281,11 +287,13 @@ func (ctp *CtpMaster) Start() error {
 		ctp.TraderApi.RegisterFront(val)
 	}
 
+	log.Println("订阅TraderApi")
 	ctp.TraderApi.SubscribePublicTopic(goctp.THOST_TERT_QUICK)
 	ctp.TraderApi.SubscribePrivateTopic(goctp.THOST_TERT_QUICK)
 
+	log.Println("TraderApi 等待")
 	ctp.TraderApi.Init()
-	ctp.TraderApi.Join()
+	//ctp.TraderApi.Join()
 	return nil
 	// .Join() 如果后面有其它需要处理的功能可以不写，但必须保证程序不能退出，Join 就是保证程序不退出的
 }
@@ -396,7 +404,7 @@ func main() {
 	Ctp.TraderApi.SubscribePublicTopic(goctp.THOST_TERT_QUICK)
 	Ctp.TraderApi.SubscribePrivateTopic(goctp.THOST_TERT_QUICK)
 	Ctp.TraderApi.Init()
-	Ctp.TraderApi.Join()
+	//Ctp.TraderApi.Join()
 
 	// .Join() 如果后面有其它需要处理的功能可以不写，但必须保证程序不能退出，Join 就是保证程序不退出的
 }
@@ -405,6 +413,7 @@ func main() {
 type CtpHandler interface {
 	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string)
 	Start() error
+	GetFuturesList() []string
 }
 
 // NewCtp ...

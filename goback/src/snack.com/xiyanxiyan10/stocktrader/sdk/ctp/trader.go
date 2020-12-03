@@ -65,7 +65,7 @@ func (p *FtdcTraderSpi) ReqAuthenticate() {
 	req.SetAuthCode(client.AuthCode)
 
 	iResult := TraderApi.ReqAuthenticate(req, client.GetTraderRequestId())
-
+	log.Println("iresult is:", iResult)
 	if iResult != 0 {
 		ReqFailMsg("发送客户端认证请求失败！", iResult)
 	}
@@ -74,6 +74,7 @@ func (p *FtdcTraderSpi) ReqAuthenticate() {
 // 客户端认证响应
 func (p *FtdcTraderSpi) OnRspAuthenticate(pRspAuthenticateField goctp.CThostFtdcRspAuthenticateField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 	MdSpi := p.Master.MdSpi
+	log.Println("客户端认证返回")
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 
 		log.Println("客户端认证成功！")
@@ -81,6 +82,8 @@ func (p *FtdcTraderSpi) OnRspAuthenticate(pRspAuthenticateField goctp.CThostFtdc
 		MdSpi.ReqUserLogin()
 
 		p.ReqUserLogin()
+	} else {
+		log.Println("客户端认证失败")
 	}
 }
 
