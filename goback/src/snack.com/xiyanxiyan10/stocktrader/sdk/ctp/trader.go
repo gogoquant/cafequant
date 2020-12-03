@@ -163,16 +163,17 @@ func (p *FtdcTraderSpi) ReqQryInstrument() int {
 
 	if iResult != 0 {
 		ReqFailMsg("查询合约失败！", iResult)
+	} else {
+		log.Println("查询合约请求成功")
 	}
-
 	return iResult
 }
 
 // 请求查询合约响应
 func (p *FtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumentField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-
+	log.Println("查询合约响应")
 	client := p.Master.Client
-	MapInstrumentInfos := p.Master.MapInstrumentInfos
+	//MapInstrumentInfos := p.Master.MapInstrumentInfos
 	if !p.IsErrorRspInfo(pRspInfo) {
 
 		var mInstrumentInfo InstrumentInfoStruct
@@ -211,13 +212,13 @@ func (p *FtdcTraderSpi) OnRspQryInstrument(pInstrument goctp.CThostFtdcInstrumen
 		mInstrumentInfo.UnderlyingMultiple = pInstrument.GetUnderlyingMultiple()
 		mInstrumentInfo.CombinationType = string(pInstrument.GetCombinationType())
 
-		MapInstrumentInfos.Store(mapKey, mInstrumentInfo)
+		p.Master.MapInstrumentInfos.Store(mapKey, mInstrumentInfo)
 
 		if bIsLast {
 
 			MapInstrumentInfoSize := 0
 
-			MapInstrumentInfos.Range(func(k, v interface{}) bool {
+			p.Master.MapInstrumentInfos.Range(func(k, v interface{}) bool {
 				MapInstrumentInfoSize += 1
 				return true
 			})
@@ -463,7 +464,7 @@ func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostF
 
 // 报单通知（委托单）
 func (p *FtdcTraderSpi) OnRtnOrder(pOrder goctp.CThostFtdcOrderField) {
-	MapOrderList := p.Master.MapOrderList
+	//MapOrderList := p.Master.MapOrderList
 	// 报单编号
 	OrderSysID := pOrder.GetOrderSysID()
 
@@ -508,7 +509,7 @@ func (p *FtdcTraderSpi) OnRtnOrder(pOrder goctp.CThostFtdcOrderField) {
 	}
 
 	// 将报单数据记录下来
-	MapOrderList.Store(mOrder.MapKey, mOrder)
+	p.Master.MapOrderList.Store(mOrder.MapKey, mOrder)
 }
 
 // 成交通知（委托单在交易所成交了）

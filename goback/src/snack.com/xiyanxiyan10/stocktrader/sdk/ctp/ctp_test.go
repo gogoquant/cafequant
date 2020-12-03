@@ -17,10 +17,12 @@ func TestCtp(t *testing.T) {
 	}
 
 	time.Sleep(10 * time.Second)
-	ctp.SubscribeMarketData([]string{"IC1704"})
 	ctp.ReqQryInstrument()
+
+	//time.Sleep(10 * time.Second)
+	//ctp.SubscribeMarketData([]string{"au0012", "IC0012"})
 	for {
-		time.Sleep(10 * time.Second)
-		t.Log(ctp.GetFuturesList())
+		time.Sleep(30 * time.Second)
+		//t.Log(ctp.GetFuturesList())
 	}
 }
