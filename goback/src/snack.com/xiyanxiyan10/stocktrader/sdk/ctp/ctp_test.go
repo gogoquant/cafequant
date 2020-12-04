@@ -16,11 +16,11 @@ func TestCtp(t *testing.T) {
 		return
 	}
 
-	time.Sleep(10 * time.Second)
-	ctp.ReqQryInstrument()
-
 	//time.Sleep(10 * time.Second)
-	//ctp.SubscribeMarketData([]string{"au0012", "IC0012"})
+	//ctp.ReqQryInstrument()
+
+	time.Sleep(20 * time.Second)
+	ctp.SubscribeMarketData([]string{"cu2109", "al2105"})
 	for {
 		time.Sleep(30 * time.Second)
 		//t.Log(ctp.GetFuturesList())
