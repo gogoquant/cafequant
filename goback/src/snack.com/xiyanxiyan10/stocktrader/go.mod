@@ -12,6 +12,7 @@ require (
 	github.com/go-ini/ini v1.55.0
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/gobuffalo/packr v1.30.1 // indirect
+	github.com/gofinance/ib v0.0.0-20190131202149-a7abd0c5d772
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hprose/hprose-golang v2.0.5+incompatible
 	github.com/jinzhu/gorm v1.9.12
