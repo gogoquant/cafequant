@@ -28,6 +28,9 @@ type CtpMaster struct {
 	// 交易所合约详情列表 InstrumentInfoStruct
 	MapInstrumentInfos sync.Map
 
+	// market data map
+	MapMarketDatas sync.Map
+
 	// 报单列表（已成交、未成交、撤单等状态）的列表数据 OrderListStruct
 	MapOrderList sync.Map
 
@@ -219,6 +222,16 @@ func (client *CtpClient) GetMdRequestId() int {
 func (client *CtpClient) GetTraderRequestId() int {
 	client.TraderRequestId += 1
 	return client.TraderRequestId
+}
+
+// GetMarket  market data from cache
+func (ctp *CtpMaster) GetMarketData(InstrumentID string) *MarketDataStruct {
+	val, exist := ctp.MapMarketDatas.Load(InstrumentID)
+	if !exist {
+		return nil
+	}
+	data := val.(MarketDataStruct)
+	return &data
 }
 
 // SetTradeAccount ...
@@ -421,6 +434,7 @@ func (master *CtpMaster) ReqQryInstrument() int {
 type CtpHandler interface {
 	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string)
 	Start() error
+	GetMarketData(InstrumentID string) *MarketDataStruct
 	GetFuturesList() []string
 	ReqQryInstrument() int
 	SubscribeMarketData(vals []string) int

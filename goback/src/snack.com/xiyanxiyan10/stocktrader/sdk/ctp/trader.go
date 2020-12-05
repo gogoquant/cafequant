@@ -354,7 +354,7 @@ func (p *FtdcTraderSpi) ReqQryOrder() int {
 
 // 请求查询投资者报单响应
 func (p *FtdcTraderSpi) OnRspQryOrder(pOrder goctp.CThostFtdcOrderField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
-	MapOrderList := p.Master.MapOrderList
+	//MapOrderList := p.Master.MapOrderList
 	Ctp := p.Master.Client
 	if !p.IsErrorRspInfo(pRspInfo) {
 
@@ -370,7 +370,7 @@ func (p *FtdcTraderSpi) OnRspQryOrder(pOrder goctp.CThostFtdcOrderField, pRspInf
 			mOrder.MapKey = pOrder.GetInstrumentID() + "_" + TrimSpace(pOrder.GetOrderSysID())
 
 			// 记录报单数据
-			MapOrderList.Store(mOrder.MapKey, mOrder)
+			p.Master.MapOrderList.Store(mOrder.MapKey, mOrder)
 		}
 
 		if bIsLast {
@@ -379,7 +379,7 @@ func (p *FtdcTraderSpi) OnRspQryOrder(pOrder goctp.CThostFtdcOrderField, pRspInf
 
 			MapOrderListSize := 0
 			MapOrderNoTradeSize := 0
-			MapOrderList.Range(func(key, v interface{}) bool {
+			p.Master.MapOrderList.Range(func(key, v interface{}) bool {
 
 				val := v.(OrderListStruct)
 

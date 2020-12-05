@@ -130,6 +130,20 @@ func (p *FtdcMdSpi) OnRspUnSubMarketData(pSpecificInstrument goctp.CThostFtdcSpe
 
 // 深度行情通知
 func (p *FtdcMdSpi) OnRtnDepthMarketData(pDepthMarketData goctp.CThostFtdcDepthMarketDataField) {
+	var data MarketDataStruct
+	master := p.Master
+
+	data.UpdateTime = pDepthMarketData.GetUpdateTime()
+	data.InstrumentID = pDepthMarketData.GetInstrumentID()
+	data.LastPrice = pDepthMarketData.GetLastPrice()
+	data.OpenPrice = pDepthMarketData.GetOpenPrice()
+	data.ClosePrice = pDepthMarketData.GetClosePrice()
+	data.HighestPrice = pDepthMarketData.GetHighestPrice()
+	data.LowestPrice = pDepthMarketData.GetLowestPrice()
+	data.Volume = pDepthMarketData.GetVolume()
+
+	master.MapMarketDatas.Store(pDepthMarketData.GetInstrumentID(), data)
+
 	fmt.Printf("%v 合约：%v \t最新价：%v \t买一价：%v \t卖一价：%v \t买一量：%v \t卖一量：%v\n", pDepthMarketData.GetUpdateTime(), pDepthMarketData.GetInstrumentID(), pDepthMarketData.GetLastPrice(), pDepthMarketData.GetBidPrice1(), pDepthMarketData.GetAskPrice1(), pDepthMarketData.GetBidVolume1(), pDepthMarketData.GetAskVolume1())
 }
 
