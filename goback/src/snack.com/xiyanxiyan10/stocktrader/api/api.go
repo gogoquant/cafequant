@@ -40,10 +40,14 @@ type Exchange interface {
 
 	// backtest
 	GetBackAccount() map[string]float64
-	SetBackAccount(string, float64)                                                                   //账号原货币量
-	SetBackCommission(float64, float64, float64, float64, bool)                                       //设置回测手续费
-	GetBackCommission() (float64, float64, float64, float64, bool)                                    //获取回测手续费
-	SetBackTime(start, end int64, period string)                                                      //设置回测周期
+	//账号原货币量
+	SetBackAccount(string, float64)
+	//设置回测手续费
+	SetBackCommission(float64, float64, float64, float64, bool)
+	//获取回测手续费
+	GetBackCommission() (float64, float64, float64, float64, bool)
+	//设置回测周期
+	SetBackTime(start, end int64, period string)
 	GetBackTime() (int64, int64, string)                                                              //设置回测周期
 	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error //推送数据到数据仓库
 	BackGetSymbols() ([]string, error)                                                                //获取货币种类

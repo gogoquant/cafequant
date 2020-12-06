@@ -28,13 +28,8 @@ type CtpMaster struct {
 	// 交易所合约详情列表 InstrumentInfoStruct
 	MapInstrumentInfos sync.Map
 
-<<<<<<< HEAD
 	// market data map
 	MapMarketDatas sync.Map
-=======
-	// 交易所合约详情列表 InstrumentInfoStruct
-	MapTicker sync.Map
->>>>>>> d861b2f56c303479a4cf1760b48e17662de770b2
 
 	// 报单列表（已成交、未成交、撤单等状态）的列表数据 OrderListStruct
 	MapOrderList sync.Map
