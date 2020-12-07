@@ -432,6 +432,8 @@ func (p *FtdcTraderSpi) OnRspQryInvestorPosition(pInvestorPosition goctp.CThostF
 	master := p.Master
 	Ctp := p.Master.Client
 	MdSpi := p.Master.MdSpi
+
+	p.ReqMsg("查询投资者持仓响应")
 	//TraderApi := p.Master.TraderApi
 	if !p.IsErrorRspInfo(pRspInfo) {
 

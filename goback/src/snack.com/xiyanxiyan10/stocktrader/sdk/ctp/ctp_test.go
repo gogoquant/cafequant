@@ -18,8 +18,8 @@ func TestCtp(t *testing.T) {
 
 	time.Sleep(30 * time.Second)
 	for {
-		ctp.ReqQryOrder()
-		time.Sleep(10 * time.Second)
+		ctp.ReqQryInvestorPosition()
+		time.Sleep(30 * time.Second)
 	}
 
 	//ctp.SubscribeMarketData([]string{"cu2109", "al2105"})
