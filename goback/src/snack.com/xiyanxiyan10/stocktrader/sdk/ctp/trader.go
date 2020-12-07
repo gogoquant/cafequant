@@ -238,6 +238,7 @@ func (p *FtdcTraderSpi) ReqQryTradingAccount() int {
 
 	client := p.Master.Client
 	TraderApi := p.Master.TraderApi
+	log.Printf("查询资金账户")
 	p.ReqMsg("查询资金账户中...")
 
 	req := goctp.NewCThostFtdcQryTradingAccountField()
@@ -256,6 +257,7 @@ func (p *FtdcTraderSpi) ReqQryTradingAccount() int {
 // 请求查询资金账户响应
 func (p *FtdcTraderSpi) OnRspQryTradingAccount(pTradingAccount goctp.CThostFtdcTradingAccountField, pRspInfo goctp.CThostFtdcRspInfoField, nRequestID int, bIsLast bool) {
 
+	log.Printf("查询资金账户响应")
 	client := p.Master.Client
 	if bIsLast && !p.IsErrorRspInfo(pRspInfo) {
 

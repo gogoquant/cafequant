@@ -234,6 +234,14 @@ func (ctp *CtpMaster) GetMarketData(InstrumentID string) *MarketDataStruct {
 	return &data
 }
 
+func (ctp *CtpMaster) ReqQryTradingAccount() int {
+	trader := ctp.TraderSpi
+	if trader == nil {
+		return -1
+	}
+	return trader.ReqQryTradingAccount()
+}
+
 // SetTradeAccount ...
 func (ctp *CtpMaster) SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string) {
 	ctp.MdFront = append(ctp.MdFront, MdFront...)
@@ -431,6 +439,26 @@ func (master *CtpMaster) ReqQryInstrument() int {
 	return master.TraderSpi.ReqQryInstrument()
 }
 
+func (master *CtpMaster) ReqQryOrder() int {
+	return master.TraderSpi.ReqQryOrder()
+}
+
+func (master *CtpMaster) ReqQryInvestorPosition() int {
+	return master.TraderSpi.ReqQryInvestorPosition()
+}
+
+func (master *CtpMaster) OrderOpen(Input InputOrderStruct) int {
+	return master.TraderSpi.OrderOpen(Input)
+}
+
+func (master *CtpMaster) OrderClose(Input InputOrderStruct) int {
+	return master.TraderSpi.OrderClose(Input)
+}
+
+func (master *CtpMaster) OrderCancel(InstrumentID string, OrderSysID string) int {
+	return master.TraderSpi.OrderCancel(InstrumentID, OrderSysID)
+}
+
 type CtpHandler interface {
 	SetTradeAccount(MdFront, TraderFront []string, BrokerID, InvestorID, Password, AppID, AuthCode, StreamFile string)
 	Start() error
@@ -438,6 +466,12 @@ type CtpHandler interface {
 	GetFuturesList() []string
 	ReqQryInstrument() int
 	SubscribeMarketData(vals []string) int
+	ReqQryTradingAccount() int
+	ReqQryOrder() int
+	ReqQryInvestorPosition() int
+	OrderOpen(Input InputOrderStruct) int
+	OrderClose(Input InputOrderStruct) int
+	OrderCancel(InstrumentID string, OrderSysID string) int
 }
 
 // NewCtp ...

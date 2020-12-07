@@ -16,13 +16,15 @@ func TestCtp(t *testing.T) {
 		return
 	}
 
-	//time.Sleep(10 * time.Second)
-	//ctp.ReqQryInstrument()
-
-	time.Sleep(20 * time.Second)
-	ctp.SubscribeMarketData([]string{"cu2109", "al2105"})
+	time.Sleep(30 * time.Second)
 	for {
-		time.Sleep(30 * time.Second)
-		//t.Log(ctp.GetFuturesList())
+		ctp.ReqQryOrder()
+		time.Sleep(10 * time.Second)
 	}
+
+	//ctp.SubscribeMarketData([]string{"cu2109", "al2105"})
+	//for {
+	//	time.Sleep(30 * time.Second)
+	//t.Log(ctp.GetFuturesList())
+	//}
 }
