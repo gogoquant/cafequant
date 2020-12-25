@@ -10,7 +10,7 @@ default: check
 clean:
 	rm -rf golint-report.xml  coverage.out report.json govet-report.out
 
-check: lint fmt
+check: fmt lint vet
 	#golangci-lint run  --config=.golangci.yml
 
 
@@ -28,4 +28,7 @@ lint:
 
 fmt:
 	gofmt -s -w -l $(GOFMT_FILES)
+
+vet:                                                                                                                 
+	go list $(CHECK_PACKAGE) | xargs  go vet
 
