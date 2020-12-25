@@ -11,7 +11,7 @@ clean:
 	rm -rf golint-report.xml  coverage.out report.json govet-report.out
 
 check: fmt lint vet
-	#golangci-lint run  --config=.golangci.yml
+	golangci-lint run  --config=.golangci.yml
 
 
 #allcheck: fmtcheck vet lint staticcheck cyclo
