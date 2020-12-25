@@ -9,65 +9,65 @@ import (
 type Exchange interface {
 	// 初始化完毕开始运转
 	Ready() error
-	//是否在回测中
+	// 是否在回测中
 	IsBack() bool
-	//设置IO
+	// 设置IO
 	SetIO(mode string)
-	//获取IO
+	// 获取IO
 	GetIO() string
-	//获取订阅
+	// 获取订阅
 	GetSubscribe() map[string][]string
-	//订阅
+	// 订阅
 	SetSubscribe(string, string)
-	//向管理台发送这个交易所的打印信息
+	// 向管理台发送这个交易所的打印信息
 	Log(...interface{})
-	//获取交易所类型
+	// 获取交易所类型
 	GetType() string
-	//获取交易所名称,自定义的
+	// 获取交易所名称,自定义的
 	GetName() string
-	//设置交易所的API访问频率,和 E.AutoSleep() 配合使用
+	// 设置交易所的API访问频率,和 E.AutoSleep() 配合使用
 	SetLimit(times interface{}) float64
-	//延时
+	// 延时
 	Sleep(intervals ...interface{})
-	//自动休眠以满足设置的交易所的API访问频率
+	// 自动休眠以满足设置的交易所的API访问频率
 	AutoSleep()
-	//获取交易所的账户资金信息
+	// 获取交易所的账户资金信息
 	GetAccount() (*constant.Account, error)
-	//返回买卖深度表
+	// 返回买卖深度表
 	GetDepth() (*constant.Depth, error)
-	//买
+	// 买
 	Buy(price, amount string, msg ...interface{}) (string, error)
-	//卖
+	// 卖
 	Sell(price, amount string, msg ...interface{}) (string, error)
-	//返回订单信息
+	// 返回订单信息
 	GetOrder(id string) (*constant.Order, error)
-	//返回所有的未完成订单列表
+	// 返回所有的未完成订单列表
 	GetOrders() ([]constant.Order, error)
-	//取消一笔订单
+	// 取消一笔订单
 	CancelOrder(orderID string) (bool, error)
-	//获取交易所的最新市场行情数据
+	// 获取交易所的最新市场行情数据
 	GetTicker() (*constant.Ticker, error)
-	//返回交易所的最新K线数据列表
+	// 返回交易所的最新K线数据列表
 	GetRecords(period, ma string) ([]constant.Record, error)
-	//设置合约周期
+	// 设置合约周期
 	SetContractType(contractType string)
-	//获取合约周期
+	// 获取合约周期
 	GetContractType() string
-	//设置交易方向
+	// 设置交易方向
 	SetDirection(direction string)
-	//获取交易方向
+	// 获取交易方向
 	GetDirection() string
-	//杠杆设置
+	// 杠杆设置
 	SetMarginLevel(lever float64)
-	//获取杠杆
+	// 获取杠杆
 	GetMarginLevel() float64
-	//设置货币类型
+	// 设置货币类型
 	SetStockType(stockType string)
-	//获取货币类型
+	// 获取货币类型
 	GetStockType() string
-	//持仓量
+	// 持仓量
 	GetPosition() ([]constant.Position, error)
-	// backtest
+	// 获取回测账号
 	GetBackAccount() map[string]float64
 	// 账号原货币量
 	SetBackAccount(string, float64)

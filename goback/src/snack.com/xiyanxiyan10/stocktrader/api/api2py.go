@@ -34,11 +34,11 @@ type ExchangePython interface {
 	SetStockType(args *py.Tuple) (ret *py.Base, err error)    //设置货币类型
 	GetStockType(args *py.Tuple) (ret *py.Base, err error)    //获取货币类型
 	GetPosition(args *py.Tuple) (ret *py.Base, err error)     //持仓量
-	//AutoSleep(args *py.Tuple) (ret *py.Base, err error)       //自动休眠以满足设置的交易所的API访问频率
+	//AutoSleep(args *py.Tuple) (ret *py.Base, err error)     //自动休眠以满足设置的交易所的API访问频率
 
-	// backtest
-	GetBackAccount(args *py.Tuple) (ret *py.Base, err error)
-	SetBackAccount(args *py.Tuple) (ret *py.Base, err error)    //账号原货币量
+	// 回测
+	GetBackAccount(args *py.Tuple) (ret *py.Base, err error)    //获取账号原货币量
+	SetBackAccount(args *py.Tuple) (ret *py.Base, err error)    //设置账号原货币量
 	SetBackCommission(args *py.Tuple) (ret *py.Base, err error) //设置回测手续费
 	GetBackCommission(args *py.Tuple) (ret *py.Base, err error) //获取回测手续费
 	SetBackTime(args *py.Tuple) (ret *py.Base, err error)       //设置回测周期
