@@ -32,12 +32,12 @@ func InitModel() {
 	var err error
 	DB, err = gorm.Open(strings.ToLower(dbType), dbURL)
 	if err != nil {
-		log.Printf("Connect to %v database error: %v\n", dbType, err)
+		log.Panicf("Connect to %v database error: %v\n", dbType, err)
 		dbType = "sqlite3"
 		dbURL = "custom/data.db"
 		DB, err = gorm.Open(dbType, dbURL)
 		if err != nil {
-			log.Fatalln("Connect to database error:", err)
+			log.Panicln("Connect to database error:", err)
 		}
 	}
 	DB.AutoMigrate(&User{}, &Exchange{}, &Algorithm{}, &TraderExchange{}, &Trader{}, &Log{})
