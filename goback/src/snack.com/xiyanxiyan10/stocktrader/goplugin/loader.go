@@ -64,7 +64,7 @@ func RunLoader() {
 	var opt constant.Option
 	var Constract = "quarter"
 	var Symbol = "BTC/USD"
-	//var Period = "M30"
+	var period = "M5"
 	var IO = "online"
 
 	logger.Back = true
@@ -97,13 +97,14 @@ func RunLoader() {
 
 	fmt.Printf("link to stockdb success")
 	return
-	records, err := exchange.GetRecords("M5", "")
+	records, err := exchange.GetRecords(period, "")
+
 	if err != nil {
 		fmt.Printf("get records fail:%s", err.Error())
 		return
 	}
 	fmt.Printf("success to get records:%v", records)
-	err = putOHLC(exchange, "M5")
+	err = putOHLC(exchange, period)
 	if err != nil {
 		fmt.Printf("put ohlcs fail:%s", err.Error())
 		return
