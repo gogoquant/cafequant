@@ -1,12 +1,45 @@
-package main
+package goplugin
 
 import (
 	"fmt"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/trader"
 )
+
+// LoaderStragey ...
+type LoaderStragey struct {
+	GoStragey
+}
+
+// NewLoaderHandler ...
+func NewLoaderHandler(...interface{}) (GoStrageyHandler, error) {
+	var echo LoaderStragey
+	return &echo, nil
+}
+
+// Set ...
+func (e *LoaderStragey) Set(string, interface{}) interface{} {
+	return nil
+}
+
+// Init ...
+func (e *LoaderStragey) Init(...interface{}) interface{} {
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init")
+	return nil
+}
+
+// Call ...
+func (e *LoaderStragey) Call(name string, v ...interface{}) interface{} {
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
+	return nil
+}
+
+// Exit ...
+func (e *LoaderStragey) Exit(...interface{}) interface{} {
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit")
+	return nil
+}
 
 func putOHLC(exchange api.Exchange, period string) error {
 	records, err := exchange.GetRecords(period, "")
@@ -25,17 +58,17 @@ func putOHLC(exchange api.Exchange, period string) error {
 	return nil
 }
 
-func main() {
+// RunLoader ...
+func RunLoader() {
 	var logger model.Logger
 	var opt constant.Option
 	var Constract = "quarter"
 	var Symbol = "BTC/USD"
 	//var Period = "M30"
 	var IO = "online"
-	var global trader.Global
 
 	logger.Back = true
-	global.Logger = logger
+
 	opt.AccessKey = ""
 	opt.SecretKey = ""
 	opt.Name = constant.HuoBiDm
@@ -44,7 +77,7 @@ func main() {
 	opt.Index = 1
 	opt.LogBack = true
 
-	maker := trader.ExchangeMaker[opt.Type]
+	maker := api.ExchangeMaker[opt.Type]
 	exchange, err := maker(opt)
 	if err != nil {
 		fmt.Printf("init exchange fail:%s", err.Error())
@@ -61,6 +94,9 @@ func main() {
 		fmt.Printf("link to stockdb fail:%s", err.Error())
 		return
 	}
+
+	fmt.Printf("link to stockdb success")
+	return
 	records, err := exchange.GetRecords("M5", "")
 	if err != nil {
 		fmt.Printf("get records fail:%s", err.Error())
