@@ -99,4 +99,21 @@ type Exchange interface {
 
 var (
 	constructor = map[string]func(constant.Option) (Exchange, error){}
+	//ExchangeMaker ...
+	ExchangeMaker = map[string]func(constant.Option) (Exchange, error){ //保存所有交易所的构造函数
+		constant.HuoBiDm:    NewHuoBiDmExchange,
+		constant.HuoBi:      NewHuoBiExchange,
+		constant.SZ:         NewSZExchange,
+		constant.SpotBack:   NewSpotBackExchange,
+		constant.FutureBack: NewFutureBackExchange,
+	}
+	// PyExchangeMaker ...
+	PyExchangeMaker map[string]func(constant.Option) (ExchangePython, error)
 )
+
+func init() {
+	PyExchangeMaker = make(map[string]func(constant.Option) (ExchangePython, error))
+	for key, funcs := range ExchangeMaker {
+		PyExchangeMaker[key] = NewExchangePython(funcs)
+	}
+}

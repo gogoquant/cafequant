@@ -23,16 +23,8 @@ import (
 
 // Trader Variable
 var (
-	Executor      = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
-	errHalt       = fmt.Errorf("HALT")
-	ExchangeMaker = map[string]func(constant.Option) (api.Exchange, error){ //保存所有交易所的构造函数
-		constant.HuoBiDm:    api.NewHuoBiDmExchange,
-		constant.HuoBi:      api.NewHuoBiExchange,
-		constant.SZ:         api.NewSZExchange,
-		constant.SpotBack:   api.NewSpotBackExchange,
-		constant.FutureBack: api.NewFutureBackExchange,
-	}
-	pyexchangeMaker map[string]func(constant.Option) (api.ExchangePython, error)
+	Executor = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
+	errHalt  = fmt.Errorf("HALT")
 )
 
 // GetTraderStatus ...
@@ -223,7 +215,7 @@ func initialize(id int64) (trader Global, err error) {
 	goExtend.AddDing(trader.ding)
 	goExtend.Logger = &trader.Logger
 	for i, e := range es {
-		if maker, ok := ExchangeMaker[e.Type]; ok {
+		if maker, ok := api.ExchangeMaker[e.Type]; ok {
 			opt := constant.Option{
 				Index:     i,
 				TraderID:  trader.ID,
@@ -241,7 +233,7 @@ func initialize(id int64) (trader Global, err error) {
 			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
 		}
-		if maker, ok := pyexchangeMaker[e.Type]; ok {
+		if maker, ok := api.PyExchangeMaker[e.Type]; ok {
 			opt := constant.Option{
 				Index:     i,
 				TraderID:  trader.ID,
@@ -405,10 +397,3 @@ func stop(id int64) (err error) {
 //		}
 //	}
 //}
-
-func init() {
-	pyexchangeMaker = make(map[string]func(constant.Option) (api.ExchangePython, error))
-	for key, funcs := range ExchangeMaker {
-		pyexchangeMaker[key] = api.NewExchangePython(funcs)
-	}
-}
