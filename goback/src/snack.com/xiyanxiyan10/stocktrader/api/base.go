@@ -261,6 +261,10 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
 	opt.Period = e.recordsPeriodDbMap[period]
+	constract := e.GetContractType()
+	if len(constract) > 0 {
+		opt.Symbol = opt.Symbol + "_" + constract
+	}
 	opt.BeginTime = begin
 	opt.EndTime = end
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -282,6 +286,10 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
 	opt.Symbol = e.GetStockType()
+	constract := e.GetContractType()
+	if len(constract) > 0 {
+		opt.Symbol = opt.Symbol + "_" + constract
+	}
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC

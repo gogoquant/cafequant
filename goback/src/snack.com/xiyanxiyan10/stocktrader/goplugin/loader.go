@@ -80,7 +80,7 @@ func RunLoader() {
 	maker := api.ExchangeMaker[opt.Type]
 	exchange, err := maker(opt)
 	if err != nil {
-		fmt.Printf("init exchange fail:%s", err.Error())
+		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
 	}
 	exchange.SetIO(IO)
@@ -90,20 +90,22 @@ func RunLoader() {
 
 	err = exchange.BackGetStats()
 	if err != nil {
-		fmt.Printf("link to stockdb fail:%s", err.Error())
+		fmt.Printf("link to stockdb fail:%s\n", err.Error())
 		return
 	}
 
-	fmt.Printf("link to stockdb success")
+	fmt.Printf("link to stockdb success\n")
+
 	records, err := exchange.GetRecords(period, "")
 	if err != nil {
-		fmt.Printf("get records fail:%s", err.Error())
+		fmt.Printf("get records fail:%s\n", err.Error())
 		return
 	}
-	fmt.Printf("success to get records:%v", records)
+
+	fmt.Printf("success to get records:%v\n", records)
 	err = putOHLC(exchange, period)
 	if err != nil {
-		fmt.Printf("put ohlcs fail:%s", err.Error())
+		fmt.Printf("put ohlcs fail:%s\n", err.Error())
 		return
 	}
 	return

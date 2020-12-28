@@ -9,13 +9,13 @@ import (
 
 var confMap = make(map[string]string)
 
-func init() {
+func InitConfig() {
 	configFile := os.Getenv("QUANT_CONFIG")
 	conf, err := ini.InsensitiveLoad(configFile)
 	if err != nil {
 		conf, err = ini.InsensitiveLoad("/tmp/config.ini")
 		if err != nil {
-			log.Fatalln("Load config.ini error:", err)
+			log.Panicln("Load config.ini error:", err)
 		}
 	}
 	keys := conf.Section("").KeyStrings()

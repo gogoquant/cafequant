@@ -17,26 +17,27 @@ import (
 
 var (
 	// DB Database
-	DB     *gorm.DB
-	dbType = config.String("dbtype")
-	dbURL  = config.String("dburl")
+	DB *gorm.DB
 )
 
-func init() {
+func InitModel() {
 	io.Register((*User)(nil), "User", "json")
 	io.Register((*Exchange)(nil), "Exchange", "json")
 	io.Register((*Algorithm)(nil), "Algorithm", "json")
 	io.Register((*Trader)(nil), "Trader", "json")
 	io.Register((*Log)(nil), "Log", "json")
+
+	dbType := config.String("dbtype")
+	dbURL := config.String("dburl")
 	var err error
 	DB, err = gorm.Open(strings.ToLower(dbType), dbURL)
 	if err != nil {
-		log.Printf("Connect to %v database error: %v\n", dbType, err)
+		log.Panicf("Connect to %v database error: %v\n", dbType, err)
 		dbType = "sqlite3"
 		dbURL = "custom/data.db"
 		DB, err = gorm.Open(dbType, dbURL)
 		if err != nil {
-			log.Fatalln("Connect to database error:", err)
+			log.Panicln("Connect to database error:", err)
 		}
 	}
 	DB.AutoMigrate(&User{}, &Exchange{}, &Algorithm{}, &TraderExchange{}, &Trader{}, &Log{})
@@ -57,6 +58,9 @@ func init() {
 }
 
 func ping() {
+
+	dbType := config.String("dbtype")
+	dbURL := config.String("dburl")
 	for {
 		if err := DB.Exec("SELECT 1").Error; err != nil {
 			log.Println("Database ping error:", err)
@@ -70,5 +74,7 @@ func ping() {
 
 // NewOrm ...
 func NewOrm() (*gorm.DB, error) {
+	dbType := config.String("dbtype")
+	dbURL := config.String("dburl")
 	return gorm.Open(strings.ToLower(dbType), dbURL)
 }
