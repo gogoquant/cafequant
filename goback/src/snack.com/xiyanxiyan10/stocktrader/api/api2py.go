@@ -14,7 +14,7 @@ type ExchangePython interface {
 	Log(args *py.Tuple) (ret *py.Base, err error)             //向管理台发送这个交易所的打印信息
 	GetType(args *py.Tuple) (ret *py.Base, err error)         //获取交易所类型
 	GetName(args *py.Tuple) (ret *py.Base, err error)         //获取交易所名称,自定义的
-	SetLimit(args *py.Tuple) (ret *py.Base, err error)        //设置交易所的API访问频率,和 E.AutoSleep() 配合使用
+	SetLimit(args *py.Tuple) (ret *py.Base, err error)        //设置交易所的API访问频率
 	Sleep(args *py.Tuple) (ret *py.Base, err error)           //延时
 	GetAccount(args *py.Tuple) (ret *py.Base, err error)      //获取交易所的账户资金信息
 	GetDepth(args *py.Tuple) (ret *py.Base, err error)        //返回买卖深度表
