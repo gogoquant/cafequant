@@ -14,8 +14,8 @@ type LoaderStragey struct {
 
 // NewLoaderHandler ...
 func NewLoaderHandler(...interface{}) (GoStrageyHandler, error) {
-	var echo LoaderStragey
-	return &echo, nil
+	var loader LoaderStragey
+	return &loader, nil
 }
 
 // Set ...
@@ -64,7 +64,7 @@ func RunLoader() {
 	var opt constant.Option
 	var Constract = "quarter"
 	var Symbol = "BTC/USD"
-	//var Period = "M30"
+	var period = "M5"
 	var IO = "online"
 
 	logger.Back = true
@@ -88,7 +88,6 @@ func RunLoader() {
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
 
-	//global.Sleep(1000)
 	err = exchange.BackGetStats()
 	if err != nil {
 		fmt.Printf("link to stockdb fail:%s", err.Error())
@@ -96,47 +95,16 @@ func RunLoader() {
 	}
 
 	fmt.Printf("link to stockdb success")
-	return
-	records, err := exchange.GetRecords("M5", "")
+	records, err := exchange.GetRecords(period, "")
 	if err != nil {
 		fmt.Printf("get records fail:%s", err.Error())
 		return
 	}
 	fmt.Printf("success to get records:%v", records)
-	err = putOHLC(exchange, "M5")
+	err = putOHLC(exchange, period)
 	if err != nil {
 		fmt.Printf("put ohlcs fail:%s", err.Error())
 		return
-	}
-	return
-	markets, err := exchange.BackGetMarkets()
-	if err != nil {
-		fmt.Printf("fail to get markets:%s", err.Error())
-		return
-	}
-	fmt.Printf("success to get markets:%v", markets)
-
-	if len(markets) > 0 {
-		symbols, err := exchange.BackGetSymbols()
-		if err != nil {
-			fmt.Printf("fail to get symbol:%s", err.Error())
-			return
-		}
-		fmt.Printf("success to get symbol:%v", symbols)
-
-		timeRange, err := exchange.BackGetTimeRange()
-		if err != nil {
-			fmt.Printf("fail to get timeRange:%s", err.Error())
-			return
-		}
-		fmt.Printf("success to get timeRange:%v", timeRange)
-
-		periodRange, err := exchange.BackGetPeriodRange()
-		if err != nil {
-			fmt.Printf("fail to get periodRange:%s", err.Error())
-			return
-		}
-		fmt.Printf("success to get periodRange:%v", periodRange)
 	}
 	return
 }
