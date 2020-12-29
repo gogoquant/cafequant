@@ -15,11 +15,6 @@ func NewEchoHandler(...interface{}) (GoStrageyHandler, error) {
 	return &echo, nil
 }
 
-// Set ...
-func (e *EchoStragey) Set(string, interface{}) interface{} {
-	return nil
-}
-
 // Init ...
 func (e *EchoStragey) Init(...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init")
