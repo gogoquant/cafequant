@@ -88,14 +88,6 @@ func RunLoader() {
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
 
-	err = exchange.BackGetStats()
-	if err != nil {
-		fmt.Printf("link to stockdb fail:%s\n", err.Error())
-		return
-	}
-
-	fmt.Printf("link to stockdb success\n")
-
 	records, err := exchange.GetRecords(period, "")
 	if err != nil {
 		fmt.Printf("get records fail:%s\n", err.Error())
