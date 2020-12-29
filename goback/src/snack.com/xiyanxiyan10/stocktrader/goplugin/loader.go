@@ -18,11 +18,6 @@ func NewLoaderHandler(...interface{}) (GoStrageyHandler, error) {
 	return &loader, nil
 }
 
-// Set ...
-func (e *LoaderStragey) Set(string, interface{}) interface{} {
-	return nil
-}
-
 // Init ...
 func (e *LoaderStragey) Init(...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init")
