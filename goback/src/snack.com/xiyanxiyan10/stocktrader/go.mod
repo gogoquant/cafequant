@@ -23,13 +23,13 @@ require (
 	github.com/mayiweb/goctp v0.0.0-20190917081845-ed4a7d3f7e3e
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/nntaoli-project/goex v1.2.2
+	github.com/nntaoli-project/goex v1.2.5
 	github.com/qiniu/py v1.2.2
 	github.com/qiniu/x v1.10.5
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
 	github.com/sirupsen/logrus v1.6.0 // indirect
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.6.1 // indirect
 	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
@@ -41,7 +41,6 @@ require (
 )
 
 replace (
-	github.com/nntaoli-project/goex v1.2.2 => github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375
 	github.com/qiniu/py v1.2.2 => github.com/xiyanxiyan10/py v0.0.0-20200907052829-5727a2a1895d
 	snack.com/xiyanxiyan10/conver v0.0.0 => ../conver
 	snack.com/xiyanxiyan10/stockdb => ../stockdb

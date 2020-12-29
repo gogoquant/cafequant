@@ -214,17 +214,18 @@ func initialize(id int64) (trader Global, err error) {
 	goExtend.AddDraw(trader.draw)
 	goExtend.AddDing(trader.ding)
 	goExtend.Logger = &trader.Logger
+
 	for i, e := range es {
+		opt := constant.Option{
+			Index:     i,
+			TraderID:  trader.ID,
+			Type:      e.Type,
+			Name:      e.Name,
+			AccessKey: e.AccessKey,
+			SecretKey: e.SecretKey,
+			LogBack:   false,
+		}
 		if maker, ok := api.ExchangeMaker[e.Type]; ok {
-			opt := constant.Option{
-				Index:     i,
-				TraderID:  trader.ID,
-				Type:      e.Type,
-				Name:      e.Name,
-				AccessKey: e.AccessKey,
-				SecretKey: e.SecretKey,
-				LogBack:   false,
-			}
 			exchange, errD := maker(opt)
 			if errD != nil {
 				err = errD
@@ -234,15 +235,6 @@ func initialize(id int64) (trader Global, err error) {
 			trader.es = append(trader.es, exchange)
 		}
 		if maker, ok := api.PyExchangeMaker[e.Type]; ok {
-			opt := constant.Option{
-				Index:     i,
-				TraderID:  trader.ID,
-				Type:      e.Type,
-				Name:      e.Name,
-				AccessKey: e.AccessKey,
-				SecretKey: e.SecretKey,
-				LogBack:   false,
-			}
 			exchange, errD := maker(opt)
 			if errD != nil {
 				err = errD

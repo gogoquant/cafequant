@@ -139,6 +139,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 h1:Esafd1046DLD
 github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/modern-go/reflect2 v1.0.1 h1:9f412s+6RmYXLWZSEzVVgPGK7C2PphHj5RJrvfx9AWI=
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
+github.com/nntaoli-project/goex v1.2.5 h1:zf20Zf8jfaZLxtIuQ0a+YmuJD9orQrLgsds/60B3yow=
+github.com/nntaoli-project/goex v1.2.5/go.mod h1:sCb1e95fe/WBvGA8JVQc3r2XTFawUZro39mb9/qY3To=
 github.com/nubo/jwt v0.0.0-20150918093313-da5b79c3bbaf h1:mP7zQzhCrNQgSdCpxFxyZV/JMHbz4LJsyppAZMQVrI0=
 github.com/nubo/jwt v0.0.0-20150918093313-da5b79c3bbaf/go.mod h1:LuR7jHS+7SJ6EywD7zZiO6h0vwTBSevFk5wunVt3gf4=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
@@ -193,8 +195,6 @@ github.com/valyala/fasthttp v1.6.0 h1:uWF8lgKmeaIewWVPwi4GRq2P6+R46IgYZdxWtM+GtE
 github.com/valyala/fasthttp v1.6.0/go.mod h1:FstJa9V+Pj9vQ7OJie2qMHdwemEDaDiSdBnvPM1Su9w=
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
 github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b/go.mod h1:Q12BUT7DqIlHRmgv3RskH+UCM/4eqVMgI0EMmlSpAXc=
-github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375 h1:7CJvcXwm5rV3fvdtx8uU3BR+UQ1NtP5huJc//2ff0Vg=
-github.com/xiyanxiyan10/goex v1.0.9-0.20200806110227-7c44f68a1375/go.mod h1:sCb1e95fe/WBvGA8JVQc3r2XTFawUZro39mb9/qY3To=
 github.com/xiyanxiyan10/py v0.0.0-20200907052829-5727a2a1895d h1:QO8g2f1m5lwN2L43g8/TMD8QKE810ejmqVDDcNC64+4=
 github.com/xiyanxiyan10/py v0.0.0-20200907052829-5727a2a1895d/go.mod h1:5wEMglSsnMlw9RYOjn+V1bW6WjumCageqb0aMJ87iXA=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
