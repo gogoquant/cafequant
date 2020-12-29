@@ -26,8 +26,8 @@ func (e event) OnSendHeader(ctx *rpc.HTTPContext) {
 	ctx.Response.Header().Set("Access-Control-Allow-Headers", "Authorization")
 }
 
-// Server ...
-func Server() {
+// Init ...
+func Init() {
 	port := config.String("port")
 	service := rpc.NewHTTPService()
 	handler := struct {

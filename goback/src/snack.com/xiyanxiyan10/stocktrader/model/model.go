@@ -20,7 +20,8 @@ var (
 	DB *gorm.DB
 )
 
-func InitModel() {
+// Init ...
+func Init() {
 	io.Register((*User)(nil), "User", "json")
 	io.Register((*Exchange)(nil), "Exchange", "json")
 	io.Register((*Algorithm)(nil), "Algorithm", "json")

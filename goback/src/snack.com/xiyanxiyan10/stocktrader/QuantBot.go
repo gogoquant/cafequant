@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	config.InitConfig()
-	model.InitModel()
-	handler.Server()
+	config.Init()
+	model.Init()
+	handler.Init()
 }

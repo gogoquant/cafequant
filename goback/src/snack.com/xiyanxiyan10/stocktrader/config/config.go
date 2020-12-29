@@ -9,7 +9,8 @@ import (
 
 var confMap = make(map[string]string)
 
-func InitConfig() {
+// Init ...
+func Init() {
 	configFile := os.Getenv("QUANT_CONFIG")
 	conf, err := ini.InsensitiveLoad(configFile)
 	if err != nil {
