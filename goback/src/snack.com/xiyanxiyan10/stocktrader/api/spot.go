@@ -338,10 +338,9 @@ func (e *SpotExchange) GetTicker() (*constant.Ticker, error) {
 }
 
 // GetRecords get candlestick data
-func (e *SpotExchange) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
+func (e *SpotExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var size = constant.RecordSize
 	var since = 0
 
 	period, ok = e.recordsPeriodMap[periodStr]

@@ -106,7 +106,7 @@ func (e *FutureExchange) Ready() error {
 		}
 		defaultTimeOut = timeout
 	}
-	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(time.Duration(defaultTimeOut) * time.Millisecond)
+	e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(time.Duration(defaultTimeOut) * time.Second)
 	proxyURL := config.String("proxy")
 	if proxyURL != "" {
 		e.apiBuilder = e.apiBuilder.HttpProxy(proxyURL)
@@ -499,10 +499,9 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 }
 
 // GetRecords get candlestick data
-func (e *FutureExchange) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
+func (e *FutureExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var size = constant.RecordSize
 	var since = 0
 
 	period, ok = e.recordsPeriodMap[periodStr]

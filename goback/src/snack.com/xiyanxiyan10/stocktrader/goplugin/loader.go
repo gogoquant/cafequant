@@ -5,6 +5,8 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"snack.com/xiyanxiyan10/stocktrader/util"
+	"time"
 )
 
 // LoaderStragey ...
@@ -37,7 +39,7 @@ func (e *LoaderStragey) Exit(...interface{}) interface{} {
 }
 
 func putOHLC(exchange api.Exchange, period string) error {
-	records, err := exchange.GetRecords(period, "")
+	records, err := exchange.GetRecords(period, "", 3)
 	if err != nil {
 		fmt.Printf("get records fail:%v", err)
 		return err
@@ -61,6 +63,7 @@ func RunLoader() {
 	var Symbol = "BTC/USD"
 	var period = "M5"
 	var IO = "online"
+	var tt = 5
 
 	logger.Back = true
 
@@ -83,17 +86,23 @@ func RunLoader() {
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
 
-	records, err := exchange.GetRecords(period, "")
-	if err != nil {
-		fmt.Printf("get records fail:%s\n", err.Error())
-		return
+	for {
+		records, err := exchange.GetRecords(period, "", 3)
+		if err != nil {
+			fmt.Printf("get records fail:%s\n", err.Error())
+			time.Sleep(time.Duration(tt) * time.Minute)
+			continue
+		}
+		fmt.Printf("records:%s\n", util.Struct2Json(records))
+		time.Sleep(time.Duration(tt) * time.Minute)
 	}
 
-	fmt.Printf("success to get records:%v\n", records)
-	err = putOHLC(exchange, period)
-	if err != nil {
-		fmt.Printf("put ohlcs fail:%s\n", err.Error())
-		return
-	}
+	/*
+		err = putOHLC(exchange, period)
+		if err != nil {
+			fmt.Printf("put ohlcs fail:%s\n", err.Error())
+			return
+		}
+	*/
 	return
 }

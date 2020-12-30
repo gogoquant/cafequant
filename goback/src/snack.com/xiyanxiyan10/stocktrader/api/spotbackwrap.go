@@ -277,7 +277,7 @@ func (e *ExchangeBackLink) GetTicker() (*constant.Ticker, error) {
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeBackLink) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
+func (e *ExchangeBackLink) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
 	e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
 	return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 }

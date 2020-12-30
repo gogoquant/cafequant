@@ -47,8 +47,8 @@ type Exchange interface {
 	CancelOrder(orderID string) (bool, error)
 	// 获取交易所的最新市场行情数据
 	GetTicker() (*constant.Ticker, error)
-	// 返回交易所的最新K线数据列表
-	GetRecords(period, ma string) ([]constant.Record, error)
+	// 返回交易所的最新K线数据列表, 部分平台可以直接获取计算好的均线
+	GetRecords(period, ma string, size int) ([]constant.Record, error)
 	// 设置合约周期
 	SetContractType(contractType string)
 	// 获取合约周期

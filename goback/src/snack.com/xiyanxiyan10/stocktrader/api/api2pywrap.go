@@ -261,11 +261,12 @@ func (e *ExchangePythonLink) GetTicker(args *py.Tuple) (ret *py.Base, err error)
 func (e *ExchangePythonLink) GetRecords(args *py.Tuple) (ret *py.Base, err error) {
 	var period string
 	var ma string
-	err = py.ParseV(args, &period, &ma)
+	var size int
+	err = py.ParseV(args, &period, &ma, &size)
 	if err != nil {
 		return py.IncNone(), err
 	}
-	records, err := e.api.GetRecords(period, ma)
+	records, err := e.api.GetRecords(period, ma, size)
 	if err != nil {
 		return py.IncNone(), err
 	}

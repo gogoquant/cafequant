@@ -258,10 +258,9 @@ func (e *SZExchange) GetTicker() (*constant.Ticker, error) {
 }
 
 // GetRecords get candlestick data
-func (e *SZExchange) GetRecords(periodStr, maStr string) ([]constant.Record, error) {
+func (e *SZExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
 	exchangeStockType := e.GetStockType()
 	var period int64 = -1
-	var size = constant.RecordSize
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
