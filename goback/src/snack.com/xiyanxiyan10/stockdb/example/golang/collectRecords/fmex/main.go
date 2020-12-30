@@ -12,7 +12,7 @@ import (
 
 const (
 	uri    = "http://localhost:8765"
-	auth   = "username:password"
+	auth   = "adim:pwd"
 	market = "haobtc"
 	symbol = "BTC/CNY"
 )

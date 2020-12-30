@@ -32,6 +32,7 @@ func (c *Client) init(uri, auth string) {
 	c.hprose = rpc.NewHTTPClient(c.uri)
 	if auth != "" {
 		c.hprose.Header = make(http.Header)
+		c.hprose.Header.Set("content-type", "application/json")
 		c.hprose.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
 	}
 	c.hprose.UseService(c)

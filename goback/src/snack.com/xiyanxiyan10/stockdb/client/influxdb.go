@@ -136,7 +136,6 @@ func (driver *influxdb) records2BatchPoints(data []types.OHLC, opt types.Option)
 		for i := 0; i < 4; i++ {
 			tags[i]["id"] = fmt.Sprint(opt.Period)
 			fields[i]["period"] = opt.Period
-			fields[i]["ext"] = datum.Ext
 			fields[i]["amount"] = datum.Volume / 4.0
 			pt, err := client.NewPoint("symbol_"+opt.Symbol, tags[i], fields[i], time.Unix(datum.Time+timeOffsets[i], 0))
 			if err != nil {

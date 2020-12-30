@@ -29,6 +29,7 @@ type Response struct {
 
 func (Response) OnSendHeader(ctx *rpc.HTTPContext) {
 	ctx.Response.Header().Set("Access-Control-Allow-Headers", "Authorization")
+	ctx.Response.Header().Set("content-type", "application/json")
 }
 
 // Option is a request option
@@ -49,7 +50,6 @@ type OHLC struct {
 	Low    float64 `json:"Low"`
 	Close  float64 `json:"Close"`
 	Volume float64 `json:"Volume"`
-	Ext    string  `json:"Ext"`
 }
 
 // Order is an order record struct
