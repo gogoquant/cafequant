@@ -263,7 +263,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	opt.Period = e.recordsPeriodDbMap[period]
 	constract := e.GetContractType()
 	if len(constract) > 0 {
-		opt.Symbol = opt.Symbol + "_" + constract
+		opt.Symbol = opt.Symbol + "/" + strings.ToUpper(constract)
 	}
 	opt.BeginTime = begin
 	opt.EndTime = end
@@ -288,7 +288,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	opt.Symbol = e.GetStockType()
 	constract := e.GetContractType()
 	if len(constract) > 0 {
-		opt.Symbol = opt.Symbol + "_" + constract
+		opt.Symbol = opt.Symbol + "/" + strings.ToUpper(constract)
 	}
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -299,11 +299,10 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	datum.Low = low
 	datum.Close = closed
 	datum.Volume = volume
-	datum.Ext = ext
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
-		return fmt.Errorf("GetOHLCs error, the error number is %s", ohlc.Message)
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
+		return fmt.Errorf("PutOHLCs error, the error number is %s", ohlc.Message)
 	}
 	return nil
 }

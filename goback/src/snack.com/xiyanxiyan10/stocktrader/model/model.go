@@ -21,7 +21,7 @@ var (
 )
 
 // Init ...
-func Init() {
+func init() {
 	io.Register((*User)(nil), "User", "json")
 	io.Register((*Exchange)(nil), "Exchange", "json")
 	io.Register((*Algorithm)(nil), "Algorithm", "json")

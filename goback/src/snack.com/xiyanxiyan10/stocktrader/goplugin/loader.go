@@ -44,9 +44,9 @@ func putOHLC(exchange api.Exchange, period string) error {
 		fmt.Printf("get records fail:%v", err)
 		return err
 	}
-	fmt.Printf("get records:%v", records)
+	fmt.Printf("get records:%s\n", util.Struct2Json(records))
 	for _, record := range records {
-		err = exchange.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "", period)
+		err = exchange.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "unknown", period)
 		if err != nil {
 			fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
 			return err
@@ -63,7 +63,7 @@ func RunLoader() {
 	var Symbol = "BTC/USD"
 	var period = "M5"
 	var IO = "online"
-	var tt = 5
+	var interval = 5
 
 	logger.Back = true
 
@@ -86,23 +86,25 @@ func RunLoader() {
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
 
-	for {
-		records, err := exchange.GetRecords(period, "", 3)
-		if err != nil {
-			fmt.Printf("get records fail:%s\n", err.Error())
-			time.Sleep(time.Duration(tt) * time.Minute)
-			continue
-		}
-		fmt.Printf("records:%s\n", util.Struct2Json(records))
-		time.Sleep(time.Duration(tt) * time.Minute)
-	}
-
 	/*
+		for {
+			records, err := exchange.GetRecords(period, "", 3)
+			if err != nil {
+				fmt.Printf("get records fail:%s\n", err.Error())
+				time.Sleep(time.Duration(interval) * time.Minute)
+				continue
+			}
+			fmt.Printf("records:%s\n", util.Struct2Json(records))
+			time.Sleep(time.Duration(interval) * time.Minute)
+		}
+	*/
+	for {
 		err = putOHLC(exchange, period)
 		if err != nil {
 			fmt.Printf("put ohlcs fail:%s\n", err.Error())
 			return
 		}
-	*/
-	return
+
+		time.Sleep(time.Duration(interval) * time.Minute)
+	}
 }
