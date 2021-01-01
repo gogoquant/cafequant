@@ -239,7 +239,7 @@ func (e *BaseExchange) BackGetMarkets() ([]string, error) {
 func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbol error, the error number is %s", r))
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -255,17 +255,13 @@ func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
+	opt.Symbol = e.GetDbSymbol()
 	opt.Period = e.recordsPeriodDbMap[period]
-	constract := e.GetContractType()
-	if len(constract) > 0 {
-		opt.Symbol = opt.Symbol + "/" + strings.ToUpper(constract)
-	}
 	opt.BeginTime = begin
 	opt.EndTime = end
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
@@ -277,29 +273,16 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	return ohlc.Data, nil
 }
 
-func trader2db(s string) string {
-	return strings.Replace(s, "/", "_", -1)
-}
-
-func db2trader(s string) string {
-	return strings.Replace(s, "/", "_", -1)
-}
-
 // BackPutOHLC ...
 func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLC error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	constract := e.GetContractType()
-	if len(constract) > 0 {
-		opt.Symbol = opt.Symbol + "/" + strings.ToUpper(constract)
-	}
-	opt.Symbol = trader2db(opt.Symbol)
+	opt.Symbol = e.GetDbSymbol()
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC
@@ -311,7 +294,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	datum.Volume = volume
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLC error, the error number is %s\n", ohlc.Message))
 		return fmt.Errorf("PutOHLCs error, the error number is %s", ohlc.Message)
 	}
 	return nil
@@ -321,7 +304,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GeTimeRanege error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -339,17 +322,17 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetPeriodRange error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
+	opt.Symbol = e.GetDbSymbol()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
-		return [2]int64{}, fmt.Errorf("GetPeriodRange, the error number is:" + timeRange.Message)
+		return [2]int64{}, fmt.Errorf("GetPeriodRange, the error number is " + timeRange.Message)
 	}
 	return timeRange.Data, nil
 }
@@ -359,12 +342,12 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetDepth error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
+	opt.Symbol = e.GetDbSymbol()
 	opt.Period = e.recordsPeriodDbMap[period]
 	opt.BeginTime = begin
 	opt.EndTime = end
@@ -426,6 +409,17 @@ func (e *BaseExchange) SetContractType(contractType string) {
 // GetContractType set the limit calls amount per second of this exchange
 func (e *BaseExchange) GetContractType() string {
 	return e.contractType
+}
+
+// GetDbSymbol get influx db key
+func (e *BaseExchange) GetDbSymbol() string {
+	symbol := e.GetStockType()
+	constract := e.GetContractType()
+	if len(constract) > 0 {
+		symbol = symbol + "/" + constract
+	}
+	symbol = strings.ToUpper(symbol)
+	return strings.Replace(symbol, "/", "_", -1)
 }
 
 // SetDirection set the limit calls amount per second of this exchange

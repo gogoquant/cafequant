@@ -85,7 +85,7 @@ func RunLoader() {
 	exchange.SetContractType(Constract)
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
-	markets, err := exchange.BackGetMarkets()
+	markets, err := exchange.BackGetStats()
 	if err != nil {
 		fmt.Printf("exchange get markets fail:%s\n", err.Error())
 		return
