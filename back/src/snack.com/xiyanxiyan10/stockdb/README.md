@@ -72,4 +72,8 @@ However, the [ISSUE](https://github.com/miaolz123/stockdb/issues) is welcome.
 
 ## License
 
+
+## Depend
+influxdb 1.0
+
 Copyright (c) 2017 [miaolz123](https://github.com/miaolz123) by MIT
