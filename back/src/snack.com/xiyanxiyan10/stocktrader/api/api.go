@@ -84,9 +84,9 @@ type Exchange interface {
 	//获取货币种类
 	BackGetSymbols() ([]string, error)
 	//获取交易所种类
-	BackGetMarkets() ([]dbtypes.Stats, error)
+	BackGetMarkets() ([]string, error)
 	//获取数据中心数据
-	BackGetStats() error
+	BackGetStats() ([]dbtypes.Stats, error)
 	//获取周期范围
 	BackGetPeriodRange() ([2]int64, error)
 	//获取时间范围

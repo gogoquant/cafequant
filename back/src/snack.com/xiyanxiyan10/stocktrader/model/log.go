@@ -46,24 +46,38 @@ type Logger struct {
 	Back         bool // just printf if is 1
 }
 
+func (l Logger) messages2message(method string, messages ...interface{}) string {
+	message := ""
+	for _, m := range messages {
+		if m == nil {
+			continue
+		}
+		if method != constant.ERROR {
+			v := reflect.ValueOf(m)
+			switch v.Kind() {
+			case reflect.Struct, reflect.Map, reflect.Slice:
+				if bs, err := json.Marshal(m); err == nil {
+					message += string(bs)
+					continue
+				}
+			}
+		}
+		message += fmt.Sprintf("%+v", m)
+	}
+	return message
+}
+
 // Log ...
 func (l Logger) Log(method string, stockType string, price, amount float64, messages ...interface{}) {
 	now := time.Now().UnixNano()
+	if l.Back {
+		message := l.messages2message(method, messages)
+		fmt.Print(message)
+		return
+	}
+
 	go func(now int64) {
-		message := ""
-		for _, m := range messages {
-			if method != constant.ERROR {
-				v := reflect.ValueOf(m)
-				switch v.Kind() {
-				case reflect.Struct, reflect.Map, reflect.Slice:
-					if bs, err := json.Marshal(m); err == nil {
-						message += string(bs)
-						continue
-					}
-				}
-			}
-			message += fmt.Sprintf("%+v", m)
-		}
+		message := l.messages2message(method, messages...)
 		log := Log{
 			TraderID:     l.TraderID,
 			Timestamp:    now,
@@ -74,15 +88,6 @@ func (l Logger) Log(method string, stockType string, price, amount float64, mess
 			Amount:       amount,
 			Message:      message,
 		}
-		if l.Back {
-			b, err := json.Marshal(log)
-			if err != nil {
-				fmt.Println("Umarshal failed:", err)
-				return
-			}
-			fmt.Printf("%s\n", string(b))
-		} else {
-			DB.Create(&log)
-		}
+		DB.Create(&log)
 	}(now)
 }

@@ -203,7 +203,7 @@ func (e *BaseExchange) Sleep(intervals ...interface{}) {
 }
 
 // BackGetStats ...
-func (e *BaseExchange) BackGetStats() error {
+func (e *BaseExchange) BackGetStats() ([]dbtypes.Stats, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
@@ -213,20 +213,21 @@ func (e *BaseExchange) BackGetStats() error {
 	ohlc := client.GetStats()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
-		return fmt.Errorf("GetStats error, the error number is %s", ohlc.Message)
+		return nil, fmt.Errorf("GetStats error, the error number is %s", ohlc.Message)
 	}
-	return nil
+	return ohlc.Data, nil
 }
 
 // BackGetMarkets ...
-func (e *BaseExchange) BackGetMarkets() ([]dbtypes.Stats, error) {
+func (e *BaseExchange) BackGetMarkets() ([]string, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetMarkets error, the error number is %s", r))
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetStats()
+	ohlc := client.GetMarkets()
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetMarkets error, the error number is %s", ohlc.Message)
@@ -276,6 +277,14 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	return ohlc.Data, nil
 }
 
+func trader2db(s string) string {
+	return strings.Replace(s, "/", "_", -1)
+}
+
+func db2trader(s string) string {
+	return strings.Replace(s, "/", "_", -1)
+}
+
 // BackPutOHLC ...
 func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error {
 	defer func() {
@@ -290,6 +299,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	if len(constract) > 0 {
 		opt.Symbol = opt.Symbol + "/" + strings.ToUpper(constract)
 	}
+	opt.Symbol = trader2db(opt.Symbol)
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC

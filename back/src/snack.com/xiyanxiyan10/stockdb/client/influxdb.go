@@ -3,7 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/influxdata/influxdb1-client/v2"
+	"github.com/influxdata/influxdb/client/v2"
 	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stockdb/config"
 	"snack.com/xiyanxiyan10/stockdb/constant"
@@ -341,17 +341,32 @@ func (driver *influxdb) GetStats() (resp types.Response) {
 	}
 	stats := make(map[string]types.Stats)
 	q := client.NewQuery("SHOW STATS FOR 'shard'", "", "s")
-	if response, err := driver.client.Query(q); err == nil && response.Err == "" && len(response.Results) > 0 {
+	response, err := driver.client.Query(q)
+	if err != nil {
+		resp.Message = err.Error()
+		resp.Success = false
+		return
+	}
+	if response.Err != "" {
+		resp.Message = response.Err
+		resp.Success = false
+		return
+	}
+
+	if len(response.Results) > 0 {
 		result := response.Results[0]
-		if result.Err == "" {
-			for _, series := range result.Series {
-				if strings.Contains(series.Tags["database"], "market_") {
-					market := strings.TrimPrefix(series.Tags["database"], "market_")
-					s := stats[market]
-					s.Market = market
-					s.Disk += conver.Int64Must(series.Values[0][0])
-					stats[market] = s
-				}
+		if len(result.Err) > 0 {
+			resp.Message = response.Err
+			resp.Success = false
+			return
+		}
+		for _, series := range result.Series {
+			if strings.Contains(series.Tags["database"], "market_") {
+				market := strings.TrimPrefix(series.Tags["database"], "market_")
+				s := stats[market]
+				s.Market = market
+				s.Disk += conver.Int64Must(series.Values[0][0])
+				stats[market] = s
 			}
 		}
 	}
@@ -400,9 +415,25 @@ func (driver *influxdb) GetMarkets() (resp types.Response) {
 	}
 	data := []string{}
 	q := client.NewQuery("SHOW DATABASES", "", "s")
-	if response, err := driver.client.Query(q); err == nil && response.Err == "" && len(response.Results) > 0 {
+	response, err := driver.client.Query(q)
+	if err != nil {
+		resp.Message = err.Error()
+		resp.Success = false
+		return
+	}
+	if response.Err != "" {
+		resp.Message = response.Err
+		resp.Success = false
+		return
+	}
+	if len(response.Results) > 0 {
 		result := response.Results[0]
-		if result.Err == "" && len(result.Series) > 0 && len(result.Series[0].Values) > 0 {
+		if len(result.Err) > 0 {
+			resp.Message = response.Err
+			resp.Success = false
+			return
+		}
+		if len(result.Series) > 0 && len(result.Series[0].Values) > 0 {
 			for _, v := range result.Series[0].Values {
 				if len(v) > 0 {
 					name := fmt.Sprint(v[0])
@@ -427,8 +458,25 @@ func (driver *influxdb) GetSymbols(market string) (resp types.Response) {
 	}
 	data := []string{}
 	q := client.NewQuery("SHOW MEASUREMENTS", "market_"+market, "s")
-	if response, err := driver.client.Query(q); err == nil && response.Err == "" && len(response.Results) > 0 {
+
+	response, err := driver.client.Query(q)
+	if err != nil {
+		resp.Message = err.Error()
+		resp.Success = false
+		return
+	}
+	if response.Err != "" {
+		resp.Message = response.Err
+		resp.Success = false
+		return
+	}
+	if len(response.Results) > 0 {
 		result := response.Results[0]
+		if len(result.Err) > 0 {
+			resp.Message = response.Err
+			resp.Success = false
+			return
+		}
 		if result.Err == "" && len(result.Series) > 0 && len(result.Series[0].Values) > 0 {
 			for _, v := range result.Series[0].Values {
 				if len(v) > 0 {

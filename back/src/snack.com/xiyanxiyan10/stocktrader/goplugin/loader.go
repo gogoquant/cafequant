@@ -85,7 +85,12 @@ func RunLoader() {
 	exchange.SetContractType(Constract)
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
-
+	markets, err := exchange.BackGetMarkets()
+	if err != nil {
+		fmt.Printf("exchange get markets fail:%s\n", err.Error())
+		return
+	}
+	fmt.Printf("markets %v", markets)
 	/*
 		for {
 			records, err := exchange.GetRecords(period, "", 3)

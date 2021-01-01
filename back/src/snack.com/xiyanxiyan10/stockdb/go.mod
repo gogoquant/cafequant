@@ -8,7 +8,8 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/go-ini/ini v1.55.0
 	github.com/hprose/hprose-golang v2.0.5+incompatible
-	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
+	github.com/influxdata/influxdb v1.8.3
+	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
