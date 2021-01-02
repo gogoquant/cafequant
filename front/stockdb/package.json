@@ -22,6 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "antd": "^2.5.0",
+    "cooking": "^1.5.4",
     "hprose-html5": "^2.0.29",
     "js-base64": "^2.1.9",
     "moment": "^2.17.1",
@@ -37,6 +38,9 @@
     "stockdb": "^0.2.2"
   },
   "devDependencies": {
-    "babel-plugin-import": "^1.1.0"
+    "babel-plugin-import": "^1.1.0",
+    "cooking-less": "^1.0.5",
+    "cooking-lint": "^0.1.4",
+    "cooking-react": "^0.1.0"
   }
 }

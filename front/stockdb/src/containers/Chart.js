@@ -167,14 +167,14 @@ class Chart extends Component {
         </Row>
         <Spin size="large" spinning={client.loading}>
           {data.length > 0 && period > 0
-          ? <StockChart
+            ? <StockChart
               data={data}
               symbol={symbol}
               period={period}
               timeRange={defaultTimeRange}
               height={innerHeight - 128}
             />
-          : <div><br /><br /><br /><br /><br /></div>}
+            : <div><br /><br /><br /><br /><br /></div>}
         </Spin>
       </Card>
     );

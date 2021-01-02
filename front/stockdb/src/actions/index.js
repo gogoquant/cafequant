@@ -19,7 +19,7 @@ function requestFailure(message) {
 
 // getStats
 export function getStats() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const server = localStorage.getItem('server');
     const token = localStorage.getItem('token');
 
@@ -37,7 +37,7 @@ export function getStats() {
       } else {
         dispatch(requestFailure(resp.Message));
       }
-    }, (name, err) => {
+    }, () => {
       dispatch(requestFailure('Server error'));
     });
   };
@@ -53,7 +53,7 @@ function getStatsSuccess(stats) {
 
 // getSymbols
 export function getSymbols() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const server = localStorage.getItem('server');
     const token = localStorage.getItem('token');
 
@@ -75,14 +75,14 @@ export function getSymbols() {
             } else {
               dispatch(requestFailure(resp.Message));
             }
-          }, (name, err) => {
+          }, () => {
             dispatch(requestFailure('Server error'));
           });
         });
       } else {
         dispatch(requestFailure(resp.Message));
       }
-    }, (name, err) => {
+    }, () => {
       dispatch(requestFailure('Server error'));
     });
   };
@@ -102,7 +102,7 @@ function getSymbolsSuccess(index, symbols) {
 
 // getTimeRange
 function getTimeRange(opt) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const server = localStorage.getItem('server');
     const token = localStorage.getItem('token');
 
@@ -120,7 +120,7 @@ function getTimeRange(opt) {
       } else {
         dispatch(requestFailure(resp.Message));
       }
-    }, (name, err) => {
+    }, () => {
       dispatch(requestFailure('Server error'));
     });
   };
@@ -136,7 +136,7 @@ function getTimeRangeSuccess(timeRange) {
 
 // getPeriodRange
 export function getPeriodRange(symbol) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const server = localStorage.getItem('server');
     const token = localStorage.getItem('token');
 
@@ -155,7 +155,7 @@ export function getPeriodRange(symbol) {
       } else {
         dispatch(requestFailure(resp.Message));
       }
-    }, (name, err) => {
+    }, () => {
       dispatch(requestFailure('Server error'));
     });
   };
@@ -171,7 +171,7 @@ function getPeriodRangeSuccess(periodRange) {
 
 // getOHLCs
 export function getOHLCs(symbol, period, beginTime, endTime) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const server = localStorage.getItem('server');
     const token = localStorage.getItem('token');
 
@@ -200,7 +200,7 @@ export function getOHLCs(symbol, period, beginTime, endTime) {
         } else {
           dispatch(requestFailure(resp.Message));
         }
-      }, (name, err) => {
+      }, () => {
         dispatch(requestFailure('Server error'));
       });
     }

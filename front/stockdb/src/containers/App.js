@@ -22,7 +22,7 @@ class App extends Component {
     this.onCollapseChange = this.onCollapseChange.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps() {
     const { dispatch } = this.props;
     const token = localStorage.getItem('token');
 
