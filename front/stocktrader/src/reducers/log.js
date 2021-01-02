@@ -1,11 +1,11 @@
-import * as actions from "../constants/actions";
-import assign from "lodash/assign";
+import * as actions from '../constants/actions';
+import assign from 'lodash/assign';
 
 const LOG_INIT = {
   loading: false,
   total: 0,
   list: [],
-  message: ""
+  message: ''
 };
 
 function log(state = LOG_INIT, action) {
@@ -13,7 +13,7 @@ function log(state = LOG_INIT, action) {
     case actions.RESET_ERROR:
       return assign({}, state, {
         loading: false,
-        message: ""
+        message: ''
       });
     case actions.LOG_LIST_REQUEST:
       return assign({}, state, {

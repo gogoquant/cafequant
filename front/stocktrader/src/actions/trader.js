@@ -16,7 +16,7 @@ function traderListFailure(message) {
 }
 
 export function TraderList(algorithmId) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -57,7 +57,7 @@ function traderPutFailure(message) {
 }
 
 export function TraderPut(req) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -99,7 +99,7 @@ function traderDeleteFailure(message) {
 }
 
 export function TraderDelete(req) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -141,7 +141,7 @@ function traderSwitchFailure(message) {
 }
 
 export function TraderSwitch(req) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 

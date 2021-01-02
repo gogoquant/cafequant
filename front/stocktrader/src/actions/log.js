@@ -16,7 +16,7 @@ function logListFailure(message) {
 }
 
 export function LogList(trader, pagination, filters) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 

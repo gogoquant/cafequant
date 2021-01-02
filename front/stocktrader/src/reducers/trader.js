@@ -1,11 +1,11 @@
-import * as actions from "../constants/actions";
-import assign from "lodash/assign";
+import * as actions from '../constants/actions';
+import assign from 'lodash/assign';
 
 const TRADER_INIT = {
   loading: false,
   map: {},
   cache: {},
-  message: ""
+  message: ''
 };
 
 function trader(state = TRADER_INIT, action) {
@@ -13,7 +13,7 @@ function trader(state = TRADER_INIT, action) {
     case actions.RESET_ERROR:
       return assign({}, state, {
         loading: false,
-        message: ""
+        message: ''
       });
     case actions.TRADER_LIST_REQUEST:
       return assign({}, state, {

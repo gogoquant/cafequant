@@ -14,7 +14,7 @@ function scriptTypesFailure(message) {
 }
 
 export function ScriptTypes() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
 
     dispatch(scriptTypesRequest());
@@ -23,7 +23,7 @@ export function ScriptTypes() {
       return;
     }
 
-    const client = Client.create(`${cluster}/api`, {  Algorithm: ['ScriptTypes'] });
+    const client = Client.create(`${cluster}/api`, { Algorithm: ['ScriptTypes'] });
 
     client.Algorithm.ScriptTypes(null, (resp) => {
       if (resp.success) {
@@ -55,7 +55,7 @@ function algorithmListFailure(message) {
 }
 
 export function AlgorithmList(size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -96,7 +96,7 @@ function algorithmPutFailure(message) {
 }
 
 export function AlgorithmPut(req) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -137,7 +137,7 @@ function algorithmDeleteFailure(message) {
 }
 
 export function AlgorithmDelete(ids, size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 

@@ -17,7 +17,7 @@ function userLoginFailure(message) {
 }
 
 export function UserLogin(cluster, username, password) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const uri = trimEnd(cluster, '/');
     const client = Client.create(`${uri}/api`, { User: ['Login'] });
 
@@ -50,7 +50,7 @@ function userGetFailure(message) {
 }
 
 export function UserGet() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -91,7 +91,7 @@ function userListFailure(message) {
 }
 
 export function UserList(size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -133,7 +133,7 @@ function userPutFailure(message) {
 }
 
 export function UserPut(req, password, size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -176,7 +176,7 @@ function userDeleteFailure(message) {
 }
 
 export function UserDelete(ids, size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 

@@ -1,11 +1,11 @@
-import { ResetError } from "../actions";
-import { AlgorithmPut } from "../actions/algorithm";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import { browserHistory } from "react-router";
-import { Select, Row, Col, Tooltip, Input, Button, notification } from "antd";
-import MonacoEditor from "react-monaco-editor";
-import { ScriptTypes } from "../actions/algorithm";
+import { ResetError } from '../actions';
+import { AlgorithmPut } from '../actions/algorithm';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
+import { Select, Row, Col, Tooltip, Input, Button, notification } from 'antd';
+import MonacoEditor from 'react-monaco-editor';
+import { ScriptTypes } from '../actions/algorithm';
 
 class AlgorithmEdit extends Component {
   constructor(props) {
@@ -13,10 +13,10 @@ class AlgorithmEdit extends Component {
 
     this.state = {
       innerHeight: window.innerHeight > 500 ? window.innerHeight : 500,
-      messageErrorKey: "",
-      name: "",
-      description: "",
-      script: ""
+      messageErrorKey: '',
+      name: '',
+      description: '',
+      script: ''
     };
 
     this.handleNameChange = this.handleNameChange.bind(this);
@@ -30,22 +30,23 @@ class AlgorithmEdit extends Component {
   componentWillReceiveProps(nextProps) {
     const { messageErrorKey } = this.state;
     const { algorithm } = nextProps;
+    const { dispatch } = this.props;
 
     if (!algorithm.cache.name) {
-      browserHistory.push("/algorithm");
+      browserHistory.push('/algorithm');
     }
 
     if (!messageErrorKey && algorithm.message) {
       this.setState({
-        messageErrorKey: "algorithmEditError"
+        messageErrorKey: 'algorithmEditError'
       });
-      notification["error"]({
-        key: "algorithmEditError",
-        message: "Error",
+      notification['error']({
+        key: 'algorithmEditError',
+        message: 'Error',
         description: String(algorithm.message),
         onClose: () => {
           if (this.state.messageErrorKey) {
-            this.setState({ messageErrorKey: "" });
+            this.setState({ messageErrorKey: '' });
           }
           dispatch(ResetError());
         }
@@ -58,12 +59,12 @@ class AlgorithmEdit extends Component {
     const { dispatch, algorithm } = this.props;
 
     if (!algorithm.cache.name) {
-      browserHistory.push("/algorithm");
+      browserHistory.push('/algorithm');
     }
 
     dispatch(ScriptTypes());
     if (!name) {
-      console.log("algorithm cache is:", algorithm.cache)
+      console.log('algorithm cache is:', algorithm.cache);
       this.setState({
         name: algorithm.cache.name,
         description: algorithm.cache.description,
@@ -96,7 +97,7 @@ class AlgorithmEdit extends Component {
   handleSubmit() {
     const { dispatch, algorithm } = this.props;
     const { name, description, script, type } = this.state;
-    console.log("type is:", type)  
+    console.log('type is:', type);
     const req = {
       id: algorithm.cache.id,
       name,
@@ -115,7 +116,7 @@ class AlgorithmEdit extends Component {
   render() {
     const { innerHeight, name, description, script } = this.state;
     const { algorithm } = this.props;
-    console.log("get algorithm from container:", algorithm)
+    console.log('get algorithm from container:', algorithm);
     return (
       <div className="container">
         <Row type="flex" justify="space-between">
@@ -147,14 +148,14 @@ class AlgorithmEdit extends Component {
               onChange={this.handleDescriptionChange}
             />
           </Tooltip>
-      </Row>
-      <Row span={{ marginTop: 18 }}>
+        </Row>
+        <Row span={{ marginTop: 18 }}>
           <Tooltip placement="bottomLeft" title="Types Description">
-           <Select onChange={this.handleTypeChange} defaultValue={algorithm.cache.type}>
-                {algorithm.types.map((v, i) => <Option key={i} value={v}>{v}</Option>)}
+            <Select onChange={this.handleTypeChange} defaultValue={algorithm.cache.type}>
+              {algorithm.types.map((v, i) => <Option key={i} value={v}>{v}</Option>)}
             </Select>
           </Tooltip>
-          </Row>
+        </Row>
         <Row style={{ marginTop: 18 }}>
           <MonacoEditor
             width="100%"

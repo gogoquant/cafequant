@@ -16,7 +16,7 @@ function exchangeTypesFailure(message) {
 }
 
 export function ExchangeTypes() {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
 
     dispatch(exchangeTypesRequest());
@@ -55,7 +55,7 @@ function exchangeListFailure(message) {
 }
 
 export function ExchangeList(size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -96,7 +96,7 @@ function exchangePutFailure(message) {
 }
 
 export function ExchangePut(req, size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
@@ -138,7 +138,7 @@ function exchangeDeleteFailure(message) {
 }
 
 export function ExchangeDelete(ids, size, page, order) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     const cluster = localStorage.getItem('cluster');
     const token = localStorage.getItem('token');
 
