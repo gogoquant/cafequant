@@ -3,6 +3,7 @@ package goplugin
 import (
 	"fmt"
 	"plugin"
+	"reflect"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -122,20 +123,27 @@ func (p *GoPlugin) LoadStragey() error {
 			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
 		}
 	}()
+	// name is the so and handler new key
 	name := p.GetStragey()
-	handler, err := plugin.Open(config.String(constant.GoPluginPath+"/") + name + ".so")
+	handler, err := plugin.Open(config.String(constant.GoPluginPath) + "/" + name + ".so")
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
 		return err
 	}
-	s, err := handler.Lookup(constant.GoHandler)
+	s, err := handler.Lookup(fmt.Sprintf(constant.GoHandler, name))
+	fmt.Printf("lookup hanlder %s :%v\n", fmt.Sprintf(constant.GoHandler, name), s)
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
 		return err
 	}
-	newHandler, ok := s.(StrageyNew)
+	if s == nil {
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail interface is nil")
+		return fmt.Errorf("LoadStragey() fail interface is nil")
+	}
+	newHandler, ok := s.(func(...interface{}) (GoStrageyHandler, error))
 	if !ok {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail convert handler")
+		t := reflect.TypeOf(s)
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail convert handler type:"+t.Name())
 		return fmt.Errorf("LoadStragey() fail convert handler")
 	}
 	strageyHandler, err := newHandler()
@@ -167,7 +175,7 @@ func (p *GoPlugin) Init(v ...interface{}) (res interface{}) {
 func (p *GoPlugin) Run(v ...interface{}) interface{} {
 	defer func() {
 		if err := recover(); err != nil {
-			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Run fail:%v", err)
+			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Run fail")
 		}
 	}()
 	handler, ok := p.strageys[p.GetStragey()]
@@ -182,7 +190,7 @@ func (p *GoPlugin) Run(v ...interface{}) interface{} {
 func (p *GoPlugin) Exit(v ...interface{}) interface{} {
 	defer func() {
 		if err := recover(); err != nil {
-			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Exit fail:%v", err)
+			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Exit fail")
 		}
 	}()
 	handler, ok := p.strageys[p.GetStragey()]
@@ -207,8 +215,5 @@ type GoHandler interface {
 func NewGoPlugin() *GoPlugin {
 	var goplugin GoPlugin
 	goplugin.strageys = make(map[string]GoStrageyHandler)
-	goplugin.SetStragey("echo")
-	grid, _ := NewEchoHandler()
-	goplugin.AddStragey(grid)
 	return &goplugin
 }

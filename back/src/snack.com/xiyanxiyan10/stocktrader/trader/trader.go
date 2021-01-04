@@ -147,6 +147,11 @@ func initializeJs(trader *Global) (err error) {
 		return
 	}
 
+	if localErr := trader.ctx.Set("Plugin", trader.goplugin); localErr != nil {
+		err = localErr
+		return
+	}
+
 	if localErr := trader.ctx.Set("Exchange", trader.es[0]); localErr != nil {
 		err = localErr
 		return

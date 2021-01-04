@@ -12,29 +12,46 @@ import (
 // LoaderStragey ...
 type LoaderStragey struct {
 	GoStragey
+	Status bool
 }
 
 // NewLoaderHandler ...
 func NewLoaderHandler(...interface{}) (GoStrageyHandler, error) {
-	var loader LoaderStragey
-	return &loader, nil
+	loader := new(LoaderStragey)
+	return loader, nil
 }
 
 // Init ...
 func (e *LoaderStragey) Init(...interface{}) interface{} {
+	if e.Logger == nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "logger is nil")
+		return nil
+	}
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init")
+	e.Status = true
 	return nil
 }
 
 // Run ...
 func (e *LoaderStragey) Run(v ...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
+	exchange := e.Exchanges[0]
+	for e.Status {
+		err := putOHLC(exchange, "M5")
+		if err != nil {
+			e.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			continue
+		}
+		time.Sleep(time.Duration(3) * time.Minute)
+	}
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "stragey exit")
 	return nil
 }
 
 // Exit ...
 func (e *LoaderStragey) Exit(...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit")
+	e.Status = false
 	return nil
 }
 
