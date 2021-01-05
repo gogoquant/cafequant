@@ -123,6 +123,6 @@ const (
 const (
 	// ScriptJs ...
 	ScriptJs = "js"
-	// ScriptPython ...
-	ScriptPython = "python"
+	// ScriptPython ... @todo change as go
+	ScriptPython = "go"
 )
