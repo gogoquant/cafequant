@@ -1,9 +1,10 @@
-package goplugin
+package main
 
 import (
 	"fmt"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
@@ -11,25 +12,32 @@ import (
 
 // LoaderStragey ...
 type LoaderStragey struct {
-	GoStragey
+	goplugin.GoStragey
+	Period string
 	Status bool
 }
 
 // NewLoaderHandler ...
-func NewLoaderHandler(...interface{}) (GoStrageyHandler, error) {
+func NewLoaderHandler(...interface{}) (goplugin.GoStrageyHandler, error) {
 	loader := new(LoaderStragey)
 	return loader, nil
 }
 
 // Init ...
-func (e *LoaderStragey) Init(...interface{}) interface{} {
-	if e.Logger == nil {
-		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "logger is nil")
+func (e *LoaderStragey) Init(v ...interface{}) interface{} {
+	if len(v) < 0 {
+		e.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Parameter period needed")
 		return nil
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init")
+	period, ok := v[0].(string)
+	if !ok {
+		e.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Parameter period convert fail")
+		return nil
+	}
+	e.Period = period
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
-	return nil
+	return "success"
 }
 
 // Run ...
@@ -37,22 +45,22 @@ func (e *LoaderStragey) Run(v ...interface{}) interface{} {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
 	for e.Status {
-		err := putOHLC(exchange, "M5")
+		err := putOHLC(exchange, e.Period)
 		if err != nil {
 			e.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 			continue
 		}
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "stragey exit")
-	return nil
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
+	return "success"
 }
 
 // Exit ...
 func (e *LoaderStragey) Exit(...interface{}) interface{} {
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit")
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
 	e.Status = false
-	return nil
+	return "success"
 }
 
 func putOHLC(exchange api.Exchange, period string) error {
@@ -63,7 +71,8 @@ func putOHLC(exchange api.Exchange, period string) error {
 	}
 	fmt.Printf("get records:%s\n", util.Struct2Json(records))
 	for _, record := range records {
-		err = exchange.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "unknown", period)
+		err = exchange.BackPutOHLC(record.Time, record.Open,
+			record.High, record.Low, record.Close, record.Volume, "unknown", period)
 		if err != nil {
 			fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
 			return err
@@ -72,15 +81,13 @@ func putOHLC(exchange api.Exchange, period string) error {
 	return nil
 }
 
-// RunLoader ...
-func RunLoader() {
+// main ...
+func main() {
 	var logger model.Logger
 	var opt constant.Option
 	var Constract = "quarter"
 	var Symbol = "BTC/USD"
-	var period = "M5"
 	var IO = "online"
-	var interval = 5
 
 	logger.Back = true
 
@@ -102,31 +109,14 @@ func RunLoader() {
 	exchange.SetContractType(Constract)
 	exchange.SetStockType(Symbol)
 	exchange.Ready()
-	markets, err := exchange.BackGetStats()
+
+	loader, err := NewLoaderHandler()
 	if err != nil {
-		fmt.Printf("exchange get markets fail:%s\n", err.Error())
+		fmt.Printf("create loader fail:%s\n", err.Error())
 		return
 	}
-	fmt.Printf("markets %v", markets)
-	/*
-		for {
-			records, err := exchange.GetRecords(period, "", 3)
-			if err != nil {
-				fmt.Printf("get records fail:%s\n", err.Error())
-				time.Sleep(time.Duration(interval) * time.Minute)
-				continue
-			}
-			fmt.Printf("records:%s\n", util.Struct2Json(records))
-			time.Sleep(time.Duration(interval) * time.Minute)
-		}
-	*/
-	for {
-		err = putOHLC(exchange, period)
-		if err != nil {
-			fmt.Printf("put ohlcs fail:%s\n", err.Error())
-			return
-		}
-
-		time.Sleep(time.Duration(interval) * time.Minute)
-	}
+	loader.AddExchange(exchange)
+	loader.AddLogger(&logger)
+	loader.Init("M5")
+	loader.Run()
 }
