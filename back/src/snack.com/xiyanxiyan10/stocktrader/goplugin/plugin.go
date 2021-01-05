@@ -13,7 +13,7 @@ import (
 )
 
 // Gofunc ...
-type Gofunc func(...interface{}) interface{}
+type Gofunc func(...interface{}) error
 
 // StrageyNew ...
 type StrageyNew func(...interface{}) (GoStrageyHandler, error)
@@ -60,9 +60,9 @@ type GoStrageyHandler interface {
 	AddDing(ding notice.DingHandler)
 	AddLogger(logger *model.Logger)
 
-	Init(...interface{}) interface{}
-	Run(...interface{}) interface{}
-	Exit(...interface{}) interface{}
+	Init(map[string]string) error
+	Run(map[string]string) error
+	Exit(map[string]string) error
 }
 
 // GoPlugin ...
@@ -140,7 +140,7 @@ func (p *GoPlugin) LoadStragey() error {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail interface is nil")
 		return fmt.Errorf("LoadStragey() fail interface is nil")
 	}
-	newHandler, ok := s.(func(...interface{}) (GoStrageyHandler, error))
+	newHandler, ok := s.(func() (GoStrageyHandler, error))
 	if !ok {
 		t := reflect.TypeOf(s)
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail convert handler type:"+t.Name())
@@ -156,8 +156,7 @@ func (p *GoPlugin) LoadStragey() error {
 }
 
 // Init ...
-func (p *GoPlugin) Init(v ...interface{}) (res interface{}) {
-	res = nil
+func (p *GoPlugin) Init(v map[string]string) error {
 	defer func() {
 		if err := recover(); err != nil {
 			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Init fail:%v", err)
@@ -165,14 +164,14 @@ func (p *GoPlugin) Init(v ...interface{}) (res interface{}) {
 	}()
 	handler, ok := p.strageys[p.GetStragey()]
 	if !ok {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Init fail:get name")
-		return nil
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Init fail "+p.GetStragey())
+		return fmt.Errorf("Stragey Exit fail get name " + p.GetStragey())
 	}
 	return handler.Init(v)
 }
 
 // Run ...
-func (p *GoPlugin) Run(v ...interface{}) interface{} {
+func (p *GoPlugin) Run(v map[string]string) error {
 	defer func() {
 		if err := recover(); err != nil {
 			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Run fail")
@@ -180,14 +179,14 @@ func (p *GoPlugin) Run(v ...interface{}) interface{} {
 	}()
 	handler, ok := p.strageys[p.GetStragey()]
 	if !ok {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Run fail:get name")
-		return nil
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Run fail "+p.GetStragey())
+		return fmt.Errorf("Stragey Run fail get name " + p.GetStragey())
 	}
 	return handler.Run(v)
 }
 
 // Exit ...
-func (p *GoPlugin) Exit(v ...interface{}) interface{} {
+func (p *GoPlugin) Exit(v map[string]string) error {
 	defer func() {
 		if err := recover(); err != nil {
 			p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Exit fail")
@@ -195,8 +194,8 @@ func (p *GoPlugin) Exit(v ...interface{}) interface{} {
 	}()
 	handler, ok := p.strageys[p.GetStragey()]
 	if !ok {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Exit fail:get name")
-		return nil
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Stragey Exit fail get name "+p.GetStragey())
+		return fmt.Errorf("Stragey Exit fail get name " + p.GetStragey())
 	}
 	return handler.Exit(v)
 }
@@ -206,9 +205,9 @@ type GoHandler interface {
 	LoadStragey() error
 	SetStragey(string)
 	GetStragey() string
-	Init(v ...interface{}) interface{}
-	Run(v ...interface{}) interface{}
-	Exit(v ...interface{}) interface{}
+	Init(v map[string]string) error
+	Run(v map[string]string) error
+	Exit(v map[string]string) error
 }
 
 // NewGoPlugin ...

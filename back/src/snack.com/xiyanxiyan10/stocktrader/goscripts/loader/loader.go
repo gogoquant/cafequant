@@ -18,30 +18,32 @@ type LoaderStragey struct {
 }
 
 // NewLoaderHandler ...
-func NewLoaderHandler(...interface{}) (goplugin.GoStrageyHandler, error) {
+func NewLoaderHandler() (goplugin.GoStrageyHandler, error) {
 	loader := new(LoaderStragey)
 	return loader, nil
 }
 
 // Init ...
-func (e *LoaderStragey) Init(v ...interface{}) interface{} {
-	if len(v) < 0 {
-		e.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Parameter period needed")
-		return nil
-	}
-	period, ok := v[0].(string)
-	if !ok {
-		e.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Parameter period convert fail")
-		return nil
-	}
+func (e *LoaderStragey) Init(v map[string]string) error {
+	period := v["period"]
+
+	var Constract = "quarter"
+	var Symbol = "BTC/USD"
+	var IO = "online"
+	exchange := e.Exchanges[0]
+	exchange.SetIO(IO)
+	exchange.SetContractType(Constract)
+	exchange.SetStockType(Symbol)
+	exchange.Ready()
+
 	e.Period = period
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
-	return "success"
+	return nil
 }
 
 // Run ...
-func (e *LoaderStragey) Run(v ...interface{}) interface{} {
+func (e *LoaderStragey) Run(map[string]string) error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
 	for e.Status {
@@ -53,14 +55,14 @@ func (e *LoaderStragey) Run(v ...interface{}) interface{} {
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
-	return "success"
+	return nil
 }
 
 // Exit ...
-func (e *LoaderStragey) Exit(...interface{}) interface{} {
+func (e *LoaderStragey) Exit(map[string]string) error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
 	e.Status = false
-	return "success"
+	return nil
 }
 
 func putOHLC(exchange api.Exchange, period string) error {
@@ -117,6 +119,6 @@ func main() {
 	}
 	loader.AddExchange(exchange)
 	loader.AddLogger(&logger)
-	loader.Init("M5")
-	loader.Run()
+	loader.Init(nil)
+	loader.Run(nil)
 }

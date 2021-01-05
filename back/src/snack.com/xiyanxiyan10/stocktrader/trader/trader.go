@@ -1,17 +1,11 @@
 package trader
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
-	"runtime"
-	"strconv"
-	"time"
-
-	"github.com/qiniu/py"
-	"github.com/qiniu/py/pyutil"
-	"github.com/qiniu/x/log"
 	"github.com/robertkrimen/otto"
+	"reflect"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -19,6 +13,8 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
+	"strconv"
+	"time"
 )
 
 // Trader Variable
@@ -66,67 +62,42 @@ func runPy(trader Global, id int64) (err error) {
 	if err != nil {
 		return
 	}
-	runtime.GOMAXPROCS(1)
 
 	go func() {
-		gomod, err := py.NewGoModule("exchange", "", trader.espy[0])
-		if err != nil {
-			log.Fatal("NewGoModule failed:", err)
-			return
-		}
-		defer gomod.Decref()
-
-		gomode, err := py.NewGoModule("E", "", trader.espy[0])
-		if err != nil {
-			log.Fatal("NewGoModule failed:", err)
-			return
-		}
-		defer gomode.Decref()
-
-		var gpy GlobalPython
-		gpy.global = &trader
-		globalmode, err := py.NewGoModule("G", "", gpy)
-		if err != nil {
-			log.Fatal("NewGoModule failed:", err)
-			return
-		}
-		defer globalmode.Decref()
-
-		code, err := py.Compile(trader.Algorithm.Script, "", py.FileInput)
-		if err != nil {
-			log.Fatal("Compile failed:", err)
-			return
-		}
-		defer code.Decref()
-
-		mod, err := py.ExecCodeModule("pycode", code.Obj())
-		if err != nil {
-			log.Fatal("ExecCodeModule failed:", err)
-			return
-		}
-		defer mod.Decref()
-
 		defer func() {
 			if err := recover(); err != nil && err != errHalt {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
-			ret, err := pyutil.CallMethod(mod.Obj(), "exit")
-			if err != nil {
-				log.Fatal("exit failed:", err)
-			}
-			defer ret.Decref()
-			trader.ws.Close()
 			close(trader.ctx.Interrupt)
+			trader.ws.Close()
 			trader.Status = 0
 			trader.Pending = 0
 		}()
+		scripts := trader.Algorithm.Script
+		p := make(map[string]string)
+		err := json.Unmarshal([]byte(scripts), &p)
+		if err != nil {
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
+		}
+		name := p["name"]
+		trader.goplugin.SetStragey(name)
 		trader.LastRunAt = time.Now()
 		trader.Status = 1
-		ret, err := pyutil.CallMethod(mod.Obj(), "main")
+		err = trader.goplugin.LoadStragey()
 		if err != nil {
-			log.Fatal("Call main failed:", err)
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 		}
-		defer ret.Decref()
+		err = trader.goplugin.Init(p)
+		if err != nil {
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+		}
+		err = trader.goplugin.Run(p)
+		if err != nil {
+			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
+		}
+
 	}()
 	Executor[trader.ID] = &trader
 	return
@@ -381,7 +352,30 @@ func stop(id int64) (err error) {
 	if Executor[id].Pending == 1 {
 		return fmt.Errorf("pending Trader")
 	}
+	trader := Executor[id]
+	switch trader.scriptType {
+	case constant.ScriptPython:
+		return stopGo(id)
+	case constant.ScriptJs:
+	default:
+		return stopJs(id)
+	}
+	return
+}
+
+// stop ...
+func stopJs(id int64) (err error) {
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
+	Executor[id].Pending = 1
+	return
+}
+
+// stop ...
+func stopGo(id int64) (err error) {
+	err = Executor[id].goplugin.Exit(nil)
+	if err != nil {
+		return err
+	}
 	Executor[id].Pending = 1
 	return
 }
