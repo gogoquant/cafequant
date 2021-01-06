@@ -210,14 +210,6 @@ func initialize(id int64) (trader Global, err error) {
 			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
 		}
-		if maker, ok := api.PyExchangeMaker[e.Type]; ok {
-			exchange, errD := maker(opt)
-			if errD != nil {
-				err = errD
-				return
-			}
-			trader.espy = append(trader.espy, exchange)
-		}
 	}
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")

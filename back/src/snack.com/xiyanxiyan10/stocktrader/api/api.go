@@ -107,13 +107,4 @@ var (
 		constant.SpotBack:   NewSpotBackExchange,
 		constant.FutureBack: NewFutureBackExchange,
 	}
-	// PyExchangeMaker ...
-	PyExchangeMaker map[string]func(constant.Option) (ExchangePython, error)
 )
-
-func init() {
-	PyExchangeMaker = make(map[string]func(constant.Option) (ExchangePython, error))
-	for key, funcs := range ExchangeMaker {
-		PyExchangeMaker[key] = NewExchangePython(funcs)
-	}
-}
