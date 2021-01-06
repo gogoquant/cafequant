@@ -38,9 +38,14 @@ func (c *Client) init(uri, auth string) {
 	c.hprose.UseService(c)
 }
 
+// local client on instance
+var stockClient *Client = nil
+
 // New can create a StockDB Client
 func NewClient(uri, auth string) (client *Client) {
-	var stockClient Client
-	stockClient.init(uri, auth)
-	return &stockClient
+	if stockClient == nil {
+		stockClient = new(Client)
+		stockClient.init(uri, auth)
+	}
+	return stockClient
 }
