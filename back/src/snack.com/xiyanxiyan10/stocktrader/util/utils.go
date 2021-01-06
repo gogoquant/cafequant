@@ -3,7 +3,27 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 )
+
+// File2Map convert file json to map[string]string
+func File2Map(path string) (map[string]string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[string]string)
+	err = json.Unmarshal([]byte(content), &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
 
 // SafefloatDivide ...
 func SafefloatDivide(lft, rht float64) float64 {
