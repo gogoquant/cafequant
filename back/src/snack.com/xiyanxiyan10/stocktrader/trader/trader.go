@@ -57,7 +57,7 @@ func initializePy(trader *Global) (err error) {
 }
 
 // run ...
-func runPy(trader Global, id int64) (err error) {
+func runGo(trader Global, id int64) (err error) {
 	err = initializePy(&trader)
 	if err != nil {
 		return
@@ -280,7 +280,7 @@ func run(id int64) (err error) {
 
 	switch trader.scriptType {
 	case constant.ScriptPython:
-		return runPy(trader, id)
+		return runGo(trader, id)
 	case constant.ScriptJs:
 	default:
 		return runJs(trader, id)

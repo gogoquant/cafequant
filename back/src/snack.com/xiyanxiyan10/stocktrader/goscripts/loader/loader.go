@@ -6,7 +6,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
@@ -71,7 +70,7 @@ func putOHLC(exchange api.Exchange, period string) error {
 		fmt.Printf("get records fail:%v", err)
 		return err
 	}
-	fmt.Printf("get records:%s\n", util.Struct2Json(records))
+	//fmt.Printf("get records:%s\n", util.Struct2Json(records))
 	for _, record := range records {
 		err = exchange.BackPutOHLC(record.Time, record.Open,
 			record.High, record.Low, record.Close, record.Volume, "unknown", period)
