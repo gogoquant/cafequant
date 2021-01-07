@@ -24,6 +24,7 @@ type Tasks map[string][]task
 
 // GlobalHandler ...
 type GlobalHandler interface {
+	LogStatus(messages ...interface{})
 	DingSet(token, key string) error
 	DingSend(msg string) error
 	MailSet(to, server, portStr, username, password string) error

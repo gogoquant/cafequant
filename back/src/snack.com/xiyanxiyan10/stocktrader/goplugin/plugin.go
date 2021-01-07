@@ -25,11 +25,17 @@ type GoStragey struct {
 	Ding      notice.DingHandler // dingding
 	Draw      draw.DrawHandler   // 图标绘制
 	Logger    *model.Logger      // 利用这个对象保存日志
+	LogStatus *string            // 利用该字段改写状态日志
 }
 
 // AddExchange ...
 func (p *GoStragey) AddExchange(e ...api.Exchange) {
 	p.Exchanges = append(p.Exchanges, e...)
+}
+
+// AddLogStatus ...
+func (p *GoStragey) AddLogStatus(s *string) {
+	p.LogStatus = s
 }
 
 // AddDraw ...
@@ -59,6 +65,7 @@ type GoStrageyHandler interface {
 	AddMail(mail notice.MailHandler)
 	AddDing(ding notice.DingHandler)
 	AddLogger(logger *model.Logger)
+	AddLogStatus(s *string)
 
 	Init(map[string]string) error
 	Run(map[string]string) error
@@ -73,12 +80,18 @@ type GoPlugin struct {
 	Mail      notice.MailHandler          // 邮件发送
 	Draw      draw.DrawHandler            // 图标绘制
 	Ding      notice.DingHandler          // dingding
+	LogStatus *string                     // status
 	strageys  map[string]GoStrageyHandler // 策略集合
 }
 
 // SetStragey ...
 func (p *GoPlugin) SetStragey(name string) {
 	p.name = name
+}
+
+// AddLogStatus ...
+func (p *GoPlugin) AddLogStatus(s *string) {
+	p.LogStatus = s
 }
 
 // GetStragey ...
@@ -113,6 +126,7 @@ func (p *GoPlugin) AddStragey(v GoStrageyHandler) {
 	v.AddMail(p.Mail)
 	v.AddDraw(p.Draw)
 	v.AddLogger(p.Logger)
+	v.AddLogStatus(p.LogStatus)
 	v.AddDing(p.Ding)
 }
 
