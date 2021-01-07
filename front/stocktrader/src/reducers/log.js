@@ -30,6 +30,20 @@ function log(state = LOG_INIT, action) {
         loading: false,
         message: action.message
       });
+    case actions.LOG_STATUS_REQUEST:
+      return assign({}, state, {
+        loading: true
+      });
+    case actions.LOG_STATUS_SUCCESS:
+      return assign({}, state, {
+        loading: false,
+        data: action.data
+      });
+    case actions.LOG_STATUS_FAILURE:
+      return assign({}, state, {
+        loading: false,
+        message: action.message
+      });
     default:
       return state;
   }

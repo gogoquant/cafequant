@@ -1,5 +1,5 @@
 import { ResetError } from '../actions';
-import { LogList } from '../actions/log';
+import { LogList, LogStatus } from '../actions/log';
 import React from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
@@ -9,16 +9,6 @@ const Panel = Collapse.Panel;
 function PrefixInteger(num, m) {
   return (num + Array(m).join(0)).slice(0, m);
 }
-
-function callback(key) {
-  console.log(key);
-}
-
-const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.
-`;
 
 class Log extends React.Component {
   constructor(props) {
@@ -85,6 +75,7 @@ class Log extends React.Component {
     const { pagination } = this.state;
     const { trader, dispatch } = this.props;
 
+    dispatch(LogStatus(trader.cache));
     dispatch(LogList(trader.cache, pagination, this.filters));
   }
 
@@ -187,9 +178,9 @@ class Log extends React.Component {
             onChange={this.handleSync}
           />
         </div>
-        <Collapse onChange={callback}>
+        <Collapse onChange={this.reload}>
           <Panel header="Status Info" key="1">
-            <p>{text}</p>
+            <p>{log.data}</p>
           </Panel>
         </Collapse>
         <Table
