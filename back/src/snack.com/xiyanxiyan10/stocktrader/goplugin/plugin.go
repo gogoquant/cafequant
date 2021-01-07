@@ -94,6 +94,11 @@ func (p *GoPlugin) AddLogStatus(s *string) {
 	p.LogStatus = s
 }
 
+// AddLog ...
+func (p *GoPlugin) AddLog(l *model.Logger) {
+	p.Logger = l
+}
+
 // GetStragey ...
 func (p *GoPlugin) GetStragey() string {
 	return p.name
