@@ -1,6 +1,7 @@
 package goplugin
 
 import (
+	"encoding/json"
 	"fmt"
 	"plugin"
 	"reflect"
@@ -25,7 +26,7 @@ type GoStragey struct {
 	Ding      notice.DingHandler // dingding
 	Draw      draw.DrawHandler   // 图标绘制
 	Logger    *model.Logger      // 利用这个对象保存日志
-	LogStatus *string            // 利用该字段改写状态日志
+	Status    *string            // 利用该字段改写状态日志
 }
 
 // AddExchange ...
@@ -35,7 +36,7 @@ func (p *GoStragey) AddExchange(e ...api.Exchange) {
 
 // AddLogStatus ...
 func (p *GoStragey) AddLogStatus(s *string) {
-	p.LogStatus = s
+	p.Status = s
 }
 
 // AddDraw ...
@@ -56,6 +57,25 @@ func (p *GoStragey) AddDing(ding notice.DingHandler) {
 // AddLogger ...
 func (p *GoStragey) AddLogger(logger *model.Logger) {
 	p.Logger = logger
+}
+
+// LogStatus ...
+func (g *GoStragey) LogStatus(messages ...interface{}) {
+	go func() {
+		msg := ""
+		for _, m := range messages {
+			v := reflect.ValueOf(m)
+			switch v.Kind() {
+			case reflect.Struct, reflect.Map, reflect.Slice:
+				if bs, err := json.Marshal(m); err == nil {
+					msg += string(bs)
+					continue
+				}
+			}
+			msg += fmt.Sprintf("%+v", m)
+		}
+		*(g.Status) = msg
+	}()
 }
 
 // GoStrageyHandler ...
