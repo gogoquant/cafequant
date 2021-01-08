@@ -42,7 +42,7 @@ const (
 // error constants
 const (
 	Banner                     = "QuantBot"
-	Version                    = "0.0.3"
+	Version                    = "1.0.0"
 	ErrAuthorizationError      = "Authorization Error"
 	ErrInsufficientPermissions = "Insufficient Permissions"
 )
