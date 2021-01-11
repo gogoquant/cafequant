@@ -6,6 +6,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
@@ -25,14 +26,13 @@ func NewLoaderHandler() (goplugin.GoStrageyHandler, error) {
 // Init ...
 func (e *LoaderStragey) Init(v map[string]string) error {
 	period := v["period"]
-
-	var Constract = "quarter"
-	var Symbol = "BTC/USD"
-	var IO = "online"
+	constract := v["constract"]
+	symbol := v["symbol"]
+	io := v["io"]
 	exchange := e.Exchanges[0]
-	exchange.SetIO(IO)
-	exchange.SetContractType(Constract)
-	exchange.SetStockType(Symbol)
+	exchange.SetIO(io)
+	exchange.SetContractType(constract)
+	exchange.SetStockType(symbol)
 	exchange.Ready()
 
 	e.Period = period
@@ -49,6 +49,7 @@ func (e *LoaderStragey) Run(map[string]string) error {
 		err := putOHLC(exchange, e.Period)
 		if err != nil {
 			e.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			time.Sleep(time.Duration(3) * time.Minute)
 			continue
 		}
 		time.Sleep(time.Duration(3) * time.Minute)
@@ -70,7 +71,7 @@ func putOHLC(exchange api.Exchange, period string) error {
 		fmt.Printf("get records fail:%v", err)
 		return err
 	}
-	//fmt.Printf("get records:%s\n", util.Struct2Json(records))
+	fmt.Printf("get records:%s\n", util.Struct2Json(records))
 	for _, record := range records {
 		err = exchange.BackPutOHLC(record.Time, record.Open,
 			record.High, record.Low, record.Close, record.Volume, "unknown", period)
@@ -86,10 +87,10 @@ func putOHLC(exchange api.Exchange, period string) error {
 func main() {
 	var logger model.Logger
 	var opt constant.Option
-	var Constract = "quarter"
-	var Symbol = "BTC/USD"
-	var IO = "online"
-
+	var constract = "quarter"
+	var symbol = "BTC/USD"
+	var io = "online"
+	var period = "M5"
 	logger.Back = true
 
 	opt.AccessKey = ""
@@ -106,18 +107,23 @@ func main() {
 		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
 	}
-	exchange.SetIO(IO)
-	exchange.SetContractType(Constract)
-	exchange.SetStockType(Symbol)
-	exchange.Ready()
+	//exchange.SetIO(IO)
+	//exchange.SetContractType(Constract)
+	//exchange.SetStockType(Symbol)
+	//exchange.Ready()
 
 	loader, err := NewLoaderHandler()
 	if err != nil {
 		fmt.Printf("create loader fail:%s\n", err.Error())
 		return
 	}
+	param := make(map[string]string)
+	param["io"] = io
+	param["symbol"] = symbol
+	param["constract"] = constract
+	param["period"] = period
 	loader.AddExchange(exchange)
 	loader.AddLogger(&logger)
-	loader.Init(nil)
+	loader.Init(param)
 	loader.Run(nil)
 }
