@@ -107,10 +107,6 @@ func main() {
 		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
 	}
-	//exchange.SetIO(IO)
-	//exchange.SetContractType(Constract)
-	//exchange.SetStockType(Symbol)
-	//exchange.Ready()
 
 	loader, err := NewLoaderHandler()
 	if err != nil {
