@@ -40,10 +40,10 @@ export function LogStatus(trader) {
       return;
     }
 
-    const client = Client.create(`${cluster}/api`, { Log: ['LogStatus'] });
+    const client = Client.create(`${cluster}/api`, { Log: ['Status'] });
 
     client.setHeader('Authorization', `Bearer ${token}`);
-    client.Log.LogStatus(trader, (resp) => {
+    client.Log.Status(trader, (resp) => {
       if (resp.success) {
         dispatch(logStatusSuccess(resp.data));
       } else {

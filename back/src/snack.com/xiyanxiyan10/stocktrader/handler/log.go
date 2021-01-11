@@ -54,7 +54,7 @@ func (logger) List(trader model.Trader, pagination pagination, filters filters, 
 	return
 }
 
-func (logger) LogStatus(trader model.Trader, ctx rpc.Context) (resp response) {
+func (logger) Status(trader model.Trader, ctx rpc.Context) (resp response) {
 	username := ctx.GetString("username")
 	if username == "" {
 		resp.Message = constant.ErrAuthorizationError

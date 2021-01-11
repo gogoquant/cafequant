@@ -1,6 +1,7 @@
 package goplugin
 
 import (
+	"encoding/json"
 	"fmt"
 	"plugin"
 	"reflect"
@@ -25,11 +26,17 @@ type GoStragey struct {
 	Ding      notice.DingHandler // dingding
 	Draw      draw.DrawHandler   // 图标绘制
 	Logger    *model.Logger      // 利用这个对象保存日志
+	Status    *string            // 利用该字段改写状态日志
 }
 
 // AddExchange ...
 func (p *GoStragey) AddExchange(e ...api.Exchange) {
 	p.Exchanges = append(p.Exchanges, e...)
+}
+
+// AddLogStatus ...
+func (p *GoStragey) AddLogStatus(s *string) {
+	p.Status = s
 }
 
 // AddDraw ...
@@ -52,6 +59,25 @@ func (p *GoStragey) AddLogger(logger *model.Logger) {
 	p.Logger = logger
 }
 
+// LogStatus ...
+func (g *GoStragey) LogStatus(messages ...interface{}) {
+	go func() {
+		msg := ""
+		for _, m := range messages {
+			v := reflect.ValueOf(m)
+			switch v.Kind() {
+			case reflect.Struct, reflect.Map, reflect.Slice:
+				if bs, err := json.Marshal(m); err == nil {
+					msg += string(bs)
+					continue
+				}
+			}
+			msg += fmt.Sprintf("%+v", m)
+		}
+		*(g.Status) = msg
+	}()
+}
+
 // GoStrageyHandler ...
 type GoStrageyHandler interface {
 	AddExchange(...api.Exchange)
@@ -59,6 +85,7 @@ type GoStrageyHandler interface {
 	AddMail(mail notice.MailHandler)
 	AddDing(ding notice.DingHandler)
 	AddLogger(logger *model.Logger)
+	AddLogStatus(s *string)
 
 	Init(map[string]string) error
 	Run(map[string]string) error
@@ -73,12 +100,23 @@ type GoPlugin struct {
 	Mail      notice.MailHandler          // 邮件发送
 	Draw      draw.DrawHandler            // 图标绘制
 	Ding      notice.DingHandler          // dingding
+	LogStatus *string                     // status
 	strageys  map[string]GoStrageyHandler // 策略集合
 }
 
 // SetStragey ...
 func (p *GoPlugin) SetStragey(name string) {
 	p.name = name
+}
+
+// AddLogStatus ...
+func (p *GoPlugin) AddLogStatus(s *string) {
+	p.LogStatus = s
+}
+
+// AddLog ...
+func (p *GoPlugin) AddLog(l *model.Logger) {
+	p.Logger = l
 }
 
 // GetStragey ...
@@ -113,6 +151,7 @@ func (p *GoPlugin) AddStragey(v GoStrageyHandler) {
 	v.AddMail(p.Mail)
 	v.AddDraw(p.Draw)
 	v.AddLogger(p.Logger)
+	v.AddLogStatus(p.LogStatus)
 	v.AddDing(p.Ding)
 }
 

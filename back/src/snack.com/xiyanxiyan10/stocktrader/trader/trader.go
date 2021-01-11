@@ -189,7 +189,8 @@ func initialize(id int64) (trader Global, err error) {
 	goExtend.AddMail(trader.mail)
 	goExtend.AddDraw(trader.draw)
 	goExtend.AddDing(trader.ding)
-	goExtend.Logger = &trader.Logger
+	goExtend.AddLogStatus(&trader.statusLog)
+	goExtend.AddLog(&trader.Logger)
 
 	for i, e := range es {
 		opt := constant.Option{

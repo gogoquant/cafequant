@@ -422,7 +422,6 @@ func (e *FutureExchange) GetOrders() ([]constant.Order, error) {
 func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
 	resOrders := make([]constant.Order, 0)
 	for _, order := range orders {
-		//fmt.Printf("order otype %d\n", order.OType)
 		resOrder := constant.Order{
 			Id:         order.OrderID2,
 			Price:      order.Price,
