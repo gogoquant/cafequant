@@ -30,8 +30,8 @@ class Chart extends Component {
   componentWillReceiveProps(nextProps) {
     const { client } = nextProps;
     const newSymbol = [];
-    const periodNums = [60, 300, 900, 1800, 3600, 28800, 86400, 604800, 2592000, 31536000];
-    const periodStrs = ['M', '5M', '15M', '30M', 'H', '8H', 'D', 'W', 'MONTH', 'YEAR'];
+    const periodNums = [60, 300, 900, 1800, 3600, 14400, 28800, 86400, 604800, 2592000, 31536000];
+    const periodStrs = ['M', '5M', '15M', '30M', 'H', '4H', '8H', 'D', 'W', 'MONTH', 'YEAR'];
 
     if (this.symbol[0] === '' && client.symbols.length > 0) {
       newSymbol.push(client.symbols[0].value);
