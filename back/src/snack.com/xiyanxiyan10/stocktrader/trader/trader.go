@@ -249,7 +249,7 @@ func err2String(err interface{}) string {
 
 // runCheck ...
 func runCheck(id int64, script string) (err error) {
-	if script != constant.ScriptPython {
+	if script != constant.ScriptGo {
 		return
 	}
 	for i := range Executor {
@@ -260,7 +260,7 @@ func runCheck(id int64, script string) (err error) {
 		if t.Status < 1 {
 			continue
 		}
-		if t.scriptType == constant.ScriptPython {
+		if t.scriptType == constant.ScriptGo {
 			err = errors.New("python scripts only run one")
 			return
 		}
@@ -280,7 +280,7 @@ func run(id int64) (err error) {
 	}
 
 	switch trader.scriptType {
-	case constant.ScriptPython:
+	case constant.ScriptGo:
 		return runGo(trader, id)
 	case constant.ScriptJs:
 	default:
@@ -347,7 +347,7 @@ func stop(id int64) (err error) {
 	}
 	trader := Executor[id]
 	switch trader.scriptType {
-	case constant.ScriptPython:
+	case constant.ScriptGo:
 		return stopGo(id)
 	case constant.ScriptJs:
 	default:

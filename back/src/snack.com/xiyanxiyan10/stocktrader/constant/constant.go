@@ -85,7 +85,7 @@ const (
 // some variables
 var (
 	ExchangeTypes = []string{HuoBiDm, FutureBack, HuoBi, SpotBack, SZ}
-	ScriptTypes   = []string{ScriptJs, ScriptPython}
+	ScriptTypes   = []string{ScriptJs, ScriptGo}
 )
 
 // future userInfo string
@@ -121,6 +121,6 @@ const (
 const (
 	// ScriptJs ...
 	ScriptJs = "js"
-	// ScriptPython ... @todo change as go
-	ScriptPython = "go"
+	// ScriptGo ... @todo change as go
+	ScriptGo = "go"
 )
