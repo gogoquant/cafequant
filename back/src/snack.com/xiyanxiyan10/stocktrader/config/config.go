@@ -3,21 +3,18 @@ package config
 import (
 	"github.com/go-ini/ini"
 	"log"
-	"os"
 	"strings"
 )
 
 var confMap = make(map[string]string)
 
 // Init ...
-func init() {
-	configFile := os.Getenv("QUANT_CONFIG")
+func Init(path string) error {
+	configFile := path
 	conf, err := ini.InsensitiveLoad(configFile)
 	if err != nil {
-		conf, err = ini.InsensitiveLoad("/tmp/config.ini")
-		if err != nil {
-			log.Panicln("Load config.ini error:", err)
-		}
+		log.Printf("Load %s error: %s\n", path, err.Error())
+		return err
 	}
 	keys := conf.Section("").KeyStrings()
 	for _, k := range keys {
@@ -26,6 +23,7 @@ func init() {
 	if confMap["logstimezone"] == "" {
 		confMap["logstimezone"] = "Local"
 	}
+	return nil
 }
 
 // String ...

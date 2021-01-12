@@ -21,7 +21,7 @@ var (
 )
 
 // Init ...
-func init() {
+func Init() error {
 	io.Register((*User)(nil), "User", "json")
 	io.Register((*Exchange)(nil), "Exchange", "json")
 	io.Register((*Algorithm)(nil), "Algorithm", "json")
@@ -39,6 +39,7 @@ func init() {
 		DB, err = gorm.Open(dbType, dbURL)
 		if err != nil {
 			log.Panicln("Connect to database error:", err)
+			return err
 		}
 	}
 	DB.AutoMigrate(&User{}, &Exchange{}, &Algorithm{}, &TraderExchange{}, &Trader{}, &Log{})
@@ -52,10 +53,12 @@ func init() {
 		}
 		if err := DB.Create(&admin).Error; err != nil {
 			log.Fatalln("Create admin error:", err)
+			return err
 		}
 	}
 	DB.LogMode(false)
 	go ping()
+	return nil
 }
 
 func ping() {

@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"snack.com/xiyanxiyan10/stocktrader/api"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
@@ -85,6 +87,14 @@ func putOHLC(exchange api.Exchange, period string) error {
 
 // main ...
 func main() {
+	if len(os.Args) < 2 {
+		fmt.Println("命令行的参数不合法:", len(os.Args))
+		return
+	}
+	if err := config.Init(os.Args[1]); err != nil {
+		fmt.Printf("config init error is %s\n", err.Error())
+		return
+	}
 	var logger model.Logger
 	var opt constant.Option
 	var constract = "quarter"
