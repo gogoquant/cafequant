@@ -10,8 +10,7 @@ var confMap = make(map[string]string)
 
 // Init ...
 func Init(path string) error {
-	configFile := path
-	conf, err := ini.InsensitiveLoad(configFile)
+	conf, err := ini.InsensitiveLoad(path)
 	if err != nil {
 		log.Printf("Load %s error: %s\n", path, err.Error())
 		return err
