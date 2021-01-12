@@ -1,0 +1,28 @@
+{
+  "dev": {
+    "gateway": "http://cloud-api.changhong.io/portal/v1",
+    "redirect_uri": "http://portal.changhong.io",
+    "cookie_name_prefix": "portal_",
+    "basename": "",
+    "backend_proxy": "/server",
+    "service_code": "mce",
+    "service_id": "20364d83-3b1a-439b-94ed-dbd857b1c19b",
+    "schema": "http",
+    "noDeleteNamespaces": ["default", "kube-system", "prometheus", "ingress-nginx", "cert-manager"]
+  },
+  "fat": {
+    "gateway": "http://cloud-api.changhong.io/portal/v1",
+    "redirect_uri": "http://cloud.changhong.io",
+    "cookie_name_prefix": "portal_",
+    "basename": "/console/mce",
+    "backend_proxy": "/server"
+  },
+  "prod": {
+    "gateway": "http://cloud-api.changhong.com/portal/v1",
+    "redirect_uri": "http://cloud.changhong.com",
+    "cookie_name_prefix": "cloud_",
+    "basename": "/console/mce",
+    "backend_proxy": "/server"
+  },
+  "active": "dev"
+}

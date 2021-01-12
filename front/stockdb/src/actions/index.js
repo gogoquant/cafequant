@@ -1,5 +1,6 @@
 import * as actions from '../constants/actions';
-import StockDB from 'stockdb';
+// import StockDB from 'stockdb';
+import { Client } from 'hprose-js';
 
 // resetError
 export function resetError() {
@@ -28,9 +29,21 @@ export function getStats() {
       dispatch(logout());
       return;
     }
-
-    const client = StockDB.New(server, window.atob(token));
-
+    // const client = StockDB.New(server, window.atob(token));
+    const client = Client.create(`${server}`, [
+      'PutOHLC',
+      'PutOHLCs',
+      'PutOrder',
+      'PutOrders',
+      'GetStats',
+      'GetMarkets',
+      'GetSymbols',
+      'GetTimeRange',
+      'GetPeriodRange',
+      'GetOHLCs',
+      'GetDepth',
+  ]);
+  client.setHeader('Authorization', `Basic ${token}`);
     client.GetStats((resp) => {
       if (resp.Success) {
         dispatch(getStatsSuccess(resp.Data));
@@ -63,7 +76,21 @@ export function getSymbols() {
       return;
     }
 
-    const client = StockDB.New(server, window.atob(token));
+    // const client = StockDB.New(server, window.atob(token));
+    const client = Client.create(`${server}`, [
+      'PutOHLC',
+      'PutOHLCs',
+      'PutOrder',
+      'PutOrders',
+      'GetStats',
+      'GetMarkets',
+      'GetSymbols',
+      'GetTimeRange',
+      'GetPeriodRange',
+      'GetOHLCs',
+      'GetDepth',
+  ]);
+  client.setHeader('Authorization', `Basic ${token}`);
 
     client.GetMarkets((resp) => {
       if (resp.Success) {
@@ -112,7 +139,21 @@ function getTimeRange(opt) {
       return;
     }
 
-    const client = StockDB.New(server, window.atob(token));
+    // const client = StockDB.New(server, window.atob(token));
+    const client = Client.create(`${server}`, [
+      'PutOHLC',
+      'PutOHLCs',
+      'PutOrder',
+      'PutOrders',
+      'GetStats',
+      'GetMarkets',
+      'GetSymbols',
+      'GetTimeRange',
+      'GetPeriodRange',
+      'GetOHLCs',
+      'GetDepth',
+  ]);
+  client.setHeader('Authorization', `Basic ${token}`);
 
     client.GetTimeRange(opt, (resp) => {
       if (resp.Success) {
@@ -146,7 +187,21 @@ export function getPeriodRange(symbol) {
       return;
     }
 
-    const client = StockDB.New(server, window.atob(token));
+    // const client = StockDB.New(server, window.atob(token));
+    const client = Client.create(`${server}`, [
+      'PutOHLC',
+      'PutOHLCs',
+      'PutOrder',
+      'PutOrders',
+      'GetStats',
+      'GetMarkets',
+      'GetSymbols',
+      'GetTimeRange',
+      'GetPeriodRange',
+      'GetOHLCs',
+      'GetDepth',
+  ]);
+  client.setHeader('Authorization', `Basic ${token}`);
     const opt = { Market: symbol[0], Symbol: symbol[1] };
 
     client.GetPeriodRange(opt, (resp) => {
@@ -181,7 +236,21 @@ export function getOHLCs(symbol, period, beginTime, endTime) {
       return;
     }
 
-    const client = StockDB.New(server, window.atob(token));
+    // const client = StockDB.New(server, window.atob(token));
+    const client = Client.create(`${server}`, [
+      'PutOHLC',
+      'PutOHLCs',
+      'PutOrder',
+      'PutOrders',
+      'GetStats',
+      'GetMarkets',
+      'GetSymbols',
+      'GetTimeRange',
+      'GetPeriodRange',
+      'GetOHLCs',
+      'GetDepth',
+  ]);
+  client.setHeader('Authorization', `Basic ${token}`);
     const opt = { Market: symbol[0], Symbol: symbol[1], Period: period };
 
     if (beginTime && beginTime > 0) {
