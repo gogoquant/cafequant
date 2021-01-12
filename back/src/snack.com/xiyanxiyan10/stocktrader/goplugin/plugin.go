@@ -169,8 +169,8 @@ func (p *GoPlugin) LoadStragey() error {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
 		return err
 	}
-	s, err := handler.Lookup(fmt.Sprintf(constant.GoHandler, name))
-	fmt.Printf("lookup hanlder %s :%v\n", fmt.Sprintf(constant.GoHandler, name), s)
+	s, err := handler.Lookup(constant.GoHandler)
+	fmt.Printf("lookup hanlder %s :%v\n", constant.GoHandler, s)
 	if err != nil {
 		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:%v", err)
 		return err

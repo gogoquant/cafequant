@@ -17,8 +17,8 @@ type LoaderStragey struct {
 	Status bool
 }
 
-// NewLoaderHandler ...
-func NewLoaderHandler() (goplugin.GoStrageyHandler, error) {
+// NewHandler ...
+func NewHandler() (goplugin.GoStrageyHandler, error) {
 	loader := new(LoaderStragey)
 	return loader, nil
 }
@@ -108,7 +108,7 @@ func main() {
 		return
 	}
 
-	loader, err := NewLoaderHandler()
+	loader, err := NewHandler()
 	if err != nil {
 		fmt.Printf("create loader fail:%s\n", err.Error())
 		return
