@@ -1,35 +1,38 @@
- 
+// This is an example algorithm
+
+// scripts to loader the data from gateway
 function main() {
   var Constract = 'quarter';
   var Symbol = 'BTC/USD';
-  var Period = 'M30';
+  var Period = 'M5';
   var IO = 'online';
+  var IVL = 5;
+  var SIZE = 5;
+  
   var records;
+  var record;
   var i;
-  var elem;
-  var timestamp;
-  var vec = [];
- 
+  
   E.SetIO(IO);
-  E.SetContractType(Constract);
+  E.SetContractType(Constract);                                                                                              
   E.SetStockType(Symbol);
   E.Ready();
- 
+  
   while (true) {
-    records = E.GetRecords(Period, '');
+    records = E.GetRecords(Period, '', SIZE);
     if(records === null){
-      G.Sleep(5 * 1000); 
-        continue;
+      G.Sleep(IVL * 1000 * 60); 
+      continue;
+    } 
+    records = records[0]
+    G.Log(records);
+    //var records = records.parseJSON(); 
+    for (var i in records) { 
+        record = records[i] 
+        //G.Log(i, "record is :", records[i]);
+        //{"Time":1610433000,"Open":37863.48,"High":38000,"Low":37854.61,"Close":37891.36,"Volume":497520}
+        E.BackPutOHLC(record.Time, record.Open, record.High, record.Low, record.Close, record.Volume, "unknown", Period)  
     }
-    //records = JSON.parse(records)
-    for (i in records) {
-      var v = {}
-      elem = records[i]
-      timestamp = new Date(elem.Time*1000).toLocaleString();
-      v.Timestamp = timestamp
-      vec.push(v)
-    }
-    G.Log(vec);      
-    G.Sleep(5 * 1000);                                                                                                                                                       
+    G.Sleep(IVL * 1000 * 60); 
   }
-}
+} 

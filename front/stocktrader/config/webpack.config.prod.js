@@ -363,7 +363,7 @@ module.exports = {
     new InterpolateHtmlPlugin(env.raw),
     // Generates an `index.html` file with the <script> injected.
     new HtmlWebpackPlugin({
-      title: '容器引擎 - Matrix Cloud',
+      title: '量化交易引擎 - Quant Trader',
       template: paths.appHtml, //文件模板，就是打包前的html文件
       inject: true, //可以对head和body做修改
       //设置该页面引用的文件，只有符合条件的才会被引用
