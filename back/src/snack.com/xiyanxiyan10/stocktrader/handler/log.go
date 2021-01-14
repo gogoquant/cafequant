@@ -70,7 +70,11 @@ func (logger) Status(trader model.Trader, ctx rpc.Context) (resp response) {
 		return
 	}
 	msg := traderApi.GetTraderLogStatus(trader.ID)
-	resp.Data = msg
+	resp.Data = struct {
+		Data string
+	}{
+		Data: msg,
+	}
 	resp.Success = true
 	return
 }
