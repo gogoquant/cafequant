@@ -64,7 +64,6 @@ class AlgorithmEdit extends Component {
 
     dispatch(ScriptTypes());
     if (!name) {
-      console.log('algorithm cache is:', algorithm.cache);
       this.setState({
         name: algorithm.cache.name,
         description: algorithm.cache.description,
