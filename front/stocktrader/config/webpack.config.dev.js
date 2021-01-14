@@ -2,6 +2,7 @@ const autoprefixer = require('autoprefixer');
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 const InterpolateHtmlPlugin = require('react-dev-utils/InterpolateHtmlPlugin');
@@ -11,6 +12,8 @@ const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin');
 const getClientEnvironment = require('./env');
 const paths = require('./paths');
 const theme = require('./theme.json');
+const APP_DIR = path.resolve(__dirname, './src');
+const MONACO_DIR = path.resolve(__dirname, './node_modules/monaco-editor');
 
 // Webpack uses `publicPath` to determine where the app is being served from.
 // In development, we always serve from the root. This makes config easier.
@@ -311,6 +314,11 @@ module.exports = {
               },
             ],
           },
+          {
+            test: /\.css$/,
+            include: MONACO_DIR,
+            use: ['style-loader', 'css-loader'],
+          },
           // "file" loader makes sure those assets get served by WebpackDevServer.
           // When you `import` an asset, you get its (virtual) filename.
           // In production, they would get copied to the `build` folder.
@@ -328,7 +336,7 @@ module.exports = {
             },
           },
         ],
-      },
+      }
       // ** STOP ** Are you adding a new loader?
       // Make sure to add the new loader(s) before the "file" loader.
     ],
@@ -348,12 +356,19 @@ module.exports = {
       favicon: 'public/favicon.ico',
       hash: true, //版本号，打出来的html中对css和js的引用自带版本号
     }),
+    // new CopyWebpackPlugin({
+    //   patterns: [{ from: "node_modules/monaco-editor/min/vs", to: "vs" }]
+    // }),
     // new HtmlWebpackPlugin({
     //   inject: true,
     //   template: paths.appHtml
     // }),
     new ExtractTextPlugin({
       filename: cssFilename,
+    }),
+    new MonacoWebpackPlugin({
+      // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+      languages: ['javascript']
     }),
     // Add module names to factory functions so they appear in browser profiler.
     new webpack.NamedModulesPlugin(),
