@@ -26,6 +26,7 @@ class Log extends React.Component {
       filters: {}
     };
     this.reload = this.reload.bind(this);
+    this.loadStatus = this.loadStatus.bind(this);
     this.handleSync = this.handleSync.bind(this);
     this.handleDiagram = this.handleDiagram.bind(this);
     this.handleTableChange = this.handleTableChange.bind(this);
@@ -75,8 +76,12 @@ class Log extends React.Component {
     const { pagination } = this.state;
     const { trader, dispatch } = this.props;
 
-    dispatch(LogStatus(trader.cache));
     dispatch(LogList(trader.cache, pagination, this.filters));
+  }
+
+  loadStatus() {
+    const { trader, dispatch } = this.props;
+    dispatch(LogStatus(trader.cache));
   }
 
   handleTableChange(newPagination, filters) {
@@ -102,7 +107,6 @@ class Log extends React.Component {
     if (sync === this.state.sync) {
       return;
     }
-    console.log(sync);
     if (sync === true) {
       this.state.pagination.current = 0;
       this.syncTimer = setInterval(() => this.reload(), this.state.syncTime);
@@ -159,7 +163,7 @@ class Log extends React.Component {
         dataIndex: 'message'
       }
     ];
-
+    console.log(log);
     return (
       <div>
         <div className="table-operations">
@@ -178,8 +182,8 @@ class Log extends React.Component {
             onChange={this.handleSync}
           />
         </div>
-        <Collapse onChange={this.reload}>
-          <Panel header="Status Info" key="1">
+        <Collapse onChange={this.loadStatus}>
+          <Panel header="status" key="1" extra={log.data}>
             <p>{log.data}</p>
           </Panel>
         </Collapse>
