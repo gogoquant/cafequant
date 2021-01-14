@@ -2,7 +2,6 @@ package trader
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"reflect"
@@ -247,34 +246,9 @@ func err2String(err interface{}) string {
 	}
 }
 
-// runCheck ...
-func runCheck(id int64, script string) (err error) {
-	if script != constant.ScriptGo {
-		return
-	}
-	for i := range Executor {
-		t := Executor[i]
-		if t != nil {
-			continue
-		}
-		if t.Status < 1 {
-			continue
-		}
-		if t.scriptType == constant.ScriptGo {
-			err = errors.New("python scripts only run one")
-			return
-		}
-	}
-	return
-}
-
 // run ...
 func run(id int64) (err error) {
 	trader, err := initialize(id)
-	if err != nil {
-		return
-	}
-	err = runCheck(id, trader.scriptType)
 	if err != nil {
 		return
 	}
@@ -283,7 +257,6 @@ func run(id int64) (err error) {
 	case constant.ScriptGo:
 		return runGo(trader, id)
 	case constant.ScriptJs:
-	default:
 		return runJs(trader, id)
 
 	}
@@ -294,11 +267,11 @@ func run(id int64) (err error) {
 func runJs(trader Global, id int64) (err error) {
 	err = initializeJs(&trader)
 	if err != nil {
-
 		return
 	}
 	go func() {
 		defer func() {
+			fmt.Printf("exit trader js\n")
 			if err := recover(); err != nil && err != errHalt {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
@@ -345,12 +318,13 @@ func stop(id int64) (err error) {
 	if Executor[id].Pending == 1 {
 		return fmt.Errorf("pending Trader")
 	}
+	Executor[id].Pending = 1
 	trader := Executor[id]
+	fmt.Printf("stop trader %s\n", trader.scriptType)
 	switch trader.scriptType {
 	case constant.ScriptGo:
 		return stopGo(id)
 	case constant.ScriptJs:
-	default:
 		return stopJs(id)
 	}
 	return
@@ -358,8 +332,9 @@ func stop(id int64) (err error) {
 
 // stop ...
 func stopJs(id int64) (err error) {
+	fmt.Printf("send exit msg to trader js start\n")
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
-	Executor[id].Pending = 1
+	fmt.Printf("send exit msg to trader js stop\n")
 	return
 }
 
@@ -369,7 +344,6 @@ func stopGo(id int64) (err error) {
 	if err != nil {
 		return err
 	}
-	Executor[id].Pending = 1
 	return
 }
 

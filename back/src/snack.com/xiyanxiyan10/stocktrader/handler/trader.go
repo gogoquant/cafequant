@@ -111,6 +111,11 @@ func (runner) Delete(req model.Trader, ctx rpc.Context) (resp response) {
 		resp.Message = fmt.Sprint(err)
 		return
 	}
+	if trader.GetTraderStatus(req.ID) != 0 {
+		resp.Message = "please stop trader before delete it"
+		resp.Success = false
+		return
+	}
 	defer db.Close()
 	db = db.Begin()
 
