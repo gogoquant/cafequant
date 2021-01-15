@@ -79,7 +79,7 @@ func (e *FutureExchange) ValidBuy() error {
 	if dir == constant.TradeTypeShortClose {
 		return nil
 	}
-	return errors.New("错误buy交易方向: " + e.GetDirection())
+	return errors.New("buy direction error:" + e.GetDirection())
 }
 
 // ValidSell ...
@@ -91,7 +91,7 @@ func (e *FutureExchange) ValidSell() error {
 	if dir == constant.TradeTypeLongClose {
 		return nil
 	}
-	return errors.New("错误sell交易方向:" + e.GetDirection())
+	return errors.New("sell direction error:" + e.GetDirection())
 }
 
 // Ready ...
@@ -162,7 +162,8 @@ func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			"GetDepth() error, the error number is stockType")
 		return nil, fmt.Errorf("GetDepth() error, the error number is stockType")
 	}
 	/*
@@ -177,7 +178,8 @@ func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	*/
 	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), constant.DepthSize)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetDepth() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			"GetDepth() error, the error number is ", err.Error())
 		return nil, fmt.Errorf("GetDepth() error, the error number is %s", err.Error())
 	}
 	resDepth := e.depthA2U(depth)
