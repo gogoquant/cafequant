@@ -23,7 +23,7 @@ func sendMail(msg, target, Server string, Port int, Username, Password string, S
 	m.SetBody("text/html", msg)  // 正文
 	log.Debugf("smtp config : host=%s,port=%d", Server, Port)
 	d := gomail.NewDialer(Server, Port, Username, Password)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: !SSL}
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: !SSL, ServerName: Server}
 
 	if err := d.DialAndSend(m); err != nil {
 		log.Error(err)
