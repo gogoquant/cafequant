@@ -23,7 +23,8 @@ function log(state = LOG_INIT, action) {
       return assign({}, state, {
         loading: false,
         total: action.total,
-        list: action.list
+        list: action.list,
+        data: state.data
       });
     case actions.LOG_LIST_FAILURE:
       return assign({}, state, {
@@ -37,6 +38,8 @@ function log(state = LOG_INIT, action) {
     case actions.LOG_STATUS_SUCCESS:
       return assign({}, state, {
         loading: false,
+        total: state.total,
+        list: state.list,
         data: action.data
       });
     case actions.LOG_STATUS_FAILURE:
