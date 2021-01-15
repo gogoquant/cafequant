@@ -176,13 +176,13 @@ func (p *GoPlugin) LoadStragey() error {
 		return err
 	}
 	if s == nil {
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail interface is nil")
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:interface is nil")
 		return fmt.Errorf("LoadStragey() fail interface is nil")
 	}
 	newHandler, ok := s.(func() (GoStrageyHandler, error))
 	if !ok {
 		t := reflect.TypeOf(s)
-		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail convert handler type:"+t.Name())
+		p.Logger.Log(constant.ERROR, "", 0.0, 0.0, "LoadStragey() fail:convert handler type:"+t.Name())
 		return fmt.Errorf("LoadStragey() fail convert handler")
 	}
 	strageyHandler, err := newHandler()
