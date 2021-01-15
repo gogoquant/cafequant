@@ -22,7 +22,6 @@ function algorithm(state = ALGORITHM_INIT, action) {
         loading: true,
       });
     case actions.SCRIPT_TYPES_SUCCESS:
-      console.log('success get types data:', action);
       return assign({}, state, {
         loading: false,
         types: action.types,
