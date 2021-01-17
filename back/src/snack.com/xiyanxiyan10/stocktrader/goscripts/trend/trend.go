@@ -45,7 +45,6 @@ func (e *TrendStragey) Init(v map[string]string) error {
 // Run ...
 func (e *TrendStragey) Run(map[string]string) error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
-	//exchange := e.Exchanges[0]
 	for e.Status {
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
@@ -118,5 +117,43 @@ func (e *TrendStragey) Trend() error {
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
+	return nil
+}
+
+// put order and watch this order
+func (e *TrendStragey) trendAction(low, high, amount float64, dir int) error {
+	exchange := e.Exchanges[0]
+	direction := "buy"
+	closedirection := "closebuy"
+	openFunc := exchange.Buy
+	closeFunc := exchange.Sell
+	openPrice := high
+	if dir == 1 {
+		direction = "sell"
+		closedirection = "closesell"
+		openFunc = exchange.Sell
+		closeFunc = exchange.Buy
+		openPrice = low
+	}
+	exchange.SetDirection(direction)
+	_, err := openFunc(fmt.Sprintf("%f", openPrice), fmt.Sprintf("%f", amount), "open order")
+	if err != nil {
+		return fmt.Errorf("open order fail:%s", err.Error())
+	}
+	exchange.Sleep(time.Minute * 1)
+	positions, err := exchange.GetPosition()
+	if err != nil {
+		return fmt.Errorf("get position  fail:%s", err.Error())
+	}
+	if len(positions) == 0 {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Try to close position and order")
+		// Todo close position here
+	}
+	exchange.SetDirection(closedirection)
+	_, err = closeFunc(fmt.Sprintf("%f", openPrice), fmt.Sprintf("%f", amount), "open order")
+	if err != nil {
+		return fmt.Errorf("open order fail:%s", err.Error())
+	}
+	//exchange.Buy()
 	return nil
 }
