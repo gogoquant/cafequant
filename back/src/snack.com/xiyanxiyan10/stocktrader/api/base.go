@@ -295,6 +295,26 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLC error, the error number is %s\n", ohlc.Message))
+		return fmt.Errorf("PutOHLC error, the error number is %s", ohlc.Message)
+	}
+	return nil
+}
+
+// BackPutOHLCs ...
+func (e *BaseExchange) BackPutOHLCs(datum dbtypes.OHLC, period string) error {
+	defer func() {
+		if r := recover(); r != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s", r))
+		}
+	}()
+	var opt dbtypes.Option
+	opt.Market = e.option.Type
+	opt.Symbol = e.GetDbSymbol()
+	opt.Period = e.recordsPeriodDbMap[period]
+	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
+	ohlc := client.PutOHLC(datum, opt)
+	if !ohlc.Success {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
 		return fmt.Errorf("PutOHLCs error, the error number is %s", ohlc.Message)
 	}
 	return nil

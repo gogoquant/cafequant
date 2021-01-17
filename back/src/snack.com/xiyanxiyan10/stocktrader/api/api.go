@@ -81,6 +81,8 @@ type Exchange interface {
 	GetBackTime() (int64, int64, string)
 	//推送数据到数据仓库
 	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error
+	//推送数据 [] 到数据仓库
+	BackPutOHLCs(datum dbtypes.OHLC, period string) error
 	//获取货币种类
 	BackGetSymbols() ([]string, error)
 	//获取交易所种类
