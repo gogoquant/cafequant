@@ -61,7 +61,10 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 
 // BaseExchange ...
 type BaseExchange struct {
-	BaseExchangeCaches         // cache for exchange
+	BaseExchangeCaches // cache for exchange
+	periodVal          string
+	period             string
+	size               int
 	id                 int     // id of the exchange
 	ioMode             string  // io mode for exchange
 	back               bool    // back or online
@@ -89,7 +92,6 @@ type BaseExchange struct {
 
 	start  int64
 	end    int64
-	period string
 	host   string
 	logger model.Logger
 	option constant.Option
@@ -101,6 +103,27 @@ func stockPair2Vec(pair string) []string {
 		return []string{"", ""}
 	}
 	return res
+}
+
+// Set eriod
+func (e *BaseExchange) SetPeriod(period string) {
+	e.periodVal = period
+}
+
+// Get period
+func (e *BaseExchange) GetPeriod() string {
+	return e.periodVal
+}
+
+// Set size
+func (e *BaseExchange) SetSize(size int) {
+	e.size = size
+
+}
+
+// Get Size
+func (e *BaseExchange) GetSize() int {
+	return e.size
 }
 
 // SetBackCommission 设置回测手续费

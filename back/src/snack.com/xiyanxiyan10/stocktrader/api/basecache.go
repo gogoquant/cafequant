@@ -16,12 +16,15 @@ type BaseExchangeCache struct {
 
 // BaseExchangeCaches ...
 type BaseExchangeCaches struct {
-	mutex  sync.Mutex
-	depth  map[string]BaseExchangeCache
-	order  map[string]BaseExchangeCache
-	trader map[string]BaseExchangeCache
-	kline  map[string]BaseExchangeCache
-	ticker map[string]BaseExchangeCache
+	mutex    sync.Mutex
+	depth    map[string]BaseExchangeCache
+	position map[string]BaseExchangeCache
+	account  map[string]BaseExchangeCache
+	record   map[string]BaseExchangeCache
+	order    map[string]BaseExchangeCache
+	trader   map[string]BaseExchangeCache
+	kline    map[string]BaseExchangeCache
+	ticker   map[string]BaseExchangeCache
 	//caches map[string]BaseExchangeCache
 }
 
@@ -34,20 +37,25 @@ func (e *BaseExchangeCaches) Subscribe() interface{} {
 func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchangeCache {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
-	if key == constant.CacheDepth {
-		return e.depth[stockSymbol]
-	}
 
 	if key == constant.CacheTicker {
 		return e.ticker[stockSymbol]
 	}
 
-	if key == constant.CacheTrader {
-		return e.trader[stockSymbol]
+	if key == constant.CachePosition {
+		return e.position[stockSymbol]
 	}
 
-	if key == constant.CacheKLine {
-		return e.kline[stockSymbol]
+	if key == constant.CacheAccount {
+		return e.account[""]
+	}
+
+	if key == constant.CacheRecord {
+		return e.record[stockSymbol]
+	}
+
+	if key == constant.CacheOrder {
+		return e.order[stockSymbol]
 	}
 	return BaseExchangeCache{}
 }
@@ -62,19 +70,24 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 	item.TimeStamp = time.Now()
 	item.Mark = mark
 
-	if key == constant.CacheDepth {
-		e.depth[stockSymbol] = item
-	}
-
 	if key == constant.CacheTicker {
 		e.ticker[stockSymbol] = item
 	}
 
-	if key == constant.CacheTrader {
-		e.trader[stockSymbol] = item
+	if key == constant.CachePosition {
+
+		e.position[stockSymbol] = item
 	}
 
-	if key == constant.CacheKLine {
-		e.kline[stockSymbol] = item
+	if key == constant.CacheAccount {
+		e.account[""] = item
+	}
+
+	if key == constant.CacheRecord {
+		e.record[stockSymbol] = item
+	}
+
+	if key == constant.CacheOrder {
+		e.order[stockSymbol] = item
 	}
 }

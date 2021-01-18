@@ -21,6 +21,9 @@ const (
 
 	// CachePosition ...
 	CachePosition = "position"
+
+	// CacheAccount ...
+	CacheAccount = "account"
 )
 
 const (
@@ -123,4 +126,12 @@ const (
 	ScriptJs = "js"
 	// ScriptGo ... @todo change as go
 	ScriptGo = "go"
+)
+
+const (
+	ActionDepth    = "depth"
+	ActionAccount  = "account"
+	ActionTicker   = "ticker"
+	ActionRecord   = "record"
+	ActionPosition = "position"
 )

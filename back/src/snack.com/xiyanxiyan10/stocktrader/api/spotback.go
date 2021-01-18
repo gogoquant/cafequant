@@ -72,8 +72,13 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 	return sim
 }
 
-// Ready ...
-func (e *ExchangeBack) Ready() error {
+// Stop ...
+func (e *ExchangeBack) Stop() error {
+	return nil
+}
+
+// Start ...
+func (e *ExchangeBack) Start() error {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())
@@ -468,9 +473,9 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeBack) GetRecords(period, maStr string) ([]constant.Record, error) {
-	var size = constant.RecordSize
-
+func (e *ExchangeBack) GetRecords() ([]constant.Record, error) {
+	period := e.GetPeriod()
+	size := e.GetSize()
 	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")

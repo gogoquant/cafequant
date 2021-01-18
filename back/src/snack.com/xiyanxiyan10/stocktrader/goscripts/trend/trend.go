@@ -109,7 +109,7 @@ func main() {
 }
 
 // Trend ...
-func (e *TrendStragey) Trend() error {
+func (e *TrendStragey) Processs() error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
 	exchange.GetRecords("M5", "", 3)
@@ -120,20 +120,22 @@ func (e *TrendStragey) Trend() error {
 	return nil
 }
 
-// put order and watch this order
-func (e *TrendStragey) trendAction(low, high, amount float64, dir int) error {
+// trendAction put order and watch this order
+func (e *TrendStragey) Action(low, high, amount float64, dir int) error {
 	exchange := e.Exchanges[0]
 	direction := "buy"
 	closedirection := "closebuy"
 	openFunc := exchange.Buy
 	closeFunc := exchange.Sell
 	openPrice := high
+	closePrice := low
 	if dir == 1 {
 		direction = "sell"
 		closedirection = "closesell"
 		openFunc = exchange.Sell
 		closeFunc = exchange.Buy
 		openPrice = low
+		closePrice = high
 	}
 	exchange.SetDirection(direction)
 	_, err := openFunc(fmt.Sprintf("%f", openPrice), fmt.Sprintf("%f", amount), "open order")
@@ -150,7 +152,7 @@ func (e *TrendStragey) trendAction(low, high, amount float64, dir int) error {
 		// Todo close position here
 	}
 	exchange.SetDirection(closedirection)
-	_, err = closeFunc(fmt.Sprintf("%f", openPrice), fmt.Sprintf("%f", amount), "open order")
+	_, err = closeFunc(fmt.Sprintf("%f", closePrice), fmt.Sprintf("%f", amount), "open order")
 	if err != nil {
 		return fmt.Errorf("open order fail:%s", err.Error())
 	}

@@ -176,8 +176,13 @@ func NewSZSpotExchange(opt constant.Option) *SZExchange {
 	return &spotExchange
 }
 
-// Ready ...
-func (e *SZExchange) Ready() error {
+// Stop ...
+func (e *SZExchange) Stop() error {
+	return nil
+}
+
+// Start ...
+func (e *SZExchange) Start() error {
 	return nil
 }
 
@@ -258,25 +263,17 @@ func (e *SZExchange) GetTicker() (*constant.Ticker, error) {
 }
 
 // GetRecords get candlestick data
-func (e *SZExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
+func (e *SZExchange) GetRecords() ([]constant.Record, error) {
 	exchangeStockType := e.GetStockType()
 	var period int64 = -1
+	periodStr := e.GetPeriod()
+	size := e.GetSize()
 	period, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
 		return nil, fmt.Errorf("GetRecords() error, the error number is period:%s", periodStr)
 	}
-	var ma int
-	if maStr != "" {
-		tmp, err := strconv.Atoi(maStr)
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-			return nil, fmt.Errorf("GetRecords() error, the error number is conver:%s", err.Error())
-		}
-		ma = tmp
-	} else {
-		ma = 5
-	}
+	ma := 15
 	res, err := getRecords(exchangeStockType, int(period), ma, size)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is%s\n", err.Error())

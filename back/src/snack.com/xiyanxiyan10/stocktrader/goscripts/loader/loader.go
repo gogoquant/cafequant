@@ -8,7 +8,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
@@ -35,7 +34,7 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.SetIO(io)
 	exchange.SetContractType(constract)
 	exchange.SetStockType(symbol)
-	exchange.Ready()
+	exchange.Start()
 
 	e.Period = period
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
@@ -68,7 +67,7 @@ func (e *LoaderStragey) Exit(map[string]string) error {
 }
 
 func putOHLC(exchange api.Exchange, period string) error {
-	records, err := exchange.GetRecords(period, "", 3)
+	records, err := exchange.GetRecords()
 	if err != nil {
 		fmt.Printf("get records fail:%v", err)
 		return err

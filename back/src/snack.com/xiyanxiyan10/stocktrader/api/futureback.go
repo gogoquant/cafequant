@@ -134,8 +134,13 @@ func isContain(items []string, item string) bool {
 	return false
 }
 
-// Ready ...
-func (e *ExchangeFutureBack) Ready() error {
+// Stop ...
+func (e *ExchangeFutureBack) Stop() error {
+	return nil
+}
+
+// Start ...
+func (e *ExchangeFutureBack) Start() error {
 	var account constant.Account
 	e.RWMutex = new(sync.RWMutex)
 	e.idGen = util.NewIDGen(e.GetExchangeName())
@@ -671,8 +676,9 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 }
 
 // GetRecords get candlestick data
-func (e *ExchangeFutureBack) GetRecords(period, maStr string) ([]constant.Record, error) {
-	var size = constant.RecordSize
+func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
+	var size = e.GetSize()
+	period := e.GetPeriod()
 
 	vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.currData.Time, period)
 	if err != nil {

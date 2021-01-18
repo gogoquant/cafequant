@@ -55,8 +55,13 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 	return &spotExchange
 }
 
-// Ready ...
-func (e *SpotExchange) Ready() error {
+// Stop ...
+func (e *SpotExchange) Stop() error {
+	return nil
+}
+
+// Start ...
+func (e *SpotExchange) Start() error {
 	proxyURL := config.String("proxy")
 	if proxyURL == "" {
 		e.apiBuilder = builder.NewAPIBuilder().HttpTimeout(2 * time.Second)
@@ -338,11 +343,12 @@ func (e *SpotExchange) GetTicker() (*constant.Ticker, error) {
 }
 
 // GetRecords get candlestick data
-func (e *SpotExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
+func (e *SpotExchange) GetRecords() ([]constant.Record, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
 	var since = 0
-
+	periodStr := e.GetPeriod()
+	size := e.GetSize()
 	period, ok = e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")

@@ -20,6 +20,8 @@ type FutureExchange struct {
 	stockTypeMap        map[string]goex.CurrencyPair
 	stockTypeMapReverse map[goex.CurrencyPair]string
 
+	loadstatus bool
+
 	tradeTypeMap        map[int]string
 	tradeTypeMapReverse map[string]int
 	exchangeTypeMap     map[string]string
@@ -94,8 +96,13 @@ func (e *FutureExchange) ValidSell() error {
 	return errors.New("sell direction error:" + e.GetDirection())
 }
 
-// Ready ...
-func (e *FutureExchange) Ready() error {
+// Stop ...
+func (e *FutureExchange) Stop() error {
+	return nil
+}
+
+// Start ...
+func (e *FutureExchange) Start() error {
 	defaultTimeOut := constant.DefaultTimeOut
 	timeOutStr := config.String("timeout")
 	if timeOutStr != "" {
@@ -118,6 +125,51 @@ func (e *FutureExchange) Ready() error {
 	exchangeName := e.exchangeTypeMap[e.option.Type]
 	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
 	return nil
+}
+
+func (e *FutureExchange) load() {
+	if e.loadstatus {
+		subscribe := e.GetSubscribe()
+		for symbol, actions := range subscribe {
+			for _, action := range actions {
+				if action == constant.CacheTicker {
+					ticker, err := e.getTicker(symbol)
+					if err != nil {
+						e.SetCache(action, symbol, ticker, "")
+					}
+				}
+
+				if action == constant.CachePosition {
+					ticker, err := e.getPosition(symbol)
+					if err != nil {
+						e.SetCache(action, symbol, ticker, "")
+					}
+				}
+
+				if action == constant.CacheRecord {
+					ticker, err := e.getRecords(symbol)
+					if err != nil {
+						e.SetCache(action, symbol, ticker, "")
+					}
+				}
+
+				if action == constant.CacheOrder {
+					ticker, err := e.getOrders(symbol)
+					if err != nil {
+						e.SetCache(action, symbol, ticker, "")
+					}
+				}
+
+				if action == constant.CacheAccount {
+					ticker, err := e.getAccount()
+					if err != nil {
+						e.SetCache(action, symbol, ticker, "")
+					}
+				}
+			}
+		}
+		time.Sleep(time.Second * time.Duration(e.limit))
+	}
 }
 
 // Init init the instance of this exchange
@@ -160,6 +212,11 @@ func (e *FutureExchange) GetName() string {
 // GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
+	return e.getDepth(stockType)
+}
+
+// GetDepth get depth from exchange
+func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
@@ -210,6 +267,19 @@ func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
 // GetPosition get position from exchange
 func (e *FutureExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CachePosition) {
+		val := e.GetCache(constant.CachePosition, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("position not load ")
+		} else {
+			return val.Data.([]constant.Position), nil
+		}
+	}
+	return e.getPosition(stockType)
+}
+
+// GetPosition get position from exchange
+func (e *FutureExchange) getPosition(stockType string) ([]constant.Position, error) {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetPosition() error, the error number is stockType")
@@ -264,8 +334,12 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 //	return e.minAmountMap[stock]
 //}
 
-// GetAccount get the account detail of this exchange
 func (e *FutureExchange) GetAccount() (*constant.Account, error) {
+	return e.getAccount()
+}
+
+// GetAccount get the account detail of this exchange
+func (e *FutureExchange) getAccount() (*constant.Account, error) {
 	account, err := e.api.GetFutureUserinfo()
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetAccount() error, the error number is %s", err.Error())
@@ -407,7 +481,13 @@ func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
 
 // GetOrders get all unfilled orders
 func (e *FutureExchange) GetOrders() ([]constant.Order, error) {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	stockType := e.GetStockType()
+	return e.getOrders(stockType)
+}
+
+// GetOrders get all unfilled orders
+func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
+	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
 		return nil, fmt.Errorf("GetOrders() error, the error number is stockType")
@@ -459,21 +539,25 @@ func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
 // GetTicker get market ticker
 func (e *FutureExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheTicker) {
+		val := e.GetCache(constant.CacheTicker, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("ticker not load ")
+		} else {
+			return val.Data.(*constant.Ticker), nil
+		}
+	}
+	return e.getTicker(stockType)
+}
+
+// getTicker get market ticker
+func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
+	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetTicker() error, the error number is stockType")
 		return nil, fmt.Errorf("GetTicker() error, the error number is stockType")
 	}
-	// ws
-	/*
-		if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheTicker) {
-			val := e.GetCache(constant.CacheTicker, e.GetStockType())
-			if val.TimeStamp == nullTime {
-				return nil
-			}
-			return val.Data
-		}
-	*/
 	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is %s", err.Error())
@@ -499,12 +583,26 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 	return &ticker
 }
 
+func (e *FutureExchange) GetRecords() ([]constant.Record, error) {
+	stockType := e.GetStockType()
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheRecord) {
+		val := e.GetCache(constant.CacheRecord, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("record not load ")
+		} else {
+			return val.Data.([]constant.Record), nil
+		}
+	}
+	return e.getRecords(stockType)
+}
+
 // GetRecords get candlestick data
-func (e *FutureExchange) GetRecords(periodStr, maStr string, size int) ([]constant.Record, error) {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error) {
+	exchangeStockType, ok := e.stockTypeMap[stockType]
 	var period int64 = -1
 	var since = 0
-
+	periodStr := e.GetPeriod()
+	size := e.GetSize()
 	period, ok = e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")

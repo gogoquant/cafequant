@@ -8,13 +8,23 @@ import (
 // Exchange interface
 type Exchange interface {
 	// 初始化完毕开始运转
-	Ready() error
+	Start() error
+	// 初始化完毕开始运转
+	Stop() error
 	// 是否在回测中
 	IsBack() bool
 	// 设置IO
 	SetIO(mode string)
 	// 获取IO
 	GetIO() string
+	// Set eriod
+	SetPeriod(string)
+	// Get period
+	GetPeriod() string
+	// Set size
+	SetSize(int)
+	// Get Size
+	GetSize() int
 	// 获取订阅
 	GetSubscribe() map[string][]string
 	// 订阅
@@ -31,10 +41,6 @@ type Exchange interface {
 	Sleep(intervals ...interface{})
 	// 自动休眠以满足设置的交易所的API访问频率
 	AutoSleep()
-	// 获取交易所的账户资金信息
-	GetAccount() (*constant.Account, error)
-	// 返回买卖深度表
-	GetDepth() (*constant.Depth, error)
 	// 买
 	Buy(price, amount string, msg ...interface{}) (string, error)
 	// 卖
@@ -48,7 +54,13 @@ type Exchange interface {
 	// 获取交易所的最新市场行情数据
 	GetTicker() (*constant.Ticker, error)
 	// 返回交易所的最新K线数据列表, 部分平台可以直接获取计算好的均线
-	GetRecords(period, ma string, size int) ([]constant.Record, error)
+	GetRecords() ([]constant.Record, error)
+	// 持仓量
+	GetPosition() ([]constant.Position, error)
+	// 获取交易所的账户资金信息
+	GetAccount() (*constant.Account, error)
+	// 返回买卖深度表
+	GetDepth() (*constant.Depth, error)
 	// 设置合约周期
 	SetContractType(contractType string)
 	// 获取合约周期
@@ -65,8 +77,6 @@ type Exchange interface {
 	SetStockType(stockType string)
 	// 获取货币类型
 	GetStockType() string
-	// 持仓量
-	GetPosition() ([]constant.Position, error)
 	// 获取回测账号
 	GetBackAccount() map[string]float64
 	// 账号原货币量
