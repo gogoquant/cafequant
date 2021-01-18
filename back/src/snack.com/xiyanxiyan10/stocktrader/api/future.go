@@ -139,48 +139,56 @@ func (e *FutureExchange) Start() error {
 }
 
 func (e *FutureExchange) load() {
-	if e.loadstatus == 1 {
+	for e.loadstatus == 1 {
 		subscribe := e.GetSubscribe()
 		for symbol, actions := range subscribe {
 			for _, action := range actions {
 				if action == constant.CacheTicker {
 					ticker, err := e.getTicker(symbol)
-					if err != nil && ticker != nil {
-						fmt.Printf("set cache ticker %v\n", *ticker)
+					if err == nil {
 						e.SetCache(action, symbol, *ticker, "")
-
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
 					e.AutoSleep()
 				}
 
 				if action == constant.CachePosition {
 					ticker, err := e.getPosition(symbol)
-					if err != nil {
+					if err == nil {
 						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
 					e.AutoSleep()
 				}
 
 				if action == constant.CacheRecord {
 					ticker, err := e.getRecords(symbol)
-					if err != nil {
+					if err == nil {
 						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
 					e.AutoSleep()
 				}
 
 				if action == constant.CacheOrder {
 					ticker, err := e.getOrders(symbol)
-					if err != nil {
+					if err == nil {
 						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
 					e.AutoSleep()
 				}
 
 				if action == constant.CacheAccount {
 					ticker, err := e.getAccount()
-					if err != nil && ticker != nil {
+					if err == nil {
 						e.SetCache(action, symbol, *ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
 					e.AutoSleep()
 				}

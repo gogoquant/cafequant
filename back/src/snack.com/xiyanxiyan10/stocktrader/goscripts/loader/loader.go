@@ -35,9 +35,11 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.SetContractType(constract)
 	exchange.SetStockType(symbol)
 	exchange.Start()
+	exchange.SetLimit(1000)
 	exchange.SetPeriod(period)
 	exchange.SetSize(3)
-	exchange.SetSubscribe("symbol", constant.CacheRecord)
+	exchange.SetSubscribe(symbol, constant.CacheTicker)
+	exchange.SetSubscribe(symbol, constant.CacheRecord)
 
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
@@ -69,7 +71,7 @@ func (e *LoaderStragey) Exit(map[string]string) error {
 }
 
 func putOHLC(exchange api.Exchange, period string) error {
-	records, err := exchange.GetRecords()
+	records, err := exchange.GetTicker()
 	if err != nil {
 		fmt.Printf("get records fail:%v\n", err)
 		return err
