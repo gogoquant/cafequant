@@ -321,6 +321,12 @@ func stop(id int64) (err error) {
 	Executor[id].Pending = 1
 	trader := Executor[id]
 	fmt.Printf("stop trader %s\n", trader.scriptType)
+	for _, e := range trader.es {
+		err := e.Stop()
+		if err != nil {
+			return fmt.Errorf("stop exchange %s fail:%s", e.GetName(), err.Error())
+		}
+	}
 	switch trader.scriptType {
 	case constant.ScriptGo:
 		return stopGo(id)

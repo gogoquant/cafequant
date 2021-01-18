@@ -38,26 +38,30 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchan
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
+	var dst BaseExchangeCache
 	if key == constant.CacheTicker {
-		return e.ticker[stockSymbol]
+		dst = e.ticker[stockSymbol]
 	}
 
 	if key == constant.CachePosition {
-		return e.position[stockSymbol]
+		dst = e.position[stockSymbol]
 	}
 
 	if key == constant.CacheAccount {
-		return e.account[""]
+		dst = e.account[""]
 	}
 
 	if key == constant.CacheRecord {
-		return e.record[stockSymbol]
+		dst = e.record[stockSymbol]
 	}
 
 	if key == constant.CacheOrder {
-		return e.order[stockSymbol]
+		dst = e.order[stockSymbol]
 	}
-	return BaseExchangeCache{}
+	if len(dst.Mark) == 0 {
+		dst.Data = nil
+	}
+	return dst
 }
 
 // SetCache set ws val into cache
@@ -68,14 +72,13 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 
 	item.Data = val
 	item.TimeStamp = time.Now()
-	item.Mark = mark
+	item.Mark = "mark"
 
 	if key == constant.CacheTicker {
 		e.ticker[stockSymbol] = item
 	}
 
 	if key == constant.CachePosition {
-
 		e.position[stockSymbol] = item
 	}
 

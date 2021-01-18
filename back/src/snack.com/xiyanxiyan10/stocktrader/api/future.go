@@ -134,8 +134,8 @@ func (e *FutureExchange) load() {
 			for _, action := range actions {
 				if action == constant.CacheTicker {
 					ticker, err := e.getTicker(symbol)
-					if err != nil {
-						e.SetCache(action, symbol, ticker, "")
+					if err != nil && ticker != nil {
+						e.SetCache(action, symbol, *ticker, "")
 					}
 				}
 
@@ -162,8 +162,8 @@ func (e *FutureExchange) load() {
 
 				if action == constant.CacheAccount {
 					ticker, err := e.getAccount()
-					if err != nil {
-						e.SetCache(action, symbol, ticker, "")
+					if err != nil && ticker != nil {
+						e.SetCache(action, symbol, *ticker, "")
 					}
 				}
 			}
@@ -212,6 +212,15 @@ func (e *FutureExchange) GetName() string {
 // GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheDepth) {
+		val := e.GetCache(constant.CacheDepth, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("depth not load ")
+		} else {
+			dst := val.Data.(constant.Depth)
+			return &dst, nil
+		}
+	}
 	return e.getDepth(stockType)
 }
 
@@ -335,6 +344,15 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 //}
 
 func (e *FutureExchange) GetAccount() (*constant.Account, error) {
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe("", constant.CacheAccount) {
+		val := e.GetCache(constant.CacheAccount, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("account not load")
+		} else {
+			dst := val.Data.(constant.Account)
+			return &dst, nil
+		}
+	}
 	return e.getAccount()
 }
 
@@ -482,6 +500,15 @@ func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
 // GetOrders get all unfilled orders
 func (e *FutureExchange) GetOrders() ([]constant.Order, error) {
 	stockType := e.GetStockType()
+	if e.GetIO() == constant.IOCACHE && e.IsSubscribe("", constant.CacheOrder) {
+		val := e.GetCache(constant.CacheOrder, e.GetStockType())
+		if val.Data == nil {
+			return nil, fmt.Errorf("account not load")
+		} else {
+			dst := val.Data.([]constant.Order)
+			return dst, nil
+		}
+	}
 	return e.getOrders(stockType)
 }
 
@@ -544,7 +571,8 @@ func (e *FutureExchange) GetTicker() (*constant.Ticker, error) {
 		if val.Data == nil {
 			return nil, fmt.Errorf("ticker not load ")
 		} else {
-			return val.Data.(*constant.Ticker), nil
+			dst := val.Data.(constant.Ticker)
+			return &dst, nil
 		}
 	}
 	return e.getTicker(stockType)
