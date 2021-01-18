@@ -275,6 +275,13 @@ func runJs(trader Global, id int64) (err error) {
 			if err := recover(); err != nil && err != errHalt {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
+			// stop the cache process
+			for _, e := range trader.es {
+				err = e.Stop()
+				if err != nil {
+					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+				}
+			}
 			if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
 				if _, err := exit.Call(exit); err != nil {
 					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
