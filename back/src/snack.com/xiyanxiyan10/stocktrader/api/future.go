@@ -20,7 +20,7 @@ type FutureExchange struct {
 	stockTypeMap        map[string]goex.CurrencyPair
 	stockTypeMapReverse map[goex.CurrencyPair]string
 
-	loadstatus bool
+	loadstatus int64
 
 	tradeTypeMap        map[int]string
 	tradeTypeMapReverse map[string]int
@@ -98,6 +98,10 @@ func (e *FutureExchange) ValidSell() error {
 
 // Stop ...
 func (e *FutureExchange) Stop() error {
+	e.loadstatus = -1
+	for e.loadstatus != 0 {
+		e.AutoSleep()
+	}
 	return nil
 }
 
@@ -124,11 +128,16 @@ func (e *FutureExchange) Start() error {
 	}
 	exchangeName := e.exchangeTypeMap[e.option.Type]
 	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
+
+	e.loadstatus = 1
+
+	go e.load()
+
 	return nil
 }
 
 func (e *FutureExchange) load() {
-	if e.loadstatus {
+	if e.loadstatus == 1 {
 		subscribe := e.GetSubscribe()
 		for symbol, actions := range subscribe {
 			for _, action := range actions {
@@ -137,6 +146,7 @@ func (e *FutureExchange) load() {
 					if err != nil && ticker != nil {
 						e.SetCache(action, symbol, *ticker, "")
 					}
+					e.AutoSleep()
 				}
 
 				if action == constant.CachePosition {
@@ -144,6 +154,7 @@ func (e *FutureExchange) load() {
 					if err != nil {
 						e.SetCache(action, symbol, ticker, "")
 					}
+					e.AutoSleep()
 				}
 
 				if action == constant.CacheRecord {
@@ -151,6 +162,7 @@ func (e *FutureExchange) load() {
 					if err != nil {
 						e.SetCache(action, symbol, ticker, "")
 					}
+					e.AutoSleep()
 				}
 
 				if action == constant.CacheOrder {
@@ -158,6 +170,7 @@ func (e *FutureExchange) load() {
 					if err != nil {
 						e.SetCache(action, symbol, ticker, "")
 					}
+					e.AutoSleep()
 				}
 
 				if action == constant.CacheAccount {
@@ -165,11 +178,12 @@ func (e *FutureExchange) load() {
 					if err != nil && ticker != nil {
 						e.SetCache(action, symbol, *ticker, "")
 					}
+					e.AutoSleep()
 				}
 			}
 		}
-		time.Sleep(time.Second * time.Duration(e.limit))
 	}
+	e.loadstatus = 0
 }
 
 // Init init the instance of this exchange

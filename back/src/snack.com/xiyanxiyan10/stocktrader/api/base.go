@@ -77,7 +77,7 @@ type BaseExchange struct {
 
 	// recordsPeriod support
 	minAmountMap map[string]float64 // minAmount of trade
-	limit        float64
+	limit        int64
 	lastSleep    int64
 	lastTimes    int64
 	subscribeMap map[string][]string
@@ -192,8 +192,8 @@ func (e *BaseExchange) SetSubscribe(source, action string) {
 }
 
 // SetLimit set the limit calls amount per second of this exchange
-func (e *BaseExchange) SetLimit(times interface{}) float64 {
-	e.limit = conver.Float64Must(times)
+func (e *BaseExchange) SetLimit(times int64) int64 {
+	e.limit = times
 	return e.limit
 }
 
@@ -202,13 +202,12 @@ func (e *BaseExchange) AutoSleep() {
 	if e.back {
 		return
 	}
-	now := time.Now().UnixNano()
-	interval := 1e+9/e.limit*conver.Float64Must(e.lastTimes) - conver.Float64Must(now-e.lastSleep)
-	if interval > 0.0 {
-		time.Sleep(time.Duration(conver.Int64Must(interval)))
+	if e.limit == 0 {
+		e.limit = 1000
 	}
+	time.Sleep(time.Duration(e.limit) * time.Millisecond)
 	e.lastTimes = 0
-	e.lastSleep = now
+	e.lastSleep = time.Now().UnixNano()
 }
 
 // Sleep ...

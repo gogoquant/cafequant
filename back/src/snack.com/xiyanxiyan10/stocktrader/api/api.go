@@ -36,7 +36,7 @@ type Exchange interface {
 	// 获取交易所名称,自定义的
 	GetName() string
 	// 设置交易所的API访问频率,和 E.AutoSleep() 配合使用
-	SetLimit(times interface{}) float64
+	SetLimit(times int64) int64
 	// 延时
 	Sleep(intervals ...interface{})
 	// 自动休眠以满足设置的交易所的API访问频率

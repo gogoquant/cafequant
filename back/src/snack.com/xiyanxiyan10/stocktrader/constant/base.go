@@ -182,7 +182,7 @@ type Option struct {
 	AccessKey string
 	SecretKey string
 
-	Limit     float64
+	Limit     int64
 	LastSleep int64
 	LastTimes int64
 

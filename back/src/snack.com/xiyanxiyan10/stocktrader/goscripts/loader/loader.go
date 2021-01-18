@@ -35,8 +35,9 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.SetContractType(constract)
 	exchange.SetStockType(symbol)
 	exchange.Start()
+	exchange.SetPeriod(period)
+	exchange.SetSize(3)
 
-	e.Period = period
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
 	return nil
@@ -69,17 +70,20 @@ func (e *LoaderStragey) Exit(map[string]string) error {
 func putOHLC(exchange api.Exchange, period string) error {
 	records, err := exchange.GetRecords()
 	if err != nil {
-		fmt.Printf("get records fail:%v", err)
+		fmt.Printf("get records fail:%v\n", err)
 		return err
 	}
-	for _, record := range records {
-		err = exchange.BackPutOHLC(record.Time, record.Open,
-			record.High, record.Low, record.Close, record.Volume, "unknown", period)
-		if err != nil {
-			fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
-			return err
+	fmt.Printf("get records success:%v\n", records)
+	/*
+		for _, record := range records {
+			err = exchange.BackPutOHLC(record.Time, record.Open,
+				record.High, record.Low, record.Close, record.Volume, "unknown", period)
+			if err != nil {
+				fmt.Printf("put ohlc to stockdb fail:%s", err.Error())
+				return err
+			}
 		}
-	}
+	*/
 	return nil
 }
 
