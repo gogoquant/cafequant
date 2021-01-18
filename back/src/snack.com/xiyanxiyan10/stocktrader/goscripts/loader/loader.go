@@ -37,6 +37,7 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.Start()
 	exchange.SetPeriod(period)
 	exchange.SetSize(3)
+	exchange.SetSubscribe("symbol", constant.CacheRecord)
 
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
@@ -51,10 +52,10 @@ func (e *LoaderStragey) Run(map[string]string) error {
 		err := putOHLC(exchange, e.Period)
 		if err != nil {
 			e.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
-			time.Sleep(time.Duration(3) * time.Minute)
+			time.Sleep(time.Duration(1) * time.Second)
 			continue
 		}
-		time.Sleep(time.Duration(3) * time.Minute)
+		time.Sleep(time.Duration(2) * time.Second)
 	}
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
 	return nil
@@ -101,7 +102,7 @@ func main() {
 	var opt constant.Option
 	var constract = "quarter"
 	var symbol = "BTC/USD"
-	var io = "online"
+	var io = "cache"
 	var period = "M5"
 	logger.Back = true
 

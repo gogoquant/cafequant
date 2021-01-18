@@ -131,7 +131,9 @@ func (e *FutureExchange) Start() error {
 
 	e.loadstatus = 1
 
-	go e.load()
+	if e.GetIO() == constant.IOCACHE {
+		go e.load()
+	}
 
 	return nil
 }
@@ -144,7 +146,9 @@ func (e *FutureExchange) load() {
 				if action == constant.CacheTicker {
 					ticker, err := e.getTicker(symbol)
 					if err != nil && ticker != nil {
+						fmt.Printf("set cache ticker %v\n", *ticker)
 						e.SetCache(action, symbol, *ticker, "")
+
 					}
 					e.AutoSleep()
 				}
@@ -226,14 +230,13 @@ func (e *FutureExchange) GetName() string {
 // GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheDepth) {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheDepth, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("depth not load ")
-		} else {
-			dst := val.Data.(constant.Depth)
-			return &dst, nil
 		}
+		dst := val.Data.(constant.Depth)
+		return &dst, nil
 	}
 	return e.getDepth(stockType)
 }
@@ -290,13 +293,12 @@ func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
 // GetPosition get position from exchange
 func (e *FutureExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CachePosition) {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CachePosition, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("position not load ")
-		} else {
-			return val.Data.([]constant.Position), nil
 		}
+		return val.Data.([]constant.Position), nil
 	}
 	return e.getPosition(stockType)
 }
@@ -357,15 +359,15 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 //	return e.minAmountMap[stock]
 //}
 
+// GetAccount ...
 func (e *FutureExchange) GetAccount() (*constant.Account, error) {
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe("", constant.CacheAccount) {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheAccount, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("account not load")
-		} else {
-			dst := val.Data.(constant.Account)
-			return &dst, nil
 		}
+		dst := val.Data.(constant.Account)
+		return &dst, nil
 	}
 	return e.getAccount()
 }
@@ -514,14 +516,13 @@ func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
 // GetOrders get all unfilled orders
 func (e *FutureExchange) GetOrders() ([]constant.Order, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe("", constant.CacheOrder) {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheOrder, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("account not load")
-		} else {
-			dst := val.Data.([]constant.Order)
-			return dst, nil
 		}
+		dst := val.Data.([]constant.Order)
+		return dst, nil
 	}
 	return e.getOrders(stockType)
 }
@@ -580,14 +581,13 @@ func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
 // GetTicker get market ticker
 func (e *FutureExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheTicker) {
+	if e.GetIO() == constant.IOCACHE {
 		val := e.GetCache(constant.CacheTicker, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("ticker not load ")
-		} else {
-			dst := val.Data.(constant.Ticker)
-			return &dst, nil
 		}
+		dst := val.Data.(constant.Ticker)
+		return &dst, nil
 	}
 	return e.getTicker(stockType)
 }
@@ -625,16 +625,18 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 	return &ticker
 }
 
+// GetRecords ...
 func (e *FutureExchange) GetRecords() ([]constant.Record, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheRecord) {
+	if e.GetIO() == constant.IOCACHE {
+		fmt.Printf("io cache\n")
 		val := e.GetCache(constant.CacheRecord, e.GetStockType())
 		if val.Data == nil {
 			return nil, fmt.Errorf("record not load ")
-		} else {
-			return val.Data.([]constant.Record), nil
 		}
+		return val.Data.([]constant.Record), nil
 	}
+	fmt.Printf("online cache\n")
 	return e.getRecords(stockType)
 }
 

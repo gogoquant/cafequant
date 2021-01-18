@@ -75,22 +75,37 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 	item.Mark = "mark"
 
 	if key == constant.CacheTicker {
+		if e.ticker == nil {
+			e.ticker = make(map[string]BaseExchangeCache)
+		}
 		e.ticker[stockSymbol] = item
 	}
 
 	if key == constant.CachePosition {
+		if e.position == nil {
+			e.position = make(map[string]BaseExchangeCache)
+		}
 		e.position[stockSymbol] = item
 	}
 
 	if key == constant.CacheAccount {
+		if e.account == nil {
+			e.account = make(map[string]BaseExchangeCache)
+		}
 		e.account[""] = item
 	}
 
 	if key == constant.CacheRecord {
+		if e.record == nil {
+			e.record = make(map[string]BaseExchangeCache)
+		}
 		e.record[stockSymbol] = item
 	}
 
 	if key == constant.CacheOrder {
+		if e.order == nil {
+			e.order = make(map[string]BaseExchangeCache)
+		}
 		e.order[stockSymbol] = item
 	}
 }

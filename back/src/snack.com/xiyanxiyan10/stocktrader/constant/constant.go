@@ -29,8 +29,6 @@ const (
 const (
 	// IONONE ...
 	IONONE = "online"
-	// IOBLOCK get from sync
-	IOBLOCK = "block"
 	// IOCACHE get from cache
 	IOCACHE = "cache"
 )
