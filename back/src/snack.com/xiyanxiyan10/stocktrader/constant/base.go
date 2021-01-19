@@ -115,27 +115,27 @@ type OHLC struct {
 
 // WsPIP 通道具柄
 type WsPIP struct {
-	ch  chan int
+	ch  chan string
 	run bool
 }
 
 // PIPHandler ...
 type PIPHandler interface {
-	Push(index int)
-	Pop() int
+	Push(string)
+	Pop() string
 	Close()
 }
 
 // NewWsPIP 创建通道
 func NewWsPIP(cache int) PIPHandler {
 	var ws WsPIP
+	ws.ch = make(chan string, cache)
 	ws.run = true
-	ws.ch = make(chan int, cache)
 	return &ws
 }
 
 // Push 推送异步数据
-func (ws *WsPIP) Push(index int) {
+func (ws *WsPIP) Push(index string) {
 	if ws.run == false {
 		return
 	}
@@ -147,9 +147,9 @@ func (ws *WsPIP) Push(index int) {
 }
 
 // Pop 接收异步数据
-func (ws *WsPIP) Pop() int {
+func (ws *WsPIP) Pop() string {
 	if ws.run == false {
-		return -1
+		return ""
 	}
 	val := <-ws.ch
 	return val
@@ -157,8 +157,8 @@ func (ws *WsPIP) Pop() int {
 
 // Close 接收异步数据
 func (ws *WsPIP) Close() {
-	close(ws.ch)
 	ws.run = false
+	close(ws.ch)
 }
 
 // Record struct
@@ -181,6 +181,7 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
+	Ws        PIPHandler
 
 	Limit     int64
 	LastSleep int64

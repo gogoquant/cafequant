@@ -128,13 +128,11 @@ func (e *FutureExchange) Start() error {
 	}
 	exchangeName := e.exchangeTypeMap[e.option.Type]
 	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
-
 	e.loadstatus = 1
 
 	if e.GetIO() == constant.IOCACHE {
 		go e.load()
 	}
-
 	return nil
 }
 

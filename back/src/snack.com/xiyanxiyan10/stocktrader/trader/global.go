@@ -35,7 +35,7 @@ type GlobalHandler interface {
 	DrawKLine(time string, a, b, c, d float32)
 	DrawLine(name string, time string, data float32)
 	DrawPlot() error
-	Wait() int
+	PopMsg() string
 }
 
 // Global ...
@@ -48,7 +48,7 @@ type Global struct {
 	tasks      Tasks               // 任务列表
 	running    bool                // 运行中
 	scriptType string              // 脚本语言
-	ws         constant.PIPHandler // websocket
+	ws         constant.PIPHandler // ws
 	mail       notice.MailHandler  // 邮件发送
 	ding       notice.DingHandler  // dingtalk
 	draw       draw.DrawHandler    // 图标绘制
@@ -74,8 +74,8 @@ func (g *Global) Sleep(intervals ...interface{}) {
 	}
 }
 
-// Wait ...
-func (g *Global) Wait() int {
+// Pop ...
+func (g *Global) PopMsg() string {
 	val := g.ws.Pop()
 	return val
 }
