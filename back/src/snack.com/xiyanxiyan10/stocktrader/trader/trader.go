@@ -27,8 +27,8 @@ func GetTraderStatus(id int64) (status int64) {
 	if t, ok := Executor[id]; ok && t != nil {
 		status = t.Status
 		// show pending in status
-		if t.Pending == 1 {
-			status = -1
+		if t.Pending == constant.Enable {
+			status = constant.Pending
 		}
 	}
 	return
@@ -69,8 +69,8 @@ func runGo(trader Global, id int64) (err error) {
 			}
 			close(trader.ctx.Interrupt)
 			trader.ws.Close()
-			trader.Status = 0
-			trader.Pending = 0
+			trader.Status = constant.Stop
+			trader.Pending = constant.Disable
 		}()
 		scripts := trader.Algorithm.Script
 		p := make(map[string]string)
@@ -82,7 +82,7 @@ func runGo(trader Global, id int64) (err error) {
 		name := p["name"]
 		trader.goplugin.SetStragey(name)
 		trader.LastRunAt = time.Now()
-		trader.Status = 1
+		trader.Status = constant.Running
 		err = trader.goplugin.LoadStragey()
 		if err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
@@ -174,12 +174,11 @@ func initialize(id int64) (trader Global, err error) {
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
-	//trader.mq = constant.NewWsPIP(10)
+	trader.ws = constant.NewWsPIP(constant.CacheSize)
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
-	trader.ws = constant.NewWsPIP(20)
 
 	// set the diagram path
 	filePath := config.String(constant.FilePath)
@@ -290,8 +289,8 @@ func runJs(trader Global, id int64) (err error) {
 			}
 			trader.ws.Close()
 			close(trader.ctx.Interrupt)
-			trader.Status = 0
-			trader.Pending = 0
+			trader.Status = constant.Stop
+			trader.Pending = constant.Disable
 		}()
 		trader.LastRunAt = time.Now()
 		trader.Status = 1
@@ -323,10 +322,10 @@ func stop(id int64) (err error) {
 	if t, ok := Executor[id]; !ok || t == nil {
 		return fmt.Errorf("can not found the Trader")
 	}
-	if Executor[id].Pending == 1 {
+	if Executor[id].Pending == constant.Enable {
 		return fmt.Errorf("pending Trader")
 	}
-	Executor[id].Pending = 1
+	Executor[id].Pending = constant.Enable
 	trader := Executor[id]
 	fmt.Printf("stop trader %s\n", trader.scriptType)
 	for _, e := range trader.es {

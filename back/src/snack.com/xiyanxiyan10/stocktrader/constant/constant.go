@@ -106,9 +106,8 @@ const (
 	GoPluginPath = "goplugin"
 	// KLineSize ...
 	KLineSize = 100
-)
-
-const (
+	//CacheSize ...
+	CacheSize = 10
 	// RecordSize ...
 	RecordSize = 100
 	// DepthSize ...
@@ -117,19 +116,18 @@ const (
 	GoHandler = "NewHandler"
 	// DefaultTimeOut ...
 	DefaultTimeOut = 2
-)
-
-const (
 	// ScriptJs ...
 	ScriptJs = "js"
 	// ScriptGo ... @todo change as go
 	ScriptGo = "go"
-)
-
-const (
-	ActionDepth    = "depth"
-	ActionAccount  = "account"
-	ActionTicker   = "ticker"
-	ActionRecord   = "record"
-	ActionPosition = "position"
+	// Pending ...
+	Pending = -1
+	// Running ...
+	Running = 1
+	// Stop ...
+	Stop = 0
+	// Enable ...
+	Enable = 1
+	// Disable ...
+	Disable = 0
 )
