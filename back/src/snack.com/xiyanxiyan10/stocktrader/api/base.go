@@ -76,7 +76,8 @@ type BaseExchange struct {
 	lever              float64 // lever
 	recordsPeriodMap   map[string]int64
 	recordsPeriodDbMap map[string]int64
-
+	// put notice into user global function
+	ws constant.PIPHandler
 	// recordsPeriod support
 	minAmountMap map[string]float64 // minAmount of trade
 	limit        int64
@@ -97,6 +98,11 @@ type BaseExchange struct {
 	host   string
 	logger model.Logger
 	option constant.Option
+}
+
+// PushMsg ...
+func (e *BaseExchange) PushMsg(val string) {
+	e.ws.Push(val)
 }
 
 func stockPair2Vec(pair string) []string {
@@ -408,6 +414,7 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 func (e *BaseExchange) Init(opt constant.Option) error {
 	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.LogBack}
 	e.option = opt
+	e.ws = opt.Ws
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
 	e.recordsPeriodDbMap = map[string]int64{

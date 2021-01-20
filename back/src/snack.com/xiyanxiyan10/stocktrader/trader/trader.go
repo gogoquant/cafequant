@@ -174,6 +174,7 @@ func initialize(id int64) (trader Global, err error) {
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
+	//trader.mq = constant.NewWsPIP(10)
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
@@ -199,6 +200,7 @@ func initialize(id int64) (trader Global, err error) {
 			Name:      e.Name,
 			AccessKey: e.AccessKey,
 			SecretKey: e.SecretKey,
+			Ws:        trader.ws,
 			LogBack:   false,
 		}
 		if maker, ok := api.ExchangeMaker[e.Type]; ok {
@@ -271,9 +273,15 @@ func runJs(trader Global, id int64) (err error) {
 	}
 	go func() {
 		defer func() {
-			fmt.Printf("exit trader js\n")
 			if err := recover(); err != nil && err != errHalt {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+			}
+			// stop the cache process
+			for _, e := range trader.es {
+				err = e.Stop()
+				if err != nil {
+					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+				}
 			}
 			if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
 				if _, err := exit.Call(exit); err != nil {

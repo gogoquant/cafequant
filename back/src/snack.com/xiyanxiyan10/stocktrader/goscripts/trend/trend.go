@@ -34,7 +34,15 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetIO(io)
 	exchange.SetContractType(constract)
 	exchange.SetStockType(symbol)
-	exchange.Ready()
+	exchange.SetPeriod(period)
+	exchange.SetSize(10)
+
+	exchange.SetSubscribe(symbol, constant.CacheAccount)
+	exchange.SetSubscribe(symbol, constant.CacheRecord)
+	exchange.SetSubscribe(symbol, constant.CachePosition)
+	exchange.SetSubscribe(symbol, constant.CacheOrder)
+	exchange.SetSubscribe(symbol, constant.CacheTicker)
+	//exchange.Start()
 
 	e.Period = period
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
@@ -44,6 +52,9 @@ func (e *TrendStragey) Init(v map[string]string) error {
 
 // Run ...
 func (e *TrendStragey) Run(map[string]string) error {
+	exchange := e.Exchanges[0]
+	exchange.Start()
+
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	for e.Status {
 		time.Sleep(time.Duration(3) * time.Minute)
@@ -54,6 +65,9 @@ func (e *TrendStragey) Run(map[string]string) error {
 
 // Exit ...
 func (e *TrendStragey) Exit(map[string]string) error {
+	exchange := e.Exchanges[0]
+	exchange.Start()
+
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
 	e.Status = false
 	return nil
@@ -112,7 +126,7 @@ func main() {
 func (e *TrendStragey) Processs() error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
-	exchange.GetRecords("M5", "", 3)
+	exchange.GetRecords()
 	for e.Status {
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
