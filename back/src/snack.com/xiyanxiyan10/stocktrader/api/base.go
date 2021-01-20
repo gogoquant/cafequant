@@ -62,7 +62,9 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 // BaseExchange ...
 type BaseExchange struct {
 	BaseExchangeCaches // cache for exchange
-	periodVal          string
+	// period for get records
+	periodVal string
+	// period for backtest
 	period             string
 	size               int
 	id                 int     // id of the exchange
