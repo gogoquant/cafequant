@@ -36,7 +36,6 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetStockType(symbol)
 	exchange.SetPeriod(period)
 	exchange.SetSize(10)
-
 	exchange.SetSubscribe(symbol, constant.CacheAccount)
 	exchange.SetSubscribe(symbol, constant.CacheRecord)
 	exchange.SetSubscribe(symbol, constant.CachePosition)

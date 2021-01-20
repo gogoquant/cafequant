@@ -72,7 +72,7 @@ func (l Logger) Log(method string, stockType string, price, amount float64, mess
 	now := time.Now().UnixNano()
 	if l.Back {
 		message := l.messages2message(method, messages)
-		fmt.Print(message)
+		fmt.Print(message + "\n")
 		return
 	}
 
