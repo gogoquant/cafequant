@@ -76,8 +76,6 @@ type BaseExchange struct {
 	lever              float64 // lever
 	recordsPeriodMap   map[string]int64
 	recordsPeriodDbMap map[string]int64
-	// put notice into user global function
-	ws constant.PIPHandler
 	// recordsPeriod support
 	minAmountMap map[string]float64 // minAmount of trade
 	limit        int64
@@ -98,11 +96,6 @@ type BaseExchange struct {
 	host   string
 	logger model.Logger
 	option constant.Option
-}
-
-// PushMsg ...
-func (e *BaseExchange) PushMsg(val string) {
-	e.ws.Push(val)
 }
 
 func stockPair2Vec(pair string) []string {
@@ -414,7 +407,6 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 func (e *BaseExchange) Init(opt constant.Option) error {
 	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.LogBack}
 	e.option = opt
-	e.ws = opt.Ws
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
 	e.recordsPeriodDbMap = map[string]int64{
@@ -521,4 +513,117 @@ func (e *BaseExchange) SetRecordsPeriodMap(m map[string]int64) {
 // GetRecordsPeriodMap ...
 func (e *BaseExchange) GetRecordsPeriodMap() map[string]int64 {
 	return e.recordsPeriodMap
+}
+
+// GetRecords ...
+func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheRecord, e.GetStockType(), refresh)
+		if val.Data == nil {
+			return nil, fmt.Errorf("record not load ")
+		}
+		return val.Data.([]constant.Record), nil
+	}
+	fmt.Printf("online cache\n")
+	return e.getRecords(stockType)
+}
+
+func (e *BaseExchange) getRecords(stockType string) ([]constant.Record, error) {
+	panic("get records")
+}
+
+// GetTicker get market ticker
+func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheTicker, e.GetStockType(), refresh)
+		if val.Data == nil {
+			return nil, fmt.Errorf("ticker not load ")
+		}
+		dst := val.Data.(constant.Ticker)
+		return &dst, nil
+	}
+	return e.getTicker(stockType)
+}
+
+func (e *BaseExchange) getTicker(symbol string) (*constant.Ticker, error) {
+	panic("get ticker")
+}
+
+// GetOrders get all unfilled orders
+func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheOrder, e.GetStockType(), refresh)
+		if val.Data == nil {
+			return nil, fmt.Errorf("account not load")
+		}
+		dst := val.Data.([]constant.Order)
+		return dst, nil
+	}
+	return e.getOrders(stockType)
+}
+
+func (e *BaseExchange) getOrders(symbol string) ([]constant.Order, error) {
+	panic("get records")
+}
+
+// GetAccount ...
+func (e *BaseExchange) GetAccount() (*constant.Account, error) {
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if io == constant.IOCACHE && io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheAccount, e.GetStockType(), refresh)
+		if val.Data == nil {
+			return nil, fmt.Errorf("account not load")
+		}
+		dst := val.Data.(constant.Account)
+		return &dst, nil
+	}
+	return e.getAccount()
+}
+
+func (e *BaseExchange) getAccount() (*constant.Account, error) {
+	panic("get account")
+}
+
+// GetPosition get position from exchange
+func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if e.GetIO() == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CachePosition, e.GetStockType(), refresh)
+		if val.Data == nil {
+			return nil, fmt.Errorf("position not load ")
+		}
+		return val.Data.([]constant.Position), nil
+	}
+	return e.getPosition(stockType)
+}
+
+func (e *BaseExchange) getPosition(symbol string) ([]constant.Position, error) {
+	panic("get records")
 }

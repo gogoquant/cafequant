@@ -68,7 +68,6 @@ func runGo(trader Global, id int64) (err error) {
 				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
 			close(trader.ctx.Interrupt)
-			trader.ws.Close()
 			trader.Status = constant.Stop
 			trader.Pending = constant.Disable
 		}()
@@ -174,7 +173,6 @@ func initialize(id int64) (trader Global, err error) {
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
-	trader.ws = constant.NewWsPIP(constant.CacheSize)
 	trader.ctx.Interrupt = make(chan func(), 1)
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
@@ -199,7 +197,6 @@ func initialize(id int64) (trader Global, err error) {
 			Name:      e.Name,
 			AccessKey: e.AccessKey,
 			SecretKey: e.SecretKey,
-			Ws:        trader.ws,
 			LogBack:   false,
 		}
 		if maker, ok := api.ExchangeMaker[e.Type]; ok {
@@ -287,7 +284,6 @@ func runJs(trader Global, id int64) (err error) {
 					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 				}
 			}
-			trader.ws.Close()
 			close(trader.ctx.Interrupt)
 			trader.Status = constant.Stop
 			trader.Pending = constant.Disable

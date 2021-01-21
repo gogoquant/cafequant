@@ -11,7 +11,7 @@ import (
 type BaseExchangeCache struct {
 	Data      interface{}
 	TimeStamp time.Time
-	Mark      string
+	Mark      bool
 }
 
 // BaseExchangeCaches ...
@@ -34,7 +34,7 @@ func (e *BaseExchangeCaches) Subscribe() interface{} {
 }
 
 // GetCache get ws val from cache
-func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchangeCache {
+func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool) BaseExchangeCache {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
@@ -58,8 +58,11 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string) BaseExchan
 	if key == constant.CacheOrder {
 		dst = e.order[stockSymbol]
 	}
-	if len(dst.Mark) == 0 {
+	if dst.Mark {
 		dst.Data = nil
+	}
+	if fresh {
+		dst.Mark = false
 	}
 	return dst
 }
@@ -72,7 +75,7 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 
 	item.Data = val
 	item.TimeStamp = time.Now()
-	item.Mark = "mark"
+	item.Mark = true
 
 	if key == constant.CacheTicker {
 		if e.ticker == nil {

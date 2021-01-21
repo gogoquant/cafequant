@@ -31,6 +31,8 @@ const (
 	IONONE = "online"
 	// IOCACHE get from cache
 	IOCACHE = "cache"
+	// IOBLOCK ...
+	IOBLOCK = "block"
 )
 
 const (

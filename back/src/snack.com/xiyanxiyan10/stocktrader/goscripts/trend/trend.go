@@ -30,6 +30,7 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	constract := v["constract"]
 	symbol := v["symbol"]
 	io := v["io"]
+
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
 	exchange.SetContractType(constract)

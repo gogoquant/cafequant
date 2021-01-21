@@ -41,19 +41,18 @@ type GlobalHandler interface {
 // Global ...
 type Global struct {
 	model.Trader
-	back       bool                // 是否为回测模式
-	Logger     model.Logger        // 利用这个对象保存日志
-	ctx        *otto.Otto          // js虚拟机
-	es         []api.Exchange      // 交易所列表
-	tasks      Tasks               // 任务列表
-	running    bool                // 运行中
-	scriptType string              // 脚本语言
-	ws         constant.PIPHandler // ws
-	mail       notice.MailHandler  // 邮件发送
-	ding       notice.DingHandler  // dingtalk
-	draw       draw.DrawHandler    // 图标绘制
-	goplugin   goplugin.GoHandler  // go 插件
-	statusLog  string              // 状态日志
+	back       bool               // 是否为回测模式
+	Logger     model.Logger       // 利用这个对象保存日志
+	ctx        *otto.Otto         // js虚拟机
+	es         []api.Exchange     // 交易所列表
+	tasks      Tasks              // 任务列表
+	running    bool               // 运行中
+	scriptType string             // 脚本语言
+	mail       notice.MailHandler // 邮件发送
+	ding       notice.DingHandler // dingtalk
+	draw       draw.DrawHandler   // 图标绘制
+	goplugin   goplugin.GoHandler // go 插件
+	statusLog  string             // 状态日志
 }
 
 // Sleep ...
@@ -72,12 +71,6 @@ func (g *Global) Sleep(intervals ...interface{}) {
 			e.AutoSleep()
 		}
 	}
-}
-
-// Pop ...
-func (g *Global) PopMsg() string {
-	val := g.ws.Pop()
-	return val
 }
 
 // GetMail ...

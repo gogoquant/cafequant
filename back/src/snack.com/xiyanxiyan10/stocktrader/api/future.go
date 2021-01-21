@@ -236,8 +236,13 @@ func (e *FutureExchange) GetName() string {
 // GetDepth get depth from exchange
 func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE {
-		val := e.GetCache(constant.CacheDepth, e.GetStockType())
+	io := e.GetIO()
+	refresh := false
+	if io == constant.IOBLOCK {
+		refresh = true
+	}
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheDepth, e.GetStockType(), refresh)
 		if val.Data == nil {
 			return nil, fmt.Errorf("depth not load ")
 		}
@@ -255,16 +260,6 @@ func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 			"GetDepth() error, the error number is stockType")
 		return nil, fmt.Errorf("GetDepth() error, the error number is stockType")
 	}
-	/*
-		if e.GetIO() == constant.IOCACHE && e.IsSubscribe(stockType, constant.CacheDepth) {
-			val := e.GetCache(constant.CacheDepth, e.GetStockType())
-			var nullTime time.Time
-			if val.TimeStamp == nullTime {
-				return nil, fmt.Errorf("GetDepth() error, the error number is stockType")
-			}
-			return val.Data, nil
-		}
-	*/
 	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), constant.DepthSize)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
@@ -294,19 +289,6 @@ func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
 	resDepth.ContractType = e.GetContractType()
 	resDepth.StockType = e.GetStockType()
 	return &resDepth
-}
-
-// GetPosition get position from exchange
-func (e *FutureExchange) GetPosition() ([]constant.Position, error) {
-	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE {
-		val := e.GetCache(constant.CachePosition, e.GetStockType())
-		if val.Data == nil {
-			return nil, fmt.Errorf("position not load ")
-		}
-		return val.Data.([]constant.Position), nil
-	}
-	return e.getPosition(stockType)
 }
 
 // GetPosition get position from exchange
@@ -364,19 +346,6 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 //func (e *FutureExchange) GetMinAmount(stock string) float64 {
 //	return e.minAmountMap[stock]
 //}
-
-// GetAccount ...
-func (e *FutureExchange) GetAccount() (*constant.Account, error) {
-	if e.GetIO() == constant.IOCACHE {
-		val := e.GetCache(constant.CacheAccount, e.GetStockType())
-		if val.Data == nil {
-			return nil, fmt.Errorf("account not load")
-		}
-		dst := val.Data.(constant.Account)
-		return &dst, nil
-	}
-	return e.getAccount()
-}
 
 // GetAccount get the account detail of this exchange
 func (e *FutureExchange) getAccount() (*constant.Account, error) {
@@ -520,20 +489,6 @@ func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
 }
 
 // GetOrders get all unfilled orders
-func (e *FutureExchange) GetOrders() ([]constant.Order, error) {
-	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE {
-		val := e.GetCache(constant.CacheOrder, e.GetStockType())
-		if val.Data == nil {
-			return nil, fmt.Errorf("account not load")
-		}
-		dst := val.Data.([]constant.Order)
-		return dst, nil
-	}
-	return e.getOrders(stockType)
-}
-
-// GetOrders get all unfilled orders
 func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
@@ -584,20 +539,6 @@ func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
 	return result, nil
 }
 
-// GetTicker get market ticker
-func (e *FutureExchange) GetTicker() (*constant.Ticker, error) {
-	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE {
-		val := e.GetCache(constant.CacheTicker, e.GetStockType())
-		if val.Data == nil {
-			return nil, fmt.Errorf("ticker not load ")
-		}
-		dst := val.Data.(constant.Ticker)
-		return &dst, nil
-	}
-	return e.getTicker(stockType)
-}
-
 // getTicker get market ticker
 func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	stockType := e.GetStockType()
@@ -629,21 +570,6 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 		Time: conver.Int64Must(tickStr),
 	}
 	return &ticker
-}
-
-// GetRecords ...
-func (e *FutureExchange) GetRecords() ([]constant.Record, error) {
-	stockType := e.GetStockType()
-	if e.GetIO() == constant.IOCACHE {
-		fmt.Printf("io cache\n")
-		val := e.GetCache(constant.CacheRecord, e.GetStockType())
-		if val.Data == nil {
-			return nil, fmt.Errorf("record not load ")
-		}
-		return val.Data.([]constant.Record), nil
-	}
-	fmt.Printf("online cache\n")
-	return e.getRecords(stockType)
 }
 
 // GetRecords get candlestick data

@@ -107,8 +107,6 @@ type Exchange interface {
 	BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error)
 	//获取Depth
 	BackGetDepth(begin, end int64, period string) (dbtypes.Depth, error)
-	//PushMsg(val string)
-	PushMsg(val string)
 }
 
 var (
