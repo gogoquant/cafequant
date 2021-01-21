@@ -104,7 +104,7 @@ func main() {
 	var opt constant.Option
 	var constract = "quarter"
 	var symbol = "BTC/USD"
-	var io = "cache"
+	var io = "block"
 	var period = "M5"
 	logger.Back = true
 
