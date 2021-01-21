@@ -578,6 +578,30 @@ func (e *BaseExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	panic("get ticker")
 }
 
+// GetOrder ...
+func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		orders, err := e.GetOrders()
+		if err != nil {
+			return nil, err
+		}
+		for _, order := range orders {
+			if order.Id == id {
+				return &order, nil
+			}
+		}
+		return nil, fmt.Errorf("order not found")
+	}
+	return e.getOrder(stockType, id)
+}
+
+// GetOrder get detail of an order
+func (e *BaseExchange) getOrder(symbol, id string) (*constant.Order, error) {
+	panic("get order")
+}
+
 // GetOrders get all unfilled orders
 func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 	stockType := e.GetStockType()
@@ -596,7 +620,7 @@ func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 }
 
 func (e *BaseExchange) getOrders(symbol string) ([]constant.Order, error) {
-	panic("get records")
+	panic("get orders")
 }
 
 // GetAccount ...
@@ -621,7 +645,6 @@ func (e *BaseExchange) getAccount() (*constant.Account, error) {
 // GetPosition get position from exchange
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
-
 	io := e.GetIO()
 	if e.GetIO() == constant.IOCACHE || io == constant.IOBLOCK {
 		e.wait(stockType, constant.CachePosition)

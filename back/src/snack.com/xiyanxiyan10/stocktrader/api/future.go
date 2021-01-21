@@ -442,8 +442,8 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) (string,
 }
 
 // GetOrder get detail of an order
-func (e *FutureExchange) GetOrder(id string) (*constant.Order, error) {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
+	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id),
 			"GetOrder() error, the error number is stockType")
