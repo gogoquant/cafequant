@@ -32,6 +32,66 @@ type FutureExchange struct {
 	api        goex.FutureRestAPI
 }
 
+func (e *FutureExchange) load() {
+	for e.loadstatus == constant.Running {
+		subscribe := e.GetSubscribe()
+		for symbol, actions := range subscribe {
+			for _, action := range actions {
+				if action == constant.CacheTicker {
+					ticker, err := e.getTicker(symbol)
+					if err == nil {
+						e.SetCache(action, symbol, *ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
+					}
+					e.AutoSleep()
+				}
+
+				if action == constant.CachePosition {
+					ticker, err := e.getPosition(symbol)
+					if err == nil {
+						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
+					}
+					e.AutoSleep()
+				}
+
+				if action == constant.CacheRecord {
+					ticker, err := e.getRecords(symbol)
+					if err == nil {
+						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
+					}
+					e.AutoSleep()
+				}
+
+				if action == constant.CacheOrder {
+					ticker, err := e.getOrders(symbol)
+					if err == nil {
+						e.SetCache(action, symbol, ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
+					}
+					e.AutoSleep()
+				}
+
+				if action == constant.CacheAccount {
+					ticker, err := e.getAccount()
+					if err == nil {
+						e.SetCache(action, symbol, *ticker, "")
+					} else {
+						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
+					}
+					e.AutoSleep()
+				}
+			}
+		}
+	}
+	e.loadstatus = constant.Stop
+}
+
 // SetTradeTypeMap ...
 func (e *FutureExchange) SetTradeTypeMap(key int, val string) {
 	e.tradeTypeMap[key] = val
@@ -98,8 +158,8 @@ func (e *FutureExchange) ValidSell() error {
 
 // Stop ...
 func (e *FutureExchange) Stop() error {
-	e.loadstatus = -1
-	for e.loadstatus != 0 {
+	e.loadstatus = constant.Pending
+	for e.loadstatus != constant.Stop {
 		e.AutoSleep()
 	}
 	return nil
@@ -128,72 +188,12 @@ func (e *FutureExchange) Start() error {
 	}
 	exchangeName := e.exchangeTypeMap[e.option.Type]
 	e.api = e.apiBuilder.APIKey(e.option.AccessKey).APISecretkey(e.option.SecretKey).BuildFuture(exchangeName)
-	e.loadstatus = 1
-
-	if e.GetIO() == constant.IOCACHE {
+	e.loadstatus = constant.Running
+	io := e.GetIO()
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		go e.load()
 	}
 	return nil
-}
-
-func (e *FutureExchange) load() {
-	for e.loadstatus == 1 {
-		subscribe := e.GetSubscribe()
-		for symbol, actions := range subscribe {
-			for _, action := range actions {
-				if action == constant.CacheTicker {
-					ticker, err := e.getTicker(symbol)
-					if err == nil {
-						e.SetCache(action, symbol, *ticker, "")
-					} else {
-						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
-					}
-					e.AutoSleep()
-				}
-
-				if action == constant.CachePosition {
-					ticker, err := e.getPosition(symbol)
-					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
-					} else {
-						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
-					}
-					e.AutoSleep()
-				}
-
-				if action == constant.CacheRecord {
-					ticker, err := e.getRecords(symbol)
-					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
-					} else {
-						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
-					}
-					e.AutoSleep()
-				}
-
-				if action == constant.CacheOrder {
-					ticker, err := e.getOrders(symbol)
-					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
-					} else {
-						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
-					}
-					e.AutoSleep()
-				}
-
-				if action == constant.CacheAccount {
-					ticker, err := e.getAccount()
-					if err == nil {
-						e.SetCache(action, symbol, *ticker, "")
-					} else {
-						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
-					}
-					e.AutoSleep()
-				}
-			}
-		}
-	}
-	e.loadstatus = 0
 }
 
 // Init init the instance of this exchange

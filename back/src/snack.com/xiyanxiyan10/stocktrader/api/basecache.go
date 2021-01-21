@@ -1,10 +1,10 @@
 package api
 
 import (
+	"fmt"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
-
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 // BaseExchangeCache store the date from api in cahce
@@ -16,7 +16,8 @@ type BaseExchangeCache struct {
 
 // BaseExchangeCaches ...
 type BaseExchangeCaches struct {
-	mutex    sync.Mutex
+	mutex sync.Mutex
+
 	depth    map[string]BaseExchangeCache
 	position map[string]BaseExchangeCache
 	account  map[string]BaseExchangeCache
@@ -58,7 +59,8 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool
 	if key == constant.CacheOrder {
 		dst = e.order[stockSymbol]
 	}
-	if dst.Mark {
+	fmt.Printf("dst is %v\n", dst)
+	if !dst.Mark {
 		dst.Data = nil
 	}
 	if fresh {

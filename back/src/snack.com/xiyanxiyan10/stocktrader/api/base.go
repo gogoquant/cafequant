@@ -64,6 +64,7 @@ type BaseExchange struct {
 	BaseExchangeCaches // cache for exchange
 	// period for get records
 	periodVal string
+
 	// period for backtest
 	period             string
 	size               int
@@ -538,16 +539,21 @@ func (e *BaseExchange) getRecords(stockType string) ([]constant.Record, error) {
 	panic("get records")
 }
 
-// GetTicker get market ticker
-func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
-	stockType := e.GetStockType()
+func (e *BaseExchange) isRefresh() bool {
 	io := e.GetIO()
 	refresh := false
 	if io == constant.IOBLOCK {
 		refresh = true
 	}
+	return refresh
+}
+
+// GetTicker get market ticker
+func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
-		val := e.GetCache(constant.CacheTicker, e.GetStockType(), refresh)
+		val := e.GetCache(constant.CacheTicker, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
 			return nil, fmt.Errorf("ticker not load ")
 		}
@@ -565,12 +571,8 @@ func (e *BaseExchange) getTicker(symbol string) (*constant.Ticker, error) {
 func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
-	refresh := false
-	if io == constant.IOBLOCK {
-		refresh = true
-	}
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
-		val := e.GetCache(constant.CacheOrder, e.GetStockType(), refresh)
+		val := e.GetCache(constant.CacheOrder, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
 			return nil, fmt.Errorf("account not load")
 		}
@@ -587,12 +589,8 @@ func (e *BaseExchange) getOrders(symbol string) ([]constant.Order, error) {
 // GetAccount ...
 func (e *BaseExchange) GetAccount() (*constant.Account, error) {
 	io := e.GetIO()
-	refresh := false
-	if io == constant.IOBLOCK {
-		refresh = true
-	}
-	if io == constant.IOCACHE && io == constant.IOBLOCK {
-		val := e.GetCache(constant.CacheAccount, e.GetStockType(), refresh)
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheAccount, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
 			return nil, fmt.Errorf("account not load")
 		}
@@ -610,12 +608,8 @@ func (e *BaseExchange) getAccount() (*constant.Account, error) {
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
-	refresh := false
-	if io == constant.IOBLOCK {
-		refresh = true
-	}
 	if e.GetIO() == constant.IOCACHE || io == constant.IOBLOCK {
-		val := e.GetCache(constant.CachePosition, e.GetStockType(), refresh)
+		val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
 			return nil, fmt.Errorf("position not load ")
 		}
