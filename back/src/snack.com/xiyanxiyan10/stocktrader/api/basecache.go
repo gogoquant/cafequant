@@ -51,24 +51,19 @@ func (e *BaseExchangeCaches) pop(symbol, action string) interface{} {
 	return val
 }
 
-// Subscribe ...
-func (e *BaseExchangeCaches) Subscribe() interface{} {
-	return nil
-}
-
 // GetCache get ws val from cache
-func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool) BaseExchangeCache {
+func (e *BaseExchangeCaches) GetCache(action string, stockSymbol string, fresh bool) BaseExchangeCache {
 	var dst BaseExchangeCache
 	if fresh {
 		for {
-			val := e.pop(stockSymbol, key)
+			val := e.pop(stockSymbol, action)
 			if val == nil {
 				// the chan close
 				dst.Data = nil
 				return dst
 			}
 			vec := val.([2]string)
-			if vec[0] != stockSymbol || vec[1] != key {
+			if vec[0] != stockSymbol || vec[1] != action {
 				//wait the next one
 				continue
 			}
@@ -78,23 +73,23 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool
 
 	e.mutex.Lock()
 
-	if key == constant.CacheTicker {
+	if action == constant.CacheTicker {
 		dst = e.ticker[stockSymbol]
 	}
 
-	if key == constant.CachePosition {
+	if action == constant.CachePosition {
 		dst = e.position[stockSymbol]
 	}
 
-	if key == constant.CacheAccount {
+	if action == constant.CacheAccount {
 		dst = e.account[""]
 	}
 
-	if key == constant.CacheRecord {
+	if action == constant.CacheRecord {
 		dst = e.record[stockSymbol]
 	}
 
-	if key == constant.CacheOrder {
+	if action == constant.CacheOrder {
 		dst = e.order[stockSymbol]
 	}
 	if !dst.Mark {
@@ -106,7 +101,7 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool
 }
 
 // SetCache set ws val into cache
-func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interface{}, fresh bool) {
+func (e *BaseExchangeCaches) SetCache(action string, stockSymbol string, val interface{}, fresh bool) {
 	//lock
 	e.mutex.Lock()
 	var item BaseExchangeCache
@@ -115,35 +110,35 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 	item.TimeStamp = time.Now()
 	item.Mark = true
 
-	if key == constant.CacheTicker {
+	if action == constant.CacheTicker {
 		if e.ticker == nil {
 			e.ticker = make(map[string]BaseExchangeCache)
 		}
 		e.ticker[stockSymbol] = item
 	}
 
-	if key == constant.CachePosition {
+	if action == constant.CachePosition {
 		if e.position == nil {
 			e.position = make(map[string]BaseExchangeCache)
 		}
 		e.position[stockSymbol] = item
 	}
 
-	if key == constant.CacheAccount {
+	if action == constant.CacheAccount {
 		if e.account == nil {
 			e.account = make(map[string]BaseExchangeCache)
 		}
 		e.account[""] = item
 	}
 
-	if key == constant.CacheRecord {
+	if action == constant.CacheRecord {
 		if e.record == nil {
 			e.record = make(map[string]BaseExchangeCache)
 		}
 		e.record[stockSymbol] = item
 	}
 
-	if key == constant.CacheOrder {
+	if action == constant.CacheOrder {
 		if e.order == nil {
 			e.order = make(map[string]BaseExchangeCache)
 		}
@@ -153,6 +148,6 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 	// unlock
 
 	if fresh {
-		e.push(stockSymbol, key)
+		e.push(stockSymbol, action)
 	}
 }
