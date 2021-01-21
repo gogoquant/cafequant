@@ -32,6 +32,104 @@ type FutureExchange struct {
 	api        goex.FutureRestAPI
 }
 
+func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
+	resOrders := make([]constant.Order, 0)
+	for _, order := range orders {
+		resOrder := constant.Order{
+			Id:         order.OrderID2,
+			Price:      order.Price,
+			Amount:     order.Amount,
+			DealAmount: order.DealAmount,
+			TradeType:  e.tradeTypeMap[order.OType],
+			StockType:  e.GetStockType(),
+		}
+		resOrders = append(resOrders, resOrder)
+	}
+	return resOrders
+}
+
+// tickerA2U ...
+func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
+	//force covert
+	tickStr := fmt.Sprint(exTicker.Date)
+	ticker := constant.Ticker{
+		Last: exTicker.Last,
+		Buy:  exTicker.Buy,
+		Sell: exTicker.Sell,
+		High: exTicker.High,
+		Low:  exTicker.Low,
+		Vol:  exTicker.Vol,
+		Time: conver.Int64Must(tickStr),
+	}
+	return &ticker
+}
+
+// positionA2U convert api position to usr depth
+func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant.Position {
+	resPositionVec := []constant.Position{}
+	for _, position := range positions {
+		var resPosition constant.Position
+		if position.BuyAmount > 0 {
+			resPosition.Price = position.BuyPriceAvg
+			resPosition.Amount = position.BuyAmount
+			resPosition.Available = position.BuyAvailable
+			resPosition.MarginLevel = position.LeverRate
+			resPosition.ProfitRate = position.LongPnlRatio
+			resPosition.Profit = position.BuyProfit
+			resPosition.ForcePrice = position.ForceLiquPrice
+			resPosition.TradeType = constant.TradeTypeBuy
+			resPosition.ContractType = position.ContractType
+			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositionVec = append(resPositionVec, resPosition)
+		}
+		if position.SellAmount > 0 {
+			resPosition.Price = position.SellPriceAvg
+			resPosition.Amount = position.SellAmount
+			resPosition.Available = position.SellAvailable
+			resPosition.MarginLevel = position.LeverRate
+			resPosition.ProfitRate = position.ShortPnlRatio
+			resPosition.Profit = position.SellProfit
+			resPosition.ForcePrice = position.ForceLiquPrice
+			resPosition.TradeType = constant.TradeTypeSell
+			resPosition.ContractType = e.contractType
+			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
+			resPositionVec = append(resPositionVec, resPosition)
+		}
+	}
+	return resPositionVec
+}
+
+// depthA2U convert api depth to usr depth
+func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
+	var resDepth constant.Depth
+	resDepth.Time = depth.UTime.Unix()
+	for _, ask := range depth.AskList {
+		var resAsk constant.DepthRecord
+		resAsk.Amount = ask.Amount
+		resAsk.Price = ask.Price
+		resDepth.Asks = append(resDepth.Asks, resAsk)
+	}
+	for _, bid := range depth.BidList {
+		var resBid constant.DepthRecord
+		resBid.Amount = bid.Amount
+		resBid.Price = bid.Price
+		resDepth.Bids = append(resDepth.Bids, resBid)
+	}
+	resDepth.ContractType = e.GetContractType()
+	resDepth.StockType = e.GetStockType()
+	return &resDepth
+}
+
+// SetStockTypeMap set stock type map
+func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
+	e.stockTypeMap = m
+}
+
+// GetStockTypeMap get stock type map
+func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
+	return e.stockTypeMap
+}
+
 func (e *FutureExchange) load() {
 	for e.loadstatus == constant.Running {
 		subscribe := e.GetSubscribe()
@@ -102,6 +200,7 @@ func (e *FutureExchange) SetTradeTypeMapReverse(key string, val int) {
 	e.tradeTypeMapReverse[key] = val
 }
 
+// Export API for exchange
 // NewFutureExchange create an exchange struct of futureExchange.com
 func NewFutureExchange(opt constant.Option) *FutureExchange {
 	futureExchange := FutureExchange{
@@ -130,30 +229,6 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 	futureExchange.SetID(opt.Index)
 	futureExchange.back = false
 	return &futureExchange
-}
-
-// ValidBuy ...
-func (e *FutureExchange) ValidBuy() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeBuy {
-		return nil
-	}
-	if dir == constant.TradeTypeShortClose {
-		return nil
-	}
-	return errors.New("buy direction error:" + e.GetDirection())
-}
-
-// ValidSell ...
-func (e *FutureExchange) ValidSell() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeSell {
-		return nil
-	}
-	if dir == constant.TradeTypeLongClose {
-		return nil
-	}
-	return errors.New("sell direction error:" + e.GetDirection())
 }
 
 // Stop ...
@@ -210,31 +285,6 @@ func (e *FutureExchange) Init(opt constant.Option) error {
 	return nil
 }
 
-// SetStockTypeMap set stock type map
-func (e *FutureExchange) SetStockTypeMap(m map[string]goex.CurrencyPair) {
-	e.stockTypeMap = m
-}
-
-// GetStockTypeMap get stock type map
-func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
-	return e.stockTypeMap
-}
-
-// Log print something to console
-func (e *FutureExchange) Log(msgs ...interface{}) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
-}
-
-// GetType get the type of this exchange
-func (e *FutureExchange) GetType() string {
-	return e.option.Type
-}
-
-// GetName get the name of this exchange
-func (e *FutureExchange) GetName() string {
-	return e.option.Name
-}
-
 // GetDepth get depth from exchange
 func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -253,27 +303,6 @@ func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 	return resDepth, nil
 }
 
-// depthA2U convert api depth to usr depth
-func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
-	var resDepth constant.Depth
-	resDepth.Time = depth.UTime.Unix()
-	for _, ask := range depth.AskList {
-		var resAsk constant.DepthRecord
-		resAsk.Amount = ask.Amount
-		resAsk.Price = ask.Price
-		resDepth.Asks = append(resDepth.Asks, resAsk)
-	}
-	for _, bid := range depth.BidList {
-		var resBid constant.DepthRecord
-		resBid.Amount = bid.Amount
-		resBid.Price = bid.Price
-		resDepth.Bids = append(resDepth.Bids, resBid)
-	}
-	resDepth.ContractType = e.GetContractType()
-	resDepth.StockType = e.GetStockType()
-	return &resDepth
-}
-
 // GetPosition get position from exchange
 func (e *FutureExchange) getPosition(stockType string) ([]constant.Position, error) {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
@@ -289,46 +318,6 @@ func (e *FutureExchange) getPosition(stockType string) ([]constant.Position, err
 	resPosition := e.positionA2U(positions)
 	return resPosition, nil
 }
-
-// positionA2U convert api position to usr depth
-func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant.Position {
-	resPositionVec := []constant.Position{}
-	for _, position := range positions {
-		var resPosition constant.Position
-		if position.BuyAmount > 0 {
-			resPosition.Price = position.BuyPriceAvg
-			resPosition.Amount = position.BuyAmount
-			resPosition.Available = position.BuyAvailable
-			resPosition.MarginLevel = position.LeverRate
-			resPosition.ProfitRate = position.LongPnlRatio
-			resPosition.Profit = position.BuyProfit
-			resPosition.ForcePrice = position.ForceLiquPrice
-			resPosition.TradeType = constant.TradeTypeBuy
-			resPosition.ContractType = position.ContractType
-			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositionVec = append(resPositionVec, resPosition)
-		}
-		if position.SellAmount > 0 {
-			resPosition.Price = position.SellPriceAvg
-			resPosition.Amount = position.SellAmount
-			resPosition.Available = position.SellAvailable
-			resPosition.MarginLevel = position.LeverRate
-			resPosition.ProfitRate = position.ShortPnlRatio
-			resPosition.Profit = position.SellProfit
-			resPosition.ForcePrice = position.ForceLiquPrice
-			resPosition.TradeType = constant.TradeTypeSell
-			resPosition.ContractType = e.contractType
-			resPosition.StockType = position.Symbol.CurrencyA.Symbol + "/" + position.Symbol.CurrencyB.Symbol
-			resPositionVec = append(resPositionVec, resPosition)
-		}
-	}
-	return resPositionVec
-}
-
-// GetMinAmount get the min trade amount of this exchange
-//func (e *FutureExchange) GetMinAmount(stock string) float64 {
-//	return e.minAmountMap[stock]
-//}
 
 // GetAccount get the account detail of this exchange
 func (e *FutureExchange) getAccount() (*constant.Account, error) {
@@ -452,25 +441,6 @@ func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
 	return nil, fmt.Errorf("GetOrder() error, the error number is not found")
 }
 
-// CompareOrders ...
-func (e *FutureExchange) CompareOrders(lft, rht []constant.Order) bool {
-	mp := make(map[string]bool)
-	if len(lft) != len(rht) {
-		return false
-	}
-	for _, order := range lft {
-		mp[order.Id] = true
-	}
-
-	for _, order := range rht {
-		_, ok := mp[order.Id]
-		if !ok {
-			return false
-		}
-	}
-	return true
-}
-
 // GetOrders get all unfilled orders
 func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 	exchangeStockType, ok := e.stockTypeMap[symbol]
@@ -485,22 +455,6 @@ func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 	}
 	resOrders := e.orderA2U(orders)
 	return resOrders, nil
-}
-
-func (e *FutureExchange) orderA2U(orders []goex.FutureOrder) []constant.Order {
-	resOrders := make([]constant.Order, 0)
-	for _, order := range orders {
-		resOrder := constant.Order{
-			Id:         order.OrderID2,
-			Price:      order.Price,
-			Amount:     order.Amount,
-			DealAmount: order.DealAmount,
-			TradeType:  e.tradeTypeMap[order.OType],
-			StockType:  e.GetStockType(),
-		}
-		resOrders = append(resOrders, resOrder)
-	}
-	return resOrders
 }
 
 // CancelOrder cancel an order
@@ -537,22 +491,6 @@ func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	}
 	ticker := e.tickerA2U(exTicker)
 	return ticker, nil
-}
-
-// tickerA2U ...
-func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
-	//force covert
-	tickStr := fmt.Sprint(exTicker.Date)
-	ticker := constant.Ticker{
-		Last: exTicker.Last,
-		Buy:  exTicker.Buy,
-		Sell: exTicker.Sell,
-		High: exTicker.High,
-		Low:  exTicker.Low,
-		Vol:  exTicker.Vol,
-		Time: conver.Int64Must(tickStr),
-	}
-	return &ticker
 }
 
 // GetRecords get candlestick data

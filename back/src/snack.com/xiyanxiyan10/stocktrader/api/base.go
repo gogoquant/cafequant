@@ -679,3 +679,42 @@ func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 func (e *BaseExchange) getPosition(symbol string) ([]constant.Position, error) {
 	panic("get records")
 }
+
+// ValidBuy ...
+func (e *BaseExchange) ValidBuy() error {
+	dir := e.GetDirection()
+	if dir == constant.TradeTypeBuy {
+		return nil
+	}
+	if dir == constant.TradeTypeShortClose {
+		return nil
+	}
+	return errors.New("buy direction error:" + e.GetDirection())
+}
+
+// ValidSell ...
+func (e *BaseExchange) ValidSell() error {
+	dir := e.GetDirection()
+	if dir == constant.TradeTypeSell {
+		return nil
+	}
+	if dir == constant.TradeTypeLongClose {
+		return nil
+	}
+	return errors.New("sell direction error:" + e.GetDirection())
+}
+
+// Log print something to console
+func (e *BaseExchange) Log(msgs ...interface{}) {
+	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
+}
+
+// GetType get the type of this exchange
+func (e *BaseExchange) GetType() string {
+	return e.option.Type
+}
+
+// GetName get the name of this exchange
+func (e *BaseExchange) GetName() string {
+	return e.option.Name
+}
