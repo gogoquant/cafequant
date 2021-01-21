@@ -40,7 +40,7 @@ func (e *FutureExchange) load() {
 				if action == constant.CacheTicker {
 					ticker, err := e.getTicker(symbol)
 					if err == nil {
-						e.SetCache(action, symbol, *ticker, "")
+						e.SetCache(action, symbol, *ticker, e.isRefresh())
 					} else {
 						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
@@ -50,7 +50,7 @@ func (e *FutureExchange) load() {
 				if action == constant.CachePosition {
 					ticker, err := e.getPosition(symbol)
 					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
+						e.SetCache(action, symbol, ticker, e.isRefresh())
 					} else {
 						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
@@ -60,7 +60,7 @@ func (e *FutureExchange) load() {
 				if action == constant.CacheRecord {
 					ticker, err := e.getRecords(symbol)
 					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
+						e.SetCache(action, symbol, ticker, e.isRefresh())
 					} else {
 						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
@@ -70,7 +70,7 @@ func (e *FutureExchange) load() {
 				if action == constant.CacheOrder {
 					ticker, err := e.getOrders(symbol)
 					if err == nil {
-						e.SetCache(action, symbol, ticker, "")
+						e.SetCache(action, symbol, ticker, e.isRefresh())
 					} else {
 						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
@@ -80,7 +80,7 @@ func (e *FutureExchange) load() {
 				if action == constant.CacheAccount {
 					ticker, err := e.getAccount()
 					if err == nil {
-						e.SetCache(action, symbol, *ticker, "")
+						e.SetCache(action, symbol, *ticker, e.isRefresh())
 					} else {
 						e.logger.Log("load"+action, symbol, 0, 0, err.Error())
 					}
@@ -162,11 +162,13 @@ func (e *FutureExchange) Stop() error {
 	for e.loadstatus != constant.Stop {
 		e.AutoSleep()
 	}
+	e.BaseExchange.Stop()
 	return nil
 }
 
 // Start ...
 func (e *FutureExchange) Start() error {
+	e.BaseExchange.Start()
 	defaultTimeOut := constant.DefaultTimeOut
 	timeOutStr := config.String("timeout")
 	if timeOutStr != "" {

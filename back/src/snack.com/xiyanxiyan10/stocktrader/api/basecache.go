@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
@@ -16,7 +15,10 @@ type BaseExchangeCache struct {
 
 // BaseExchangeCaches ...
 type BaseExchangeCaches struct {
-	mutex sync.Mutex
+	mutex      sync.Mutex
+	ch         chan [2]string
+	waitsymbol string
+	waitaction string
 
 	depth    map[string]BaseExchangeCache
 	position map[string]BaseExchangeCache
@@ -29,6 +31,26 @@ type BaseExchangeCaches struct {
 	//caches map[string]BaseExchangeCache
 }
 
+// Wait ...
+func (e *BaseExchangeCaches) wait(symbol, action string) {
+	e.waitsymbol = symbol
+	e.waitaction = action
+}
+
+// PUSH push val into
+func (e *BaseExchangeCaches) push(symbol, action string) {
+	if e.waitsymbol == symbol && e.waitaction == action {
+		e.ch <- [2]string{symbol, action}
+	}
+	return
+}
+
+// POP val out
+func (e *BaseExchangeCaches) pop(symbol, action string) interface{} {
+	val := <-e.ch
+	return val
+}
+
 // Subscribe ...
 func (e *BaseExchangeCaches) Subscribe() interface{} {
 	return nil
@@ -36,10 +58,26 @@ func (e *BaseExchangeCaches) Subscribe() interface{} {
 
 // GetCache get ws val from cache
 func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool) BaseExchangeCache {
-	e.mutex.Lock()
-	defer e.mutex.Unlock()
-
 	var dst BaseExchangeCache
+	if fresh {
+		for {
+			val := e.pop(stockSymbol, key)
+			if val == nil {
+				// the chan close
+				dst.Data = nil
+				return dst
+			}
+			vec := val.([2]string)
+			if vec[0] != stockSymbol || vec[1] != key {
+				//wait the next one
+				continue
+			}
+			break
+		}
+	}
+
+	e.mutex.Lock()
+
 	if key == constant.CacheTicker {
 		dst = e.ticker[stockSymbol]
 	}
@@ -59,20 +97,18 @@ func (e *BaseExchangeCaches) GetCache(key string, stockSymbol string, fresh bool
 	if key == constant.CacheOrder {
 		dst = e.order[stockSymbol]
 	}
-	fmt.Printf("dst is %v\n", dst)
 	if !dst.Mark {
 		dst.Data = nil
 	}
-	if fresh {
-		dst.Mark = false
-	}
+	e.mutex.Unlock()
+
 	return dst
 }
 
 // SetCache set ws val into cache
-func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interface{}, mark string) {
+func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interface{}, fresh bool) {
+	//lock
 	e.mutex.Lock()
-	defer e.mutex.Unlock()
 	var item BaseExchangeCache
 
 	item.Data = val
@@ -112,5 +148,11 @@ func (e *BaseExchangeCaches) SetCache(key string, stockSymbol string, val interf
 			e.order = make(map[string]BaseExchangeCache)
 		}
 		e.order[stockSymbol] = item
+	}
+	e.mutex.Unlock()
+	// unlock
+
+	if fresh {
+		e.push(stockSymbol, key)
 	}
 }
