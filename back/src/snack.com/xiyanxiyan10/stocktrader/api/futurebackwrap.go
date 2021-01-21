@@ -1,9 +1,7 @@
 package api
 
 import (
-	"errors"
 	"fmt"
-	goex "github.com/nntaoli-project/goex"
 	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
@@ -21,45 +19,13 @@ func NewFutureBackExchange(opt constant.Option) (Exchange, error) {
 type ExchangeFutureBackLink struct {
 	ExchangeFutureBack
 
-	stockTypeMap        map[string]goex.CurrencyPair
-	stockTypeMapReverse map[goex.CurrencyPair]string
-
-	tradeTypeMap        map[int]string
-	tradeTypeMapReverse map[string]int
-	exchangeTypeMap     map[string]string
-
 	records map[string][]constant.Record
-}
-
-// SetTradeTypeMap ...
-func (e *ExchangeFutureBackLink) SetTradeTypeMap(key int, val string) {
-	e.tradeTypeMap[key] = val
-}
-
-// SetTradeTypeMapReverse ...
-func (e *ExchangeFutureBackLink) SetTradeTypeMapReverse(key string, val int) {
-	e.tradeTypeMapReverse[key] = val
 }
 
 // NewExchangeFutureBackLink create an exchange struct of futureExchange.com
 func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
 	futureExchange := ExchangeFutureBackLink{
-		stockTypeMap: map[string]goex.CurrencyPair{
-			"BTC/USD": goex.BTC_USD,
-		},
-		stockTypeMapReverse: map[goex.CurrencyPair]string{},
-		tradeTypeMapReverse: map[string]int{},
-		tradeTypeMap: map[int]string{
-			goex.OPEN_BUY:   constant.TradeTypeLong,
-			goex.OPEN_SELL:  constant.TradeTypeShort,
-			goex.CLOSE_BUY:  constant.TradeTypeLongClose,
-			goex.CLOSE_SELL: constant.TradeTypeShortClose,
-		},
-		exchangeTypeMap: map[string]string{
-			constant.HuoBiDm: goex.HBDM,
-		},
 		records: make(map[string][]constant.Record),
-		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	opt.Limit = 10.0
 	//futureExchange.BaseExchange.Init(opt)
@@ -70,65 +36,10 @@ func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
 	return &futureExchange
 }
 
-// ValidBuy ...
-func (e *ExchangeFutureBackLink) ValidBuy() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeBuy {
-		return nil
-	}
-	if dir == constant.TradeTypeShortClose {
-		return nil
-	}
-	return errors.New("错误buy交易方向: " + e.GetDirection())
-}
-
-// ValidSell ...
-func (e *ExchangeFutureBackLink) ValidSell() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeSell {
-		return nil
-	}
-	if dir == constant.TradeTypeLongClose {
-		return nil
-	}
-	return errors.New("错误sell交易方向:" + e.GetDirection())
-}
-
 // Init init the instance of this exchange
 func (e *ExchangeFutureBackLink) Init(opt constant.Option) error {
 	e.BaseExchange.Init(opt)
-	for k, v := range e.stockTypeMap {
-		e.stockTypeMapReverse[v] = k
-	}
-	for k, v := range e.tradeTypeMap {
-		e.tradeTypeMapReverse[v] = k
-	}
 	return nil
-}
-
-// SetStockTypeMap set stock type map
-func (e *ExchangeFutureBackLink) SetStockTypeMap(m map[string]goex.CurrencyPair) {
-	e.stockTypeMap = m
-}
-
-// GetStockTypeMap get stock type map
-func (e *ExchangeFutureBackLink) GetStockTypeMap() map[string]goex.CurrencyPair {
-	return e.stockTypeMap
-}
-
-// Log print something to console
-func (e *ExchangeFutureBackLink) Log(msgs ...interface{}) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
-}
-
-// GetType get the type of this exchange
-func (e *ExchangeFutureBackLink) GetType() string {
-	return e.option.Type
-}
-
-// GetName get the name of this exchange
-func (e *ExchangeFutureBackLink) GetName() string {
-	return e.option.Name
 }
 
 // GetDepth get depth from exchange
