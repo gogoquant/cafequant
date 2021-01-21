@@ -236,25 +236,6 @@ func (e *FutureExchange) GetName() string {
 }
 
 // GetDepth get depth from exchange
-func (e *FutureExchange) GetDepth() (*constant.Depth, error) {
-	stockType := e.GetStockType()
-	io := e.GetIO()
-	refresh := false
-	if io == constant.IOBLOCK {
-		refresh = true
-	}
-	if io == constant.IOCACHE || io == constant.IOBLOCK {
-		val := e.GetCache(constant.CacheDepth, e.GetStockType(), refresh)
-		if val.Data == nil {
-			return nil, fmt.Errorf("depth not load ")
-		}
-		dst := val.Data.(constant.Depth)
-		return &dst, nil
-	}
-	return e.getDepth(stockType)
-}
-
-// GetDepth get depth from exchange
 func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {

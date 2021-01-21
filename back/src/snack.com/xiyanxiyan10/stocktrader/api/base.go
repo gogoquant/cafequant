@@ -578,6 +578,25 @@ func (e *BaseExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	panic("get ticker")
 }
 
+// GetDepth get depth from exchange
+func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
+	stockType := e.GetStockType()
+	io := e.GetIO()
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
+		val := e.GetCache(constant.CacheDepth, stockType, e.isRefresh())
+		if val.Data == nil {
+			return nil, fmt.Errorf("depth not load ")
+		}
+		dst := val.Data.(constant.Depth)
+		return &dst, nil
+	}
+	return e.getDepth(stockType)
+}
+
+func (e *BaseExchange) getDepth(stockType string) (*constant.Depth, error) {
+	panic("get depth")
+}
+
 // GetOrder ...
 func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
 	stockType := e.GetStockType()
