@@ -44,7 +44,7 @@ func GetTraderLogStatus(id int64) (status string) {
 
 // Switch ...
 func Switch(id int64) (err error) {
-	if GetTraderStatus(id) > 0 {
+	if GetTraderStatus(id) == constant.Running {
 		return stop(id)
 	}
 	return run(id)
@@ -209,6 +209,8 @@ func initialize(id int64) (trader Global, err error) {
 			trader.es = append(trader.es, exchange)
 		}
 	}
+	trader.goplugin = goExtend
+
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")
 		return
@@ -226,7 +228,6 @@ func initialize(id int64) (trader Global, err error) {
 	} else {
 		err = fmt.Errorf("please use exchanges all back or all online")
 	}
-	trader.goplugin = goExtend
 	return
 }
 
@@ -289,7 +290,7 @@ func runJs(trader Global, id int64) (err error) {
 			trader.Pending = constant.Disable
 		}()
 		trader.LastRunAt = time.Now()
-		trader.Status = 1
+		trader.Status = constant.Running
 		if _, err := trader.ctx.Run(trader.Algorithm.Script); err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 		}
