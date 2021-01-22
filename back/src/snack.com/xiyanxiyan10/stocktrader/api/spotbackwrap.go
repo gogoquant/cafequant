@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"snack.com/xiyanxiyan10/conver"
@@ -70,30 +69,6 @@ func NewExchangeBackLink(opt constant.Option) *ExchangeBackLink {
 	return &futureExchange
 }
 
-// ValidBuy ...
-func (e *ExchangeBackLink) ValidBuy() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeBuy {
-		return nil
-	}
-	if dir == constant.TradeTypeShortClose {
-		return nil
-	}
-	return errors.New("错误buy交易方向: " + e.GetDirection())
-}
-
-// ValidSell ...
-func (e *ExchangeBackLink) ValidSell() error {
-	dir := e.GetDirection()
-	if dir == constant.TradeTypeSell {
-		return nil
-	}
-	if dir == constant.TradeTypeLongClose {
-		return nil
-	}
-	return errors.New("错误sell交易方向:" + e.GetDirection())
-}
-
 // Init init the instance of this exchange
 func (e *ExchangeBackLink) Init(opt constant.Option) error {
 	e.BaseExchange.Init(opt)
@@ -116,21 +91,6 @@ func (e *ExchangeBackLink) GetStockTypeMap() map[string]goex.CurrencyPair {
 	return e.stockTypeMap
 }
 
-// Log print something to console
-func (e *ExchangeBackLink) Log(msgs ...interface{}) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
-}
-
-// GetType get the type of this exchange
-func (e *ExchangeBackLink) GetType() string {
-	return e.option.Type
-}
-
-// GetName get the name of this exchange
-func (e *ExchangeBackLink) GetName() string {
-	return e.option.Name
-}
-
 // GetDepth get depth from exchange
 func (e *ExchangeBackLink) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
@@ -144,12 +104,7 @@ func (e *ExchangeBackLink) GetDepth() (*constant.Depth, error) {
 
 // GetPosition get position from exchange
 func (e *ExchangeBackLink) GetPosition() ([]constant.Position, error) {
-	return nil, fmt.Errorf("todo")
-}
-
-// GetMinAmount get the min trade amount of this exchange
-func (e *ExchangeBackLink) GetMinAmount(stock string) float64 {
-	return e.minAmountMap[stock]
+	return nil, fmt.Errorf("spot without position")
 }
 
 // GetAccount get the account detail of this exchange
@@ -157,7 +112,7 @@ func (e *ExchangeBackLink) GetAccount() (*constant.Account, error) {
 	account, err := e.ExchangeBack.GetAccount()
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetAccount() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetAccount() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetAccount() error, the error number is %s", err.Error())
 	}
 	return account, nil
 }
@@ -169,7 +124,7 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) (string
 	stockType := e.GetStockType()
 	if err := e.ValidBuy(); err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
-		return "", fmt.Errorf("Buy() error, the error number is ", err.Error())
+		return "", fmt.Errorf("Buy() error, the error number is %s", err.Error())
 	}
 	if price == "-1" {
 		ord, err = e.ExchangeBack.MarketBuy(amount, price, stockType)
@@ -179,7 +134,7 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) (string
 
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
-		return "", fmt.Errorf("Buy() error, the error number is ", err.Error())
+		return "", fmt.Errorf("Buy() error, the error number is %s", err.Error())
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
@@ -195,7 +150,7 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) (strin
 	stockType := e.GetStockType()
 	if err := e.ValidSell(); err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
-		return "", fmt.Errorf("Sell() error, the error number is ", err.Error())
+		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
 	if price == "-1" {
 		ord, err = e.ExchangeBack.MarketSell(amount, price, stockType)
@@ -205,7 +160,7 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) (strin
 
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
-		return "", fmt.Errorf("Buy() error, the error number is ", err.Error())
+		return "", fmt.Errorf("Buy() error, the error number is %s", err.Error())
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
@@ -218,28 +173,9 @@ func (e *ExchangeBackLink) GetOrder(id string) (*constant.Order, error) {
 	order, err := e.ExchangeBack.GetOneOrder(id, e.GetStockType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetOrder() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetOrder() error, the error number is %s", err.Error())
 	}
 	return order, nil
-}
-
-// CompareOrders ...
-func (e *ExchangeBackLink) CompareOrders(lft, rht []constant.Order) bool {
-	mp := make(map[string]bool)
-	if len(lft) != len(rht) {
-		return false
-	}
-	for _, order := range lft {
-		mp[order.Id] = true
-	}
-
-	for _, order := range rht {
-		_, ok := mp[order.Id]
-		if !ok {
-			return false
-		}
-	}
-	return true
 }
 
 // GetOrders get all unfilled orders
@@ -247,7 +183,7 @@ func (e *ExchangeBackLink) GetOrders() ([]constant.Order, error) {
 	orders, err := e.ExchangeBack.GetUnfinishOrders(e.GetStockType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetOrders() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetOrders() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetOrders() error, the error number is %s", err.Error())
 	}
 	return orders, nil
 }
@@ -257,10 +193,10 @@ func (e *ExchangeBackLink) CancelOrder(orderID string) (bool, error) {
 	result, err := e.ExchangeBack.CancelOrder(orderID, e.GetStockType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
-		return false, fmt.Errorf("CancelOrder() error, the error number is ", err.Error())
+		return false, fmt.Errorf("CancelOrder() error, the error number is %s", err.Error())
 	}
 	if !result {
-		return false, fmt.Errorf("CancelOrder() error, the error number is ")
+		return false, fmt.Errorf("CancelOrder() error, the error number is result fail")
 	}
 	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() success")
 	return true, nil
@@ -271,7 +207,7 @@ func (e *ExchangeBackLink) GetTicker() (*constant.Ticker, error) {
 	ticker, err := e.ExchangeBack.GetTicker(e.GetStockType())
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetTicker() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetTicker() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetTicker() error, the error number is %s", err.Error())
 	}
 	return ticker, nil
 }

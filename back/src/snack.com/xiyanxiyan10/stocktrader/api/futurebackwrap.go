@@ -68,7 +68,7 @@ func (e *ExchangeFutureBackLink) GetAccount() (*constant.Account, error) {
 	account, err := e.ExchangeFutureBack.GetAccount()
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetAccount() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetAccount() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetAccount() error, the error number is %s", err.Error())
 	}
 	return account, nil
 }
@@ -152,25 +152,6 @@ func (e *ExchangeFutureBackLink) GetOrder(id string) (*constant.Order, error) {
 		return nil, fmt.Errorf("GetOrder() error, the error number is:%s", err.Error())
 	}
 	return order, nil
-}
-
-// CompareOrders ...
-func (e *ExchangeFutureBackLink) CompareOrders(lft, rht []constant.Order) bool {
-	mp := make(map[string]bool)
-	if len(lft) != len(rht) {
-		return false
-	}
-	for _, order := range lft {
-		mp[order.Id] = true
-	}
-
-	for _, order := range rht {
-		_, ok := mp[order.Id]
-		if !ok {
-			return false
-		}
-	}
-	return true
 }
 
 // GetOrders get all unfilled orders
