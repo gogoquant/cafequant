@@ -31,7 +31,7 @@ type BaseExchangeCaches struct {
 	//caches map[string]BaseExchangeCache
 }
 
-// Wait ...
+// Wait set wait symbol + action
 func (e *BaseExchangeCaches) wait(symbol, action string) {
 	e.waitsymbol = symbol
 	e.waitaction = action
@@ -55,6 +55,7 @@ func (e *BaseExchangeCaches) pop(symbol, action string) interface{} {
 func (e *BaseExchangeCaches) GetCache(action string, stockSymbol string, fresh bool) BaseExchangeCache {
 	var dst BaseExchangeCache
 	if fresh {
+		// block wait
 		for {
 			val := e.pop(stockSymbol, action)
 			if val == nil {
