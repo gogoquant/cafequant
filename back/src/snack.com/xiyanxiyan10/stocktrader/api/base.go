@@ -107,24 +107,24 @@ func stockPair2Vec(pair string) []string {
 	return res
 }
 
-// Set eriod
+// SetPeriod Set period
 func (e *BaseExchange) SetPeriod(period string) {
 	e.periodVal = period
 }
 
-// Get period
+// GetPeriod Get period
 func (e *BaseExchange) GetPeriod() string {
 	return e.periodVal
 }
 
-// Set size
-func (e *BaseExchange) SetSize(size int) {
+// SetPeriodSize Set size
+func (e *BaseExchange) SetPeriodSize(size int) {
 	e.size = size
 
 }
 
-// Get Size
-func (e *BaseExchange) GetSize() int {
+// GetPeriodSize Get Size
+func (e *BaseExchange) GetPeriodSize() int {
 	return e.size
 }
 

@@ -499,7 +499,7 @@ func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error)
 	var period int64 = -1
 	var since = 0
 	periodStr := e.GetPeriod()
-	size := e.GetSize()
+	size := e.GetPeriodSize()
 	period, ok = e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")

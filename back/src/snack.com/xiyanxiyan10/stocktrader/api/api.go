@@ -7,9 +7,9 @@ import (
 
 // Exchange interface
 type Exchange interface {
-	// 初始化完毕开始运转
+	// 初始化完毕start run
 	Start() error
-	// 初始化完毕开始运转
+	// 初始化完毕stop run
 	Stop() error
 	// 是否在回测中
 	IsBack() bool
@@ -22,9 +22,9 @@ type Exchange interface {
 	// Get period
 	GetPeriod() string
 	// Set size
-	SetSize(int)
+	SetPeriodSize(int)
 	// Get Size
-	GetSize() int
+	GetPeriodSize() int
 	// 获取订阅
 	GetSubscribe() map[string][]string
 	// 订阅

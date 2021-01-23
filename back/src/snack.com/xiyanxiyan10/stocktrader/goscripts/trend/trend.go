@@ -14,7 +14,6 @@ import (
 // TrendStragey ...
 type TrendStragey struct {
 	goplugin.GoStragey
-	Period string
 	Status bool
 }
 
@@ -36,7 +35,7 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetContractType(constract)
 	exchange.SetStockType(symbol)
 	exchange.SetPeriod(period)
-	exchange.SetSize(10)
+	exchange.SetPeriodSize(10)
 	exchange.SetSubscribe(symbol, constant.CacheAccount)
 	exchange.SetSubscribe(symbol, constant.CacheRecord)
 	exchange.SetSubscribe(symbol, constant.CachePosition)
@@ -44,7 +43,6 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetSubscribe(symbol, constant.CacheTicker)
 	//exchange.Start()
 
-	e.Period = period
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
 	return nil
@@ -66,7 +64,7 @@ func (e *TrendStragey) Run(map[string]string) error {
 // Exit ...
 func (e *TrendStragey) Exit(map[string]string) error {
 	exchange := e.Exchanges[0]
-	exchange.Start()
+	exchange.Stop()
 
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
 	e.Status = false
@@ -83,13 +81,11 @@ func main() {
 		fmt.Printf("config init error is %s\n", err.Error())
 		return
 	}
-	var logger model.Logger
 	var opt constant.Option
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
 	var period = "M5"
-	logger.Back = true
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
@@ -117,13 +113,18 @@ func main() {
 	param["constract"] = constract
 	param["period"] = period
 	trend.AddExchange(exchange)
+
+	var logger model.Logger
+
+	logger.Back = true
+
 	trend.AddLogger(&logger)
 	trend.Init(param)
 	trend.Run(nil)
 }
 
-// Trend ...
-func (e *TrendStragey) Processs() error {
+// Process ...
+func (e *TrendStragey) Process() error {
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
 	exchange.GetRecords()
@@ -134,7 +135,7 @@ func (e *TrendStragey) Processs() error {
 	return nil
 }
 
-// trendAction put order and watch this order
+// Action trendAction put order and watch this order
 func (e *TrendStragey) Action(low, high, amount float64, dir int) error {
 	exchange := e.Exchanges[0]
 	direction := "buy"

@@ -475,7 +475,7 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 // GetRecords get candlestick data
 func (e *ExchangeBack) GetRecords() ([]constant.Record, error) {
 	period := e.GetPeriod()
-	size := e.GetSize()
+	size := e.GetPeriodSize()
 	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")

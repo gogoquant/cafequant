@@ -35,7 +35,6 @@ type GlobalHandler interface {
 	DrawKLine(time string, a, b, c, d float32)
 	DrawLine(name string, time string, data float32)
 	DrawPlot() error
-	PopMsg() string
 }
 
 // Global ...
