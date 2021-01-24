@@ -181,7 +181,6 @@ type Option struct {
 	Name      string
 	AccessKey string
 	SecretKey string
-	Ws        PIPHandler
 
 	Limit     int64
 	LastSleep int64
