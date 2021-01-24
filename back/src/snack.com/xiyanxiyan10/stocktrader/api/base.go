@@ -230,13 +230,15 @@ func (e *BaseExchange) Sleep(intervals ...interface{}) {
 func (e *BaseExchange) BackGetStats() ([]dbtypes.Stats, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetStats error, the error number is %s", r))
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetStats()
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetStats error, the error number is %s", ohlc.Message)
 	}
 	return ohlc.Data, nil
@@ -253,7 +255,8 @@ func (e *BaseExchange) BackGetMarkets() ([]string, error) {
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetMarkets()
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetMarkets error, the error number is %s", ohlc.Message)
 	}
 	return ohlc.Data, nil
@@ -263,13 +266,15 @@ func (e *BaseExchange) BackGetMarkets() ([]string, error) {
 func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbol error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetSymbol error, the error number is %s", r))
 		}
 	}()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetSymbols(e.option.Type)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetSymbols error, the error number is %s", ohlc.Message)
 	}
 	return ohlc.Data, nil
@@ -279,7 +284,8 @@ func (e *BaseExchange) BackGetSymbols() ([]string, error) {
 func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetOHLCs error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -291,7 +297,8 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.GetOHLCs(opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
 		return nil, fmt.Errorf("GetOHLCs error, the error number is %s", ohlc.Message)
 	}
 	return ohlc.Data, nil
@@ -301,7 +308,8 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLC error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("PutOHLC error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -318,7 +326,8 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	datum.Volume = volume
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLC error, the error number is %s\n", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("PutOHLC error, the error number is %s\n", ohlc.Message))
 		return fmt.Errorf("PutOHLC error, the error number is %s", ohlc.Message)
 	}
 	return nil
@@ -328,7 +337,8 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 func (e *BaseExchange) BackPutOHLCs(datum dbtypes.OHLC, period string) error {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("PutOHLCs error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -338,7 +348,8 @@ func (e *BaseExchange) BackPutOHLCs(datum dbtypes.OHLC, period string) error {
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.PutOHLC(datum, opt)
 	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
 		return fmt.Errorf("PutOHLCs error, the error number is %s", ohlc.Message)
 	}
 	return nil
@@ -348,7 +359,8 @@ func (e *BaseExchange) BackPutOHLCs(datum dbtypes.OHLC, period string) error {
 func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GeTimeRanege error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GeTimeRanege error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -357,7 +369,8 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetTimeRange(opt)
 	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
 	}
 	return timeRange.Data, nil
 }
@@ -366,7 +379,8 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetPeriodRange error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetPeriodRange error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -375,7 +389,8 @@ func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
 		return [2]int64{}, fmt.Errorf("GetPeriodRange, the error number is " + timeRange.Message)
 	}
 	return timeRange.Data, nil
@@ -386,7 +401,8 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 
 	defer func() {
 		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprintf("GetDepth error, the error number is %s", r))
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+				fmt.Sprintf("GetDepth error, the error number is %s", r))
 		}
 	}()
 	var opt dbtypes.Option
@@ -398,7 +414,8 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	depth := client.GetDepth(opt)
 	if !depth.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
 		return dbtypes.Depth{}, fmt.Errorf("GetDepth error, the error number not in backtest")
 	}
 	return depth.Data, nil
@@ -426,11 +443,13 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	return nil
 }
 
+// Stop ...
 func (e *BaseExchange) Stop() error {
 	close(e.ch)
 	return nil
 }
 
+// Start ...
 func (e *BaseExchange) Start() error {
 	return nil
 }
