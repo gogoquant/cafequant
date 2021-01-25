@@ -132,6 +132,7 @@ func (e *FutureExchange) GetStockTypeMap() map[string]goex.CurrencyPair {
 	return e.stockTypeMap
 }
 
+// load synv data from server
 func (e *FutureExchange) load() {
 	for e.loadstatus == constant.Running {
 		subscribe := e.GetSubscribe()
