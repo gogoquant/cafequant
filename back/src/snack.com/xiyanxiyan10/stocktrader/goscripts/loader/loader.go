@@ -37,7 +37,7 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.Start()
 	exchange.SetLimit(1000)
 	exchange.SetPeriod(period)
-	exchange.SetSize(3)
+	exchange.SetPeriodSize(3)
 	exchange.SetSubscribe(symbol, constant.CacheTicker)
 	exchange.SetSubscribe(symbol, constant.CacheRecord)
 

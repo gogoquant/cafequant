@@ -21,11 +21,7 @@ require (
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mayiweb/goctp v0.0.0-20190917081845-ed4a7d3f7e3e
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nntaoli-project/goex v1.2.5
-	github.com/qiniu/py v1.2.2
-	github.com/qiniu/x v1.10.5
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
 	github.com/sirupsen/logrus v1.6.0 // indirect
