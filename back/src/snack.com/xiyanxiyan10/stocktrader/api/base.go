@@ -365,7 +365,7 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
+	opt.Symbol = e.GetDbSymbol()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetTimeRange(opt)
 	if !timeRange.Success {

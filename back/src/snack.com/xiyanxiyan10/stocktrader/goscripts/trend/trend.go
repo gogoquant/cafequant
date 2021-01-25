@@ -59,8 +59,15 @@ func (e *TrendStragey) Run(map[string]string) error {
 		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
 		return nil
 	}
-
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols success:", symbols)
+
+	times, err := exchange.BackGetTimeRange()
+	if err != nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
+		return nil
+	}
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times success:", times)
+
 	for e.Status {
 		time.Sleep(time.Duration(3) * time.Minute)
 	}
