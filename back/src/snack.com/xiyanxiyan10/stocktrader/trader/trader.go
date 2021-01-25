@@ -324,7 +324,6 @@ func stop(id int64) (err error) {
 	}
 	Executor[id].Pending = constant.Enable
 	trader := Executor[id]
-	fmt.Printf("stop trader %s\n", trader.scriptType)
 	for _, e := range trader.es {
 		err := e.Stop()
 		if err != nil {
@@ -342,9 +341,7 @@ func stop(id int64) (err error) {
 
 // stop ...
 func stopJs(id int64) (err error) {
-	fmt.Printf("send exit msg to trader js start\n")
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
-	fmt.Printf("send exit msg to trader js stop\n")
 	return
 }
 
