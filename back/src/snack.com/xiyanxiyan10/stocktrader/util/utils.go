@@ -7,7 +7,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 )
+
+const (
+	TimeLayout = "2006-01-02 15:04:05"
+)
+
+func timeStr2Unix(in string) (int64, error) {
+	times, err := time.Parse(TimeLayout, in)
+	if err != nil {
+		return 0, err
+	}
+	return times.Unix(), nil
+}
 
 func deepCopy(dst, src interface{}) error {
 	var buf bytes.Buffer
