@@ -17,13 +17,13 @@ type Exchange interface {
 	SetIO(mode string)
 	// 获取IO
 	GetIO() string
-	// Set eriod
+	// Set Period
 	SetPeriod(string)
-	// Get period
+	// Get Period
 	GetPeriod() string
-	// Set size
+	// Set Period size
 	SetPeriodSize(int)
-	// Get Size
+	// Get Period Size
 	GetPeriodSize() int
 	// 获取订阅
 	GetSubscribe() map[string][]string
