@@ -80,13 +80,20 @@ func (e *TrendStragey) Run(map[string]string) error {
 
 	drawHandler := draw.NewDrawHandler()
 	drawHandler.SetPath("/Users/shu/Desktop/trend.html")
-	for _, ohlc := range ohlcs {
+	for i, ohlc := range ohlcs {
 		drawHandler.PlotKLine(util.TimeUnix2Str(ohlc.Time),
 			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
 		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low))
 		drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High))
-		drawHandler.PlotLine("open", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Open))
-		drawHandler.PlotLine("close", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Close))
+		drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Volume)/1000.0)
+		if i > 0 && ((ohlc.Low > ohlcs[i-1].Low && ohlc.High > ohlcs[i-1].High) ||
+			(ohlc.Low < ohlcs[i-1].Low && ohlc.High < ohlcs[i-1].High)) {
+			//drawHandler.PlotLine("lowBox", util.TimeUnix2Str(ohlcs[i-1].Time), float32(20000))
+			//drawHandler.PlotLine("highBox", util.TimeUnix2Str(ohlcs[i-1].Time), float32(40000))
+			drawHandler.PlotLine("Box", util.TimeUnix2Str(ohlcs[i].Time), float32(41000))
+		} else {
+			drawHandler.PlotLine("Box", util.TimeUnix2Str(ohlcs[i].Time), float32(40000))
+		}
 	}
 	err = drawHandler.Display()
 	if err != nil {
@@ -120,7 +127,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "M5"
+	var period = "H1"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""

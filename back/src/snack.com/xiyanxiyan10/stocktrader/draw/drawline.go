@@ -46,7 +46,9 @@ func (p *LineService) Display() error {
 	p.lock()
 	p.prevKLine()
 	p.prevLine()
-	p.klineChart.Overlap(p.lineChart)
+	if len(p.kline) > 0 {
+		p.klineChart.Overlap(p.lineChart)
+	}
 	p.unLock()
 
 	DrawPath := p.GetPath()
@@ -63,9 +65,17 @@ func (p *LineService) Display() error {
 		log.Error("Create diagram fail", err)
 		return err
 	}
-	if err := p.klineChart.Render(file); err != nil {
-		log.Error("Render diagram fail", err)
-		return err
+	if len(p.kline) > 0 {
+		if err := p.klineChart.Render(file); err != nil {
+			log.Error("Render diagram fail", err)
+			return err
+		}
+	} else {
+		if err := p.lineChart.Render(file); err != nil {
+			log.Error("Render diagram fail", err)
+			return err
+		}
+
 	}
 	return nil
 }
@@ -81,7 +91,7 @@ func (p *LineService) prevKLine() {
 	}
 	p.klineChart.AddXAxis(x).AddYAxis("kline", y)
 	p.klineChart.SetGlobalOptions(
-		charts.TitleOpts{Title: "kline"},
+		charts.TitleOpts{Title: "line"},
 		charts.XAxisOpts{SplitNumber: 20},
 		charts.YAxisOpts{Scale: true},
 		charts.TooltipOpts{Trigger: "axis"},
