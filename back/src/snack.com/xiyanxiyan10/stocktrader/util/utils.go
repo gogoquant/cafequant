@@ -14,7 +14,13 @@ const (
 	TimeLayout = "2006-01-02 15:04:05"
 )
 
-func timeStr2Unix(in string) (int64, error) {
+// TimeUnix2Str ...
+func TimeUnix2Str(t int64) string {
+	return time.Unix(t, 0).Format(TimeLayout)
+}
+
+// TimeUnix2Str
+func TimeStr2Unix(in string) (int64, error) {
 	times, err := time.Parse(TimeLayout, in)
 	if err != nil {
 		return 0, err
@@ -22,7 +28,8 @@ func timeStr2Unix(in string) (int64, error) {
 	return times.Unix(), nil
 }
 
-func deepCopy(dst, src interface{}) error {
+// DeepCopy ...
+func DeepCopy(dst, src interface{}) error {
 	var buf bytes.Buffer
 	if err := gob.NewEncoder(&buf).Encode(src); err != nil {
 		return err

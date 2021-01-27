@@ -10,7 +10,7 @@ func TestTimeConvert(t *testing.T) {
 	timeUnix := now.Unix()
 	timestr := now.Format(TimeLayout)
 	t.Logf("time in:%s %d\n", timestr, timeUnix)
-	out, err := timeStr2Unix(timestr)
+	out, err := TimeStr2Unix(timestr)
 	if err != nil {
 		t.Fatalf("convert timestr to unix:%s\n", err.Error())
 	}

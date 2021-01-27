@@ -42,33 +42,31 @@ func (p *LineService) unLock() {
 
 // Display draw
 func (p *LineService) Display() error {
-	go func() {
-		var file *os.File = nil
-		p.lock()
-		p.prevKLine()
-		p.prevLine()
-		p.klineChart.Overlap(p.lineChart)
-		p.unLock()
+	var file *os.File = nil
+	p.lock()
+	p.prevKLine()
+	p.prevLine()
+	p.klineChart.Overlap(p.lineChart)
+	p.unLock()
 
-		DrawPath := p.GetPath()
-		if _, err := os.Stat(DrawPath); err != nil {
-			if !os.IsNotExist(err) {
-				log.Error("State diagram fail", err)
-				return
-			}
-		} else {
-			_ = os.Remove(DrawPath)
+	DrawPath := p.GetPath()
+	if _, err := os.Stat(DrawPath); err != nil {
+		if !os.IsNotExist(err) {
+			log.Error("State diagram fail", err)
+			return err
 		}
-		file, err := os.Create(DrawPath)
-		if err != nil {
-			log.Error("Create diagram fail", err)
-			return
-		}
-		if err := p.klineChart.Render(file); err != nil {
-			log.Error("Render diagram fail", err)
-			return
-		}
-	}()
+	} else {
+		_ = os.Remove(DrawPath)
+	}
+	file, err := os.Create(DrawPath)
+	if err != nil {
+		log.Error("Create diagram fail", err)
+		return err
+	}
+	if err := p.klineChart.Render(file); err != nil {
+		log.Error("Render diagram fail", err)
+		return err
+	}
 	return nil
 }
 

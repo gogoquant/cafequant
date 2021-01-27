@@ -6,8 +6,10 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
@@ -70,10 +72,27 @@ func (e *TrendStragey) Run(map[string]string) error {
 
 	str := time.Unix(times[1], 0).Local().String()
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "End time is:", str)
-	for e.Status {
-		time.Sleep(time.Duration(3) * time.Minute)
+
+	ohlcs, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
+	if err != nil {
+		return err
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
+
+	drawHandler := draw.NewDrawHandler()
+	drawHandler.SetPath("/Users/shu/Desktop/trend.html")
+	for _, ohlc := range ohlcs {
+		drawHandler.PlotKLine(util.TimeUnix2Str(ohlc.Time),
+			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
+		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low))
+		drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High))
+		drawHandler.PlotLine("open", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Open))
+		drawHandler.PlotLine("close", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Close))
+	}
+	err = drawHandler.Display()
+	if err != nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Display err is:", err.Error())
+		return err
+	}
 	return nil
 }
 

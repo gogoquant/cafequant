@@ -3,7 +3,7 @@ package draw
 // DrawHandler Draw draw interface
 type DrawHandler interface {
 	//  PlotKLine draw line of the diagram
-	PlotKLine(time string, a, b, c, d float32)
+	PlotKLine(time string, open, closed, low, high float32)
 	//  PlotLine draw kline of the diagram
 	PlotLine(name string, time string, v float32)
 	//  reset diagram
