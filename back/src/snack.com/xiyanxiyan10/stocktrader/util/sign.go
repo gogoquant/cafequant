@@ -22,7 +22,7 @@ const (
 
 // SinData SinData
 func SinData(param url.Values, privateKey string) (s string, err error) {
-	pri, err := encoding.ParsePKCS1PrivateKey(encoding.FormatPrivateKey(privateKey))
+	pri, err := ParsePKCS1PrivateKey(FormatPrivateKey(privateKey))
 	if err != nil {
 		fmt.Errorf("解析私有错误:%s", err.Error())
 		return "", err
@@ -46,7 +46,7 @@ func signWithPKCS1v15(param url.Values, privateKey *rsa.PrivateKey, hash crypto.
 	sort.Strings(pList)
 	var src = strings.Join(pList, "&")
 	fmt.Printf("排序后字段:%s\n", src)
-	sig, err := encoding.SignPKCS1v15WithKey([]byte(src), privateKey, hash)
+	sig, err := SignPKCS1v15WithKey([]byte(src), privateKey, hash)
 	if err != nil {
 		fmt.Errorf("签名失败,err:%s", err.Error())
 		return "", errors.New("签名失败")
@@ -58,7 +58,7 @@ func signWithPKCS1v15(param url.Values, privateKey *rsa.PrivateKey, hash crypto.
 
 // VerifySign VerifySign
 func VerifySign(data url.Values, publicKey string) (ok bool, err error) {
-	pub, err := encoding.ParsePKCS1PublicKey(encoding.FormatPublicKey(publicKey))
+	pub, err := ParsePKCS1PublicKey(FormatPublicKey(publicKey))
 	if err != nil {
 		fmt.Errorf("解析公钥错误:%s", err.Error())
 		return false, err
@@ -101,9 +101,9 @@ func verifyData(data []byte, signType, sign string, key *rsa.PublicKey) (ok bool
 	}
 
 	if signType == KSIGNTYPERSA {
-		err = encoding.VerifyPKCS1v15WithKey(data, signBytes, key, crypto.SHA1)
+		err = VerifyPKCS1v15WithKey(data, signBytes, key, crypto.SHA1)
 	} else {
-		err = encoding.VerifyPKCS1v15WithKey(data, signBytes, key, crypto.SHA256)
+		err = VerifyPKCS1v15WithKey(data, signBytes, key, crypto.SHA256)
 	}
 	if err != nil {
 		return false, err
