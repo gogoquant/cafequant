@@ -7,11 +7,10 @@ require (
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/blinkbean/dingtalk v0.0.0-20200822153748-8cf931f926ab
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-echarts/go-echarts v0.0.0-20190915064101-cbb3b43ade5d
+	github.com/go-echarts/go-echarts v1.0.0
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.55.0
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/gofinance/ib v0.0.0-20190131202149-a7abd0c5d772
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hprose/hprose-golang v2.0.5+incompatible
