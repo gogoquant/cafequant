@@ -4,15 +4,18 @@ import fmz
 import sys
 import time
 import calendar
-# fmz.get_bars('futures_huobidm.btc.quarter', 15m, '2020-01-01', '2021-1-10')
-#
+import csv
+
+headers = ['time','open','high','low','close', 'vol']
+
 def GetRecords():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print('error param!')
         return
     symbol = sys.argv[1]
     period = '5m'
     start = sys.argv[2]
+    csv_file = sys.argv[3]
     begin = start
     timeArray = time.strptime(start, "%Y-%m")
     print('symbol %s period %s start %s' % (symbol, period, start))
@@ -35,6 +38,17 @@ def GetRecords():
         records_vec.append(records)
         time.sleep(0.1)
 
-    print(len(records_vec))
+    rows = []
+    for records in records_vec:
+        for record in records:
+            rows.append(record)
+
+    with open(csv_file,'w')as f:
+        f_csv = csv.writer(f)
+        f_csv.writerow(headers)
+        f_csv.writerows(rows)
+
+
+    print(len(rows))
 
 GetRecords()
