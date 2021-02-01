@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -48,12 +49,23 @@ func main() {
 	exchange.SetPeriodSize(10)
 	exchange.Start()
 
-	data, err := util.ReadCSV(path)
+	vec, err := util.ReadCSV(path)
 	if err != nil {
 		fmt.Printf("read csv fail:%s\n", err.Error())
 		return
 	}
-	fmt.Printf("%s\n", util.Struct2Json(data))
+	fmt.Printf("%s\n", util.Struct2Json(vec))
+	for i, data := range vec {
+		if i == 0 {
+			continue
+		}
+		err = exchange.BackPutOHLC(conver.Int64Must(data[0]), conver.Float64Must(data[1]), conver.Float64Must(data[2]),
+			conver.Float64Must(data[3]), conver.Float64Must(data[4]), conver.Float64Must(data[5]), "", exchange.GetPeriod())
+		if err != nil {
+			fmt.Printf("put ohlc fail:%s\n", err.Error())
+			return
+		}
+	}
 	/*
 		exchange.SetSubscribe(symbol, constant.CacheAccount)
 		exchange.SetSubscribe(symbol, constant.CacheRecord)
