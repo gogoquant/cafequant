@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"snack.com/xiyanxiyan10/conver"
+	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -54,23 +55,26 @@ func main() {
 		fmt.Printf("read csv fail:%s\n", err.Error())
 		return
 	}
-	fmt.Printf("%s\n", util.Struct2Json(vec))
+	//fmt.Printf("%s\n", util.Struct2Json(vec))
+	var datums []dbtypes.OHLC
 	for i, data := range vec {
+		var ohlc dbtypes.OHLC
 		if i == 0 {
 			continue
 		}
-		err = exchange.BackPutOHLC(conver.Int64Must(data[0]), conver.Float64Must(data[1]), conver.Float64Must(data[2]),
-			conver.Float64Must(data[3]), conver.Float64Must(data[4]), conver.Float64Must(data[5]), "", exchange.GetPeriod())
-		if err != nil {
-			fmt.Printf("put ohlc fail:%s\n", err.Error())
-			return
-		}
+
+		ohlc.Time = conver.Int64Must(data[0])
+		ohlc.Open = conver.Float64Must(data[1])
+		ohlc.High = conver.Float64Must(data[2])
+		ohlc.Low = conver.Float64Must(data[3])
+		ohlc.Close = conver.Float64Must(data[4])
+		ohlc.Volume = conver.Float64Must(data[5]) * ohlc.Close
+		datums = append(datums, ohlc)
 	}
-	/*
-		exchange.SetSubscribe(symbol, constant.CacheAccount)
-		exchange.SetSubscribe(symbol, constant.CacheRecord)
-		exchange.SetSubscribe(symbol, constant.CachePosition)
-		exchange.SetSubscribe(symbol, constant.CacheOrder)
-		exchange.SetSubscribe(symbol, constant.CacheTicker)
-	*/
+	err = exchange.BackPutOHLCs(datums, exchange.GetPeriod())
+
+	if err != nil {
+		fmt.Printf("put ohlc fail:%s\n", err.Error())
+		return
+	}
 }

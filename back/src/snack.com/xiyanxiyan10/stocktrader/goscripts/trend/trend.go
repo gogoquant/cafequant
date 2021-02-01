@@ -70,6 +70,9 @@ func (e *TrendStragey) Run(map[string]string) error {
 	}
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times success:", times)
 
+	str1 := time.Unix(times[0], 0).Local().String()
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Start time is:", str1)
+
 	str := time.Unix(times[1], 0).Local().String()
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "End time is:", str)
 
