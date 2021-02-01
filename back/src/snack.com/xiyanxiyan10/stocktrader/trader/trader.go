@@ -50,14 +50,14 @@ func Switch(id int64) (err error) {
 	return run(id)
 }
 
-// initializePy ...
-func initializePy(trader *Global) (err error) {
+// initializeGo ...
+func initializeGo(trader *Global) (err error) {
 	return
 }
 
 // run ...
 func runGo(trader Global, id int64) (err error) {
-	err = initializePy(&trader)
+	err = initializeGo(&trader)
 	if err != nil {
 		return
 	}
@@ -85,10 +85,12 @@ func runGo(trader Global, id int64) (err error) {
 		err = trader.goplugin.LoadStragey()
 		if err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
 		}
 		err = trader.goplugin.Init(p)
 		if err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
 		}
 		err = trader.goplugin.Run(p)
 		if err != nil {
