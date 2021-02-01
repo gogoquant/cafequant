@@ -5,7 +5,8 @@ import (
 	"os"
 )
 
-func Read(path string) ([][]string, error) {
+// ReadCSV 读取csv文件
+func ReadCSV(path string) ([][]string, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -19,7 +20,8 @@ func Read(path string) ([][]string, error) {
 	return data, nil
 }
 
-func Write(path string, vec [][]string, add bool) error {
+// WriteCSV 写入csv文件
+func WriteCSV(path string, vec [][]string, add bool) error {
 	var file *os.File
 	var err error
 	if add {
