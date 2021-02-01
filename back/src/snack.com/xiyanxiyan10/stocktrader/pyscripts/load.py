@@ -1,5 +1,7 @@
-## simple example
+# Simple example
 # Symbol from https://www.fmz.com/m/database
+# Demo python3 load.py futures_huobidm.btc.quarter 2020-01 ~/Desktop/huobidm.csv
+
 import fmz
 import sys
 import time
