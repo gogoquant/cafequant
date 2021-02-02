@@ -91,7 +91,7 @@ func (p *LineService) prevKLine() {
 	}
 	p.klineChart.AddXAxis(x).AddYAxis("kline", y)
 	p.klineChart.SetGlobalOptions(
-		charts.TitleOpts{Title: "line"},
+		//charts.TitleOpts{Title: "line"},
 		charts.XAxisOpts{SplitNumber: 20},
 		charts.YAxisOpts{Scale: true},
 		charts.TooltipOpts{Trigger: "axis"},

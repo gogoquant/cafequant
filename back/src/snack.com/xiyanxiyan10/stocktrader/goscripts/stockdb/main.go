@@ -68,7 +68,7 @@ func main() {
 		ohlc.High = conver.Float64Must(data[2])
 		ohlc.Low = conver.Float64Must(data[3])
 		ohlc.Close = conver.Float64Must(data[4])
-		ohlc.Volume = conver.Float64Must(data[5]) * ohlc.Close
+		ohlc.Volume = conver.Float64Must(data[5])
 		datums = append(datums, ohlc)
 	}
 	err = exchange.BackPutOHLCs(datums, exchange.GetPeriod())
