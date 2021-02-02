@@ -10,14 +10,48 @@ import csv
 
 headers = ['time','open','high','low','close', 'vol']
 
-def GetRecords():
+def main():
     if len(sys.argv) < 4:
         print('error param!')
         return
     symbol = sys.argv[1]
     period = '5m'
     start = sys.argv[2]
-    csv_file = sys.argv[3]
+    tot = sys.argv[3]
+    csv_file = sys.argv[4]
+
+    timeArray = time.strptime(start, "%Y-%m")
+    tot = int(tot)
+
+    rows = []
+    for i in range(0,tot):
+        month = timeArray.tm_mon + i
+        year = timeArray.tm_year 
+        if month > 12:
+            month = 12 - month
+            year = year + 1
+
+        start = str(year).zfill(4) + '-' + str(month).zfill(2)
+        print("start load month %s" % start)
+        records_vec = getRecords(symbol, period, start, csv_file)
+        if len(records_vec) == 0:
+            print('month %s is empty!' % start)
+            break
+
+        for records in records_vec:
+            for record in records:
+                rows.append(record)
+
+    with open(csv_file,'w')as f:
+        f_csv = csv.writer(f)
+        f_csv.writerow(headers)
+        f_csv.writerows(rows)
+
+    print(len(rows))
+
+
+
+def getRecords(symbol, period, start, csv_file):
     begin = start
     timeArray = time.strptime(start, "%Y-%m")
     print('symbol %s period %s start %s' % (symbol, period, start))
@@ -40,17 +74,6 @@ def GetRecords():
         records_vec.append(records)
         time.sleep(0.1)
 
-    rows = []
-    for records in records_vec:
-        for record in records:
-            rows.append(record)
+    return records_vec
 
-    with open(csv_file,'w')as f:
-        f_csv = csv.writer(f)
-        f_csv.writerow(headers)
-        f_csv.writerows(rows)
-
-
-    print(len(rows))
-
-GetRecords()
+main()

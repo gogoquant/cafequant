@@ -130,7 +130,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "H1"
+	var period = "M15"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
