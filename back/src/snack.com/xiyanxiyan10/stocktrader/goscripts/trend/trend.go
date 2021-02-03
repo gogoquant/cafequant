@@ -87,15 +87,11 @@ func (e *TrendStragey) Run(map[string]string) error {
 		drawHandler.PlotKLine(util.TimeUnix2Str(ohlc.Time),
 			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
 		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
-		drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
-		drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Volume)/1000.0, draw.SmoothLine)
-		if i > 0 && ((ohlc.Low > ohlcs[i-1].Low && ohlc.High > ohlcs[i-1].High) ||
-			(ohlc.Low < ohlcs[i-1].Low && ohlc.High < ohlcs[i-1].High)) {
-			//drawHandler.PlotLine("lowBox", util.TimeUnix2Str(ohlcs[i-1].Time), float32(20000))
-			//drawHandler.PlotLine("highBox", util.TimeUnix2Str(ohlcs[i-1].Time), float32(40000))
-			drawHandler.PlotLine("Box", util.TimeUnix2Str(ohlcs[i].Time), float32(41000), draw.StepLine)
+		//drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
+		if i < len(ohlcs)/2 {
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Volume)/1000.0, "")
 		} else {
-			drawHandler.PlotLine("Box", util.TimeUnix2Str(ohlcs[i].Time), float32(40000), draw.StepLine)
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 0.0, "")
 		}
 	}
 	err = drawHandler.Display()

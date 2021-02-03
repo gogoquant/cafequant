@@ -152,11 +152,11 @@ func (p *LineService) prevLine() {
 			shape = v[i].Shape
 		}
 		if shape == StepLine {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Step: true})
+			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Step: true}, charts.LineOpts{ConnectNulls: false})
 		} else if shape == SmoothLine {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Smooth: true})
+			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Smooth: true}, charts.LineOpts{ConnectNulls: false})
 		} else {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y)
+			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{ConnectNulls: false})
 		}
 	}
 
