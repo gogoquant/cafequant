@@ -37,7 +37,7 @@ type LineService struct {
 	scatterChart *charts.Scatter
 	kline        []KLineData
 	line         map[string][]LineData
-	scatter      []ScatterData
+	scatter      map[string][]ScatterData
 }
 
 // lock draw
@@ -56,9 +56,11 @@ func (p *LineService) Display() error {
 	p.lock()
 	p.prevKLine()
 	p.prevLine()
+	//p.prevScatter()
 	if len(p.kline) > 0 {
 		p.klineChart.Overlap(p.lineChart)
 	}
+
 	p.unLock()
 
 	DrawPath := p.GetPath()
@@ -119,6 +121,16 @@ func (p *LineService) PlotKLine(time string, a, b, c, d float32) {
 	p.unLock()
 }
 
+// PlotScatter Plot kline into pix
+func (p *LineService) PlotScatter(name string, time string, a float32, shape string) {
+	var data ScatterData
+	data.Time = time
+	data.Data = a
+	p.lock()
+	p.scatter[name] = append(p.scatter[name], data)
+	p.unLock()
+}
+
 // PlotLine Plot line into pix
 func (p *LineService) PlotLine(name string, time string, v float32, shape string) {
 	var data LineData
@@ -135,7 +147,22 @@ func (p *LineService) Reset() {
 	p.lock()
 	p.kline = []KLineData{}
 	p.line = make(map[string][]LineData)
+	p.scatter = make(map[string][]ScatterData)
 	p.unLock()
+}
+
+// prevScatter ...
+func (p *LineService) prevScatter() {
+	p.scatterChart = charts.NewScatter()
+	for k, v := range p.scatter {
+		x := make([]string, 0)
+		y := make([]float32, 0)
+		for i := 0; i < len(v); i++ {
+			x = append(x, v[i].Time)
+			y = append(y, v[i].Data)
+		}
+		p.scatterChart.AddXAxis(x).AddYAxis(k, y)
+	}
 }
 
 // prevLine ...

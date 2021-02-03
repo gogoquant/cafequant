@@ -88,10 +88,10 @@ func (e *TrendStragey) Run(map[string]string) error {
 			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
 		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
 		//drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
-		if i < len(ohlcs)/2 {
-			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Volume)/1000.0, "")
+		if i > 1 && ohlcs[i].Low > ohlcs[i-1].Low {
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 30000, draw.StepLine)
 		} else {
-			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 0.0, "")
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 0, draw.StepLine)
 		}
 	}
 	err = drawHandler.Display()
