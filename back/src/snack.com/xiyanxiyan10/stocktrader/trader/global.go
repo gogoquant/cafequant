@@ -33,7 +33,7 @@ type GlobalHandler interface {
 	DrawGetPath() string
 	DrawReset()
 	DrawKLine(time string, a, b, c, d float32)
-	DrawLine(name string, time string, data float32)
+	DrawLine(name string, time string, data float32, shape string)
 	DrawPlot() error
 }
 
@@ -141,8 +141,8 @@ func (g *Global) DrawKLine(time string, a, b, c, d float32) {
 }
 
 // DrawLine ...
-func (g *Global) DrawLine(name string, time string, data float32) {
-	g.draw.PlotLine(name, time, data)
+func (g *Global) DrawLine(name string, time string, data float32, shape string) {
+	g.draw.PlotLine(name, time, data, shape)
 }
 
 // DrawPlot ...

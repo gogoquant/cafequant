@@ -1,11 +1,10 @@
 package draw
 
 import (
+	"github.com/go-echarts/go-echarts/charts"
 	log "gopkg.in/logger.v1"
 	"os"
 	"sync"
-
-	"github.com/go-echarts/go-echarts/charts"
 )
 
 // KLineData ...
@@ -14,20 +13,31 @@ type KLineData struct {
 	Data [4]float32
 }
 
+type ScatterData struct {
+	Time string
+	Data float32
+	// 图的形状
+	Shape string
+}
+
 // LineData ...
 type LineData struct {
 	Time string
 	Data float32
+	// 图的形状
+	Shape string
 }
 
 // LineService ...
 type LineService struct {
 	BaseService
-	mutex      sync.Mutex
-	lineChart  *charts.Line
-	klineChart *charts.Kline
-	kline      []KLineData
-	line       map[string][]LineData
+	mutex        sync.Mutex
+	lineChart    *charts.Line
+	klineChart   *charts.Kline
+	scatterChart *charts.Scatter
+	kline        []KLineData
+	line         map[string][]LineData
+	scatter      []ScatterData
 }
 
 // lock draw
@@ -99,24 +109,6 @@ func (p *LineService) prevKLine() {
 	)
 }
 
-// prevLine ...
-func (p *LineService) prevLine() {
-	p.lineChart = charts.NewLine()
-	//p.lineChart.SetGlobalOptions(charts.TitleOpts{Title: "Line多线"}, charts.InitOpts{Theme: "shine"})
-	for k, v := range p.line {
-		x := make([]string, 0)
-		y := make([]float32, 0)
-		for i := 0; i < len(v); i++ {
-			x = append(x, v[i].Time)
-			y = append(y, v[i].Data)
-		}
-		p.lineChart.AddXAxis(x).AddYAxis(k, y)
-	}
-	p.lineChart.SetGlobalOptions(
-		charts.TooltipOpts{Trigger: "axis"},
-	)
-}
-
 // PlotKLine Plot kline into pix
 func (p *LineService) PlotKLine(time string, a, b, c, d float32) {
 	var data KLineData
@@ -128,10 +120,11 @@ func (p *LineService) PlotKLine(time string, a, b, c, d float32) {
 }
 
 // PlotLine Plot line into pix
-func (p *LineService) PlotLine(name string, time string, v float32) {
+func (p *LineService) PlotLine(name string, time string, v float32, shape string) {
 	var data LineData
 	data.Time = time
 	data.Data = v
+	data.Shape = shape
 	p.lock()
 	p.line[name] = append(p.line[name], data)
 	p.unLock()
@@ -143,4 +136,31 @@ func (p *LineService) Reset() {
 	p.kline = []KLineData{}
 	p.line = make(map[string][]LineData)
 	p.unLock()
+}
+
+// prevLine ...
+func (p *LineService) prevLine() {
+	p.lineChart = charts.NewLine()
+	//p.lineChart.SetGlobalOptions(charts.TitleOpts{Title: "Line多线"}, charts.InitOpts{Theme: "shine"})
+	var shape string
+	for k, v := range p.line {
+		x := make([]string, 0)
+		y := make([]float32, 0)
+		for i := 0; i < len(v); i++ {
+			x = append(x, v[i].Time)
+			y = append(y, v[i].Data)
+			shape = v[i].Shape
+		}
+		if shape == StepLine {
+			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Step: true})
+		} else if shape == SmoothLine {
+			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Smooth: true})
+		} else {
+			p.lineChart.AddXAxis(x).AddYAxis(k, y)
+		}
+	}
+
+	p.lineChart.SetGlobalOptions(
+		charts.TooltipOpts{Trigger: "axis"},
+	)
 }
