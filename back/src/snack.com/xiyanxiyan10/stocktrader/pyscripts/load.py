@@ -1,6 +1,6 @@
 # Simple example
 # Symbol from https://www.fmz.com/m/database
-# Demo python3 load.py futures_huobidm.btc.quarter 2020-01 ~/Desktop/huobidm.csv
+# Demo python3 load.py futures_huobidm.btc.quarter 2020-01 2 ~/Desktop/huobidm.csv
 
 import fmz
 import sys
@@ -48,8 +48,6 @@ def main():
         f_csv.writerows(rows)
 
     print(len(rows))
-
-
 
 def getRecords(symbol, period, start, csv_file):
     begin = start
