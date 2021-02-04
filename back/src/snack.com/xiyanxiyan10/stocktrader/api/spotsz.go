@@ -172,7 +172,6 @@ func NewSZSpotExchange(opt constant.Option) *SZExchange {
 	spotExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})
-	spotExchange.back = false
 	return &spotExchange
 }
 

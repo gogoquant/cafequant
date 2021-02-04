@@ -40,8 +40,10 @@ type GlobalHandler interface {
 // Global ...
 type Global struct {
 	model.Trader
-	back       bool               // 是否为回测模式
-	Logger     model.Logger       // 利用这个对象保存日志
+	Logger model.Logger // 利用这个对象保存日志
+
+	backtest   bool // 是否为回测模式
+	backlog    bool
 	ctx        *otto.Otto         // js虚拟机
 	es         []api.Exchange     // 交易所列表
 	tasks      Tasks              // 任务列表
@@ -56,7 +58,7 @@ type Global struct {
 
 // Sleep ...
 func (g *Global) Sleep(intervals ...interface{}) {
-	if g.back {
+	if g.backtest {
 		return
 	}
 	interval := int64(0)

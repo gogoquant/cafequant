@@ -55,7 +55,7 @@ const (
 	HuoBiDm    = "HuoBiDm"
 	HuoBi      = "HuoBi"
 	SZ         = "SZ"
-	SpotBack   = "SpotBack"
+	SpotBack   = "SpotaBack"
 	FutureBack = "FutureBack"
 )
 

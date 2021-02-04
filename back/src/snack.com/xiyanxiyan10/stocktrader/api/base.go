@@ -64,13 +64,11 @@ type BaseExchange struct {
 	BaseExchangeCaches // cache for exchange
 	// period for get records
 	periodVal string
-
 	// period for backtest
 	period             string
 	size               int
 	id                 int     // id of the exchange
 	ioMode             string  // io mode for exchange
-	back               bool    // back or online
 	contractType       string  // contractType
 	direction          string  // trade type
 	stockType          string  // stockType
@@ -180,11 +178,6 @@ func (e *BaseExchange) IsSubscribe(source, action string) bool {
 	return false
 }
 
-// IsBack ...
-func (e *BaseExchange) IsBack() bool {
-	return e.back
-}
-
 // SetSubscribe ...
 func (e *BaseExchange) SetSubscribe(source, action string) {
 	if e.subscribeMap == nil {
@@ -201,7 +194,7 @@ func (e *BaseExchange) SetLimit(times int64) int64 {
 
 // AutoSleep auto sleep to achieve the limit calls amount per second of this exchange
 func (e *BaseExchange) AutoSleep() {
-	if e.back {
+	if e.option.BackTest {
 		return
 	}
 	if e.limit == 0 {
@@ -214,7 +207,7 @@ func (e *BaseExchange) AutoSleep() {
 
 // Sleep ...
 func (e *BaseExchange) Sleep(intervals ...interface{}) {
-	if e.back {
+	if e.option.BackTest {
 		return
 	}
 	interval := int64(0)
@@ -423,7 +416,7 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 
 // Init ...
 func (e *BaseExchange) Init(opt constant.Option) error {
-	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.LogBack}
+	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.BackLog}
 	e.option = opt
 	e.limit = opt.Limit
 	e.ch = make(chan [2]string)

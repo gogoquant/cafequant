@@ -51,7 +51,6 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 	spotExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})
-	spotExchange.back = false
 	return &spotExchange
 }
 

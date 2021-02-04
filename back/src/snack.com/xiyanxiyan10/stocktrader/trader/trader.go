@@ -143,7 +143,7 @@ func initializeJs(trader *Global) (err error) {
 }
 
 //initialize 核心是初始化js运行环境，及其可以调用的api
-func initialize(id int64) (trader Global, err error) {
+func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
 	}
@@ -172,6 +172,9 @@ func initialize(id int64) (trader Global, err error) {
 		ExchangeType: "global",
 	}
 
+	trader.backtest = backtest
+	trader.backlog = backlog
+
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
@@ -199,9 +202,10 @@ func initialize(id int64) (trader Global, err error) {
 			Name:      e.Name,
 			AccessKey: e.AccessKey,
 			SecretKey: e.SecretKey,
-			LogBack:   false,
+			BackLog:   backlog,
+			BackTest:  backtest,
 		}
-		if maker, ok := api.ExchangeMaker[e.Type]; ok {
+		if maker, ok := api.GetExchangeMaker(opt); ok {
 			exchange, errD := maker(opt)
 			if errD != nil {
 				err = errD
@@ -216,19 +220,6 @@ func initialize(id int64) (trader Global, err error) {
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")
 		return
-	}
-	var backtot = 0
-	for i := range trader.es {
-		if trader.es[i].IsBack() {
-			backtot++
-		}
-	}
-	if backtot == 0 {
-		trader.back = false
-	} else if len(trader.es) == backtot {
-		trader.back = true
-	} else {
-		err = fmt.Errorf("please use exchanges all back or all online")
 	}
 	return
 }
@@ -249,7 +240,7 @@ func err2String(err interface{}) string {
 
 // run ...
 func run(id int64) (err error) {
-	trader, err := initialize(id)
+	trader, err := initialize(id, false, false)
 	if err != nil {
 		return
 	}

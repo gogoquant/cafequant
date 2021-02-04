@@ -68,7 +68,6 @@ func NewExchangeBack(config ExchangeBackConfig) *ExchangeBack {
 	for key, sub := range sim.acc.SubAccounts {
 		sim.sortedCurrencies.SubAccounts[key] = sub
 	}
-	sim.back = true
 	return sim
 }
 

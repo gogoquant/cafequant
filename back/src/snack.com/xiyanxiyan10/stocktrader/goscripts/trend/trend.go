@@ -134,7 +134,8 @@ func main() {
 	opt.TraderID = 1
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
-	opt.LogBack = true
+	opt.BackLog = true
+	opt.BackTest = true
 
 	maker := api.ExchangeMaker[opt.Type]
 	exchange, err := maker(opt)
