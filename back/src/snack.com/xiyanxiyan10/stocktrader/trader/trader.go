@@ -205,14 +205,11 @@ func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 			BackLog:   backlog,
 			BackTest:  backtest,
 		}
-		if maker, ok := api.GetExchangeMaker(opt); ok {
-			exchange, errD := maker(opt)
-			if errD != nil {
-				err = errD
-				return
-			}
+		if exchange, errD := api.GetExchange(opt); errD != nil {
 			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
+		} else {
+			fmt.Printf("make exchange fail:%s\n", errD.Error())
 		}
 	}
 	trader.goplugin = goExtend

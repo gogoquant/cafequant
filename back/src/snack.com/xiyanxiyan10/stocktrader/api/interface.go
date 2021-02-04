@@ -125,7 +125,7 @@ var (
 )
 
 // GetExchange Maker
-func GetExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchange, error), ok bool) {
+func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchange, error), ok bool) {
 	exchangeType := opt.Type
 	Back := opt.BackTest
 	if !Back {
@@ -136,8 +136,9 @@ func GetExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchang
 	return
 }
 
+// GetExchange ...
 func GetExchange(opt constant.Option) (Exchange, error) {
-	maker, ok := GetExchangeMaker(opt)
+	maker, ok := getExchangeMaker(opt)
 	if !ok {
 		return nil, fmt.Errorf("get exchange maker fail")
 	}
