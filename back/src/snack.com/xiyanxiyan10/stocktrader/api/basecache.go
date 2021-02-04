@@ -9,7 +9,7 @@ import (
 // BaseExchangeCache store the date from api in cahce
 type BaseExchangeCache struct {
 	Data      interface{}
-	TimeStamp time.Time
+	TimeStamp int64
 	Mark      bool
 }
 
@@ -108,7 +108,7 @@ func (e *BaseExchangeCaches) SetCache(action string, stockSymbol string, val int
 	var item BaseExchangeCache
 
 	item.Data = val
-	item.TimeStamp = time.Now()
+	item.TimeStamp = time.Now().Unix()
 	item.Mark = true
 
 	if action == constant.CacheTicker {

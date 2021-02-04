@@ -26,12 +26,12 @@ var (
 
 // DataConfig ...
 type DataConfig struct {
-	Ex       string
-	Pair     string
-	StarTime time.Time
-	EndTime  time.Time
-	Size     int //多少档深度数据
-	UnGzip   bool
+	Ex   string
+	Pair string
+	//StarTime time.Time
+	//EndTime  time.Time
+	Size   int //多少档深度数据
+	UnGzip bool
 }
 
 // DataLoader ...
