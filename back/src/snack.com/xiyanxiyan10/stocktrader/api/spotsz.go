@@ -192,11 +192,6 @@ func (e *SZExchange) Init(opt constant.Option) error {
 	return nil
 }
 
-// Log print something to console
-func (e *SZExchange) Log(msgs ...interface{}) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
-}
-
 // GetType get the type of this exchange
 func (e *SZExchange) GetType() string {
 	return e.option.Type
@@ -218,12 +213,12 @@ func (e *SZExchange) GetAccount() (*constant.Account, error) {
 }
 
 // Buy ...
-func (e *SZExchange) Buy(price, amount string, msg ...interface{}) (string, error) {
+func (e *SZExchange) Buy(price, amount string, msg string) (string, error) {
 	return "", fmt.Errorf("not support")
 }
 
 // Sell ...
-func (e *SZExchange) Sell(price, amount string, msg ...interface{}) (string, error) {
+func (e *SZExchange) Sell(price, amount string, msg string) (string, error) {
 	return "", fmt.Errorf("not support")
 }
 

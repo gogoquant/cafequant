@@ -118,7 +118,7 @@ func (e *ExchangeBackLink) GetAccount() (*constant.Account, error) {
 }
 
 // Buy buy from exchange
-func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) (string, error) {
+func (e *ExchangeBackLink) Buy(price, amount string, msg string) (string, error) {
 	var err error
 	var ord *constant.Order
 	stockType := e.GetStockType()
@@ -138,13 +138,13 @@ func (e *ExchangeBackLink) Buy(price, amount string, msg ...interface{}) (string
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 
 }
 
 // Sell sell from exchange
-func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) (string, error) {
+func (e *ExchangeBackLink) Sell(price, amount string, msg string) (string, error) {
 	var err error
 	var ord *constant.Order
 	stockType := e.GetStockType()
@@ -164,7 +164,7 @@ func (e *ExchangeBackLink) Sell(price, amount string, msg ...interface{}) (strin
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 }
 

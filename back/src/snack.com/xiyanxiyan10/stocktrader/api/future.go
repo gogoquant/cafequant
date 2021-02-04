@@ -348,7 +348,7 @@ func (e *FutureExchange) getAccount() (*constant.Account, error) {
 }
 
 // Buy buy from exchange
-func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) (string, error) {
+func (e *FutureExchange) Buy(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -379,12 +379,12 @@ func (e *FutureExchange) Buy(price, amount string, msg ...interface{}) (string, 
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return orderID, nil
 }
 
 // Sell sell from exchange
-func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) (string, error) {
+func (e *FutureExchange) Sell(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -415,7 +415,7 @@ func (e *FutureExchange) Sell(price, amount string, msg ...interface{}) (string,
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return orderID, nil
 }
 

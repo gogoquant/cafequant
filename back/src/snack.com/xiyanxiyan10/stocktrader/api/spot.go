@@ -155,7 +155,7 @@ func (e *SpotExchange) GetAccount() (*constant.Account, error) {
 }
 
 // Buy ...
-func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) (string, error) {
+func (e *SpotExchange) Buy(price, amount string, msg string) (string, error) {
 	var err error
 	var order *goex.Order
 	stockType := e.GetStockType()
@@ -180,12 +180,12 @@ func (e *SpotExchange) Buy(price, amount string, msg ...interface{}) (string, er
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return order.Cid, nil
 }
 
 // Sell ...
-func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) (string, error) {
+func (e *SpotExchange) Sell(price, amount string, msg string) (string, error) {
 	var err error
 	var order *goex.Order
 	stockType := e.GetStockType()
@@ -210,7 +210,7 @@ func (e *SpotExchange) Sell(price, amount string, msg ...interface{}) (string, e
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return order.Cid, nil
 }
 

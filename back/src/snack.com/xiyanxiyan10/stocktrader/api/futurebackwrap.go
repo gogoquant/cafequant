@@ -74,7 +74,7 @@ func (e *ExchangeFutureBackLink) GetAccount() (*constant.Account, error) {
 }
 
 // Buy buy from exchange
-func (e *ExchangeFutureBackLink) Buy(price, amount string, msg ...interface{}) (string, error) {
+func (e *ExchangeFutureBackLink) Buy(price, amount string, msg string) (string, error) {
 	var err error
 	var ord *constant.Order
 	stockType := e.GetStockType()
@@ -104,13 +104,13 @@ func (e *ExchangeFutureBackLink) Buy(price, amount string, msg ...interface{}) (
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 
 }
 
 // Sell sell from exchange
-func (e *ExchangeFutureBackLink) Sell(price, amount string, msg ...interface{}) (string, error) {
+func (e *ExchangeFutureBackLink) Sell(price, amount string, msg string) (string, error) {
 	var err error
 	var ord *constant.Order
 	stockType := e.GetStockType()
@@ -140,7 +140,7 @@ func (e *ExchangeFutureBackLink) Sell(price, amount string, msg ...interface{}) 
 	}
 	priceFloat := conver.Float64Must(price)
 	amountFloat := conver.Float64Must(amount)
-	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg...)
+	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 }
 

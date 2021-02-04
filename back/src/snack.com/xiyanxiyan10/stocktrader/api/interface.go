@@ -30,7 +30,7 @@ type Exchange interface {
 	// 订阅
 	SetSubscribe(string, string)
 	// 向管理台发送这个交易所的打印信息
-	Log(...interface{})
+	Log(string)
 	// 获取交易所类型
 	GetType() string
 	// 获取交易所名称,自定义的
@@ -38,13 +38,13 @@ type Exchange interface {
 	// 设置交易所的API访问频率,和 E.AutoSleep() 配合使用
 	SetLimit(times int64) int64
 	// 延时
-	Sleep(intervals ...interface{})
+	Sleep(intervals int64)
 	// 自动休眠以满足设置的交易所的API访问频率
 	AutoSleep()
 	// 买
-	Buy(price, amount string, msg ...interface{}) (string, error)
+	Buy(price, amount, msg string) (string, error)
 	// 卖
-	Sell(price, amount string, msg ...interface{}) (string, error)
+	Sell(price, amount, msg string) (string, error)
 	// 返回订单信息
 	GetOrder(id string) (*constant.Order, error)
 	// 返回所有的未完成订单列表

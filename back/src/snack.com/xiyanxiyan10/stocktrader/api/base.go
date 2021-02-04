@@ -3,7 +3,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"snack.com/xiyanxiyan10/conver"
 	dbconstant "snack.com/xiyanxiyan10/stockdb/constant"
 	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
@@ -213,17 +212,11 @@ func (e *BaseExchange) AutoSleep() {
 }
 
 // Sleep ...
-func (e *BaseExchange) Sleep(intervals ...interface{}) {
+func (e *BaseExchange) Sleep(intervals int64) {
 	if e.back {
 		return
 	}
-	interval := int64(0)
-	if len(intervals) > 0 {
-		interval = conver.Int64Must(intervals[0])
-	}
-	if interval > 0 {
-		time.Sleep(time.Duration(interval) * time.Millisecond)
-	}
+	time.Sleep(time.Duration(intervals) * time.Millisecond)
 }
 
 // BackGetStats ...
@@ -724,8 +717,8 @@ func (e *BaseExchange) ValidSell() error {
 }
 
 // Log print something to console
-func (e *BaseExchange) Log(msgs ...interface{}) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs...)
+func (e *BaseExchange) Log(msgs string) {
+	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs)
 }
 
 // GetType get the type of this exchange
