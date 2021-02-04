@@ -6,8 +6,10 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
@@ -54,10 +56,49 @@ func (e *TrendStragey) Run(map[string]string) error {
 	exchange.Start()
 
 	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
-	for e.Status {
-		time.Sleep(time.Duration(3) * time.Minute)
+	symbols, err := exchange.BackGetSymbols()
+	if err != nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
+		return nil
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols success:", symbols)
+
+	times, err := exchange.BackGetTimeRange()
+	if err != nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
+		return nil
+	}
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times success:", times)
+
+	str1 := time.Unix(times[0], 0).Local().String()
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Start time is:", str1)
+
+	str := time.Unix(times[1], 0).Local().String()
+	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "End time is:", str)
+
+	ohlcs, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
+	if err != nil {
+		return err
+	}
+
+	drawHandler := draw.NewDrawHandler()
+	drawHandler.SetPath("/Users/shu/Desktop/trend.html")
+	for i, ohlc := range ohlcs {
+		drawHandler.PlotKLine(util.TimeUnix2Str(ohlc.Time),
+			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
+		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
+		//drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
+		if i > 1 && ohlcs[i].Low > ohlcs[i-1].Low {
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 30000, draw.StepLine)
+		} else {
+			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 0, draw.StepLine)
+		}
+	}
+	err = drawHandler.Display()
+	if err != nil {
+		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Display err is:", err.Error())
+		return err
+	}
 	return nil
 }
 
@@ -85,7 +126,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "M5"
+	var period = "M15"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
@@ -93,7 +134,8 @@ func main() {
 	opt.TraderID = 1
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
-	opt.LogBack = true
+	opt.BackLog = true
+	opt.BackTest = true
 
 	maker := api.ExchangeMaker[opt.Type]
 	exchange, err := maker(opt)

@@ -50,14 +50,14 @@ func Switch(id int64) (err error) {
 	return run(id)
 }
 
-// initializePy ...
-func initializePy(trader *Global) (err error) {
+// initializeGo ...
+func initializeGo(trader *Global) (err error) {
 	return
 }
 
 // run ...
 func runGo(trader Global, id int64) (err error) {
-	err = initializePy(&trader)
+	err = initializeGo(&trader)
 	if err != nil {
 		return
 	}
@@ -85,10 +85,12 @@ func runGo(trader Global, id int64) (err error) {
 		err = trader.goplugin.LoadStragey()
 		if err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
 		}
 		err = trader.goplugin.Init(p)
 		if err != nil {
 			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			return
 		}
 		err = trader.goplugin.Run(p)
 		if err != nil {
@@ -141,7 +143,7 @@ func initializeJs(trader *Global) (err error) {
 }
 
 //initialize 核心是初始化js运行环境，及其可以调用的api
-func initialize(id int64) (trader Global, err error) {
+func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
 	}
@@ -170,6 +172,9 @@ func initialize(id int64) (trader Global, err error) {
 		ExchangeType: "global",
 	}
 
+	trader.backtest = backtest
+	trader.backlog = backlog
+
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
@@ -197,9 +202,10 @@ func initialize(id int64) (trader Global, err error) {
 			Name:      e.Name,
 			AccessKey: e.AccessKey,
 			SecretKey: e.SecretKey,
-			LogBack:   false,
+			BackLog:   backlog,
+			BackTest:  backtest,
 		}
-		if maker, ok := api.ExchangeMaker[e.Type]; ok {
+		if maker, ok := api.GetExchangeMaker(opt); ok {
 			exchange, errD := maker(opt)
 			if errD != nil {
 				err = errD
@@ -214,19 +220,6 @@ func initialize(id int64) (trader Global, err error) {
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")
 		return
-	}
-	var backtot = 0
-	for i := range trader.es {
-		if trader.es[i].IsBack() {
-			backtot++
-		}
-	}
-	if backtot == 0 {
-		trader.back = false
-	} else if len(trader.es) == backtot {
-		trader.back = true
-	} else {
-		err = fmt.Errorf("please use exchanges all back or all online")
 	}
 	return
 }
@@ -247,7 +240,7 @@ func err2String(err interface{}) string {
 
 // run ...
 func run(id int64) (err error) {
-	trader, err := initialize(id)
+	trader, err := initialize(id, false, false)
 	if err != nil {
 		return
 	}
@@ -324,7 +317,6 @@ func stop(id int64) (err error) {
 	}
 	Executor[id].Pending = constant.Enable
 	trader := Executor[id]
-	fmt.Printf("stop trader %s\n", trader.scriptType)
 	for _, e := range trader.es {
 		err := e.Stop()
 		if err != nil {
@@ -342,9 +334,7 @@ func stop(id int64) (err error) {
 
 // stop ...
 func stopJs(id int64) (err error) {
-	fmt.Printf("send exit msg to trader js start\n")
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
-	fmt.Printf("send exit msg to trader js stop\n")
 	return
 }
 

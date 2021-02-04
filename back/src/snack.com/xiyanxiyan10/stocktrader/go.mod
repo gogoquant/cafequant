@@ -7,11 +7,10 @@ require (
 	github.com/bitly/go-simplejson v0.5.0
 	github.com/blinkbean/dingtalk v0.0.0-20200822153748-8cf931f926ab
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-echarts/go-echarts v0.0.0-20190915064101-cbb3b43ade5d
+	github.com/go-echarts/go-echarts v1.0.0
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.55.0
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/gofinance/ib v0.0.0-20190131202149-a7abd0c5d772
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hprose/hprose-golang v2.0.5+incompatible
@@ -21,11 +20,7 @@ require (
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mayiweb/goctp v0.0.0-20190917081845-ed4a7d3f7e3e
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/nntaoli-project/goex v1.2.5
-	github.com/qiniu/py v1.2.2
-	github.com/qiniu/x v1.10.5
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
 	github.com/sirupsen/logrus v1.6.0 // indirect

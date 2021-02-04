@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
@@ -11,19 +12,17 @@ type Exchange interface {
 	Start() error
 	// 初始化完毕stop run
 	Stop() error
-	// 是否在回测中
-	IsBack() bool
 	// 设置IO
 	SetIO(mode string)
 	// 获取IO
 	GetIO() string
-	// Set eriod
+	// Set Period
 	SetPeriod(string)
-	// Get period
+	// Get Period
 	GetPeriod() string
-	// Set size
+	// Set Period size
 	SetPeriodSize(int)
-	// Get Size
+	// Get Period Size
 	GetPeriodSize() int
 	// 获取订阅
 	GetSubscribe() map[string][]string
@@ -111,12 +110,40 @@ type Exchange interface {
 
 var (
 	constructor = map[string]func(constant.Option) (Exchange, error){}
-	//ExchangeMaker ...
+	// ExchangeMaker online exchange
 	ExchangeMaker = map[string]func(constant.Option) (Exchange, error){ //保存所有交易所的构造函数
-		constant.HuoBiDm:    NewHuoBiDmExchange,
-		constant.HuoBi:      NewHuoBiExchange,
-		constant.SZ:         NewSZExchange,
-		constant.SpotBack:   NewSpotBackExchange,
-		constant.FutureBack: NewFutureBackExchange,
+		constant.HuoBiDm: NewHuoBiDmExchange,
+		constant.HuoBi:   NewHuoBiExchange,
+		constant.SZ:      NewSZExchange,
+	}
+	// ExchangeBackerMaker backtest exchange
+	ExchangeBackerMaker = map[string]func(constant.Option) (Exchange, error){ //保存所有交易所的构造函数
+		constant.HuoBiDm: NewFutureBackExchange,
+		constant.HuoBi:   NewSpotBackExchange,
+		constant.SZ:      NewSpotBackExchange,
 	}
 )
+
+// GetExchange Maker
+func GetExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchange, error), ok bool) {
+	exchangeType := opt.Type
+	Back := opt.BackTest
+	if !Back {
+		maker, ok = ExchangeMaker[exchangeType]
+		return
+	}
+	maker, ok = ExchangeBackerMaker[exchangeType]
+	return
+}
+
+func GetExchange(opt constant.Option) (Exchange, error) {
+	maker, ok := GetExchangeMaker(opt)
+	if !ok {
+		return nil, fmt.Errorf("get exchange maker fail")
+	}
+	exchange, err := maker(opt)
+	if err != nil {
+		return nil, err
+	}
+	return exchange, nil
+}
