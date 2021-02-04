@@ -135,9 +135,11 @@ func (e *BaseExchange) SetBackCommission(taker, maker, contractRate, coverRate f
 }
 
 // GetBackCommission 获取回测手续费
+/*
 func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64, bool) {
 	return e.taker, e.maker, e.contractRate, e.coverRate, e.coin
 }
+*/
 
 // SetBackTime ...
 func (e *BaseExchange) SetBackTime(start, end int64, period string) {
@@ -157,9 +159,11 @@ func (e *BaseExchange) SetBackAccount(key string, val float64) {
 }
 
 // GetBackTime ...
+/*
 func (e *BaseExchange) GetBackTime() (int64, int64, string) {
 	return e.start, e.end, e.period
 }
+*/
 
 // GetSubscribe ...
 func (e *BaseExchange) GetSubscribe() map[string][]string {
