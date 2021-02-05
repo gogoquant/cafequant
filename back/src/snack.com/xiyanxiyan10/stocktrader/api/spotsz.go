@@ -42,8 +42,6 @@ func getRecords(symbol string, period, ma, size int) (string, error) {
 		return "", err
 	}
 
-	//fmt.Printf("get records []byte:%v\n", data)
-	//fmt.Printf("get records string:%s\n", string(data))
 	return string(data), nil
 }
 

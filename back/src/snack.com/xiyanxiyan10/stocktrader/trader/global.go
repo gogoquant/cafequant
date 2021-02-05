@@ -2,17 +2,10 @@ package trader
 
 import (
 	"github.com/robertkrimen/otto"
-	//"log"
-	//"os"
-	//"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/api"
-	//"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	//"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	//"snack.com/xiyanxiyan10/stocktrader/notice"
 	"sync"
-	//"time"
 )
 
 // Tasks ...
