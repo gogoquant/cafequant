@@ -165,18 +165,18 @@ func runJs(trader Global, id int64) (err error) {
 	go func() {
 		defer func() {
 			if err := recover(); err != nil && err != errHalt {
-				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+				trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
 			// stop the cache process
 			for _, e := range trader.es {
 				err = e.Stop()
 				if err != nil {
-					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+					trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 				}
 			}
 			if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
 				if _, err := exit.Call(exit); err != nil {
-					trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+					trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 				}
 			}
 			close(trader.ctx.Interrupt)
@@ -186,13 +186,13 @@ func runJs(trader Global, id int64) (err error) {
 		trader.LastRunAt = time.Now()
 		trader.Status = constant.Running
 		if _, err := trader.ctx.Run(trader.Algorithm.Script); err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+			trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 		}
 		if main, err := trader.ctx.Get("main"); err != nil || !main.IsFunction() {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, "can not get the main function")
+			trader.Log(constant.ERROR, "", 0.0, 0.0, "can not get the main function")
 		} else {
 			if _, err := main.Call(main); err != nil {
-				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
+				trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
 		}
 	}()

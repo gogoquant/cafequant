@@ -712,8 +712,8 @@ func (e *BaseExchange) ValidSell() error {
 }
 
 // Log print something to console
-func (e *BaseExchange) Log(msgs string) {
-	e.logger.Log(constant.INFO, e.GetStockType(), 0.0, 0.0, msgs)
+func (e *BaseExchange) Log(action, symbol string, price, amount float64, messages string) {
+	e.logger.Log(action, symbol, price, amount, messages)
 }
 
 // GetType get the type of this exchange

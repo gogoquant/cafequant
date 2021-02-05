@@ -22,7 +22,6 @@ type task struct {
 type Global struct {
 	api.Global
 	model.Trader
-	Logger model.Logger // 利用这个对象保存日志
 
 	ctx        *otto.Otto     // js虚拟机
 	es         []api.Exchange // 交易所列表
@@ -34,15 +33,15 @@ type Global struct {
 // AddTask ...
 func (g *Global) AddTask(group otto.Value, fn otto.Value, args ...interface{}) bool {
 	if g.running {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Tasks are running")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Tasks are running")
 		return false
 	}
 	if !group.IsString() {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Invalid group name")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Invalid group name")
 		return false
 	}
 	if !fn.IsString() {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Invalid function name")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "AddTask(), Invalid function name")
 		return false
 	}
 	if _, ok := g.tasks[group.String()]; !ok {
@@ -57,19 +56,19 @@ func (g *Global) AddTask(group otto.Value, fn otto.Value, args ...interface{}) b
 // BindTaskParam ...
 func (g *Global) BindTaskParam(group otto.Value, fn otto.Value, args ...interface{}) bool {
 	if g.running {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), tasks are running")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), tasks are running")
 		return false
 	}
 	if !group.IsString() {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), Invalid group name")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), Invalid group name")
 		return false
 	}
 	if !fn.IsString() {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), Invalid function name")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), Invalid function name")
 		return false
 	}
 	if _, ok := g.tasks[group.String()]; !ok {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), group not exist")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), group not exist")
 		return false
 	}
 	ts := g.tasks[group.String()]
@@ -80,22 +79,22 @@ func (g *Global) BindTaskParam(group otto.Value, fn otto.Value, args ...interfac
 			return true
 		}
 	}
-	g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), function not exist")
+	g.Log(constant.ERROR, "", 0.0, 0.0, "BindTaskParam(), function not exist")
 	return false
 }
 
 // ExecTasks ...
 func (g *Global) ExecTasks(group otto.Value) (results []interface{}) {
 	if !group.IsString() {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), Invalid group name")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), Invalid group name")
 		return
 	}
 	if _, ok := g.tasks[group.String()]; !ok {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), group not exist")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), group not exist")
 		return
 	}
 	if g.running {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), tasks are running")
+		g.Log(constant.ERROR, "", 0.0, 0.0, "ExecTasks(), tasks are running")
 		return
 	}
 	g.running = true
@@ -108,7 +107,7 @@ func (g *Global) ExecTasks(group otto.Value) (results []interface{}) {
 		wg.Add(1)
 		go func(i int, t task) {
 			if f, err := t.ctx.Get(t.fn.String()); err != nil || !f.IsFunction() {
-				g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not get the task function")
+				g.Log(constant.ERROR, "", 0.0, 0.0, "Can not get the task function")
 			} else {
 				result, err := f.Call(f, t.args...)
 				if err != nil || result.IsUndefined() || result.IsNull() {

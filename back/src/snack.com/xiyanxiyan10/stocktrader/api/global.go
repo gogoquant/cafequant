@@ -12,6 +12,7 @@ import (
 
 // GlobalHandler ...
 type GlobalHandler interface {
+	Log(action, symbol string, price, amount float64, messages string)
 	LogStatus(messages string)
 	DingSet(token, key string) error
 	DingSend(msg string) error
@@ -130,8 +131,8 @@ func (g *Global) DrawPlot() error {
 }
 
 // Log ...
-func (g *Global) Log(messages string) {
-	g.logger.Log(constant.INFO, "", 0.0, 0.0, messages)
+func (g *Global) Log(action, symbol string, price, amount float64, messages string) {
+	g.logger.Log(action, symbol, price, amount, messages)
 }
 
 // LogStatus ...

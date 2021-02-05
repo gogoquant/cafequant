@@ -29,7 +29,7 @@ type Exchange interface {
 	// 订阅
 	SetSubscribe(string, string)
 	// 向管理台发送这个交易所的打印信息
-	Log(string)
+	Log(action, symbol string, price, amount float64, messages string)
 	// 获取交易所类型
 	GetType() string
 	// 获取交易所名称,自定义的
