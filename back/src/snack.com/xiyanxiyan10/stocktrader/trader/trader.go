@@ -1,18 +1,17 @@
 package trader
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"fmt"
 	"github.com/robertkrimen/otto"
 	"reflect"
 	"snack.com/xiyanxiyan10/stocktrader/api"
-	"snack.com/xiyanxiyan10/stocktrader/config"
+	//"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
-	"snack.com/xiyanxiyan10/stocktrader/goplugin"
+	//"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/notice"
-	"strconv"
+	//"snack.com/xiyanxiyan10/stocktrader/notice"
+	//"strconv"
 	"time"
 )
 
@@ -36,9 +35,6 @@ func GetTraderStatus(id int64) (status int64) {
 
 // GetTraderLogStatus ...
 func GetTraderLogStatus(id int64) (status string) {
-	if t, ok := Executor[id]; ok && t != nil {
-		return t.statusLog
-	}
 	return ""
 }
 
@@ -50,75 +46,13 @@ func Switch(id int64) (err error) {
 	return run(id)
 }
 
-// initializeGo ...
-func initializeGo(trader *Global) (err error) {
-	return
-}
-
-// run ...
-func runGo(trader Global, id int64) (err error) {
-	err = initializeGo(&trader)
-	if err != nil {
-		return
-	}
-
-	go func() {
-		defer func() {
-			if err := recover(); err != nil && err != errHalt {
-				trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
-			}
-			close(trader.ctx.Interrupt)
-			trader.Status = constant.Stop
-			trader.Pending = constant.Disable
-		}()
-		scripts := trader.Algorithm.Script
-		p := make(map[string]string)
-		err := json.Unmarshal([]byte(scripts), &p)
-		if err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
-			return
-		}
-		name := p["name"]
-		trader.goplugin.SetStragey(name)
-		trader.LastRunAt = time.Now()
-		trader.Status = constant.Running
-		err = trader.goplugin.LoadStragey()
-		if err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
-			return
-		}
-		err = trader.goplugin.Init(p)
-		if err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
-			return
-		}
-		err = trader.goplugin.Run(p)
-		if err != nil {
-			trader.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
-			return
-		}
-
-	}()
-	Executor[trader.ID] = &trader
-	return
-}
-
 // initializeJs ...
 func initializeJs(trader *Global) (err error) {
-	if localErr := trader.ctx.Set("Go", trader.goplugin); localErr != nil {
+	if localErr := trader.ctx.Set("Global", api.GlobalHandler(trader)); localErr != nil {
 		err = localErr
 		return
 	}
-	if localErr := trader.ctx.Set("Global", GlobalHandler(trader)); localErr != nil {
-		err = localErr
-		return
-	}
-	if localErr := trader.ctx.Set("G", GlobalHandler(trader)); localErr != nil {
-		err = localErr
-		return
-	}
-
-	if localErr := trader.ctx.Set("Plugin", trader.goplugin); localErr != nil {
+	if localErr := trader.ctx.Set("G", api.GlobalHandler(trader)); localErr != nil {
 		err = localErr
 		return
 	}
@@ -167,32 +101,17 @@ func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 	if err != nil {
 		return
 	}
-	trader.Logger = model.Logger{
-		TraderID:     trader.ID,
-		ExchangeType: "global",
-	}
 
-	trader.backtest = backtest
-	trader.backlog = backlog
+	var opt constant.Option
+	opt.BackLog = backlog
+	opt.BackTest = backtest
+	opt.TraderID = id
 
+	trader.Global = *(api.NewGlobalStruct(opt))
 	trader.scriptType = trader.Algorithm.Type
 	trader.tasks = make(Tasks)
 	trader.ctx = otto.New()
 	trader.ctx.Interrupt = make(chan func(), 1)
-	trader.mail = notice.NewMailHandler()
-	trader.ding = notice.NewDingHandler()
-	trader.draw = draw.NewDrawHandler()
-
-	// set the diagram path
-	filePath := config.String(constant.FilePath)
-	trader.draw.SetPath(filePath + "/" + strconv.FormatInt(trader.ID, 10) + ".html")
-
-	goExtend := goplugin.NewGoPlugin()
-	goExtend.AddMail(trader.mail)
-	goExtend.AddDraw(trader.draw)
-	goExtend.AddDing(trader.ding)
-	goExtend.AddLogStatus(&trader.statusLog)
-	goExtend.AddLog(&trader.Logger)
 
 	for i, e := range es {
 		opt := constant.Option{
@@ -206,13 +125,11 @@ func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 			BackTest:  backtest,
 		}
 		if exchange, errD := api.GetExchange(opt); errD != nil {
-			goExtend.AddExchange(exchange)
 			trader.es = append(trader.es, exchange)
 		} else {
 			fmt.Printf("make exchange fail:%s\n", errD.Error())
 		}
 	}
-	trader.goplugin = goExtend
 
 	if len(trader.es) == 0 {
 		err = fmt.Errorf("please add at least one exchange")
@@ -240,14 +157,6 @@ func run(id int64) (err error) {
 	trader, err := initialize(id, false, false)
 	if err != nil {
 		return
-	}
-
-	switch trader.scriptType {
-	case constant.ScriptGo:
-		return runGo(trader, id)
-	case constant.ScriptJs:
-		return runJs(trader, id)
-
 	}
 	return runJs(trader, id)
 }
@@ -320,27 +229,12 @@ func stop(id int64) (err error) {
 			return fmt.Errorf("stop exchange %s fail:%s", e.GetName(), err.Error())
 		}
 	}
-	switch trader.scriptType {
-	case constant.ScriptGo:
-		return stopGo(id)
-	case constant.ScriptJs:
-		return stopJs(id)
-	}
-	return
+	return stopJs(id)
 }
 
 // stop ...
 func stopJs(id int64) (err error) {
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
-	return
-}
-
-// stop ...
-func stopGo(id int64) (err error) {
-	err = Executor[id].goplugin.Exit(nil)
-	if err != nil {
-		return err
-	}
 	return
 }
 

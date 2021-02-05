@@ -1,6 +1,6 @@
 module snack.com/xiyanxiyan10/stocktrader
 
-go 1.13
+go 1.15
 
 require (
 	github.com/axgle/mahonia v0.0.0-20180208002826-3358181d7394
@@ -22,6 +22,7 @@ require (
 	github.com/lib/pq v1.2.0 // indirect
 	github.com/mayiweb/goctp v0.0.0-20190917081845-ed4a7d3f7e3e
 	github.com/nntaoli-project/goex v1.2.5
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/robertkrimen/otto v0.0.0-20191219234010-c382bd3c16ff
 	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
 	github.com/sirupsen/logrus v1.6.0 // indirect

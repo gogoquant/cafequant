@@ -1,88 +1,22 @@
 package trader
 
 import (
-	"encoding/json"
-	"fmt"
 	"github.com/robertkrimen/otto"
-	"log"
-	"os"
-	"reflect"
-	"snack.com/xiyanxiyan10/conver"
+	//"log"
+	//"os"
+	//"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/api"
-	"snack.com/xiyanxiyan10/stocktrader/config"
+	//"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
-	"snack.com/xiyanxiyan10/stocktrader/goplugin"
+	//"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/notice"
+	//"snack.com/xiyanxiyan10/stocktrader/notice"
 	"sync"
-	"time"
+	//"time"
 )
 
 // Tasks ...
 type Tasks map[string][]task
-
-// GlobalHandler ...
-type GlobalHandler interface {
-	LogStatus(messages ...interface{})
-	DingSet(token, key string) error
-	DingSend(msg string) error
-	MailSet(to, server, portStr, username, password string) error
-	MailSend(msg string) error
-	DrawSetPath(path string)
-	DrawGetPath() string
-	DrawReset()
-	DrawKLine(time string, a, b, c, d float32)
-	DrawLine(name string, time string, data float32, shape string)
-	DrawPlot() error
-}
-
-// Global ...
-type Global struct {
-	model.Trader
-	Logger model.Logger // 利用这个对象保存日志
-
-	backtest   bool // 是否为回测模式
-	backlog    bool
-	ctx        *otto.Otto         // js虚拟机
-	es         []api.Exchange     // 交易所列表
-	tasks      Tasks              // 任务列表
-	running    bool               // 运行中
-	scriptType string             // 脚本语言
-	mail       notice.MailHandler // 邮件发送
-	ding       notice.DingHandler // dingtalk
-	draw       draw.DrawHandler   // 图标绘制
-	goplugin   goplugin.GoHandler // go 插件
-	statusLog  string             // 状态日志
-}
-
-// Sleep ...
-func (g *Global) Sleep(intervals ...interface{}) {
-	if g.backtest {
-		return
-	}
-	interval := int64(0)
-	if len(intervals) > 0 {
-		interval = conver.Int64Must(intervals[0])
-	}
-	if interval > 0 {
-		time.Sleep(time.Duration(interval) * time.Millisecond)
-	} else {
-		for _, e := range g.es {
-			e.AutoSleep()
-		}
-	}
-}
-
-// GetMail ...
-func (g *Global) GetMail() notice.MailHandler {
-	return g.mail
-}
-
-// GetDraw ...
-func (g *Global) GetDraw() draw.DrawHandler {
-	return g.draw
-}
 
 //js中的一个任务,目的是可以并发工作
 type task struct {
@@ -91,107 +25,17 @@ type task struct {
 	args []interface{} //函数的参数
 }
 
-// DingSet ...
-func (g *Global) DingSet(token, key string) error {
-	g.ding.Set(token, key)
-	return nil
-}
+// Global ...
+type Global struct {
+	api.Global
+	model.Trader
+	Logger model.Logger // 利用这个对象保存日志
 
-// DingSend ...
-func (g *Global) DingSend(msg string) error {
-	return g.ding.Send(msg)
-}
-
-// MailSet ...
-func (g *Global) MailSet(to, server, portStr, username, password string) error {
-	port, err := conver.Int(portStr)
-	if err != nil {
-		return err
-	}
-	g.mail.Set(to, server, port, username, password)
-	return nil
-}
-
-// MailSend ...
-func (g *Global) MailSend(msg string) error {
-	return g.mail.Send(msg)
-}
-
-// DrawSetPath set file path for config map
-func (g *Global) DrawSetPath(path string) {
-	g.draw.SetPath(path)
-}
-
-// DrawGetPath get file path from config map
-func (g *Global) DrawGetPath() string {
-	// get the picture path
-	path := g.draw.GetPath()
-	if path == "" {
-		path = config.String("filePath")
-	}
-	return path
-}
-
-// DrawReset ...
-func (g *Global) DrawReset() {
-	g.draw.Reset()
-}
-
-// DrawKLine ...
-func (g *Global) DrawKLine(time string, a, b, c, d float32) {
-	g.draw.PlotKLine(time, a, b, c, d)
-}
-
-// DrawLine ...
-func (g *Global) DrawLine(name string, time string, data float32, shape string) {
-	g.draw.PlotLine(name, time, data, shape)
-}
-
-// DrawPlot ...
-func (g *Global) DrawPlot() error {
-	if err := g.draw.Display(); err != nil {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, err)
-		return err
-	}
-	return nil
-}
-
-// Console ...
-func (g *Global) Console(messages ...interface{}) {
-	log.Printf("%v %v\n", constant.INFO, messages)
-}
-
-// Log ...
-func (g *Global) Log(messages ...interface{}) {
-	g.Logger.Log(constant.INFO, "", 0.0, 0.0, messages...)
-}
-
-// LogProfit ...
-func (g *Global) LogProfit(messages ...interface{}) {
-	profit := 0.0
-	if len(messages) > 0 {
-		profit = conver.Float64Must(messages[0])
-	}
-	g.Logger.Log(constant.PROFIT, "", 0.0, profit, messages[1:]...)
-}
-
-// LogStatus ...
-func (g *Global) LogStatus(messages ...interface{}) {
-	go func() {
-		msg := ""
-		for _, m := range messages {
-			v := reflect.ValueOf(m)
-			switch v.Kind() {
-			case reflect.Struct, reflect.Map, reflect.Slice:
-				if bs, err := json.Marshal(m); err == nil {
-					msg += string(bs)
-					continue
-				}
-			}
-			msg += fmt.Sprintf("%+v", m)
-		}
-		g.statusLog = msg
-	}()
+	ctx        *otto.Otto     // js虚拟机
+	es         []api.Exchange // 交易所列表
+	tasks      Tasks          // 任务列表
+	running    bool           // 运行中
+	scriptType string         // 脚本语言
 }
 
 // AddTask ...
@@ -286,26 +130,4 @@ func (g *Global) ExecTasks(group otto.Value) (results []interface{}) {
 	wg.Wait()
 	g.running = false
 	return
-}
-
-// LogFile ...
-func (g *Global) LogFile(name, strContent string) error {
-	fd, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-	if err != nil {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not open the file:", err)
-		return err
-	}
-	fdContent := strContent
-	buf := []byte(fdContent)
-	_, err = fd.Write(buf)
-	if err != nil {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not write the file:", err)
-		return err
-	}
-	err = fd.Close()
-	if err != nil {
-		g.Logger.Log(constant.ERROR, "", 0.0, 0.0, "Can not close the file:", err)
-		return err
-	}
-	return nil
 }

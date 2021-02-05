@@ -117,7 +117,8 @@ var (
 		constant.SZ:      NewSZExchange,
 	}
 	// ExchangeBackerMaker backtest exchange
-	ExchangeBackerMaker = map[string]func(constant.Option) (Exchange, error){ //保存所有交易所的构造函数
+	ExchangeBackerMaker = map[string]func(constant.Option) (Exchange, error){
+		//保存所有交易所的构造函数
 		constant.HuoBiDm: NewFutureBackExchange,
 		constant.HuoBi:   NewSpotBackExchange,
 		constant.SZ:      NewSpotBackExchange,
