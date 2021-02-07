@@ -10,13 +10,14 @@ import (
 type BaseExchangeCache struct {
 	Data      interface{}
 	TimeStamp int64
-	Mark      bool
+	Updated   bool
 }
 
 // BaseExchangeCaches ...
 type BaseExchangeCaches struct {
-	mutex      sync.Mutex
-	ch         chan [2]string
+	mutex sync.Mutex
+	ch    chan [2]string
+
 	waitsymbol string
 	waitaction string
 
@@ -93,7 +94,7 @@ func (e *BaseExchangeCaches) GetCache(action string, stockSymbol string, fresh b
 	if action == constant.CacheOrder {
 		dst = e.order[stockSymbol]
 	}
-	if !dst.Mark {
+	if !dst.Updated {
 		dst.Data = nil
 	}
 	e.mutex.Unlock()
@@ -109,7 +110,7 @@ func (e *BaseExchangeCaches) SetCache(action string, stockSymbol string, val int
 
 	item.Data = val
 	item.TimeStamp = time.Now().Unix()
-	item.Mark = true
+	item.Updated = true
 
 	if action == constant.CacheTicker {
 		if e.ticker == nil {
