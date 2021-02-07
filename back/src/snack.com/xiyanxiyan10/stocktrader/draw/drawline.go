@@ -170,6 +170,7 @@ func (p *LineService) prevLine() {
 	p.lineChart = charts.NewLine()
 	//p.lineChart.SetGlobalOptions(charts.TitleOpts{Title: "Line多线"}, charts.InitOpts{Theme: "shine"})
 	var shape string
+
 	for k, v := range p.line {
 		x := make([]string, 0)
 		y := make([]float32, 0)
@@ -178,13 +179,22 @@ func (p *LineService) prevLine() {
 			y = append(y, v[i].Data)
 			shape = v[i].Shape
 		}
-		if shape == StepLine {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Step: true}, charts.LineOpts{ConnectNulls: false})
-		} else if shape == SmoothLine {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{Smooth: true}, charts.LineOpts{ConnectNulls: false})
-		} else {
-			p.lineChart.AddXAxis(x).AddYAxis(k, y, charts.LineOpts{ConnectNulls: false})
+		var markpoints = []charts.SeriesOptser{
+			charts.MPNameTypeItem{Name: "最大值", Type: "max"},
+			charts.MPNameTypeItem{Name: "平均值", Type: "average"},
+			charts.MPNameTypeItem{Name: "最小值", Type: "min"},
+			charts.MPStyleOpts{Label: charts.LabelTextOpts{Show: true}},
 		}
+		markpoints = append(markpoints, charts.LineOpts{ConnectNulls: false})
+		if shape == StepLine {
+			markpoints = append(markpoints, charts.LineOpts{Step: true})
+		} else if shape == SmoothLine {
+			markpoints = append(markpoints, charts.LineOpts{Smooth: true})
+		} else if shape == AreaLine {
+			markpoints = append(markpoints, charts.LabelTextOpts{Show: true})
+			markpoints = append(markpoints, charts.AreaStyleOpts{Opacity: 0.2})
+		}
+		p.lineChart.AddXAxis(x).AddYAxis(k, y, markpoints...)
 	}
 
 	p.lineChart.SetGlobalOptions(

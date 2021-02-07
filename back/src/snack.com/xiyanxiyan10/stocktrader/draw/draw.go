@@ -4,6 +4,7 @@ const (
 	StepLine   = "stepline"
 	SmoothLine = "smoothline"
 	BrokeLine  = "brokeline"
+	AreaLine   = "arealine"
 )
 
 // DrawHandler Draw draw interface
