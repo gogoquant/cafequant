@@ -7,22 +7,14 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
-	"snack.com/xiyanxiyan10/stocktrader/goplugin"
-	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
 
 // TrendStragey ...
 type TrendStragey struct {
-	goplugin.GoStragey
-	Status bool
-}
-
-// NewHandler ...
-func NewHandler() (goplugin.GoStrageyHandler, error) {
-	trend := new(TrendStragey)
-	return trend, nil
+	Exchanges []api.Exchange
+	Status    bool
 }
 
 // Init ...
@@ -43,38 +35,36 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetSubscribe(symbol, constant.CachePosition)
 	exchange.SetSubscribe(symbol, constant.CacheOrder)
 	exchange.SetSubscribe(symbol, constant.CacheTicker)
-	//exchange.Start()
 
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
 	return nil
 }
 
 // Run ...
-func (e *TrendStragey) Run(map[string]string) error {
+func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
 	exchange.Start()
 
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	symbols, err := exchange.BackGetSymbols()
 	if err != nil {
-		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
+		exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
 		return nil
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols success:", symbols)
+	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Back get symbols success:%s", symbols))
 
 	times, err := exchange.BackGetTimeRange()
 	if err != nil {
-		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
+		exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
 		return nil
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Back get times success:", times)
 
-	str1 := time.Unix(times[0], 0).Local().String()
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Start time is:", str1)
+	startStr := time.Unix(times[0], 0).Local().String()
+	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Start time is:%s", startStr))
 
-	str := time.Unix(times[1], 0).Local().String()
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "End time is:", str)
+	endStr := time.Unix(times[1], 0).Local().String()
+	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("End time is:%s", endStr))
 
 	ohlcs, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
 	if err != nil {
@@ -96,7 +86,7 @@ func (e *TrendStragey) Run(map[string]string) error {
 	}
 	err = drawHandler.Display()
 	if err != nil {
-		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Display err is:", err.Error())
+		exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Display err is:%s", err.Error()))
 		return err
 	}
 	return nil
@@ -106,8 +96,7 @@ func (e *TrendStragey) Run(map[string]string) error {
 func (e *TrendStragey) Exit(map[string]string) error {
 	exchange := e.Exchanges[0]
 	exchange.Stop()
-
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
 	e.Status = false
 	return nil
 }
@@ -144,37 +133,16 @@ func main() {
 		return
 	}
 
-	trend, err := NewHandler()
-	if err != nil {
-		fmt.Printf("create trend fail:%s\n", err.Error())
-		return
-	}
+	var trend TrendStragey
+	trend.Exchanges = append(trend.Exchanges, exchange)
+
 	param := make(map[string]string)
 	param["io"] = io
 	param["symbol"] = symbol
 	param["constract"] = constract
 	param["period"] = period
-	trend.AddExchange(exchange)
-
-	var logger model.Logger
-
-	logger.Back = true
-
-	trend.AddLogger(&logger)
 	trend.Init(param)
-	trend.Run(nil)
-}
-
-// Process ...
-func (e *TrendStragey) Process() error {
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
-	exchange := e.Exchanges[0]
-	exchange.GetRecords()
-	for e.Status {
-		time.Sleep(time.Duration(3) * time.Minute)
-	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
-	return nil
+	trend.Run()
 }
 
 // Action trendAction put order and watch this order
@@ -199,13 +167,13 @@ func (e *TrendStragey) Action(low, high, amount float64, dir int) error {
 	if err != nil {
 		return fmt.Errorf("open order fail:%s", err.Error())
 	}
-	exchange.Sleep(time.Minute * 1)
+	exchange.Sleep(1)
 	positions, err := exchange.GetPosition()
 	if err != nil {
 		return fmt.Errorf("get position  fail:%s", err.Error())
 	}
 	if len(positions) == 0 {
-		e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Try to close position and order")
+		exchange.Log(constant.INFO, "", 0.0, 0.0, "Try to close position and order")
 		// Todo close position here
 	}
 	exchange.SetDirection(closedirection)
