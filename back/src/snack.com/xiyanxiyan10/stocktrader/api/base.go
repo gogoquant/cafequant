@@ -570,7 +570,6 @@ func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 	io := e.GetIO()
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		e.wait(stockType, constant.CacheTicker)
-
 		val := e.GetCache(constant.CacheTicker, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
 			return nil, fmt.Errorf("ticker not load ")
@@ -672,7 +671,7 @@ func (e *BaseExchange) getAccount() (*constant.Account, error) {
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
-	if e.GetIO() == constant.IOCACHE || io == constant.IOBLOCK {
+	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		e.wait(stockType, constant.CachePosition)
 		val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
