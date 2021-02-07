@@ -88,7 +88,7 @@ const (
 // some variables
 var (
 	ExchangeTypes = []string{HuoBiDm, FutureBack, HuoBi, SpotBack, SZ}
-	ScriptTypes   = []string{ScriptJs, ScriptGo}
+	ScriptTypes   = []string{ScriptJs}
 )
 
 // future userInfo string
@@ -115,13 +115,13 @@ const (
 	// DepthSize ...
 	DepthSize = 10
 	// GoHandler ...
-	GoHandler = "NewHandler"
+	// GoHandler = "NewHandler"
 	// DefaultTimeOut ...
 	DefaultTimeOut = 2
 	// ScriptJs ...
 	ScriptJs = "js"
 	// ScriptGo ... @todo change as go
-	ScriptGo = "go"
+	//ScriptGo = "go"
 	// Pending ...
 	Pending = -1
 	// Running ...
