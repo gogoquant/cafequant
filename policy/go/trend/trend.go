@@ -6,7 +6,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	"time"
 )
@@ -27,14 +26,16 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
+	key := symbol + "." + constract
 	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
 	exchange.SetPeriodSize(10)
-	exchange.SetSubscribe(symbol, constant.CacheAccount)
-	exchange.SetSubscribe(symbol, constant.CacheRecord)
-	exchange.SetSubscribe(symbol, constant.CachePosition)
-	exchange.SetSubscribe(symbol, constant.CacheOrder)
-	exchange.SetSubscribe(symbol, constant.CacheTicker)
+	exchange.SetPeriodSize(1)
+	exchange.SetSubscribe(key, constant.CacheAccount)
+	exchange.SetSubscribe(key, constant.CacheRecord)
+	exchange.SetSubscribe(key, constant.CachePosition)
+	exchange.SetSubscribe(key, constant.CacheOrder)
+	exchange.SetSubscribe(key, constant.CacheTicker)
 
 	e.Global = api.NewGlobal(opt)
 
@@ -47,8 +48,6 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
 	global := e.Global
-
-	exchange.Start()
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	symbols, err := exchange.BackGetSymbols()
@@ -70,28 +69,29 @@ func (e *TrendStragey) Run() error {
 	endStr := time.Unix(times[1], 0).Local().String()
 	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("End time is:%s", endStr))
 
-	times[0], err = util.TimeStr2Unix("2020-12-02 00:00:00")
-	if err != nil {
-		exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-	}
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
-	records, err := exchange.GetRecords()
-	if err != nil {
-		exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-	}
-	ohlcs := records
-	global.DrawSetPath("/Users/shu/Desktop/trend.html")
-	for i, ohlc := range ohlcs {
-		global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
-			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
-		global.DrawLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
-		//drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
-		if i > 1 && ohlcs[i].Low > ohlcs[i-1].Low {
-			global.DrawLine("vol", util.TimeUnix2Str(ohlc.Time), 30000, draw.AreaLine)
-		} else {
-			global.DrawLine("vol", util.TimeUnix2Str(ohlc.Time), 0, draw.AreaLine)
+
+	exchange.Start()
+	fmt.Printf("trend start\n")
+	for {
+		records, err := exchange.GetRecords()
+		if err != nil {
+			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
+			break
+		}
+		if records == nil {
+			fmt.Printf("get ohlc null\n")
+			break
+		}
+		ohlcs := records
+		for _, ohlc := range ohlcs {
+			fmt.Printf("get ohlc %s\n", util.Struct2Json(ohlc))
+			global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
+				float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
 		}
 	}
+
+	global.DrawSetPath("/Users/shu/Desktop/trend.html")
 	err = global.DrawPlot()
 	if err != nil {
 		exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Display err is:%s", err.Error()))
@@ -112,18 +112,19 @@ func (e *TrendStragey) Exit(map[string]string) error {
 // main ...
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("命令行的参数不合法:", len(os.Args))
-		return
-	}
-	if err := config.Init(os.Args[1]); err != nil {
-		fmt.Printf("config init error is %s\n", err.Error())
-		return
+		fmt.Println("命令行的参数不足:", len(os.Args))
+		config.Init("./config.ini")
+	} else {
+		if err := config.Init(os.Args[1]); err != nil {
+			fmt.Printf("config init error is %s\n", err.Error())
+			return
+		}
 	}
 	var opt constant.Option
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "M15"
+	var period = "H1"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""

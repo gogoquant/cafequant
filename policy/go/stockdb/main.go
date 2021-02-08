@@ -34,18 +34,17 @@ func main() {
 	opt.TraderID = 1
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
-	opt.LogBack = true
+	opt.BackLog = true
+	opt.BackTest = true
 
-	maker := api.ExchangeMaker[opt.Type]
-	exchange, err := maker(opt)
+	exchange, err := api.GetExchange(opt)
 	if err != nil {
 		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
 	}
 
 	exchange.SetIO(io)
-	exchange.SetContractType(constract)
-	exchange.SetStockType(symbol)
+	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
 	exchange.SetPeriodSize(10)
 	exchange.Start()
