@@ -172,21 +172,25 @@ func (e *ExchangeFutureBack) Start() error {
 			return err
 		}
 		if e.BaseExchange.start < timeRange[0] || e.BaseExchange.end > timeRange[1] {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "time range not in %d - %d", timeRange[0], timeRange[1])
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "time range not in:",
+				e.BaseExchange.start, "-", e.BaseExchange.end, ":", timeRange[0], "-", timeRange[1])
 			return fmt.Errorf("time range not in %d - %d", timeRange[0], timeRange[1])
 		}
 		periodRange, err := e.BaseExchange.BackGetPeriodRange()
 		if err != nil {
 			return err
 		}
-		if e.recordsPeriodDbMap[e.BaseExchange.period] < periodRange[0] || e.recordsPeriodDbMap[e.BaseExchange.period] > periodRange[1] {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in %d - %d", periodRange[0], periodRange[1])
+		period := e.recordsPeriodDbMap[e.BaseExchange.period]
+		if period < periodRange[0] || period > periodRange[1] {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in:",
+				e.BaseExchange.period, ":", period, ":", periodRange[0], "-", periodRange[1])
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
 		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
 		if err != nil {
 			return err
 		}
+		fmt.Printf("load ohlcs %d\n", len(ohlcs))
 		e.dataLoader[stock].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
@@ -681,6 +685,14 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 	size := e.GetPeriodSize()
 	period := e.GetPeriod()
+
+	ticker, err := e.GetTicker(e.GetStockType())
+	if err != nil {
+		return nil, err
+	}
+	if ticker == nil {
+		return nil, nil
+	}
 	curr := e.currData.Time
 
 	if e.recordsCache == nil {
@@ -720,16 +732,7 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 	if end > size && size != 0 {
 		start = end - size
 	}
-	records := e.recordsCache[period][start:end]
-
-	// move to next
-	ticker, err := e.GetTicker(e.GetStockType())
-	if err == nil {
-		return nil, err
-	}
-	if ticker == nil {
-		return nil, nil
-	}
+	records := e.recordsCache[key][start:end]
 
 	return records, nil
 }

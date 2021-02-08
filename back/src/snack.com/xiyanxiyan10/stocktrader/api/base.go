@@ -54,6 +54,8 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 	l.datas = append(l.datas, ohlcs...)
 	l.size = len(l.datas)
+	// move one for first records, at least one ohlc
+	l.Next()
 }
 
 // BaseExchange ...
