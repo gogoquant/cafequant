@@ -191,6 +191,12 @@ func (e *ExchangeFutureBack) Start() error {
 			return err
 		}
 		fmt.Printf("load ohlcs %d\n", len(ohlcs))
+		length := len(ohlcs)
+		for i := 0; i < length/2; i++ {
+			temp := ohlcs[i]
+			ohlcs[i] = ohlcs[length-1-i]
+			ohlcs[length-1-i] = temp
+		}
 		e.dataLoader[stock].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
@@ -710,7 +716,8 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 			return nil, err
 		}
 		var records []constant.Record
-		for i, kline := range vec {
+		for i := len(vec) - 1; i >= 0; i-- {
+			kline := vec[i]
 			records = append([]constant.Record{{
 				Open:   kline.Open,
 				High:   kline.High,
@@ -723,7 +730,7 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 			if !ok {
 				e.recordsMap[key] = make(map[int64]int)
 			}
-			e.recordsMap[key][kline.Time] = i
+			e.recordsMap[key][kline.Time] = len(vec) - i - 1
 		}
 		e.recordsCache[key] = records
 	}
