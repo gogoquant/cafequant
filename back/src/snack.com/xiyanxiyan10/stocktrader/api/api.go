@@ -6,6 +6,16 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
+type ExchangeBroker interface {
+	getDepth(stockType string) (*constant.Depth, error)
+	getOrder(symbol, id string) (*constant.Order, error)
+	getAccount() (*constant.Account, error)
+	getOrders(symbol string) ([]constant.Order, error)
+	getTicker(symbol string) (*constant.Ticker, error)
+	getRecords(stockType string) ([]constant.Record, error)
+	getPosition(stockType string) ([]constant.Position, error)
+}
+
 // Exchange interface
 type Exchange interface {
 	// 初始化完毕start run

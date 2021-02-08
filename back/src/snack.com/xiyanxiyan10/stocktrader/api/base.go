@@ -61,7 +61,7 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 // BaseExchange ...
 type BaseExchange struct {
 	BaseExchangeCaches // cache for exchange
-	// period for get records
+	// period for.father.get records
 	periodVal string
 	// period for backtest
 	period string
@@ -94,6 +94,8 @@ type BaseExchange struct {
 	host   string
 	logger model.Logger
 	option constant.Option
+
+	father ExchangeBroker
 }
 
 func stockPair2Vec(pair string) []string {
@@ -449,7 +451,7 @@ func (e *BaseExchange) SetID(id int) {
 	e.id = id
 }
 
-// GetID get ID
+// GetID.father.get ID
 func (e *BaseExchange) GetID() int {
 	return e.id
 }
@@ -459,7 +461,7 @@ func (e *BaseExchange) SetIO(mode string) {
 	e.ioMode = mode
 }
 
-// GetIO get IO mode
+// GetIO.father.get IO mode
 func (e *BaseExchange) GetIO() string {
 	return e.ioMode
 }
@@ -538,11 +540,7 @@ func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
 		}
 		return val.Data.([]constant.Record), nil
 	}
-	return e.getRecords(stockType)
-}
-
-func (e *BaseExchange) getRecords(stockType string) ([]constant.Record, error) {
-	panic("get records")
+	return e.father.getRecords(stockType)
 }
 
 func (e *BaseExchange) isRefresh() bool {
@@ -554,7 +552,7 @@ func (e *BaseExchange) isRefresh() bool {
 	return refresh
 }
 
-// GetTicker get market ticker
+// GetTicker.father.get market ticker
 func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
@@ -567,14 +565,10 @@ func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 		dst := val.Data.(constant.Ticker)
 		return &dst, nil
 	}
-	return e.getTicker(stockType)
+	return e.father.getTicker(stockType)
 }
 
-func (e *BaseExchange) getTicker(symbol string) (*constant.Ticker, error) {
-	panic("get ticker")
-}
-
-// GetDepth get depth from exchange
+// GetDepth.father.get depth from exchange
 func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
@@ -586,11 +580,7 @@ func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
 		dst := val.Data.(constant.Depth)
 		return &dst, nil
 	}
-	return e.getDepth(stockType)
-}
-
-func (e *BaseExchange) getDepth(stockType string) (*constant.Depth, error) {
-	panic("get depth")
+	return e.father.getDepth(stockType)
 }
 
 // GetOrder ...
@@ -609,15 +599,10 @@ func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
 		}
 		return nil, fmt.Errorf("order not found")
 	}
-	return e.getOrder(stockType, id)
+	return e.father.getOrder(stockType, id)
 }
 
-// GetOrder get detail of an order
-func (e *BaseExchange) getOrder(symbol, id string) (*constant.Order, error) {
-	panic("get order")
-}
-
-// GetOrders get all unfilled orders
+// GetOrders.father.get all unfilled orders
 func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
@@ -631,11 +616,7 @@ func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 		dst := val.Data.([]constant.Order)
 		return dst, nil
 	}
-	return e.getOrders(stockType)
-}
-
-func (e *BaseExchange) getOrders(symbol string) ([]constant.Order, error) {
-	panic("get orders")
+	return e.father.getOrders(stockType)
 }
 
 // GetAccount ...
@@ -650,14 +631,10 @@ func (e *BaseExchange) GetAccount() (*constant.Account, error) {
 		dst := val.Data.(constant.Account)
 		return &dst, nil
 	}
-	return e.getAccount()
+	return e.father.getAccount()
 }
 
-func (e *BaseExchange) getAccount() (*constant.Account, error) {
-	panic("get account")
-}
-
-// GetPosition get position from exchange
+// GetPosition.father.get position from exchange
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
@@ -669,11 +646,7 @@ func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 		}
 		return val.Data.([]constant.Position), nil
 	}
-	return e.getPosition(stockType)
-}
-
-func (e *BaseExchange) getPosition(symbol string) ([]constant.Position, error) {
-	panic("get records")
+	return e.father.getPosition(stockType)
 }
 
 // ValidBuy ...
@@ -705,12 +678,12 @@ func (e *BaseExchange) Log(action, symbol string, price, amount float64, message
 	e.logger.Log(action, symbol, price, amount, messages)
 }
 
-// GetType get the type of this exchange
+// GetType.father.get the type of this exchange
 func (e *BaseExchange) GetType() string {
 	return e.option.Type
 }
 
-// GetName get the name of this exchange
+// GetName.father.get the name of this exchange
 func (e *BaseExchange) GetName() string {
 	return e.option.Name
 }

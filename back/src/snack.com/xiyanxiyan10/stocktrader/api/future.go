@@ -229,6 +229,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		"BTC/USD": 0.001,
 	})
 	futureExchange.SetID(opt.Index)
+	futureExchange.BaseExchange.father = ExchangeBroker(&futureExchange)
 	return &futureExchange
 }
 
