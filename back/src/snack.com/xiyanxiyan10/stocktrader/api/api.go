@@ -14,6 +14,9 @@ type ExchangeBroker interface {
 	getTicker(symbol string) (*constant.Ticker, error)
 	getRecords(stockType string) ([]constant.Record, error)
 	getPosition(stockType string) ([]constant.Position, error)
+	buy(price, amount, msg string) (string, error)
+	sell(price, amount, msg string) (string, error)
+	CancelOrder(orderID string) (bool, error)
 }
 
 // Exchange interface

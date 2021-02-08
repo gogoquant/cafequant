@@ -351,7 +351,7 @@ func (e *FutureExchange) getAccount() (*constant.Account, error) {
 }
 
 // Buy buy from exchange
-func (e *FutureExchange) Buy(price, amount string, msg string) (string, error) {
+func (e *FutureExchange) buy(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -388,7 +388,7 @@ func (e *FutureExchange) Buy(price, amount string, msg string) (string, error) {
 }
 
 // Sell sell from exchange
-func (e *FutureExchange) Sell(price, amount string, msg string) (string, error) {
+func (e *FutureExchange) sell(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
@@ -474,7 +474,7 @@ func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 }
 
 // CancelOrder cancel an order
-func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
+func (e *FutureExchange) cancelOrder(orderID string) (bool, error) {
 	stockType := e.GetStockType()
 	stockType, contract := e.GetSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]

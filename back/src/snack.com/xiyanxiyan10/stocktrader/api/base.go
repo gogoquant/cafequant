@@ -106,6 +106,18 @@ func stockPair2Vec(pair string) []string {
 	return res
 }
 
+func (e *BaseExchange) Buy(price, amount, msg string) (string, error) {
+	return e.father.buy(price, amount, msg)
+}
+
+func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
+	return e.father.sell(price, amount, msg)
+}
+
+func (e *BaseExchange) CancelOrder(orderID string) (bool, error) {
+	return e.father.CancelOrder(orderID)
+}
+
 // SetPeriodSize Set size
 func (e *BaseExchange) SetPeriodSize(size int) {
 	e.size = size
