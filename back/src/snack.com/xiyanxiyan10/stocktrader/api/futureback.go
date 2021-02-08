@@ -46,6 +46,9 @@ type ExchangeFutureBack struct {
 	sortedCurrencies     constant.Account
 	longPosition         map[string]constant.Position // 多仓
 	shortPosition        map[string]constant.Position // 空仓
+
+	recordsMap   map[string]map[int64]int
+	recordsCache map[string][]constant.Record //records store as cache
 }
 
 // NewExchangeFutureBack2Config ...
@@ -676,26 +679,57 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 
 // GetRecords get candlestick data
 func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
-	var size = e.GetPeriodSize()
+	size := e.GetPeriodSize()
 	period := e.GetPeriod()
+	curr := e.currData.Time
 
-	vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.currData.Time, period)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
+	if e.recordsCache == nil {
+		e.recordsCache = make(map[string][]constant.Record)
+	}
+	if e.recordsMap == nil {
+		e.recordsMap = make(map[string]map[int64]int)
+	}
+	key := e.GetStockType()
+	// try to store records in cache at first
+	if len(e.recordsCache[key]) == 0 {
+		vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, period)
+		if err != nil {
+			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
+			return nil, err
+		}
+		var records []constant.Record
+		for i, kline := range vec {
+			records = append([]constant.Record{{
+				Open:   kline.Open,
+				High:   kline.High,
+				Low:    kline.Low,
+				Close:  kline.Close,
+				Volume: kline.Volume,
+				Time:   kline.Time,
+			}}, records...)
+			_, ok := e.recordsMap[key]
+			if !ok {
+				e.recordsMap[key] = make(map[int64]int)
+			}
+			e.recordsMap[key][kline.Time] = i
+		}
+		e.recordsCache[key] = records
+	}
+	end := e.recordsMap[key][curr]
+	start := 0
+	if end > size && size != 0 {
+		start = end - size
+	}
+	records := e.recordsCache[period][start:end]
+
+	// move to next
+	ticker, err := e.GetTicker(e.GetStockType())
+	if err == nil {
 		return nil, err
 	}
-	if len(vec) > size {
-		vec = vec[len(vec)-size:]
+	if ticker == nil {
+		return nil, nil
 	}
-	var records []constant.Record
-	for _, kline := range vec {
-		records = append([]constant.Record{{
-			Open:   kline.Open,
-			High:   kline.High,
-			Low:    kline.Low,
-			Close:  kline.Close,
-			Volume: kline.Volume,
-		}}, records...)
-	}
+
 	return records, nil
 }

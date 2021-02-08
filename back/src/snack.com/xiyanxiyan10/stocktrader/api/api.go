@@ -61,9 +61,9 @@ type Exchange interface {
 	// 返回买卖深度表
 	GetDepth() (*constant.Depth, error)
 	// 设置合约周期
-	SetContractType(contractType string)
+	// SetContractType(contractType string)
 	// 获取合约周期
-	GetContractType() string
+	// GetContractType() string
 	// 设置交易方向
 	SetDirection(direction string)
 	// 获取交易方向

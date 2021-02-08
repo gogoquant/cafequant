@@ -92,7 +92,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 			resPosition.Profit = position.SellProfit
 			resPosition.ForcePrice = position.ForceLiquPrice
 			resPosition.TradeType = constant.TradeTypeSell
-			resPosition.ContractType = e.contractType
+			resPosition.ContractType = position.ContractType
 			resPosition.StockType = position.Symbol.CurrencyA.Symbol +
 				"/" + position.Symbol.CurrencyB.Symbol
 			resPositionVec = append(resPositionVec, resPosition)
@@ -117,7 +117,7 @@ func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
 		resBid.Price = bid.Price
 		resDepth.Bids = append(resDepth.Bids, resBid)
 	}
-	resDepth.ContractType = e.GetContractType()
+	resDepth.ContractType = depth.ContractType
 	resDepth.StockType = e.GetStockType()
 	return &resDepth
 }
@@ -290,13 +290,14 @@ func (e *FutureExchange) Init(opt constant.Option) error {
 
 // GetDepth get depth from exchange
 func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
-	exchangeStockType, ok := e.stockTypeMap[stockType]
+	symbol, contract := e.GetSymbol(stockType)
+	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetDepth() error, the error number is stockType")
 		return nil, fmt.Errorf("GetDepth() error, the error number is stockType")
 	}
-	depth, err := e.api.GetFutureDepth(exchangeStockType, e.GetContractType(), constant.DepthSize)
+	depth, err := e.api.GetFutureDepth(exchangeStockType, contract, constant.DepthSize)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetDepth() error, the error number is ", err.Error())
@@ -308,15 +309,16 @@ func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 
 // GetPosition get position from exchange
 func (e *FutureExchange) getPosition(stockType string) ([]constant.Position, error) {
-	exchangeStockType, ok := e.stockTypeMap[stockType]
+	symbol, contract := e.GetSymbol(stockType)
+	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0,
 			"getPosition() error, the error number is stockType")
 		return nil, fmt.Errorf("GetPosition() error, the error number is stockType")
 	}
-	positions, err := e.api.GetFuturePosition(exchangeStockType, e.GetContractType())
+	positions, err := e.api.GetFuturePosition(exchangeStockType, contract)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0,
 			"getPosition() error, the error number is %s", err.Error())
 		return nil, fmt.Errorf("GetPosition() error, the error number is %s", err.Error())
 	}
@@ -352,6 +354,7 @@ func (e *FutureExchange) Buy(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
+	stockType, contract := e.GetSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
@@ -369,7 +372,7 @@ func (e *FutureExchange) Buy(price, amount string, msg string) (string, error) {
 		matchPrice = 1
 	}
 	openType = e.tradeTypeMapReverse[e.GetDirection()]
-	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, contract,
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
@@ -388,6 +391,7 @@ func (e *FutureExchange) Sell(price, amount string, msg string) (string, error) 
 	var err error
 	var openType int
 	stockType := e.GetStockType()
+	stockType, contract := e.GetSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
@@ -405,7 +409,7 @@ func (e *FutureExchange) Sell(price, amount string, msg string) (string, error) 
 		matchPrice = 1
 	}
 	openType = e.tradeTypeMapReverse[e.GetDirection()]
-	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, e.GetContractType(),
+	orderID, err := e.api.PlaceFutureOrder(exchangeStockType, contract,
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
@@ -421,13 +425,14 @@ func (e *FutureExchange) Sell(price, amount string, msg string) (string, error) 
 
 // GetOrder get detail of an order
 func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
-	exchangeStockType, ok := e.stockTypeMap[symbol]
+	stockType, contract := e.GetSymbol(symbol)
+	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id),
 			"GetOrder() error, the error number is stockType")
 		return nil, fmt.Errorf("GetOrder() error, the error number is stockType")
 	}
-	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetContractType())
+	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, contract)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id),
 			"GetOrder() error, the error number is ", err.Error())
@@ -451,12 +456,13 @@ func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
 
 // GetOrders get all unfilled orders
 func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
-	exchangeStockType, ok := e.stockTypeMap[symbol]
+	stockType, contract := e.GetSymbol(symbol)
+	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
 		return nil, fmt.Errorf("GetOrders() error, the error number is stockType")
 	}
-	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, e.GetStockType())
+	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, contract)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetOrders() error, the error number is %s", err.Error())
@@ -468,13 +474,15 @@ func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 
 // CancelOrder cancel an order
 func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
+	stockType := e.GetStockType()
+	stockType, contract := e.GetSymbol(stockType)
+	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID),
 			"CancelOrder() error, the error number is stockType")
 		return false, fmt.Errorf("CancelOrder() error, the error number is stockType")
 	}
-	result, err := e.api.FutureCancelOrder(exchangeStockType, e.GetContractType(), orderID)
+	result, err := e.api.FutureCancelOrder(exchangeStockType, contract, orderID)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID),
 			"CancelOrder() error, the error number is ", err.Error())
@@ -491,12 +499,13 @@ func (e *FutureExchange) CancelOrder(orderID string) (bool, error) {
 // getTicker get market ticker
 func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	stockType := e.GetStockType()
+	stockType, contract := e.GetSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetTicker() error, the error number is stockType")
 		return nil, fmt.Errorf("GetTicker() error, the error number is stockType")
 	}
-	exTicker, err := e.api.GetFutureTicker(exchangeStockType, e.GetContractType())
+	exTicker, err := e.api.GetFutureTicker(exchangeStockType, contract)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetTicker() error, the error number is %s", err.Error())
@@ -508,27 +517,28 @@ func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 
 // GetRecords get candlestick data
 func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error) {
+	stockType, contract := e.GetSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
-	var period int64 = -1
 	var since = 0
-	periodStr := e.GetPeriod()
+	var key = stockType
 	size := e.GetPeriodSize()
-	period, ok = e.recordsPeriodMap[periodStr]
+	periodStr := e.GetPeriod()
+	periodnum, ok := e.recordsPeriodMap[periodStr]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0,
 			"GetRecords() error, the error number is stockType")
 		return nil, errors.New("GetRecords() error, the error number is stockType")
 	}
 
-	klineVec, err := e.api.GetKlineRecords(e.GetContractType(), exchangeStockType, int(period), size, since)
+	klineVec, err := e.api.GetKlineRecords(contract, exchangeStockType, int(periodnum), size, since)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetRecords() error, the error number is ", err.Error())
 		return nil, fmt.Errorf("GetRecords() error, the error number is:%s", err.Error())
 	}
 	timeLast := int64(0)
-	if len(e.records[periodStr]) > 0 {
-		timeLast = e.records[periodStr][len(e.records[periodStr])-1].Time
+	if len(e.records[key]) > 0 {
+		timeLast = e.records[key][len(e.records[key])-1].Time
 	}
 	var recordsNew []constant.Record
 	for i := len(klineVec); i > 0; i-- {
@@ -544,7 +554,7 @@ func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error)
 				Volume: kline.Vol2,
 			}}, recordsNew...)
 		} else if timeLast > 0 && recordTime == timeLast {
-			e.records[periodStr][len(e.records[periodStr])-1] = constant.Record{
+			e.records[key][len(e.records[key])-1] = constant.Record{
 				Time:   recordTime,
 				Open:   kline.Open,
 				High:   kline.High,
@@ -556,9 +566,9 @@ func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error)
 			break
 		}
 	}
-	e.records[periodStr] = append(e.records[periodStr], recordsNew...)
-	if len(e.records[periodStr]) > size {
-		e.records[periodStr] = e.records[periodStr][len(e.records[periodStr])-size : len(e.records[periodStr])]
+	e.records[key] = append(e.records[key], recordsNew...)
+	if len(e.records[key]) > size {
+		e.records[key] = e.records[key][len(e.records[key])-size : len(e.records[key])]
 	}
-	return e.records[periodStr], nil
+	return e.records[key], nil
 }

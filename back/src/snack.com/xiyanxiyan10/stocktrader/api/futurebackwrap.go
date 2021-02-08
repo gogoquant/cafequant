@@ -190,6 +190,11 @@ func (e *ExchangeFutureBackLink) GetTicker() (*constant.Ticker, error) {
 
 // GetRecords get candlestick data
 func (e *ExchangeFutureBackLink) GetRecords() ([]constant.Record, error) {
-	e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-	return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
+	records, err := e.ExchangeFutureBack.GetRecords()
+	if err != nil {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
+			"GetRecords() error, the error number is ", err.Error())
+		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())
+	}
+	return records, nil
 }

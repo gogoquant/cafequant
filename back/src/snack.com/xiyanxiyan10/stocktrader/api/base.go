@@ -62,11 +62,11 @@ type BaseExchange struct {
 	// period for get records
 	periodVal string
 	// period for backtest
-	period             string
-	size               int
-	id                 int     // id of the exchange
-	ioMode             string  // io mode for exchange
-	contractType       string  // contractType
+	period string
+	size   int
+	id     int    // id of the exchange
+	ioMode string // io mode for exchange
+	//contractType       string  // contractType
 	direction          string  // trade type
 	stockType          string  // stockType
 	lever              float64 // lever
@@ -100,16 +100,6 @@ func stockPair2Vec(pair string) []string {
 		return []string{"", ""}
 	}
 	return res
-}
-
-// SetPeriod Set period
-func (e *BaseExchange) SetPeriod(period string) {
-	e.periodVal = period
-}
-
-// GetPeriod Get period
-func (e *BaseExchange) GetPeriod() string {
-	return e.periodVal
 }
 
 // SetPeriodSize Set size
@@ -278,7 +268,7 @@ func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	opt.Period = e.recordsPeriodDbMap[period]
 	opt.BeginTime = begin
 	opt.EndTime = end
@@ -302,7 +292,7 @@ func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume f
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	var datum dbtypes.OHLC
@@ -331,7 +321,7 @@ func (e *BaseExchange) BackPutOHLCs(datums []dbtypes.OHLC, period string) error 
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	opt.Period = e.recordsPeriodDbMap[period]
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	ohlc := client.PutOHLCs(datums, opt)
@@ -353,7 +343,7 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetTimeRange(opt)
 	if !timeRange.Success {
@@ -361,6 +351,16 @@ func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
 			fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
 	}
 	return timeRange.Data, nil
+}
+
+// Set Period
+func (e *BaseExchange) SetPeriod(period string) {
+	e.periodVal = period
+}
+
+// Get Period
+func (e *BaseExchange) GetPeriod() string {
+	return e.periodVal
 }
 
 // BackGetPeriodRange ...
@@ -373,7 +373,7 @@ func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
 	timeRange := client.GetPeriodRange(opt)
 	if !timeRange.Success {
@@ -395,7 +395,7 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 	}()
 	var opt dbtypes.Option
 	opt.Market = e.option.Type
-	opt.Symbol = e.GetDbSymbol()
+	opt.Symbol = e.GetStockType()
 	opt.Period = e.recordsPeriodDbMap[period]
 	opt.BeginTime = begin
 	opt.EndTime = end
@@ -462,25 +462,13 @@ func (e *BaseExchange) GetIO() string {
 	return e.ioMode
 }
 
-// SetContractType set the limit calls amount per second of this exchange
-func (e *BaseExchange) SetContractType(contractType string) {
-	e.contractType = contractType
-}
-
-// GetContractType set the limit calls amount per second of this exchange
-func (e *BaseExchange) GetContractType() string {
-	return e.contractType
-}
-
-// GetDbSymbol get influx db key
-func (e *BaseExchange) GetDbSymbol() string {
-	symbol := e.GetStockType()
-	constract := e.GetContractType()
-	if len(constract) > 0 {
-		symbol = symbol + "/" + constract
+// GetStockType ...
+func (e *BaseExchange) GetSymbol(symbol string) (string, string) {
+	vec := strings.Split(symbol, ".")
+	if len(vec) < 2 {
+		return vec[0], ""
 	}
-	symbol = strings.ToUpper(symbol)
-	return strings.Replace(symbol, "/", "_", -1)
+	return vec[0], vec[1]
 }
 
 // SetDirection set the limit calls amount per second of this exchange
