@@ -115,7 +115,7 @@ func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
 }
 
 func (e *BaseExchange) CancelOrder(orderID string) (bool, error) {
-	return e.father.CancelOrder(orderID)
+	return e.father.cancelOrder(orderID)
 }
 
 // SetPeriodSize Set size
@@ -444,6 +444,7 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 		"W1":  dbconstant.Week,
 	}
 	e.currencyMap = make(map[string]float64)
+	e.father.init(opt)
 	return nil
 }
 

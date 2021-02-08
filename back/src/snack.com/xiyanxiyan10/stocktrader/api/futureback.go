@@ -41,7 +41,7 @@ type ExchangeFutureBack struct {
 	finishedOrders       map[string]*constant.Order
 	dataLoader           map[string]*DataLoader
 	stockTypeMap         map[string]goex.CurrencyPair
-	currData             dbtypes.OHLC
+	currData             map[string]dbtypes.OHLC
 	idGen                *util.IDGen
 	sortedCurrencies     constant.Account
 	longPosition         map[string]constant.Position // 多仓
@@ -85,7 +85,7 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 func (e *ExchangeFutureBack) Debug() error {
 	fmt.Printf("---FutureBack info start---\n")
 	fmt.Printf("currTicker:\n")
-	v, err := json.Marshal(e.currData)
+	v, err := json.Marshal(e.currData[e.stockType])
 	if err != nil {
 		fmt.Printf("convert ticker err :%s\n", err.Error())
 		return err
@@ -231,7 +231,7 @@ func (e *ExchangeFutureBack) settlePositionProfit(last float64, position *consta
 // settlePosition ...
 func (ex *ExchangeFutureBack) settlePosition() {
 	stockType := ex.BaseExchange.GetStockType()
-	ticker := ex.currData
+	ticker := ex.currData[stockType]
 	last := ticker.Close
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
@@ -254,7 +254,7 @@ func (ex *ExchangeFutureBack) settlePosition() {
 
 // fillOrder ...
 func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord *constant.Order) {
-	ord.FinishedTime = ex.currData.Time / int64(time.Millisecond) //set filled time
+	ord.FinishedTime = ex.currData[ord.StockType].Time / int64(time.Millisecond) //set filled time
 	ord.DealAmount = ord.Amount
 	dealAmount := ord.DealAmount
 	ord.Status = constant.ORDER_FINISH
@@ -274,7 +274,7 @@ func (ex *ExchangeFutureBack) fillOrder(isTaker bool, amount, price float64, ord
 }
 
 func (ex *ExchangeFutureBack) matchOrder(ord *constant.Order, isTaker bool) {
-	ticker := ex.currData
+	ticker := ex.currData[ord.StockType]
 	switch ord.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShortClose:
 		if ticker.Close <= ord.Price && ticker.Volume > 0 {
@@ -352,11 +352,10 @@ func (ex *ExchangeFutureBack) LimitBuy(amount, price, currency string) (*constan
 	defer ex.Unlock()
 
 	ord := constant.Order{
-		Price: goex.ToFloat64(price),
-		//OpenPrice: ex.currData.Close,
+		Price:     goex.ToFloat64(price),
 		Amount:    goex.ToFloat64(amount),
 		Id:        ex.idGen.Get(),
-		Time:      ex.currData.Time / int64(time.Millisecond),
+		Time:      ex.currData[currency].Time / int64(time.Millisecond),
 		Status:    constant.ORDER_UNFINISH,
 		StockType: currency,
 		TradeType: ex.BaseExchange.GetDirection(),
@@ -385,7 +384,7 @@ func (ex *ExchangeFutureBack) LimitSell(amount, price, currency string) (*consta
 		//OpenPrice: ex.currData.Close,
 		Amount:    goex.ToFloat64(amount),
 		Id:        ex.idGen.Get(),
-		Time:      ex.currData.Time / int64(time.Millisecond),
+		Time:      ex.currData[currency].Time / int64(time.Millisecond),
 		Status:    constant.ORDER_UNFINISH,
 		StockType: currency,
 		TradeType: ex.BaseExchange.GetDirection(),
@@ -516,7 +515,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 	if ohlc == nil {
 		return nil, nil
 	}
-	ex.currData = *ohlc
+	ex.currData[currency] = *ohlc
 	ex.match()
 	ex.settlePosition()
 	ex.coverPosition()
@@ -534,7 +533,8 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 
 // GetDepth ...
 func (ex *ExchangeFutureBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, "M5")
+	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData[currency].Time,
+		ex.currData[currency].Time, "M5")
 	if err != nil {
 		return nil, err
 	}
@@ -564,7 +564,7 @@ func (ex *ExchangeFutureBack) GetExchangeName() string {
 func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	stocks := stockPair2Vec(order.StockType)
 	CurrencyA := stocks[0]
-	ticker := ex.currData
+	ticker := ex.currData[order.StockType]
 	var price float64 = 1
 	price = ticker.Close
 	avaAmount := ex.acc.SubAccounts[CurrencyA].Amount
@@ -617,13 +617,14 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 
 // unFrozenAsset 解冻
 func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
-	stocks := stockPair2Vec(order.StockType)
+	stockType, _ := ex.GetSymbol(order.StockType)
+	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
 	assetA := ex.acc.SubAccounts[CurrencyA]
 	lever := ex.BaseExchange.lever
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
-		order.OpenPrice = ex.currData.Close
+		order.OpenPrice = ex.currData[order.StockType].Close
 		costAmount := util.SafefloatDivide(order.Amount*ex.BaseExchange.contractRate, lever*order.OpenPrice)
 		if order.Status == constant.ORDER_CANCEL {
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
@@ -657,7 +658,7 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 		}
 	case constant.TradeTypeLongClose, constant.TradeTypeShortClose:
 		var position constant.Position
-		order.OpenPrice = ex.currData.Close
+		order.OpenPrice = ex.currData[order.StockType].Close
 		if order.TradeType == constant.TradeTypeLongClose {
 			position = ex.longPosition[CurrencyA]
 		} else {
@@ -699,7 +700,7 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 	if ticker == nil {
 		return nil, nil
 	}
-	curr := e.currData.Time
+	curr := e.currData[e.GetStockType()].Time
 
 	if e.recordsCache == nil {
 		e.recordsCache = make(map[string][]constant.Record)

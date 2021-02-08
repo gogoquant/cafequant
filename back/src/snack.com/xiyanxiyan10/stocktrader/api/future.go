@@ -234,7 +234,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 }
 
 // Stop ...
-func (e *FutureExchange) Stop() error {
+func (e *FutureExchange) stop() error {
 	e.loadstatus = constant.Pending
 	for e.loadstatus != constant.Stop {
 		e.AutoSleep()
@@ -244,7 +244,7 @@ func (e *FutureExchange) Stop() error {
 }
 
 // Start ...
-func (e *FutureExchange) Start() error {
+func (e *FutureExchange) start() error {
 	e.BaseExchange.Start()
 	defaultTimeOut := constant.DefaultTimeOut
 	timeOutStr := config.String("timeout")
@@ -278,8 +278,8 @@ func (e *FutureExchange) Start() error {
 }
 
 // Init init the instance of this exchange
-func (e *FutureExchange) Init(opt constant.Option) error {
-	e.BaseExchange.Init(opt)
+func (e *FutureExchange) init(opt constant.Option) error {
+	//e.BaseExchange.Init(opt)
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
 	}

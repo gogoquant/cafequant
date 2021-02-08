@@ -16,7 +16,10 @@ type ExchangeBroker interface {
 	getPosition(stockType string) ([]constant.Position, error)
 	buy(price, amount, msg string) (string, error)
 	sell(price, amount, msg string) (string, error)
-	CancelOrder(orderID string) (bool, error)
+	cancelOrder(orderID string) (bool, error)
+	start() error
+	stop() error
+	init(opt constant.Option) error
 }
 
 // Exchange interface
