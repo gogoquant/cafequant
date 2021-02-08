@@ -6,22 +6,15 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/goplugin"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"time"
 )
 
 // LoaderStragey ...
 type LoaderStragey struct {
-	goplugin.GoStragey
-	Period string
-	Status bool
-}
-
-// NewHandler ...
-func NewHandler() (goplugin.GoStrageyHandler, error) {
-	loader := new(LoaderStragey)
-	return loader, nil
+	Period    string
+	Exchanges []api.Exchange
+	Status    bool
 }
 
 // Init ...
@@ -32,8 +25,7 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	io := v["io"]
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
-	exchange.SetContractType(constract)
-	exchange.SetStockType(symbol)
+	exchange.SetStockType(symbol + "." + constract)
 	exchange.Start()
 	exchange.SetLimit(1000)
 	exchange.SetPeriod(period)
@@ -41,32 +33,25 @@ func (e *LoaderStragey) Init(v map[string]string) error {
 	exchange.SetSubscribe(symbol, constant.CacheTicker)
 	exchange.SetSubscribe(symbol, constant.CacheRecord)
 
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Init success")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
 	return nil
 }
 
 // Run ...
 func (e *LoaderStragey) Run(map[string]string) error {
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	exchange := e.Exchanges[0]
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	for e.Status {
 		err := putOHLC(exchange, e.Period)
 		if err != nil {
-			e.Logger.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+			exchange.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
 			time.Sleep(time.Duration(1) * time.Second)
 			continue
 		}
 		time.Sleep(time.Duration(2) * time.Second)
 	}
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
-	return nil
-}
-
-// Exit ...
-func (e *LoaderStragey) Exit(map[string]string) error {
-	e.Logger.Log(constant.INFO, "", 0.0, 0.0, "Exit success")
-	e.Status = false
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Run stragey stop success")
 	return nil
 }
 
@@ -114,27 +99,24 @@ func main() {
 	opt.TraderID = 1
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
-	opt.LogBack = true
+	opt.BackLog = true
+	opt.BackTest = true
 
-	maker := api.ExchangeMaker[opt.Type]
-	exchange, err := maker(opt)
+	exchange, err := api.GetExchange(opt)
 	if err != nil {
 		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
 	}
 
-	loader, err := NewHandler()
-	if err != nil {
-		fmt.Printf("create loader fail:%s\n", err.Error())
-		return
-	}
+	var loader LoaderStragey
+
 	param := make(map[string]string)
 	param["io"] = io
 	param["symbol"] = symbol
 	param["constract"] = constract
 	param["period"] = period
-	loader.AddExchange(exchange)
-	loader.AddLogger(&logger)
+
+	loader.Exchanges = append(loader.Exchanges, exchange)
 	loader.Init(param)
 	loader.Run(nil)
 }

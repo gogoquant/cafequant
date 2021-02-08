@@ -14,11 +14,12 @@ import (
 // TrendStragey ...
 type TrendStragey struct {
 	Exchanges []api.Exchange
+	Global    api.GlobalHandler
 	Status    bool
 }
 
 // Init ...
-func (e *TrendStragey) Init(v map[string]string) error {
+func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	period := v["period"]
 	constract := v["constract"]
 	symbol := v["symbol"]
@@ -26,8 +27,7 @@ func (e *TrendStragey) Init(v map[string]string) error {
 
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
-	exchange.SetContractType(constract)
-	exchange.SetStockType(symbol)
+	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
 	exchange.SetPeriodSize(10)
 	exchange.SetSubscribe(symbol, constant.CacheAccount)
@@ -35,6 +35,8 @@ func (e *TrendStragey) Init(v map[string]string) error {
 	exchange.SetSubscribe(symbol, constant.CachePosition)
 	exchange.SetSubscribe(symbol, constant.CacheOrder)
 	exchange.SetSubscribe(symbol, constant.CacheTicker)
+
+	e.Global = api.NewGlobal(opt)
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
 	e.Status = true
@@ -44,6 +46,8 @@ func (e *TrendStragey) Init(v map[string]string) error {
 // Run ...
 func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
+	global := e.Global
+
 	exchange.Start()
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
@@ -66,25 +70,29 @@ func (e *TrendStragey) Run() error {
 	endStr := time.Unix(times[1], 0).Local().String()
 	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("End time is:%s", endStr))
 
-	ohlcs, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
+	times[0], err = util.TimeStr2Unix("2020-12-02 00:00:00")
 	if err != nil {
-		return err
+		exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
 	}
-
-	drawHandler := draw.NewDrawHandler()
-	drawHandler.SetPath("/Users/shu/Desktop/trend.html")
+	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
+	records, err := exchange.GetRecords()
+	if err != nil {
+		exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
+	}
+	ohlcs := records
+	global.DrawSetPath("/Users/shu/Desktop/trend.html")
 	for i, ohlc := range ohlcs {
-		drawHandler.PlotKLine(util.TimeUnix2Str(ohlc.Time),
+		global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
 			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
-		drawHandler.PlotLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
+		global.DrawLine("low", util.TimeUnix2Str(ohlc.Time), float32(ohlc.Low), "")
 		//drawHandler.PlotLine("high", util.TimeUnix2Str(ohlc.Time), float32(ohlc.High), "")
 		if i > 1 && ohlcs[i].Low > ohlcs[i-1].Low {
-			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 30000, draw.StepLine)
+			global.DrawLine("vol", util.TimeUnix2Str(ohlc.Time), 30000, draw.AreaLine)
 		} else {
-			drawHandler.PlotLine("vol", util.TimeUnix2Str(ohlc.Time), 0, draw.StepLine)
+			global.DrawLine("vol", util.TimeUnix2Str(ohlc.Time), 0, draw.AreaLine)
 		}
 	}
-	err = drawHandler.Display()
+	err = global.DrawPlot()
 	if err != nil {
 		exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Display err is:%s", err.Error()))
 		return err
@@ -126,8 +134,7 @@ func main() {
 	opt.BackLog = true
 	opt.BackTest = true
 
-	maker := api.ExchangeMaker[opt.Type]
-	exchange, err := maker(opt)
+	exchange, err := api.GetExchange(opt)
 	if err != nil {
 		fmt.Printf("init exchange fail:%s\n", err.Error())
 		return
@@ -141,7 +148,8 @@ func main() {
 	param["symbol"] = symbol
 	param["constract"] = constract
 	param["period"] = period
-	trend.Init(param)
+
+	trend.Init(param, opt)
 	trend.Run()
 }
 
