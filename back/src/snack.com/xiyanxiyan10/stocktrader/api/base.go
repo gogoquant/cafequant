@@ -449,12 +449,18 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 
 // Stop ...
 func (e *BaseExchange) Stop() error {
+	if err := e.father.stop(); err != nil {
+		return err
+	}
 	close(e.ch)
 	return nil
 }
 
 // Start ...
 func (e *BaseExchange) Start() error {
+	if err := e.father.start(); err != nil {
+		return err
+	}
 	return nil
 }
 

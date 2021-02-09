@@ -239,13 +239,13 @@ func (e *FutureExchange) stop() error {
 	for e.loadstatus != constant.Stop {
 		e.AutoSleep()
 	}
-	e.BaseExchange.Stop()
+	//e.BaseExchange.Stop()
 	return nil
 }
 
 // Start ...
 func (e *FutureExchange) start() error {
-	e.BaseExchange.Start()
+	//e.BaseExchange.Start()
 	defaultTimeOut := constant.DefaultTimeOut
 	timeOutStr := config.String("timeout")
 	if timeOutStr != "" {
