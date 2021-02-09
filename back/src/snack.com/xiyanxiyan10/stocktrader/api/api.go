@@ -3,7 +3,9 @@ package api
 import (
 	"fmt"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 type ExchangeBroker interface {
@@ -147,6 +149,21 @@ func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchang
 	Back := opt.BackTest
 	if !Back {
 		maker, ok = ExchangeMaker[exchangeType]
+		// if ok is false, try to find it in .so
+		if !ok {
+			f, err := util.HotPlugin(config.String(fmt.Sprintf("/%s/%s.so",
+				constant.GoPluginPath, exchangeType+".so")), constant.GoHandler)
+			if err != nil {
+				return nil, false
+			}
+			makerplugin, ok := f.(func(constant.Option) (Exchange, error))
+			if !ok {
+				return nil, false
+			}
+			//register plugin into store
+			ExchangeMaker[exchangeType] = makerplugin
+			return makerplugin, ok
+		}
 		return
 	}
 	maker, ok = ExchangeBackerMaker[exchangeType]
