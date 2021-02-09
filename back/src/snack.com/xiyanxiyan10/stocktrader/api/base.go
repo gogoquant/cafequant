@@ -485,7 +485,7 @@ func (e *BaseExchange) GetIO() string {
 }
 
 // GetStockType ...
-func (e *BaseExchange) GetSymbol(symbol string) (string, string) {
+func (e *BaseExchange) getSymbol(symbol string) (string, string) {
 	vec := strings.Split(symbol, ".")
 	if len(vec) < 2 {
 		return vec[0], ""

@@ -291,7 +291,7 @@ func (e *FutureExchange) Init(opt constant.Option) error {
 
 // GetDepth get depth from exchange
 func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
-	symbol, contract := e.GetSymbol(stockType)
+	symbol, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
@@ -310,7 +310,7 @@ func (e *FutureExchange) getDepth(stockType string) (*constant.Depth, error) {
 
 // GetPosition get position from exchange
 func (e *FutureExchange) getPosition(stockType string) ([]constant.Position, error) {
-	symbol, contract := e.GetSymbol(stockType)
+	symbol, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[symbol]
 	if !ok {
 		e.logger.Log(constant.ERROR, stockType, 0.0, 0.0,
@@ -355,7 +355,7 @@ func (e *FutureExchange) buy(price, amount string, msg string) (string, error) {
 	var err error
 	var openType int
 	stockType := e.GetStockType()
-	stockType, contract := e.GetSymbol(stockType)
+	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
@@ -392,7 +392,7 @@ func (e *FutureExchange) sell(price, amount string, msg string) (string, error) 
 	var err error
 	var openType int
 	stockType := e.GetStockType()
-	stockType, contract := e.GetSymbol(stockType)
+	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
@@ -426,7 +426,7 @@ func (e *FutureExchange) sell(price, amount string, msg string) (string, error) 
 
 // GetOrder get detail of an order
 func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
-	stockType, contract := e.GetSymbol(symbol)
+	stockType, contract := e.getSymbol(symbol)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id),
@@ -457,7 +457,7 @@ func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
 
 // GetOrders get all unfilled orders
 func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
-	stockType, contract := e.GetSymbol(symbol)
+	stockType, contract := e.getSymbol(symbol)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetOrders() error, the error number is stockType")
@@ -476,7 +476,7 @@ func (e *FutureExchange) getOrders(symbol string) ([]constant.Order, error) {
 // CancelOrder cancel an order
 func (e *FutureExchange) cancelOrder(orderID string) (bool, error) {
 	stockType := e.GetStockType()
-	stockType, contract := e.GetSymbol(stockType)
+	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID),
@@ -500,7 +500,7 @@ func (e *FutureExchange) cancelOrder(orderID string) (bool, error) {
 // getTicker get market ticker
 func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	stockType := e.GetStockType()
-	stockType, contract := e.GetSymbol(stockType)
+	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
 		e.logger.Log(constant.ERROR, "", 0, 0, "GetTicker() error, the error number is stockType")
@@ -518,7 +518,7 @@ func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 
 // GetRecords get candlestick data
 func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error) {
-	stockType, contract := e.GetSymbol(stockType)
+	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	var since = 0
 	var key = stockType

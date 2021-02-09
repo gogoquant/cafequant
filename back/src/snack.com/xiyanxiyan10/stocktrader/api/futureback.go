@@ -624,7 +624,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 
 // unFrozenAsset 解冻
 func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64, order constant.Order) {
-	stockType, _ := ex.GetSymbol(order.StockType)
+	stockType, _ := ex.getSymbol(order.StockType)
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
 	assetA := ex.acc.SubAccounts[CurrencyA]
