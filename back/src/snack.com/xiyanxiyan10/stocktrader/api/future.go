@@ -278,8 +278,8 @@ func (e *FutureExchange) start() error {
 }
 
 // Init init the instance of this exchange
-func (e *FutureExchange) init(opt constant.Option) error {
-	//e.BaseExchange.Init(opt)
+func (e *FutureExchange) Init(opt constant.Option) error {
+	e.BaseExchange.Init(opt)
 	for k, v := range e.stockTypeMap {
 		e.stockTypeMapReverse[v] = k
 	}

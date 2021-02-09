@@ -28,18 +28,12 @@ func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
 		records: make(map[string][]constant.Record),
 	}
 	opt.Limit = 10.0
-	//futureExchange.BaseExchange.Init(opt)
+	futureExchange.BaseExchange.Init(opt)
 	futureExchange.SetMinAmountMap(map[string]float64{
 		"BTC/USD": 0.001,
 	})
 	futureExchange.SetID(opt.Index)
 	return &futureExchange
-}
-
-// Init init the instance of this exchange
-func (e *ExchangeFutureBackLink) Init(opt constant.Option) error {
-	e.BaseExchange.Init(opt)
-	return nil
 }
 
 // GetDepth get depth from exchange

@@ -19,7 +19,7 @@ type ExchangeBroker interface {
 	cancelOrder(orderID string) (bool, error)
 	start() error
 	stop() error
-	init(opt constant.Option) error
+	//init(opt constant.Option) error
 }
 
 // Exchange interface

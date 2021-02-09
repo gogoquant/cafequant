@@ -444,7 +444,6 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 		"W1":  dbconstant.Week,
 	}
 	e.currencyMap = make(map[string]float64)
-	e.father.init(opt)
 	return nil
 }
 
