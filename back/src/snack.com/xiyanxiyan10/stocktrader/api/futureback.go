@@ -186,7 +186,8 @@ func (e *ExchangeFutureBack) Start() error {
 				e.BaseExchange.period, ":", period, ":", periodRange[0], "-", periodRange[1])
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
-		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
+		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end,
+			e.BaseExchange.period)
 		if err != nil {
 			return err
 		}
@@ -229,8 +230,7 @@ func (e *ExchangeFutureBack) settlePositionProfit(last float64, position *consta
 }
 
 // settlePosition ...
-func (ex *ExchangeFutureBack) settlePosition() {
-	stockType := ex.BaseExchange.GetStockType()
+func (ex *ExchangeFutureBack) settlePosition(stockType string) {
 	ticker := ex.currData[stockType]
 	last := ticker.Close
 	stocks := stockPair2Vec(stockType)
@@ -303,8 +303,7 @@ func (ex *ExchangeFutureBack) match() {
 	}
 }
 
-func (ex *ExchangeFutureBack) coverPosition() {
-	stockType := ex.BaseExchange.GetStockType()
+func (ex *ExchangeFutureBack) coverPosition(stockType string) {
 	stocks := stockPair2Vec(stockType)
 	CurrencyA := stocks[0]
 	marginRatio, _, rht := ex.marginRatio()
@@ -507,19 +506,27 @@ func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 
 // GetTicker ...
 func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, error) {
-	loader := ex.dataLoader[currency]
-	if loader == nil {
-		return nil, errors.New("loader not found")
+	var ohlc *dbtypes.OHLC
+	for symbol, loader := range ex.dataLoader {
+		if loader == nil {
+			return nil, errors.New("loader not found")
+		}
+		curr := loader.Next()
+		if curr == nil {
+			return nil, nil
+		}
+		if symbol == currency {
+			ohlc = curr
+		}
+		ex.currData[currency] = *curr
+		ex.match()
+		ex.settlePosition(currency)
+		ex.coverPosition(currency)
 	}
-	ohlc := loader.Next()
-	if ohlc == nil {
-		return nil, nil
-	}
-	ex.currData[currency] = *ohlc
-	ex.match()
-	ex.settlePosition()
-	ex.coverPosition()
 	ex.Debug()
+	if ohlc == nil {
+		return nil, fmt.Errorf("get ohlc fail")
+	}
 	return &constant.Ticker{
 		Vol:  ohlc.Volume,
 		Time: ohlc.Time,
