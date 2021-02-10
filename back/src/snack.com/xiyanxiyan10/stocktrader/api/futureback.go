@@ -523,7 +523,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		ex.settlePosition(currency)
 		ex.coverPosition(currency)
 	}
-	ex.Debug()
+	//ex.Debug()
 	if ohlc == nil {
 		return nil, fmt.Errorf("get ohlc fail")
 	}
