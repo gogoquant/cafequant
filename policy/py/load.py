@@ -14,8 +14,9 @@ def main():
     if len(sys.argv) < 4:
         print('error param!')
         return
+
     symbol = sys.argv[1]
-    period = '5m'
+    period = '15m'
     start = sys.argv[2]
     tot = sys.argv[3]
     csv_file = sys.argv[4]
@@ -26,11 +27,12 @@ def main():
     rows = []
     for i in range(0,tot):
         month = timeArray.tm_mon + i
-        year = timeArray.tm_year 
+        year = timeArray.tm_year
         if month > 12:
-            month = 12 - month
+            month = month - 12
             year = year + 1
 
+        print("start load month %s %s" % (str(year), str(month)))
         start = str(year).zfill(4) + '-' + str(month).zfill(2)
         print("start load month %s" % start)
         records_vec = getRecords(symbol, period, start, csv_file)
