@@ -6,6 +6,7 @@ import (
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"math"
+	"os"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -513,6 +514,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
+			os.Exit(0)
 			return nil, nil
 		}
 		if symbol == currency {

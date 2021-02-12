@@ -7,7 +7,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"time"
+	//"time"
 )
 
 // TrendStragey ...
@@ -29,7 +29,6 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	key := symbol + "." + constract
 	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
-	exchange.SetPeriodSize(10)
 	exchange.SetPeriodSize(1)
 	exchange.SetSubscribe(key, constant.CacheAccount)
 	exchange.SetSubscribe(key, constant.CacheRecord)
@@ -47,7 +46,6 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 // Run ...
 func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
-	global := e.Global
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	symbols, err := exchange.BackGetSymbols()
@@ -63,39 +61,23 @@ func (e *TrendStragey) Run() error {
 		return nil
 	}
 
-	startStr := time.Unix(times[0], 0).Local().String()
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Start time is:%s", startStr))
-
-	endStr := time.Unix(times[1], 0).Local().String()
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("End time is:%s", endStr))
-
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
-
 	exchange.Start()
 	fmt.Printf("trend start\n")
+	//records, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-			break
+			fmt.Printf("get ohlcs fail\nn")
+			return nil
 		}
-		if records == nil {
-			fmt.Printf("get ohlc null\n")
-			break
+		if len(records) == 0 {
+			continue
 		}
 		ohlcs := records
 		for _, ohlc := range ohlcs {
-			fmt.Printf("get ohlc %s\n", util.Struct2Json(ohlc))
-			global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
-				float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
+			fmt.Printf("ohlc: %s\n", util.Struct2Json(ohlc))
 		}
-	}
-
-	global.DrawSetPath("/Users/shu/Desktop/trend.html")
-	err = global.DrawPlot()
-	if err != nil {
-		exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Display err is:%s", err.Error()))
-		return err
 	}
 	return nil
 }
@@ -124,7 +106,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "H1"
+	var period = "H4"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
