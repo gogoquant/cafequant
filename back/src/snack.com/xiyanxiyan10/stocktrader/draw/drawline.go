@@ -64,18 +64,9 @@ func (p *LineService) Display() error {
 	p.unLock()
 
 	DrawPath := p.GetPath()
-	if _, err := os.Stat(DrawPath); err != nil {
-		if !os.IsNotExist(err) {
-			log.Error("State diagram fail", err)
-			return err
-		}
-	} else {
-		_ = os.Remove(DrawPath)
-	}
 	file, err := os.Create(DrawPath)
 	if err != nil {
-		log.Error("Create diagram fail", err)
-		return err
+		log.Infof("Create diagram fail:%s\n", err.Error())
 	}
 	if len(p.kline) > 0 {
 		if err := p.klineChart.Render(file); err != nil {
