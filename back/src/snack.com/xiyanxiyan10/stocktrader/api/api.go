@@ -143,28 +143,31 @@ var (
 	}
 )
 
+// loadMaker ...
+func loadMaker(exchangeType string) (func(constant.Option) (Exchange, error), error) {
+	f, err := util.HotPlugin(config.String(fmt.Sprintf("/%s/%s.so",
+		config.String(constant.GoPluginPath), exchangeType)), constant.GoHandler)
+	if err != nil {
+		return nil, err
+	}
+	makerplugin, ok := f.(func(constant.Option) (Exchange, error))
+	if !ok {
+		return nil, err
+	}
+	//register plugin into store
+	ExchangeMaker[exchangeType] = makerplugin
+	return makerplugin, nil
+}
+
 // GetExchange Maker
 func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchange, error), ok bool) {
 	exchangeType := opt.Type
 	Back := opt.BackTest
 	if !Back {
-		maker, ok = ExchangeMaker[exchangeType]
-		// if ok is false, try to find it in .so
+		_, ok = ExchangeMaker[exchangeType]
 		if !ok {
-			f, err := util.HotPlugin(config.String(fmt.Sprintf("/%s/%s.so",
-				constant.GoPluginPath, exchangeType+".so")), constant.GoHandler)
-			if err != nil {
-				return nil, false
-			}
-			makerplugin, ok := f.(func(constant.Option) (Exchange, error))
-			if !ok {
-				return nil, false
-			}
-			//register plugin into store
-			ExchangeMaker[exchangeType] = makerplugin
-			return makerplugin, ok
+			loadMaker(exchangeType)
 		}
-		return
 	}
 	maker, ok = ExchangeBackerMaker[exchangeType]
 	return

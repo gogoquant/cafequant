@@ -8,6 +8,7 @@ require (
 	github.com/blinkbean/dingtalk v0.0.0-20200822153748-8cf931f926ab
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-echarts/go-echarts v1.0.0
+	github.com/go-echarts/go-echarts/v2 v2.2.3
 	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df
 	github.com/go-ini/ini v1.55.0
 	github.com/go-python/gopy v0.3.4

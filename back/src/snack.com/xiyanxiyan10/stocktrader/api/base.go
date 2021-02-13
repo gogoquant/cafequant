@@ -64,11 +64,10 @@ type BaseExchange struct {
 	// period for.father.get records
 	periodVal string
 	// period for backtest
-	period string
-	size   int
-	id     int    // id of the exchange
-	ioMode string // io mode for exchange
-	//contractType       string  // contractType
+	period             string
+	size               int
+	id                 int     // id of the exchange
+	ioMode             string  // io mode for exchange
 	direction          string  // trade type
 	stockType          string  // stockType
 	lever              float64 // lever
@@ -87,11 +86,11 @@ type BaseExchange struct {
 	maker        float64
 	coin         bool
 	contractRate float64 // 合约每张价值
-	//currencyStandard bool    // 是否为币本位
 
-	start  int64
-	end    int64
-	host   string
+	start int64
+	end   int64
+	host  string
+
 	logger model.Logger
 	option constant.Option
 

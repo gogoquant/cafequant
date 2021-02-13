@@ -29,7 +29,7 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	key := symbol + "." + constract
 	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
-	exchange.SetPeriodSize(1)
+	exchange.SetPeriodSize(3)
 	exchange.SetSubscribe(key, constant.CacheAccount)
 	exchange.SetSubscribe(key, constant.CacheRecord)
 	exchange.SetSubscribe(key, constant.CachePosition)
@@ -46,6 +46,7 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 // Run ...
 func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
+	global := e.Global
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	symbols, err := exchange.BackGetSymbols()
@@ -64,22 +65,24 @@ func (e *TrendStragey) Run() error {
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
 	exchange.Start()
 	fmt.Printf("trend start\n")
+	global.DrawSetPath("/Users/shu/Desktop/trend.html")
 	//records, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
 			fmt.Printf("get ohlcs fail\nn")
-			return nil
+			continue
 		}
 		if len(records) == 0 {
 			continue
 		}
-		ohlcs := records
-		for _, ohlc := range ohlcs {
-			fmt.Printf("ohlc: %s\n", util.Struct2Json(ohlc))
-		}
+		ohlc := records[0]
+		fmt.Printf("ohlc: %s\n", util.Struct2Json(ohlc))
+
+		global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
+			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
+		global.DrawPlot()
 	}
-	return nil
 }
 
 // Exit ...

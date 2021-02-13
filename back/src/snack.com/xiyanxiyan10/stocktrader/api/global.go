@@ -21,7 +21,7 @@ type GlobalHandler interface {
 	DrawSetPath(path string)
 	DrawGetPath() string
 	DrawReset()
-	DrawKLine(time string, a, b, c, d float32)
+	DrawKLine(time string, open, closed, low, high float32)
 	DrawLine(name string, time string, data float32, shape string)
 	DrawPlot() error
 }
