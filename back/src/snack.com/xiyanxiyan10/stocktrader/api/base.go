@@ -441,6 +441,7 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 		"D1":  dbconstant.Day,
 		"W1":  dbconstant.Week,
 	}
+	e.SetPeriodSize(constant.RecordSize)
 	e.currencyMap = make(map[string]float64)
 	return nil
 }
