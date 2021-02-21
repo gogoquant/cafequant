@@ -5,6 +5,7 @@ import (
 	"github.com/hprose/hprose-golang/rpc"
 	"net/http"
 	"snack.com/xiyanxiyan10/stockdb/types"
+	"time"
 )
 
 // Client Client of StockDB
@@ -31,6 +32,7 @@ func (c *Client) init(uri, auth string) {
 	c.auth = auth
 	c.hprose = rpc.NewHTTPClient(c.uri)
 	if auth != "" {
+		c.hprose.SetTimeout(5 * time.Minute)
 		c.hprose.Header = make(http.Header)
 		c.hprose.Header.Set("content-type", "application/json")
 		c.hprose.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
