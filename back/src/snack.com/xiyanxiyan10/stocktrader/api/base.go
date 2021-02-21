@@ -84,7 +84,6 @@ type BaseExchange struct {
 	coverRate    float64
 	taker        float64
 	maker        float64
-	coin         bool
 	contractRate float64 // 合约每张价值
 
 	start int64
@@ -129,20 +128,18 @@ func (e *BaseExchange) GetPeriodSize() int {
 }
 
 // SetBackCommission 设置回测手续费
-func (e *BaseExchange) SetBackCommission(taker, maker, contractRate, coverRate float64, coin bool) {
+func (e *BaseExchange) SetBackCommission(taker, maker, contractRate, coverRate float64) {
 	e.contractRate = contractRate
 	e.taker = taker
 	e.maker = maker
-	e.coin = coin
 	e.coverRate = coverRate
 }
 
 // GetBackCommission 获取回测手续费
-/*
-func (e *BaseExchange) GetBackCommission() (float64, float64, float64, float64, bool) {
-	return e.taker, e.maker, e.contractRate, e.coverRate, e.coin
+
+func (e *BaseExchange) GetBackCommission() []float64 {
+	return []float64{e.taker, e.maker, e.contractRate, e.coverRate}
 }
-*/
 
 // SetBackTime ...
 func (e *BaseExchange) SetBackTime(start, end int64, period string) {
@@ -162,11 +159,13 @@ func (e *BaseExchange) SetBackAccount(key string, val float64) {
 }
 
 // GetBackTime ...
-/*
-func (e *BaseExchange) GetBackTime() (int64, int64, string) {
-	return e.start, e.end, e.period
+func (e *BaseExchange) GetBackTime() constant.BackTime {
+	var v constant.BackTime
+	v.Start = e.start
+	v.End = e.end
+	v.Period = e.period
+	return v
 }
-*/
 
 // GetSubscribe ...
 func (e *BaseExchange) GetSubscribe() map[string][]string {

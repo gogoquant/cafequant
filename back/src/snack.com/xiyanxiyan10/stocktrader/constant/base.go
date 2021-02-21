@@ -15,6 +15,13 @@ import (
 
 var client = http.DefaultClient
 
+// BackTime backtest time set
+type BackTime struct {
+	Start  int64
+	End    int64
+	Period string
+}
+
 // Position struct
 type Position struct {
 	Price        float64 //价格

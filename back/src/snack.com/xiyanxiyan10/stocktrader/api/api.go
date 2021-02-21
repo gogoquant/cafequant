@@ -8,6 +8,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
+// ExchangeBroker define by every broker
 type ExchangeBroker interface {
 	getDepth(stockType string) (*constant.Depth, error)
 	getOrder(symbol, id string) (*constant.Order, error)
@@ -99,13 +100,13 @@ type Exchange interface {
 	// 账号原货币量
 	SetBackAccount(string, float64)
 	// 设置回测手续费
-	SetBackCommission(float64, float64, float64, float64, bool)
+	SetBackCommission(float64, float64, float64, float64)
 	// 获取回测手续费
-	//GetBackCommission() (float64, float64, float64, float64, bool)
+	GetBackCommission() []float64
 	// 设置回测周期
 	SetBackTime(start, end int64, period string)
 	//设置回测周期
-	//GetBackTime() (int64, int64, string)
+	GetBackTime() constant.BackTime
 	//推送数据到数据仓库
 	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext, period string) error
 	//推送数据 [] 到数据仓库
