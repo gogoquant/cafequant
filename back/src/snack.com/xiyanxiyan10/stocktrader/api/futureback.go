@@ -6,7 +6,6 @@ import (
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"math"
-	"os"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -187,12 +186,16 @@ func (e *ExchangeFutureBack) Start() error {
 				e.BaseExchange.period, ":", period, ":", periodRange[0], "-", periodRange[1])
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
+
+		diff := e.BaseExchange.end - e.BaseExchange.start
+		diffsize := diff / period
+		fmt.Printf("load range piece in %d - %d: %d\n", e.BaseExchange.start, e.BaseExchange.end, diffsize)
+
 		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end,
 			e.BaseExchange.period)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("load ohlcs %d\n", len(ohlcs))
 		length := len(ohlcs)
 		for i := 0; i < length/2; i++ {
 			temp := ohlcs[i]
@@ -514,7 +517,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
-			os.Exit(0)
+			// os.Exit(0)
 			return nil, nil
 		}
 		if symbol == currency {

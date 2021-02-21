@@ -50,6 +50,7 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 	return &data
 }
 
+// Dump ...
 func (l *DataLoader) Dump() []dbtypes.OHLC {
 	return l.datas
 }
@@ -57,7 +58,7 @@ func (l *DataLoader) Dump() []dbtypes.OHLC {
 // Load ...
 func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 	l.datas = append(l.datas, ohlcs...)
-	l.size = len(l.datas)
+	l.size += len(l.datas)
 	// move one for first records, at least one ohlc
 	l.Next()
 }
