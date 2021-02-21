@@ -50,6 +50,10 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 	return &data
 }
 
+func (l *DataLoader) Dump() []dbtypes.OHLC {
+	return l.datas
+}
+
 // Load ...
 func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 	l.datas = append(l.datas, ohlcs...)

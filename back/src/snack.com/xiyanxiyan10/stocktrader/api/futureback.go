@@ -700,7 +700,6 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 // GetRecords get candlestick data
 func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 	size := e.GetPeriodSize()
-	period := e.GetPeriod()
 
 	ticker, err := e.GetTicker(e.GetStockType())
 	if err != nil {
@@ -720,13 +719,9 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 	key := e.GetStockType()
 	// try to store records in cache at first
 	if len(e.recordsCache[key]) == 0 {
-		vec, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, period)
-		if err != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
-			return nil, err
-		}
+		vec := e.dataLoader[key].datas
 		var records []constant.Record
-		for i := len(vec) - 1; i >= 0; i-- {
+		for i := 0; i < len(vec); i++ {
 			kline := vec[i]
 			records = append([]constant.Record{{
 				Open:   kline.Open,
@@ -740,7 +735,7 @@ func (e *ExchangeFutureBack) GetRecords() ([]constant.Record, error) {
 			if !ok {
 				e.recordsMap[key] = make(map[int64]int)
 			}
-			e.recordsMap[key][kline.Time] = len(vec) - i - 1
+			e.recordsMap[key][kline.Time] = i
 		}
 		e.recordsCache[key] = records
 	}
