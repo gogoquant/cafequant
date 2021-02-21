@@ -104,48 +104,42 @@ func (e *BaseExchangeCaches) GetCache(action string, stockSymbol string, fresh b
 
 // SetCache set ws val into cache
 func (e *BaseExchangeCaches) SetCache(action string, stockSymbol string, val interface{}, fresh bool) {
-	//lock
-	e.mutex.Lock()
 	var item BaseExchangeCache
 
 	item.Data = val
 	item.TimeStamp = time.Now().Unix()
 	item.Updated = true
 
+	//lock
+	e.mutex.Lock()
+
 	if action == constant.CacheTicker {
 		if e.ticker == nil {
 			e.ticker = make(map[string]BaseExchangeCache)
 		}
 		e.ticker[stockSymbol] = item
-	}
-
-	if action == constant.CachePosition {
+	} else if action == constant.CachePosition {
 		if e.position == nil {
 			e.position = make(map[string]BaseExchangeCache)
 		}
 		e.position[stockSymbol] = item
-	}
-
-	if action == constant.CacheAccount {
+	} else if action == constant.CacheAccount {
 		if e.account == nil {
 			e.account = make(map[string]BaseExchangeCache)
 		}
 		e.account[""] = item
-	}
-
-	if action == constant.CacheRecord {
+	} else if action == constant.CacheRecord {
 		if e.record == nil {
 			e.record = make(map[string]BaseExchangeCache)
 		}
 		e.record[stockSymbol] = item
-	}
-
-	if action == constant.CacheOrder {
+	} else if action == constant.CacheOrder {
 		if e.order == nil {
 			e.order = make(map[string]BaseExchangeCache)
 		}
 		e.order[stockSymbol] = item
 	}
+
 	e.mutex.Unlock()
 	// unlock
 
