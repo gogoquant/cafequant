@@ -132,4 +132,6 @@ const (
 	Enable = 1
 	// Disable ...
 	Disable = 0
+	// BackEnd ...
+	BackEnd = "backend"
 )

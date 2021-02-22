@@ -187,9 +187,7 @@ func (e *ExchangeFutureBack) Start() error {
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
 
-		diff := e.BaseExchange.end - e.BaseExchange.start
-		diffsize := diff / period
-		fmt.Printf("load range piece in %d - %d: %d\n", e.BaseExchange.start, e.BaseExchange.end, diffsize)
+		fmt.Printf("load range piece in %d - %d\n", e.BaseExchange.start, e.BaseExchange.end)
 
 		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end,
 			e.BaseExchange.period)
@@ -517,8 +515,9 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
-			// os.Exit(0)
-			return nil, nil
+			//throw panic to stop in backtest
+			panic(constant.BackEnd)
+			//return nil, nil
 		}
 		if symbol == currency {
 			ohlc = curr
