@@ -515,6 +515,12 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
+			g, _ := GetGlobal(ex.option.TraderID)
+			if g != nil {
+				if err := g.draw.Display(); err != nil {
+					g.logger.Log(constant.ERROR, "", 0.0, 0.0, err)
+				}
+			}
 			//throw panic to stop in backtest
 			panic(constant.BackEnd)
 			//return nil, nil

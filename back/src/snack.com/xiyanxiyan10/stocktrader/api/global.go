@@ -26,6 +26,20 @@ type GlobalHandler interface {
 	DrawPlot() error
 }
 
+var globalMap map[int64]*Global
+
+func SetGlobal(id int64, g *Global) {
+	if globalMap == nil {
+		globalMap = make(map[int64]*Global)
+	}
+	globalMap[id] = g
+}
+
+func GetGlobal(id int64) (*Global, bool) {
+	g, ok := globalMap[id]
+	return g, ok
+}
+
 // Global ...
 type Global struct {
 	logger model.Logger // 利用这个对象保存日志
@@ -54,7 +68,9 @@ func NewGlobalStruct(opt constant.Option) *Global {
 	trader.mail = notice.NewMailHandler()
 	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
-	return &trader
+	global := &trader
+	SetGlobal(opt.TraderID, global)
+	return global
 }
 
 // Sleep ...
@@ -123,6 +139,10 @@ func (g *Global) DrawLine(name string, time string, data float32, shape string) 
 
 // DrawPlot ...
 func (g *Global) DrawPlot() error {
+	if g.backtest {
+		// Backtest draw display in backtest api
+		return nil
+	}
 	if err := g.draw.Display(); err != nil {
 		g.logger.Log(constant.ERROR, "", 0.0, 0.0, err)
 		return err
