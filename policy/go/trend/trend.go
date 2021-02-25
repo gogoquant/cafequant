@@ -35,7 +35,6 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	exchange.SetSubscribe(key, constant.CachePosition)
 	exchange.SetSubscribe(key, constant.CacheOrder)
 	exchange.SetSubscribe(key, constant.CacheTicker)
-
 	e.Global = api.NewGlobal(opt)
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
@@ -65,24 +64,32 @@ func (e *TrendStragey) Run() error {
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
 	exchange.Start()
 	fmt.Printf("trend start\n")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("start - end : %s - %s",
+		util.TimeUnix2Str(times[0]), util.TimeUnix2Str(times[1])))
 	global.DrawSetPath("/Users/shu/Desktop/trend.html")
-	//records, err := exchange.BackGetOHLCs(times[0], times[1], exchange.GetPeriod())
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("stragey  end\n")
+		}
+	}()
+
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
 			fmt.Printf("get ohlcs fail\nn")
 			continue
 		}
-		if len(records) == 0 {
-			continue
-		}
+
 		ohlc := records[0]
 		fmt.Printf("ohlc: %s\n", util.Struct2Json(ohlc))
-
 		global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
 			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
+
 		global.DrawPlot()
 	}
+
+	return nil
 }
 
 // Exit ...
@@ -109,7 +116,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "H4"
+	var period = "M15"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
