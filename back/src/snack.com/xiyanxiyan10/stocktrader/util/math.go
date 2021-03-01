@@ -18,7 +18,8 @@ func NewKlineMerge(rate int) *KlineMerge {
 	return &merge
 }
 
-func (m *KlineMerge) Append(klines ...constant.Record) {
+func (m *KlineMerge) Append(klines ...constant.Record) int {
+	var tot int = 0
 	for _, kline := range klines {
 		if m.curr == nil {
 			m.curr = new(constant.Record)
@@ -39,14 +40,21 @@ func (m *KlineMerge) Append(klines ...constant.Record) {
 			// merge one kline and store it
 			if m.curr != nil {
 				m.vec = append(m.vec, *(m.curr))
+				m.size += 1
+				tot++
 			}
 			m.Count = 0
 			m.curr = nil
 		}
 
 	}
+	return tot
 }
 
-func (m *KlineMerge) Get() []constant.Record {
-	return m.vec
+func (m *KlineMerge) Get(size int) []constant.Record {
+	if size < 0 || size >= m.size {
+		return m.vec
+	}
+	size = m.size - size
+	return m.vec[size:]
 }
