@@ -20,29 +20,30 @@ func NewKlineMerge(rate int) *KlineMerge {
 
 func (m *KlineMerge) Append(klines ...constant.Record) {
 	for _, kline := range klines {
-		m.Count += 1
-		if m.Count > m.Limit {
+		if m.curr == nil {
+			m.curr = new(constant.Record)
+			*(m.curr) = kline
+		} else {
+			m.curr.Volume += kline.Volume
+			m.curr.Time = kline.Time
+			m.curr.Close = kline.Close
+			if m.curr.High < kline.High {
+				m.curr.High = kline.High
+			}
+			if m.curr.Low > kline.Low {
+				m.curr.Low = kline.Low
+			}
+		}
+		m.Count++
+		if m.Count >= m.Limit {
 			// merge one kline and store it
 			if m.curr != nil {
 				m.vec = append(m.vec, *(m.curr))
 			}
-			m.Count = 1
+			m.Count = 0
 			m.curr = nil
 		}
-		if m.curr == nil {
-			m.curr = new(constant.Record)
-			*(m.curr) = kline
-			continue
-		}
-		m.curr.Volume += kline.Volume
-		m.curr.Time = kline.Time
-		m.curr.Close = kline.Close
-		if m.curr.High < kline.High {
-			m.curr.High = kline.High
-		}
-		if m.curr.Low > kline.Low {
-			m.curr.Low = kline.Low
-		}
+
 	}
 }
 
