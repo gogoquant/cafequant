@@ -7,12 +7,33 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"time"
 )
 
 const (
 	TimeLayout = "2006-01-02 15:04:05"
 )
+
+func CatchException(handle func(e interface{})) {
+	if err := recover(); err != nil {
+		e := printStackTrace(err)
+		handle(e)
+	}
+}
+
+func printStackTrace(err interface{}) string {
+	buf := new(bytes.Buffer)
+	fmt.Fprintf(buf, "%v\n", err)
+	for i := 1; ; i++ {
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
+	}
+	return buf.String()
+}
 
 // TimeUnix2Str ...
 func TimeUnix2Str(t int64) string {
