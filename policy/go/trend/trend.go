@@ -7,14 +7,18 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"time"
+	//"time"
 )
 
 // TrendStragey ...
 type TrendStragey struct {
 	Exchanges []api.Exchange
 	Global    api.GlobalHandler
-	Status    bool
+
+	Ticker  constant.Ticker
+	Records []constant.Record
+
+	Status bool
 }
 
 // Init ...
@@ -27,16 +31,15 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
 	key := symbol + "." + constract
+
 	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
-	exchange.SetPeriodSize(10)
-	exchange.SetPeriodSize(5)
+	exchange.SetPeriodSize(3)
 	exchange.SetSubscribe(key, constant.CacheAccount)
 	exchange.SetSubscribe(key, constant.CacheRecord)
 	exchange.SetSubscribe(key, constant.CachePosition)
 	exchange.SetSubscribe(key, constant.CacheOrder)
 	exchange.SetSubscribe(key, constant.CacheTicker)
-
 	e.Global = api.NewGlobal(opt)
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
@@ -63,42 +66,34 @@ func (e *TrendStragey) Run() error {
 		return nil
 	}
 
-	startStr := time.Unix(times[0], 0).Local().String()
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Start time is:%s", startStr))
-
-	endStr := time.Unix(times[1], 0).Local().String()
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("End time is:%s", endStr))
-
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
-
-	global.DrawSetPath("./trend.html")
 	exchange.Start()
+
 	fmt.Printf("trend start\n")
+	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("start - end : %s - %s",
+		util.TimeUnix2Str(times[0]), util.TimeUnix2Str(times[1])))
+	global.DrawSetPath("/Users/shu/Desktop/trend.html")
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("stragey end\n")
+		}
+	}()
 
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
 			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-			break
+			continue
 		}
-		if records == nil {
-			fmt.Printf("get ohlc null\n")
-			break
+		if len(records) == 0 {
+			continue
 		}
-		ohlcs := records
-		for _, ohlc := range ohlcs {
-			fmt.Printf("get ohlc %s\n", util.Struct2Json(ohlc))
-			global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
-				float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
-		}
-
-		err = global.DrawPlot()
-		if err != nil {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Display err is:%s", err.Error()))
-			return err
-		}
+		record := records[0]
+		global.DrawKLine(util.TimeUnix2Str(record.Time), float32(record.Open), float32(record.Close), float32(record.Low),
+			float32(record.High))
+		global.DrawPlot()
 	}
-
 	return nil
 }
 
@@ -126,7 +121,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "H1"
+	var period = "M30"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
@@ -135,7 +130,7 @@ func main() {
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
 	opt.BackLog = true
-	opt.BackTest = false
+	opt.BackTest = true
 
 	exchange, err := api.GetExchange(opt)
 	if err != nil {
