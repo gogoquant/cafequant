@@ -6,6 +6,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	//"time"
 )
@@ -90,6 +91,7 @@ func (e *TrendStragey) Run() error {
 			continue
 		}
 		record := records[0]
+		global.DrawLine("volume", util.TimeUnix2Str(record.Time), float32(record.Volume/10), draw.BrokeLine)
 		global.DrawKLine(util.TimeUnix2Str(record.Time), float32(record.Open), float32(record.Close), float32(record.Low),
 			float32(record.High))
 		global.DrawPlot()
