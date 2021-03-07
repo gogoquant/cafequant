@@ -4,6 +4,7 @@ import (
 	"github.com/go-echarts/go-echarts/charts"
 	log "gopkg.in/logger.v1"
 	"os"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 )
 
@@ -171,17 +172,17 @@ func (p *LineService) prevLine() {
 			shape = v[i].Shape
 		}
 		var markpoints = []charts.SeriesOptser{
-			charts.MPNameTypeItem{Name: "最大值", Type: "max"},
-			charts.MPNameTypeItem{Name: "平均值", Type: "average"},
-			charts.MPNameTypeItem{Name: "最小值", Type: "min"},
+			//charts.MPNameTypeItem{Name: "最大值", Type: "max"},
+			//charts.MPNameTypeItem{Name: "平均值", Type: "average"},
+			//charts.MPNameTypeItem{Name: "最小值", Type: "min"},
 			charts.MPStyleOpts{Label: charts.LabelTextOpts{Show: true}},
 		}
 		markpoints = append(markpoints, charts.LineOpts{ConnectNulls: false})
-		if shape == StepLine {
+		if shape == constant.StepLine {
 			markpoints = append(markpoints, charts.LineOpts{Step: true})
-		} else if shape == SmoothLine {
+		} else if shape == constant.SmoothLine {
 			markpoints = append(markpoints, charts.LineOpts{Smooth: true})
-		} else if shape == AreaLine {
+		} else if shape == constant.AreaLine {
 			markpoints = append(markpoints, charts.LabelTextOpts{Show: true})
 			markpoints = append(markpoints, charts.AreaStyleOpts{Opacity: 0.2})
 		}

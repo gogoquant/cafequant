@@ -27,6 +27,13 @@ const (
 )
 
 const (
+	StepLine   = "stepline"
+	SmoothLine = "smoothline"
+	BrokeLine  = "brokeline"
+	AreaLine   = "arealine"
+)
+
+const (
 	// IONONE ...
 	IONONE = "online"
 	// IOCACHE get from cache

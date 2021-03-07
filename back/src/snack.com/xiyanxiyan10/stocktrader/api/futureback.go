@@ -515,7 +515,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
-			g, _ := GetGlobal(ex.option.TraderID)
+			g, _ := getGlobal(ex.option.TraderID)
 			if g != nil {
 				if err := g.draw.Display(); err != nil {
 					g.logger.Log(constant.ERROR, "", 0.0, 0.0, err)

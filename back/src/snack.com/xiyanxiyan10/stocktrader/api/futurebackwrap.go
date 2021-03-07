@@ -19,7 +19,6 @@ func NewFutureBackExchange(opt constant.Option) (Exchange, error) {
 // ExchangeFutureBackLink ...
 type ExchangeFutureBackLink struct {
 	ExchangeFutureBack
-
 	records map[string][]constant.Record
 }
 
