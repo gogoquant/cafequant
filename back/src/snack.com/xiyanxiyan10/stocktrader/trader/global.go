@@ -1,6 +1,7 @@
 package trader
 
 import (
+	"context"
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -23,11 +24,12 @@ type Global struct {
 	api.Global
 	model.Trader
 
-	ctx        *otto.Otto     // js虚拟机
-	es         []api.Exchange // 交易所列表
-	tasks      Tasks          // 任务列表
-	running    bool           // 运行中
-	scriptType string         // 脚本语言
+	ctx        *otto.Otto         // js虚拟机
+	es         []api.Exchange     // 交易所列表
+	tasks      Tasks              // 任务列表
+	running    bool               // 运行中
+	scriptType string             // 脚本语言
+	cancel     context.CancelFunc // 执行python脚本
 }
 
 // AddTask ...
