@@ -109,6 +109,16 @@ const (
 )
 
 const (
+	ORDER_UNFINISH    = 0
+	ORDER_PART_FINISH = 1
+	ORDER_FINISH      = 2
+	ORDER_CANCEL      = 3
+	ORDER_REJECT      = 4
+	ORDER_CANCEL_ING  = 5
+	ORDER_FAIL        = 6
+)
+
+const (
 	// FilePath ...
 	FilePath = "files"
 	// GoPluginPath ...

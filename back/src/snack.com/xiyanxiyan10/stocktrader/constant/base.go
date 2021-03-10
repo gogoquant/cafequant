@@ -66,16 +66,6 @@ func (ts TradeStatus) String() string {
 
 var tradeStatusSymbol = [...]string{"UNFINISH", "PART_FINISH", "FINISH", "CANCEL", "REJECT", "CANCEL_ING", "FAIL"}
 
-const (
-	ORDER_UNFINISH TradeStatus = iota
-	ORDER_PART_FINISH
-	ORDER_FINISH
-	ORDER_CANCEL
-	ORDER_REJECT
-	ORDER_CANCEL_ING
-	ORDER_FAIL
-)
-
 type Account struct {
 	SubAccounts map[string]SubAccount
 }
