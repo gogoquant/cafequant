@@ -516,8 +516,8 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
-			//throw panic to stop in backtest
-			if ex.option.BackLog {
+			// 独立运行的可以直接退出，外部主程序管理的脚本则抛出异常，由外部处理
+			if ex.option.Alone {
 				os.Exit(0)
 			}
 			panic(constant.BackEnd)
