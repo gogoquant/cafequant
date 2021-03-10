@@ -6,6 +6,7 @@ import (
 	"fmt"
 	goex "github.com/nntaoli-project/goex"
 	"math"
+	"os"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -519,13 +520,10 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		//progress = loader.Progress()
 		curr := loader.Next()
 		if curr == nil {
-			g, _ := GetGlobal(ex.option.TraderID)
-			if g != nil {
-				if err := g.draw.Display(); err != nil {
-					g.logger.Log(constant.ERROR, "", 0.0, 0.0, err)
-				}
+			// 独立运行的可以直接退出，外部主程序管理的脚本则抛出异常，由外部处理
+			if ex.option.BackExit {
+				os.Exit(0)
 			}
-			//throw panic to stop in backtest
 			panic(constant.BackEnd)
 			//return nil, nil
 		}

@@ -1,1 +1,1 @@
-gopy build -output=out -vm=python3.7 snack.com/xiyanxiyan10/stocktrader/api
+gopy build -output=out -vm=python3.7 snack.com/xiyanxiyan10/stocktrader/constant snack.com/xiyanxiyan10/stocktrader/api snack.com/xiyanxiyan10/stocktrader/config

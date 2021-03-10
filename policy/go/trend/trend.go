@@ -6,6 +6,7 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	//"time"
 )
@@ -14,7 +15,11 @@ import (
 type TrendStragey struct {
 	Exchanges []api.Exchange
 	Global    api.GlobalHandler
-	Status    bool
+
+	Ticker  constant.Ticker
+	Records []constant.Record
+
+	Status bool
 }
 
 // Init ...
@@ -27,6 +32,7 @@ func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
 	exchange := e.Exchanges[0]
 	exchange.SetIO(io)
 	key := symbol + "." + constract
+
 	exchange.SetStockType(symbol + "." + constract)
 	exchange.SetPeriod(period)
 	exchange.SetPeriodSize(3)
@@ -63,6 +69,7 @@ func (e *TrendStragey) Run() error {
 
 	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
 	exchange.Start()
+
 	fmt.Printf("trend start\n")
 	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("start - end : %s - %s",
 		util.TimeUnix2Str(times[0]), util.TimeUnix2Str(times[1])))
@@ -70,25 +77,25 @@ func (e *TrendStragey) Run() error {
 
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Printf("stragey  end\n")
+			fmt.Printf("stragey end\n")
 		}
 	}()
 
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
-			fmt.Printf("get ohlcs fail\nn")
+			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
 			continue
 		}
-
-		ohlc := records[0]
-		fmt.Printf("ohlc: %s\n", util.Struct2Json(ohlc))
-		global.DrawKLine(util.TimeUnix2Str(ohlc.Time),
-			float32(ohlc.Open), float32(ohlc.Close), float32(ohlc.Low), float32(ohlc.High))
-
+		if len(records) == 0 {
+			continue
+		}
+		record := records[0]
+		global.DrawLine("volume", util.TimeUnix2Str(record.Time), float32(record.Volume/10), draw.BrokeLine)
+		global.DrawKLine(util.TimeUnix2Str(record.Time), float32(record.Open), float32(record.Close), float32(record.Low),
+			float32(record.High))
 		global.DrawPlot()
 	}
-
 	return nil
 }
 
@@ -116,7 +123,7 @@ func main() {
 	var constract = "quarter"
 	var symbol = "BTC/USD"
 	var io = "online"
-	var period = "M15"
+	var period = "M30"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""

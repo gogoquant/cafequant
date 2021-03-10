@@ -1,8 +1,12 @@
 package trader
 
 import (
+	"context"
 	"fmt"
 	"github.com/robertkrimen/otto"
+	"io/ioutil"
+	"os"
+	"os/exec"
 	"reflect"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -154,6 +158,33 @@ func run(id int64) (err error) {
 		return
 	}
 	return runJs(trader, id)
+}
+
+// runPy ...
+func runPy(trader Global, id int64) (err error) {
+	go func() {
+		defer func() {
+			trader.Status = constant.Stop
+			trader.Pending = constant.Disable
+		}()
+		ctx, cancel := context.WithCancel(context.Background())
+		script := trader.Algorithm.Script
+		str := []byte(script)
+		filename := "/tmp/" + fmt.Sprintf("%d", trader.ID) + trader.Name + ".py"
+		_ = ioutil.WriteFile(filename, str, 0644)
+		cmd := exec.CommandContext(ctx, "python3", filename)
+		cmd.Stdout = os.Stdout
+		cmd.Start()
+		trader.cancel = cancel
+		trader.LastRunAt = time.Now()
+		trader.Status = constant.Running
+
+		cmd.Wait()
+		fmt.Println("退出程序中...", cmd.Process.Pid)
+	}()
+	Executor[trader.ID] = &trader
+	return
+	//cancel()
 }
 
 // runJs ...

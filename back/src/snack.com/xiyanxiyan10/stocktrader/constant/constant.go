@@ -27,6 +27,13 @@ const (
 )
 
 const (
+	StepLine   = "stepline"
+	SmoothLine = "smoothline"
+	BrokeLine  = "brokeline"
+	AreaLine   = "arealine"
+)
+
+const (
 	// IONONE ...
 	IONONE = "online"
 	// IOCACHE get from cache
@@ -99,6 +106,16 @@ const (
 	ProfitReal    = "ProfitReal"    //已实现盈亏
 	ProfitUnreal  = "ProfitUnreal"
 	RiskRate      = "RiskRate" //保证金率
+)
+
+const (
+	ORDER_UNFINISH    = 0
+	ORDER_PART_FINISH = 1
+	ORDER_FINISH      = 2
+	ORDER_CANCEL      = 3
+	ORDER_REJECT      = 4
+	ORDER_CANCEL_ING  = 5
+	ORDER_FAIL        = 6
 )
 
 const (

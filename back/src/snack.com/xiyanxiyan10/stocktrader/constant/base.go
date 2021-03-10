@@ -66,16 +66,6 @@ func (ts TradeStatus) String() string {
 
 var tradeStatusSymbol = [...]string{"UNFINISH", "PART_FINISH", "FINISH", "CANCEL", "REJECT", "CANCEL_ING", "FAIL"}
 
-const (
-	ORDER_UNFINISH TradeStatus = iota
-	ORDER_PART_FINISH
-	ORDER_FINISH
-	ORDER_CANCEL
-	ORDER_REJECT
-	ORDER_CANCEL_ING
-	ORDER_FAIL
-)
-
 type Account struct {
 	SubAccounts map[string]SubAccount
 }
@@ -196,6 +186,7 @@ type Option struct {
 	host     string
 	BackTest bool // 是否开启回测
 	BackLog  bool // 是否将日志输出到终端，而不是数据库
+	BackExit bool // 是否独立运行，即脚本不依赖stocktrader运行
 }
 
 // OrderBook struct

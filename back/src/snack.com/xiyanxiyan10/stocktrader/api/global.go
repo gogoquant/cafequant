@@ -28,14 +28,14 @@ type GlobalHandler interface {
 
 var globalMap map[int64]*Global
 
-func SetGlobal(id int64, g *Global) {
+func setGlobal(id int64, g *Global) {
 	if globalMap == nil {
 		globalMap = make(map[int64]*Global)
 	}
 	globalMap[id] = g
 }
 
-func GetGlobal(id int64) (*Global, bool) {
+func getGlobal(id int64) (*Global, bool) {
 	g, ok := globalMap[id]
 	return g, ok
 }
@@ -69,7 +69,7 @@ func NewGlobalStruct(opt constant.Option) *Global {
 	trader.ding = notice.NewDingHandler()
 	trader.draw = draw.NewDrawHandler()
 	global := &trader
-	SetGlobal(opt.TraderID, global)
+	setGlobal(opt.TraderID, global)
 	return global
 }
 
