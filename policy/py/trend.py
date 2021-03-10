@@ -1,7 +1,6 @@
 import config
 import api
 import constant
-import pdb
 
 config.Init("../config.ini")
 opt = constant.Option()
