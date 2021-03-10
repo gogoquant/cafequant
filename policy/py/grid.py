@@ -11,7 +11,7 @@ opt.BackTest = True
 opt.Index = 1
 opt.TraderID = 1
 opt.Name = "trend"
-opt.Alone = True
+opt.BackExit = True
 opt.Type = constant.HuoBiDm
 
 try:
