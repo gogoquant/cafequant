@@ -1,6 +1,7 @@
 import config
 import api
 import constant
+import pdb
 
 config.Init("../config.ini")
 opt = constant.Option()
@@ -10,6 +11,7 @@ opt.BackTest = True
 opt.Index = 1
 opt.TraderID = 1
 opt.Name = "trend"
+opt.Alone = True
 opt.Type = constant.HuoBiDm
 
 try:
@@ -40,5 +42,5 @@ ex.Start()
 
 while True:
     records = ex.GetRecords()
-    if len(records) > 1:
-        print(records[-1])
+    #if len(records) > 1:
+    #    print(records[-1])
