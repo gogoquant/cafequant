@@ -50,6 +50,14 @@ func (l *DataLoader) Next() *dbtypes.OHLC {
 	return &data
 }
 
+func (l *DataLoader) Progress() int {
+	if l.size == 0 {
+		return 100
+	}
+	v := float64(l.curr+1) / float64(l.size) * 100
+	return int(v)
+}
+
 // Dump ...
 func (l *DataLoader) Dump() []dbtypes.OHLC {
 	return l.datas

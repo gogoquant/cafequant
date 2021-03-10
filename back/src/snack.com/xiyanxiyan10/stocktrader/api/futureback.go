@@ -9,6 +9,7 @@ import (
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+	//"strconv"
 	"sync"
 	"time"
 )
@@ -30,6 +31,7 @@ type ExchangeFutureBackConfig struct {
 // ExchangeFutureBack ...
 type ExchangeFutureBack struct {
 	BaseExchange
+	progress int
 	*sync.RWMutex
 	acc                  *constant.Account
 	name                 string
@@ -509,10 +511,12 @@ func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 // GetTicker ...
 func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, error) {
 	var ohlc *dbtypes.OHLC
+	//var progress int
 	for symbol, loader := range ex.dataLoader {
 		if loader == nil {
 			return nil, errors.New("loader not found")
 		}
+		//progress = loader.Progress()
 		curr := loader.Next()
 		if curr == nil {
 			g, _ := GetGlobal(ex.option.TraderID)
@@ -533,6 +537,16 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		ex.settlePosition(currency)
 		ex.coverPosition(currency)
 	}
+	/*
+		if progress != ex.progress {
+			g, _ := GetGlobal(ex.option.TraderID)
+			if g != nil {
+				g.logger.Log(constant.INFO, "", 0.0, 0.0, strconv.Itoa(progress))
+
+			}
+			ex.progress = progress
+		}
+	*/
 	//ex.Debug()
 	if ohlc == nil {
 		return nil, fmt.Errorf("get ohlc fail")
