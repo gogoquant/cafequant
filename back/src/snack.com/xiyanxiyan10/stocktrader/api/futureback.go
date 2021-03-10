@@ -517,8 +517,10 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		curr := loader.Next()
 		if curr == nil {
 			//throw panic to stop in backtest
-			//panic(constant.BackEnd)
-			os.Exit(0)
+			if ex.option.BackLog {
+				os.Exit(0)
+			}
+			panic(constant.BackEnd)
 			//return nil, nil
 		}
 		if symbol == currency {
