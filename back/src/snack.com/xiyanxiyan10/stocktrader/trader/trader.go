@@ -168,14 +168,17 @@ func runPy(trader Global, id int64) (err error) {
 			trader.Pending = constant.Disable
 		}()
 		ctx, cancel := context.WithCancel(context.Background())
+		trader.cancel = cancel
 		script := trader.Algorithm.Script
 		str := []byte(script)
-		filename := "/tmp/" + fmt.Sprintf("%d", trader.ID) + trader.Name + ".py"
-		_ = ioutil.WriteFile(filename, str, 0644)
+		filename := fmt.Sprintf("/tmp/%d_%s.py", trader.ID, trader.Name)
+		err = ioutil.WriteFile(filename, str, 0644)
+		if err != nil {
+			return
+		}
 		cmd := exec.CommandContext(ctx, "python3", filename)
 		cmd.Stdout = os.Stdout
 		cmd.Start()
-		trader.cancel = cancel
 		trader.LastRunAt = time.Now()
 		trader.Status = constant.Running
 
@@ -248,6 +251,11 @@ func stop(id int64) (err error) {
 		return fmt.Errorf("pending Trader")
 	}
 	Executor[id].Pending = constant.Enable
+	return stopJs(id)
+}
+
+// stop ...
+func stopJs(id int64) (err error) {
 	trader := Executor[id]
 	for _, e := range trader.es {
 		err := e.Stop()
@@ -255,12 +263,14 @@ func stop(id int64) (err error) {
 			return fmt.Errorf("stop exchange %s fail:%s", e.GetName(), err.Error())
 		}
 	}
-	return stopJs(id)
+	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
+	return
 }
 
 // stop ...
-func stopJs(id int64) (err error) {
-	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
+func stopPy(id int64) (err error) {
+	trader := Executor[id]
+	trader.cancel()
 	return
 }
 
