@@ -190,7 +190,8 @@ func (e *ExchangeFutureBack) Start() error {
 			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
 		}
 
-		fmt.Printf("load range piece in %d - %d\n", e.BaseExchange.start, e.BaseExchange.end)
+		fmt.Printf("load backtest data in %s - %s\n",
+			util.TimeUnix2Str(e.BaseExchange.start), util.TimeUnix2Str(e.BaseExchange.end))
 
 		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end,
 			e.BaseExchange.period)
