@@ -384,3 +384,5 @@ var thisTicker = E.GetTicker('BTC/USD');
 var thisRecords = E.GetRecords('BTC/USD', 'M5');
 ```
 
+
+
