@@ -1,7 +1,10 @@
+#!/usr/bin/python3
+'''
+policy for grid trade
+'''
 import config
 import api
 import constant
-import pdb
 
 config.Init("../config.ini")
 opt = constant.Option()
@@ -13,6 +16,9 @@ opt.TraderID = 1
 opt.Name = "trend"
 opt.BackExit = True
 opt.Type = constant.HuoBiDm
+symbol = 'BTC/USD.quarter'
+period = 'M15'
+periodsize  = 3
 
 try:
     ex = api.GetExchange(opt)
@@ -25,22 +31,43 @@ try :
 except Exception as err:
     print(err)
 
-ex.SetStockType('BTC/USD.quarter')
-ex.SetPeriod('M15')
-ex.SetPeriodSize(3)
+ex.SetStockType(symbol)
+ex.SetPeriod(period)
+ex.SetPeriodSize(periodsize)
 ex.SetIO(constant.IONONE)
-key = 'BTC/USD.quarter'
-ex.SetSubscribe(key, constant.CacheAccount)
-ex.SetSubscribe(key, constant.CacheRecord)
-ex.SetSubscribe(key, constant.CachePosition)
-ex.SetSubscribe(key, constant.CacheOrder)
+ex.SetSubscribe(symbol, constant.CacheAccount)
+ex.SetSubscribe(symbol, constant.CacheRecord)
+#ex.SetSubscribe(symbol, constant.CachePosition)
+ex.SetSubscribe(symbol, constant.CacheOrder)
+ex.SetSubscribe(symbol, constant.CacheTicker)
 
 time_range = ex.BackGetTimeRange()
 
 ex.SetBackTime(time_range[0], time_range[1], ex.GetPeriod())
+ex.SetBackAccount('BTC', 10000)
+ex.SetBackAccount('USD', 10000)
 ex.Start()
 
+def openFunc(price, amount, msg, d):
+    if d == 0:
+        ex.SetDirection(constant.TradeTypeLong)
+        ex.Buy(str(price), str(amount), msg)
+    else:
+        ex.SetDirection(constant.TradeTypeShort)
+        ex.Sell(str(price), str(amount), msg)
+
+def closeFunc(price, amount, msg, d):
+    if d == 0:
+        ex.SetDirection(constant.TradeTypeLongClose)
+        ex.Sell(str(price), str(amount), msg)
+    else:
+        ex.SetDirection(constant.TradeTypeShortClose)
+        ex.Buy(str(price), str(amount), msg)
+
 while True:
-    records = ex.GetRecords()
-    #if len(records) > 1:
-    #    print(records[-1])
+    ticker = ex.GetTicker()
+    price = 3000
+    amount = 0.001
+    openFunc(str(price),str(amount), 'open long', 0)
+    closeFunc(str(price),str(amount), 'clost long', 0)
+    print(ticker.Last)
