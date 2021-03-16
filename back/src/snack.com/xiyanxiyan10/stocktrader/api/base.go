@@ -118,15 +118,27 @@ func stockPair2Vec(pair string) []string {
 }
 
 func (e *BaseExchange) Buy(price, amount, msg string) (string, error) {
-	return e.father.buy(price, amount, msg)
+	orderID, err := e.father.buy(price, amount, msg)
+	if err != nil {
+		return "", nil
+	}
+	return orderID, nil
 }
 
 func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
-	return e.father.sell(price, amount, msg)
+	orderID, err := e.father.sell(price, amount, msg)
+	if err != nil {
+		return "", nil
+	}
+	return orderID, nil
 }
 
 func (e *BaseExchange) CancelOrder(orderID string) (bool, error) {
-	return e.father.cancelOrder(orderID)
+	status, err := e.father.cancelOrder(orderID)
+	if err != nil {
+		return false, nil
+	}
+	return status, nil
 }
 
 // SetPeriodSize Set size
