@@ -120,7 +120,7 @@ func stockPair2Vec(pair string) []string {
 func (e *BaseExchange) Buy(price, amount, msg string) (string, error) {
 	orderID, err := e.father.buy(price, amount, msg)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return orderID, nil
 }
@@ -128,7 +128,7 @@ func (e *BaseExchange) Buy(price, amount, msg string) (string, error) {
 func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
 	orderID, err := e.father.sell(price, amount, msg)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return orderID, nil
 }
@@ -136,7 +136,7 @@ func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
 func (e *BaseExchange) CancelOrder(orderID string) (bool, error) {
 	status, err := e.father.cancelOrder(orderID)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
 	return status, nil
 }
@@ -578,7 +578,7 @@ func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		val := e.GetCache(constant.CacheRecord, e.GetStockType(), refresh)
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("record get fail")
 		}
 		return val.Data.([]constant.Record), nil
 	}
@@ -602,7 +602,7 @@ func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 		e.wait(stockType, constant.CacheTicker)
 		val := e.GetCache(constant.CacheTicker, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("ticker get fail")
 		}
 		dst := val.Data.(constant.Ticker)
 		return &dst, nil
@@ -617,7 +617,7 @@ func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		val := e.GetCache(constant.CacheDepth, stockType, e.isRefresh())
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("depth get fail")
 		}
 		dst := val.Data.(constant.Depth)
 		return &dst, nil
@@ -639,7 +639,7 @@ func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
 				return &order, nil
 			}
 		}
-		return nil, nil
+		return nil, fmt.Errorf("order get fail")
 	}
 	return e.father.getOrder(stockType, id)
 }
@@ -653,7 +653,7 @@ func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 
 		val := e.GetCache(constant.CacheOrder, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("orders get fail")
 		}
 		dst := val.Data.([]constant.Order)
 		return dst, nil
@@ -668,7 +668,7 @@ func (e *BaseExchange) GetAccount() (*constant.Account, error) {
 		e.wait("", constant.CacheAccount)
 		val := e.GetCache(constant.CacheAccount, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("account get fail")
 		}
 		dst := val.Data.(constant.Account)
 		return &dst, nil
@@ -684,7 +684,7 @@ func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 		e.wait(stockType, constant.CachePosition)
 		val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, nil
+			return nil, fmt.Errorf("ticker get fail")
 		}
 		return val.Data.([]constant.Position), nil
 	}
