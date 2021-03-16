@@ -20,6 +20,7 @@ symbol = 'BTC/USD.quarter'
 period = 'M15'
 periodsize  = 3
 debug = True
+limit = 1000
 
 try:
     ex = api.GetExchange(opt)
@@ -34,8 +35,9 @@ except Exception as err:
 
 ex.SetStockType(symbol)
 ex.SetPeriod(period)
+ex.SetLimit(limit)
 ex.SetPeriodSize(periodsize)
-ex.SetIO(constant.IONONE)
+ex.SetIO(opt.io)
 ex.SetSubscribe(symbol, constant.CacheAccount)
 ex.SetSubscribe(symbol, constant.CacheRecord)
 #ex.SetSubscribe(symbol, constant.CachePosition)
