@@ -118,15 +118,27 @@ func stockPair2Vec(pair string) []string {
 }
 
 func (e *BaseExchange) Buy(price, amount, msg string) (string, error) {
-	return e.father.buy(price, amount, msg)
+	orderID, err := e.father.buy(price, amount, msg)
+	if err != nil {
+		return "", err
+	}
+	return orderID, nil
 }
 
 func (e *BaseExchange) Sell(price, amount, msg string) (string, error) {
-	return e.father.sell(price, amount, msg)
+	orderID, err := e.father.sell(price, amount, msg)
+	if err != nil {
+		return "", err
+	}
+	return orderID, nil
 }
 
 func (e *BaseExchange) CancelOrder(orderID string) (bool, error) {
-	return e.father.cancelOrder(orderID)
+	status, err := e.father.cancelOrder(orderID)
+	if err != nil {
+		return false, err
+	}
+	return status, nil
 }
 
 // SetPeriodSize Set size
@@ -431,7 +443,7 @@ func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.De
 	if !depth.Success {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
-		return dbtypes.Depth{}, fmt.Errorf("GetDepth error, the error number not in backtest")
+		return dbtypes.Depth{}, nil
 	}
 	return depth.Data, nil
 }
@@ -566,7 +578,7 @@ func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		val := e.GetCache(constant.CacheRecord, e.GetStockType(), refresh)
 		if val.Data == nil {
-			return nil, fmt.Errorf("record not load")
+			return nil, fmt.Errorf("record get fail")
 		}
 		return val.Data.([]constant.Record), nil
 	}
@@ -582,7 +594,7 @@ func (e *BaseExchange) isRefresh() bool {
 	return refresh
 }
 
-// GetTicker.father.get market ticker
+// GetTicker  market ticker
 func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()
@@ -590,7 +602,7 @@ func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 		e.wait(stockType, constant.CacheTicker)
 		val := e.GetCache(constant.CacheTicker, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("ticker not load ")
+			return nil, fmt.Errorf("ticker get fail")
 		}
 		dst := val.Data.(constant.Ticker)
 		return &dst, nil
@@ -605,7 +617,7 @@ func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		val := e.GetCache(constant.CacheDepth, stockType, e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("depth not load ")
+			return nil, fmt.Errorf("depth get fail")
 		}
 		dst := val.Data.(constant.Depth)
 		return &dst, nil
@@ -627,7 +639,7 @@ func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
 				return &order, nil
 			}
 		}
-		return nil, fmt.Errorf("order not found")
+		return nil, fmt.Errorf("order get fail")
 	}
 	return e.father.getOrder(stockType, id)
 }
@@ -641,7 +653,7 @@ func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
 
 		val := e.GetCache(constant.CacheOrder, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("account not load")
+			return nil, fmt.Errorf("orders get fail")
 		}
 		dst := val.Data.([]constant.Order)
 		return dst, nil
@@ -656,7 +668,7 @@ func (e *BaseExchange) GetAccount() (*constant.Account, error) {
 		e.wait("", constant.CacheAccount)
 		val := e.GetCache(constant.CacheAccount, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("account not load")
+			return nil, fmt.Errorf("account get fail")
 		}
 		dst := val.Data.(constant.Account)
 		return &dst, nil
@@ -672,7 +684,7 @@ func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 		e.wait(stockType, constant.CachePosition)
 		val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("position not load ")
+			return nil, fmt.Errorf("position get fail")
 		}
 		return val.Data.([]constant.Position), nil
 	}

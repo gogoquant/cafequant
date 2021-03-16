@@ -490,6 +490,8 @@ func (e *FutureExchange) cancelOrder(orderID string) (bool, error) {
 		return false, fmt.Errorf("CancelOrder() error, the error number is %s", err.Error())
 	}
 	if !result {
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID),
+			"CancelOrder() error, the error number is false")
 		return result, fmt.Errorf("CancelOrder() error, the error number is false")
 	}
 	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID),
