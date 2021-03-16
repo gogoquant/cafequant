@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"sync"
 	"time"
@@ -40,9 +41,7 @@ func (e *BaseExchangeCaches) wait(symbol, action string) {
 
 // PUSH push val into
 func (e *BaseExchangeCaches) push(symbol, action string) {
-	if e.waitsymbol == symbol && e.waitaction == action {
-		e.ch <- [2]string{symbol, action}
-	}
+	e.ch <- [2]string{symbol, action}
 	return
 }
 
@@ -144,6 +143,7 @@ func (e *BaseExchangeCaches) SetCache(action string, stockSymbol string, val int
 	// unlock
 
 	if fresh {
+		fmt.Printf("push active %s %s\n", stockSymbol, action)
 		e.push(stockSymbol, action)
 	}
 }

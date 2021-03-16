@@ -578,7 +578,7 @@ func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
 	if io == constant.IOCACHE || io == constant.IOBLOCK {
 		val := e.GetCache(constant.CacheRecord, e.GetStockType(), refresh)
 		if val.Data == nil {
-			return nil, fmt.Errorf("record not load")
+			return nil, nil
 		}
 		return val.Data.([]constant.Record), nil
 	}
@@ -594,7 +594,7 @@ func (e *BaseExchange) isRefresh() bool {
 	return refresh
 }
 
-// GetTicker.father.get market ticker
+// GetTicker  market ticker
 func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 	stockType := e.GetStockType()
 	io := e.GetIO()

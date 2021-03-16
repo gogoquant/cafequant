@@ -161,11 +161,13 @@ func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchang
 	Back := opt.BackTest
 	if !Back {
 		maker, ok = ExchangeMaker[exchangeType]
+		fmt.Printf("get online exchange\n")
 		//if !ok {
 		//	loadMaker(exchangeType)
 		//}
 		return
 	}
+	fmt.Printf("get back exchange\n")
 	maker, ok = ExchangeBackerMaker[exchangeType]
 	return
 }
