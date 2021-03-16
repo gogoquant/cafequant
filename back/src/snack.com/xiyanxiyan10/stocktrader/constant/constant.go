@@ -35,7 +35,7 @@ const (
 
 const (
 	// IONONE ...
-	IONONE = "online"
+	IONONE = ""
 	// IOCACHE get from cache
 	IOCACHE = "cache"
 	// IOBLOCK ...

@@ -168,7 +168,7 @@ func (e *ExchangeFutureBack) Start() error {
 		e.dataLoader[stock] = &loader
 		if isContain(markets, stock) == false {
 			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "stock not found in BackGetSymbols()")
-			return fmt.Errorf("stock not found in BackGetSymbols()")
+			return fmt.Errorf("stock %s not found in BackGetSymbols()", stock)
 		}
 		timeRange, err := e.BaseExchange.BackGetTimeRange()
 		if err != nil {
