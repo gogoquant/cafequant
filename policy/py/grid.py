@@ -1,7 +1,6 @@
 import config
 import api
 import constant
-import pdb
 
 config.Init("../config.ini")
 opt = constant.Option()
@@ -42,5 +41,5 @@ ex.Start()
 
 while True:
     records = ex.GetRecords()
-    #if len(records) > 1:
-    #    print(records[-1])
+    if len(records) > 1:
+        print(records[-1])
