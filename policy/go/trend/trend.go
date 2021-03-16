@@ -6,7 +6,6 @@ import (
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 	//"time"
 )
@@ -22,64 +21,30 @@ type TrendStragey struct {
 	Status bool
 }
 
-// Init ...
-func (e *TrendStragey) Init(v map[string]string, opt constant.Option) error {
-	period := v["period"]
-	constract := v["constract"]
-	symbol := v["symbol"]
-	io := v["io"]
-
-	exchange := e.Exchanges[0]
-	exchange.SetIO(io)
-	key := symbol + "." + constract
-
-	exchange.SetStockType(symbol + "." + constract)
-	exchange.SetPeriod(period)
-	exchange.SetPeriodSize(3)
-	exchange.SetSubscribe(key, constant.CacheAccount)
-	exchange.SetSubscribe(key, constant.CacheRecord)
-	exchange.SetSubscribe(key, constant.CachePosition)
-	exchange.SetSubscribe(key, constant.CacheOrder)
-	exchange.SetSubscribe(key, constant.CacheTicker)
-	e.Global = api.NewGlobal(opt)
-
-	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
-	e.Status = true
-	return nil
-}
-
 // Run ...
 func (e *TrendStragey) Run() error {
 	exchange := e.Exchanges[0]
-	global := e.Global
 
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
-	symbols, err := exchange.BackGetSymbols()
-	if err != nil {
-		exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
-		return nil
-	}
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Back get symbols success:%s", symbols))
+	/*
+		symbols, err := exchange.BackGetSymbols()
+		if err != nil {
+			exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get symbols fail")
+			return nil
+		}
+		exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("Back get symbols success:%s", symbols))
 
-	times, err := exchange.BackGetTimeRange()
-	if err != nil {
-		exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
-		return nil
-	}
+		times, err := exchange.BackGetTimeRange()
+		if err != nil {
+			exchange.Log(constant.INFO, "", 0.0, 0.0, "Back get times fail")
+			return nil
+		}
 
-	exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
+		exchange.SetBackTime(times[0], times[1], exchange.GetPeriod())
+	*/
 	exchange.Start()
 
 	fmt.Printf("trend start\n")
-	exchange.Log(constant.INFO, "", 0.0, 0.0, fmt.Sprintf("start - end : %s - %s",
-		util.TimeUnix2Str(times[0]), util.TimeUnix2Str(times[1])))
-	global.DrawSetPath("/Users/shu/Desktop/trend.html")
-
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Printf("stragey end\n")
-		}
-	}()
 
 	for {
 		records, err := exchange.GetRecords()
@@ -88,15 +53,21 @@ func (e *TrendStragey) Run() error {
 			continue
 		}
 		if len(records) == 0 {
+			exchange.Log(constant.INFO, "", 0.0, 0.0, "records not found\n")
 			continue
 		}
-		record := records[0]
-		global.DrawLine("volume", util.TimeUnix2Str(record.Time), float32(record.Volume/10), draw.BrokeLine)
-		global.DrawKLine(util.TimeUnix2Str(record.Time), float32(record.Open), float32(record.Close), float32(record.Low),
-			float32(record.High))
-		global.DrawPlot()
+
+		fmt.Printf("record %s\n", util.Struct2Json(records[0]))
+		ticker, err := exchange.GetTicker()
+		if err != nil {
+			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
+			continue
+		}
+		if ticker == nil {
+			continue
+		}
+		fmt.Printf("ticker %s\n", util.Struct2Json(*ticker))
 	}
-	return nil
 }
 
 // Exit ...
@@ -120,9 +91,8 @@ func main() {
 		}
 	}
 	var opt constant.Option
-	var constract = "quarter"
-	var symbol = "BTC/USD"
-	var io = "online"
+	var symbol = "BTC/USD.quarter"
+	var io = constant.IOBLOCK
 	var period = "M30"
 
 	opt.AccessKey = ""
@@ -132,7 +102,8 @@ func main() {
 	opt.Type = constant.HuoBiDm
 	opt.Index = 1
 	opt.BackLog = true
-	opt.BackTest = true
+	opt.BackTest = false
+	opt.BackExit = true
 
 	exchange, err := api.GetExchange(opt)
 	if err != nil {
@@ -143,13 +114,20 @@ func main() {
 	var trend TrendStragey
 	trend.Exchanges = append(trend.Exchanges, exchange)
 
-	param := make(map[string]string)
-	param["io"] = io
-	param["symbol"] = symbol
-	param["constract"] = constract
-	param["period"] = period
+	exchange.SetIO(io)
 
-	trend.Init(param, opt)
+	exchange.SetStockType(symbol)
+	exchange.SetPeriod(period)
+	exchange.SetPeriodSize(3)
+	//exchange.SetSubscribe(symbol, constant.CacheAccount)
+	exchange.SetSubscribe(symbol, constant.CacheRecord)
+	//exchange.SetSubscribe(symbol, constant.CachePosition)
+	//exchange.SetSubscribe(symbol, constant.CacheOrder)
+	exchange.SetSubscribe(symbol, constant.CacheTicker)
+	trend.Global = api.NewGlobal(opt)
+
+	exchange.Log(constant.INFO, "", 0.0, 0.0, "Init success")
+	trend.Status = true
 	trend.Run()
 }
 
