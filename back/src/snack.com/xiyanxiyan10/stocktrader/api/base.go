@@ -684,7 +684,7 @@ func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
 		e.wait(stockType, constant.CachePosition)
 		val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
 		if val.Data == nil {
-			return nil, fmt.Errorf("ticker get fail")
+			return nil, fmt.Errorf("position get fail")
 		}
 		return val.Data.([]constant.Position), nil
 	}
