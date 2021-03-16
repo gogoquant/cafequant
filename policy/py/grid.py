@@ -19,6 +19,7 @@ opt.Type = constant.HuoBiDm
 symbol = 'BTC/USD.quarter'
 period = 'M15'
 periodsize  = 3
+debug = True
 
 try:
     ex = api.GetExchange(opt)
@@ -43,24 +44,38 @@ ex.SetSubscribe(symbol, constant.CacheTicker)
 
 time_range = ex.BackGetTimeRange()
 
+ex.SetBackCommission(0.0, 0.0, 100, 100)
 ex.SetBackTime(time_range[0], time_range[1], ex.GetPeriod())
 ex.SetBackAccount('BTC', 10000)
 ex.SetBackAccount('USD', 10000)
+ex.SetMarginLevel(1.0)
 ex.Start()
 
 def openFunc(price, amount, msg, d):
     if d == 0:
+        if debug:
+            print("open long %s %s %s" % (price, amount, msg))
+            return
         ex.SetDirection(constant.TradeTypeLong)
         ex.Buy(str(price), str(amount), msg)
     else:
+        if debug:
+            print("open short %s %s %s" % (price, amount, msg))
+            return
         ex.SetDirection(constant.TradeTypeShort)
         ex.Sell(str(price), str(amount), msg)
 
 def closeFunc(price, amount, msg, d):
     if d == 0:
+        if debug:
+            print("close long %s %s %s" %  (price, amount, msg))
+            return
         ex.SetDirection(constant.TradeTypeLongClose)
         ex.Sell(str(price), str(amount), msg)
     else:
+        if debug:
+            print("close short %s %s %s" % (price, amount, msg))
+            return
         ex.SetDirection(constant.TradeTypeShortClose)
         ex.Buy(str(price), str(amount), msg)
 
@@ -69,5 +84,5 @@ while True:
     price = 3000
     amount = 0.001
     openFunc(str(price),str(amount), 'open long', 0)
-    closeFunc(str(price),str(amount), 'clost long', 0)
+    closeFunc(str(price),str(amount), 'close long', 0)
     print(ticker.Last)

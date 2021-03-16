@@ -612,7 +612,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 	switch order.TradeType {
 	case constant.TradeTypeLong, constant.TradeTypeShort:
 		if avaAmount*lever*price < order.Amount*ex.BaseExchange.contractRate {
-			return ErrDataInsufficient
+			return fmt.Errorf("open %s not insufficient : %f->%f", CurrencyA, avaAmount, order.Amount)
 		}
 		costAmount := util.SafefloatDivide(order.Amount*ex.BaseExchange.contractRate, lever*price)
 		ex.acc.SubAccounts[CurrencyA] = constant.SubAccount{
@@ -625,7 +625,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 		if order.TradeType == constant.TradeTypeLongClose {
 			position := ex.longPosition[CurrencyA]
 			if position.Amount < order.Amount {
-				return ErrDataInsufficient
+				return fmt.Errorf("close %s not insufficient : %f->%f", CurrencyA, avaAmount, order.Amount)
 			}
 			position.Amount = position.Amount - order.Amount
 			position.FrozenAmount = position.FrozenAmount + order.Amount
@@ -635,7 +635,7 @@ func (ex *ExchangeFutureBack) frozenAsset(order constant.Order) error {
 		if order.TradeType == constant.TradeTypeShortClose {
 			position := ex.shortPosition[CurrencyA]
 			if position.Amount < order.Amount {
-				return ErrDataInsufficient
+				return fmt.Errorf("close %s not insufficient : %f->%f", CurrencyA, avaAmount, order.Amount)
 			}
 			position.Amount = position.Amount - order.Amount
 			position.FrozenAmount = position.FrozenAmount + order.Amount
