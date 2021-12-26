@@ -88,7 +88,6 @@ type BaseExchange struct {
 	limit        int64
 	lastSleep    int64
 	lastTimes    int64
-	subscribeMap map[string][]string
 	currencyMap  map[string]float64
 
 	coverRate    float64

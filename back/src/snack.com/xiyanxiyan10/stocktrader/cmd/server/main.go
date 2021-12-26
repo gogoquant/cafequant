@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/handler"
 	"snack.com/xiyanxiyan10/stocktrader/model"
@@ -10,7 +11,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("命令行的参数不合法:", len(os.Args))
+		fmt.Println("command args invalid")
 		return
 	}
 	if err := config.Init(os.Args[1]); err != nil {

@@ -110,54 +110,6 @@ type OHLC struct {
 	Volume float64 `json:"Volume"`
 }
 
-// WsPIP 通道具柄
-type WsPIP struct {
-	ch  chan string
-	run bool
-}
-
-// PIPHandler ...
-type PIPHandler interface {
-	Push(string)
-	Pop() string
-	Close()
-}
-
-// NewWsPIP 创建通道
-func NewWsPIP(cache int) PIPHandler {
-	var ws WsPIP
-	ws.ch = make(chan string, cache)
-	ws.run = true
-	return &ws
-}
-
-// Push 推送异步数据
-func (ws *WsPIP) Push(index string) {
-	if ws.run == false {
-		return
-	}
-	// nonblock write, incase user not use pop
-	select {
-	case ws.ch <- index:
-	default:
-	}
-}
-
-// Pop 接收异步数据
-func (ws *WsPIP) Pop() string {
-	if ws.run == false {
-		return ""
-	}
-	val := <-ws.ch
-	return val
-}
-
-// Close 接收异步数据
-func (ws *WsPIP) Close() {
-	ws.run = false
-	close(ws.ch)
-}
-
 // Record struct
 type Record struct {
 	Time   int64   //unix时间戳
@@ -183,7 +135,8 @@ type Option struct {
 	LastSleep int64
 	LastTimes int64
 
-	host     string
+	host string
+
 	BackTest bool // 是否开启回测
 	BackLog  bool // 是否将日志输出到终端，而不是数据库
 }
