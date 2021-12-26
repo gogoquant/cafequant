@@ -3,15 +3,16 @@ package trader
 import (
 	"context"
 	"fmt"
-	"github.com/robertkrimen/otto"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
+	"time"
+
+	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"time"
 )
 
 // Trader Variable
@@ -201,13 +202,6 @@ func runJs(trader Global, id int64) (err error) {
 			if err := recover(); err != nil && err != errHalt {
 				trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
 			}
-			// stop the cache process
-			for _, e := range trader.es {
-				err = e.Stop()
-				if err != nil {
-					trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
-				}
-			}
 			if exit, err := trader.ctx.Get("exit"); err == nil && exit.IsFunction() {
 				if _, err := exit.Call(exit); err != nil {
 					trader.Log(constant.ERROR, "", 0.0, 0.0, err2String(err))
@@ -256,13 +250,6 @@ func stop(id int64) (err error) {
 
 // stop ...
 func stopJs(id int64) (err error) {
-	trader := Executor[id]
-	for _, e := range trader.es {
-		err := e.Stop()
-		if err != nil {
-			return fmt.Errorf("stop exchange %s fail:%s", e.GetName(), err.Error())
-		}
-	}
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
 	return
 }

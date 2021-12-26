@@ -2,13 +2,15 @@ package api
 
 import (
 	"errors"
-	goex "github.com/nntaoli-project/goex"
+	"fmt"
 	"math"
+	"sync"
+	"time"
+
+	goex "github.com/nntaoli-project/goex"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
-	"sync"
-	"time"
 )
 
 // ExchangeBackConfig ...
@@ -91,15 +93,8 @@ func (e *ExchangeBack) Start() error {
 	e.dataLoader = make(map[string]*DataLoader, 1)
 	e.longPosition = make(map[string]constant.Position, 1)
 	e.shortPosition = make(map[string]constant.Position, 1)
-	for stock := range e.BaseExchange.subscribeMap {
-		var loader DataLoader
-		e.dataLoader[stock] = &loader
-		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end, e.BaseExchange.period)
-		if err != nil {
-			return err
-		}
-		e.dataLoader[stock].Load(ohlcs)
-	}
+	//todo
+	//e.dataLoader[stock].Load(ohlcs)
 	currencyMap := e.BaseExchange.currencyMap
 	for key, val := range currencyMap {
 		var sub constant.SubAccount
@@ -356,25 +351,7 @@ func (ex *ExchangeBack) GetTicker(currency string) (*constant.Ticker, error) {
 
 // GetDepth ...
 func (ex *ExchangeBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData.Time, ex.currData.Time, "M5")
-	if err != nil {
-		return nil, err
-	}
-	var depth constant.Depth
-	for _, ask := range dbdepth.Asks {
-		var record constant.DepthRecord
-		record.Amount = ask.Amount
-		record.Price = ask.Price
-		depth.Asks = append(depth.Asks, record)
-	}
-
-	for _, bid := range dbdepth.Bids {
-		var record constant.DepthRecord
-		record.Amount = bid.Amount
-		record.Price = bid.Price
-		depth.Bids = append(depth.Bids, record)
-	}
-	return &depth, nil
+	return nil, fmt.Errorf("error")
 }
 
 // GetExchangeName ...
@@ -473,25 +450,5 @@ func (ex *ExchangeBack) unFrozenAsset(fee, matchAmount, matchPrice float64, orde
 
 // GetRecords get candlestick data
 func (e *ExchangeBack) GetRecords() ([]constant.Record, error) {
-	period := e.GetPeriod()
-	size := e.GetPeriodSize()
-	vec, err := e.BaseExchange.BackGetOHLCs(e.currData.Time, e.BaseExchange.end, period)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error")
-		return nil, err
-	}
-	if len(vec) > size {
-		vec = vec[0 : size-1]
-	}
-	var records []constant.Record
-	for _, kline := range vec {
-		records = append([]constant.Record{{
-			Open:   kline.Open,
-			High:   kline.High,
-			Low:    kline.Low,
-			Close:  kline.Close,
-			Volume: kline.Volume,
-		}}, records...)
-	}
-	return records, nil
+	return nil, nil
 }

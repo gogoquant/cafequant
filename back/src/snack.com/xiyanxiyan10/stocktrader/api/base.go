@@ -212,7 +212,6 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	e.logger = model.Logger{TraderID: opt.TraderID, ExchangeType: opt.Type, Back: opt.BackLog}
 	e.option = opt
 	e.limit = opt.Limit
-	e.ch = make(chan [2]string)
 	e.lastSleep = time.Now().UnixNano()
 	e.recordsPeriodDbMap = map[string]int64{
 		"M1":  dbconstant.Minute,
@@ -295,8 +294,7 @@ func (e *BaseExchange) GetRecordsPeriodMap() map[string]int64 {
 
 // GetRecords ...
 func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
-	e.GetStockType
-	return val.Data.([]constant.Record), nil
+	return e.father.getRecords(e.GetStockType())
 }
 
 // GetTicker  market ticker
@@ -326,7 +324,7 @@ func (e *BaseExchange) GetAccount() (*constant.Account, error) {
 
 // GetPosition.father.get position from exchange
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
-	return e.father.getPosition(e.stockType())
+	return e.father.getPosition(e.GetStockType())
 }
 
 // ValidBuy ...

@@ -153,10 +153,6 @@ func (e *ExchangeFutureBack) Start() error {
 	e.dataLoader = make(map[string]*DataLoader, 0)
 	e.longPosition = make(map[string]constant.Position, 0)
 	e.shortPosition = make(map[string]constant.Position, 0)
-	markets, err := e.BaseExchange.BackGetSymbols()
-	if err != nil {
-		return err
-	}
 
 	//@ load ohlc here
 	//e.dataLoader[stock].Load(ohlcs)
@@ -504,26 +500,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 
 // GetDepth ...
 func (ex *ExchangeFutureBack) GetDepth(size int, currency string) (*constant.Depth, error) {
-	dbdepth, err := ex.BaseExchange.BackGetDepth(ex.currData[currency].Time,
-		ex.currData[currency].Time, "M5")
-	if err != nil {
-		return nil, err
-	}
-	var depth constant.Depth
-	for _, ask := range dbdepth.Asks {
-		var record constant.DepthRecord
-		record.Amount = ask.Amount
-		record.Price = ask.Price
-		depth.Asks = append(depth.Asks, record)
-	}
-
-	for _, bid := range dbdepth.Bids {
-		var record constant.DepthRecord
-		record.Amount = bid.Amount
-		record.Price = bid.Price
-		depth.Bids = append(depth.Bids, record)
-	}
-	return &depth, nil
+	return nil, fmt.Errorf("not support")
 }
 
 // GetExchangeName ...
