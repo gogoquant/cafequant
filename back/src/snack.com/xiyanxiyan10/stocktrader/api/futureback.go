@@ -138,6 +138,10 @@ func isContain(items []string, item string) bool {
 	return false
 }
 
+func (e *ExchangeFutureBack) Stop() error {
+	return nil
+}
+
 // Start ...
 func (e *ExchangeFutureBack) Start() error {
 	var account constant.Account

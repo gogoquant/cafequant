@@ -170,9 +170,13 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 	return &futureExchange
 }
 
-// Start ...
+// stop ...
+func (e *FutureExchange) stop() error {
+	return nil
+}
+
+// start ...
 func (e *FutureExchange) start() error {
-	//e.BaseExchange.Start()
 	defaultTimeOut := constant.DefaultTimeOut
 	timeOutStr := config.String("timeout")
 	if timeOutStr != "" {

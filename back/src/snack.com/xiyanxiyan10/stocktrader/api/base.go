@@ -71,9 +71,6 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 
 // BaseExchange ...
 type BaseExchange struct {
-	// period for.father.get records
-	periodVal string
-	// period for backtest
 	period             string
 	size               int
 	id                 int     // id of the exchange
@@ -198,12 +195,20 @@ func (e *BaseExchange) Sleep(intervals int64) {
 
 // Set Period
 func (e *BaseExchange) SetPeriod(period string) {
-	e.periodVal = period
+	e.period = period
 }
 
 // Get Period
 func (e *BaseExchange) GetPeriod() string {
-	return e.periodVal
+	return e.period
+}
+
+func (e *BaseExchange) Start() error {
+	return e.Start()
+}
+
+func (e *BaseExchange) Stop() error {
+	return e.Stop()
 }
 
 // Init ...
