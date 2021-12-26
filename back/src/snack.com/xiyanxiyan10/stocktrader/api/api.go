@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
+
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -20,20 +20,10 @@ type ExchangeBroker interface {
 	buy(price, amount, msg string) (string, error)
 	sell(price, amount, msg string) (string, error)
 	cancelOrder(orderID string) (bool, error)
-	start() error
-	stop() error
 }
 
 // Exchange interface
 type Exchange interface {
-	// 初始化完毕start run
-	Start() error
-	// 初始化完毕stop run
-	Stop() error
-	// 设置IO
-	SetIO(mode string)
-	// 获取IO
-	GetIO() string
 	// Set Period
 	SetPeriod(string)
 	// Get Period
@@ -42,10 +32,6 @@ type Exchange interface {
 	SetPeriodSize(int)
 	// Get Period Size
 	GetPeriodSize() int
-	// 获取订阅
-	GetSubscribe() map[string][]string
-	// 订阅
-	SetSubscribe(string, string)
 	// 向管理台发送这个交易所的打印信息
 	Log(action, symbol string, price, amount float64, messages string)
 	// 获取交易所类型
@@ -98,28 +84,6 @@ type Exchange interface {
 	SetBackCommission(float64, float64, float64, float64)
 	// 获取回测手续费
 	GetBackCommission() []float64
-	// 设置回测周期
-	SetBackTime(start, end int64, period string)
-	//设置回测周期
-	GetBackTime() constant.BackTime
-	//推送数据到数据仓库
-	BackPutOHLC(time int64, open, high, low, closed, volume float64, ext, period string) error
-	//推送数据 [] 到数据仓库
-	BackPutOHLCs(datums []dbtypes.OHLC, period string) error
-	//获取货币种类
-	BackGetSymbols() ([]string, error)
-	//获取交易所种类
-	BackGetMarkets() ([]string, error)
-	//获取数据中心数据
-	BackGetStats() ([]dbtypes.Stats, error)
-	//获取周期范围
-	BackGetPeriodRange() ([2]int64, error)
-	//获取时间范围
-	BackGetTimeRange() ([2]int64, error)
-	//获取OHLC
-	BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error)
-	//获取Depth
-	BackGetDepth(begin, end int64, period string) (dbtypes.Depth, error)
 }
 
 var (

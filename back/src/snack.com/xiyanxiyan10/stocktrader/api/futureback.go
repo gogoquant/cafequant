@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	goex "github.com/nntaoli-project/goex"
 	"math"
-	"os"
+
+	goex "github.com/nntaoli-project/goex"
 	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
+
 	//"strconv"
 	"sync"
 	"time"
@@ -23,8 +24,6 @@ type ExchangeFutureBackConfig struct {
 	SupportCurrencyPairs []string
 	QuoteCurrency        string //净值币种
 	Account              constant.Account
-	BackTestStartTime    int64
-	BackTestEndTime      int64
 	DepthSize            int64 //回测多少档深度
 	UnGzip               bool  //是否解压
 }
@@ -139,11 +138,6 @@ func isContain(items []string, item string) bool {
 	return false
 }
 
-// Stop ...
-func (e *ExchangeFutureBack) Stop() error {
-	return nil
-}
-
 // Start ...
 func (e *ExchangeFutureBack) Start() error {
 	var account constant.Account
@@ -163,49 +157,9 @@ func (e *ExchangeFutureBack) Start() error {
 	if err != nil {
 		return err
 	}
-	for stock := range e.BaseExchange.subscribeMap {
-		var loader DataLoader
-		e.dataLoader[stock] = &loader
-		if isContain(markets, stock) == false {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "stock not found in BackGetSymbols()")
-			return fmt.Errorf("stock %s not found in BackGetSymbols()", stock)
-		}
-		timeRange, err := e.BaseExchange.BackGetTimeRange()
-		if err != nil {
-			return err
-		}
-		if e.BaseExchange.start < timeRange[0] || e.BaseExchange.end > timeRange[1] {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "time range not in:",
-				e.BaseExchange.start, "-", e.BaseExchange.end, ":", timeRange[0], "-", timeRange[1])
-			return fmt.Errorf("time range not in %d - %d", timeRange[0], timeRange[1])
-		}
-		periodRange, err := e.BaseExchange.BackGetPeriodRange()
-		if err != nil {
-			return err
-		}
-		period := e.recordsPeriodDbMap[e.BaseExchange.period]
-		if period < periodRange[0] || period > periodRange[1] {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "period range not in:",
-				e.BaseExchange.period, ":", period, ":", periodRange[0], "-", periodRange[1])
-			return fmt.Errorf("period range not in %d - %d", periodRange[0], periodRange[1])
-		}
 
-		fmt.Printf("load backtest data in %s - %s\n",
-			util.TimeUnix2Str(e.BaseExchange.start), util.TimeUnix2Str(e.BaseExchange.end))
-
-		ohlcs, err := e.BaseExchange.BackGetOHLCs(e.BaseExchange.start, e.BaseExchange.end,
-			e.BaseExchange.period)
-		if err != nil {
-			return err
-		}
-		length := len(ohlcs)
-		for i := 0; i < length/2; i++ {
-			temp := ohlcs[i]
-			ohlcs[i] = ohlcs[length-1-i]
-			ohlcs[length-1-i] = temp
-		}
-		e.dataLoader[stock].Load(ohlcs)
-	}
+	//@ load ohlc here
+	//e.dataLoader[stock].Load(ohlcs)
 	currencyMap := e.BaseExchange.currencyMap
 	for key, val := range currencyMap {
 		var sub constant.SubAccount
@@ -521,10 +475,6 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		//progress = loader.Progress()
 		curr := loader.Next()
 		if curr == nil {
-			// 独立运行的可以直接退出，外部主程序管理的脚本则抛出异常，由外部处理
-			if ex.option.BackExit {
-				os.Exit(0)
-			}
 			panic(constant.BackEnd)
 			//return nil, nil
 		}
@@ -536,19 +486,10 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		ex.settlePosition(currency)
 		ex.coverPosition(currency)
 	}
-	/*
-		if progress != ex.progress {
-			g, _ := GetGlobal(ex.option.TraderID)
-			if g != nil {
-				g.logger.Log(constant.INFO, "", 0.0, 0.0, strconv.Itoa(progress))
-
-			}
-			ex.progress = progress
-		}
-	*/
 	//ex.Debug()
 	if ohlc == nil {
-		return nil, fmt.Errorf("get ohlc fail")
+		//backtest end
+		return nil, nil
 	}
 	return &constant.Ticker{
 		Vol:  ohlc.Volume,

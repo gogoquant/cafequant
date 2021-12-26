@@ -2,15 +2,13 @@ package api
 
 import (
 	"errors"
-	"fmt"
-	dbconstant "snack.com/xiyanxiyan10/stockdb/constant"
-	dbsdk "snack.com/xiyanxiyan10/stockdb/sdk"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
-	"snack.com/xiyanxiyan10/stocktrader/config"
-	"snack.com/xiyanxiyan10/stocktrader/constant"
-	"snack.com/xiyanxiyan10/stocktrader/model"
 	"strings"
 	"time"
+
+	dbconstant "snack.com/xiyanxiyan10/stockdb/constant"
+	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/model"
 )
 
 var (
@@ -73,7 +71,6 @@ func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
 
 // BaseExchange ...
 type BaseExchange struct {
-	BaseExchangeCaches // cache for exchange
 	// period for.father.get records
 	periodVal string
 	// period for backtest
@@ -99,9 +96,7 @@ type BaseExchange struct {
 	maker        float64
 	contractRate float64 // 合约每张价值
 
-	start int64
-	end   int64
-	host  string
+	host string
 
 	logger model.Logger
 	option constant.Option
@@ -161,16 +156,8 @@ func (e *BaseExchange) SetBackCommission(taker, maker, contractRate, coverRate f
 }
 
 // GetBackCommission 获取回测手续费
-
 func (e *BaseExchange) GetBackCommission() []float64 {
 	return []float64{e.taker, e.maker, e.contractRate, e.coverRate}
-}
-
-// SetBackTime ...
-func (e *BaseExchange) SetBackTime(start, end int64, period string) {
-	e.start = start
-	e.end = end
-	e.period = period
 }
 
 // GetBackAccount ...
@@ -181,39 +168,6 @@ func (e *BaseExchange) GetBackAccount() map[string]float64 {
 // SetBackAccount ...
 func (e *BaseExchange) SetBackAccount(key string, val float64) {
 	e.currencyMap[key] = val
-}
-
-// GetBackTime ...
-func (e *BaseExchange) GetBackTime() constant.BackTime {
-	var v constant.BackTime
-	v.Start = e.start
-	v.End = e.end
-	v.Period = e.period
-	return v
-}
-
-// GetSubscribe ...
-func (e *BaseExchange) GetSubscribe() map[string][]string {
-	return e.subscribeMap
-}
-
-// IsSubscribe ...
-func (e *BaseExchange) IsSubscribe(source, action string) bool {
-	actions := e.subscribeMap[source]
-	for _, tmp := range actions {
-		if tmp == action {
-			return true
-		}
-	}
-	return false
-}
-
-// SetSubscribe ...
-func (e *BaseExchange) SetSubscribe(source, action string) {
-	if e.subscribeMap == nil {
-		e.subscribeMap = make(map[string][]string)
-	}
-	e.subscribeMap[source] = append(e.subscribeMap[source], action)
 }
 
 // SetLimit set the limit calls amount per second of this exchange
@@ -243,155 +197,6 @@ func (e *BaseExchange) Sleep(intervals int64) {
 	time.Sleep(time.Duration(intervals) * time.Millisecond)
 }
 
-// BackGetStats ...
-func (e *BaseExchange) BackGetStats() ([]dbtypes.Stats, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetStats error, the error number is %s", r))
-		}
-	}()
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetStats()
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("GetStats error, the error number is %s", ohlc.Message))
-		return nil, fmt.Errorf("GetStats error, the error number is %s", ohlc.Message)
-	}
-	return ohlc.Data, nil
-}
-
-// BackGetMarkets ...
-func (e *BaseExchange) BackGetMarkets() ([]string, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetMarkets error, the error number is %s", r))
-		}
-	}()
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetMarkets()
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("GetMarkets error, the error number is %s", ohlc.Message))
-		return nil, fmt.Errorf("GetMarkets error, the error number is %s", ohlc.Message)
-	}
-	return ohlc.Data, nil
-}
-
-// BackGetSymbols  ...
-func (e *BaseExchange) BackGetSymbols() ([]string, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetSymbol error, the error number is %s", r))
-		}
-	}()
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetSymbols(e.option.Type)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("GetSymbols error, the error number is %s", ohlc.Message))
-		return nil, fmt.Errorf("GetSymbols error, the error number is %s", ohlc.Message)
-	}
-	return ohlc.Data, nil
-}
-
-// BackGetOHLCs ...
-func (e *BaseExchange) BackGetOHLCs(begin, end int64, period string) ([]dbtypes.OHLC, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetOHLCs error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = e.recordsPeriodDbMap[period]
-	opt.BeginTime = begin
-	opt.EndTime = end
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.GetOHLCs(opt)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("GetOHLCs error, the error number is %s", ohlc.Message))
-		return nil, fmt.Errorf("GetOHLCs error, the error number is %s", ohlc.Message)
-	}
-	return ohlc.Data, nil
-}
-
-// BackPutOHLC ...
-func (e *BaseExchange) BackPutOHLC(time int64, open, high, low, closed, volume float64, ext string, period string) error {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("PutOHLC error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = e.recordsPeriodDbMap[period]
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	var datum dbtypes.OHLC
-	datum.Time = time
-	datum.Open = open
-	datum.High = high
-	datum.Low = low
-	datum.Close = closed
-	datum.Volume = volume
-	ohlc := client.PutOHLC(datum, opt)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("PutOHLC error, the error number is %s\n", ohlc.Message))
-		return fmt.Errorf("PutOHLC error, the error number is %s", ohlc.Message)
-	}
-	return nil
-}
-
-// BackPutOHLCs ...
-func (e *BaseExchange) BackPutOHLCs(datums []dbtypes.OHLC, period string) error {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("PutOHLCs error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = e.recordsPeriodDbMap[period]
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	ohlc := client.PutOHLCs(datums, opt)
-	if !ohlc.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("PutOHLCs error, the error number is %s\n", ohlc.Message))
-		return fmt.Errorf("PutOHLCs error, the error number is %s", ohlc.Message)
-	}
-	return nil
-}
-
-// BackGetTimeRange ...
-func (e *BaseExchange) BackGetTimeRange() ([2]int64, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GeTimeRanege error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	timeRange := client.GetTimeRange(opt)
-	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprintf("GetTimeRange, the error number is %s", timeRange.Message))
-	}
-	return timeRange.Data, nil
-}
-
 // Set Period
 func (e *BaseExchange) SetPeriod(period string) {
 	e.periodVal = period
@@ -400,51 +205,6 @@ func (e *BaseExchange) SetPeriod(period string) {
 // Get Period
 func (e *BaseExchange) GetPeriod() string {
 	return e.periodVal
-}
-
-// BackGetPeriodRange ...
-func (e *BaseExchange) BackGetPeriodRange() ([2]int64, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetPeriodRange error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	timeRange := client.GetPeriodRange(opt)
-	if !timeRange.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprint("GetPeriodRange, the error number is %s"+timeRange.Message))
-		return [2]int64{}, fmt.Errorf("GetPeriodRange, the error number is " + timeRange.Message)
-	}
-	return timeRange.Data, nil
-}
-
-// BackGetDepth ...
-func (e *BaseExchange) BackGetDepth(begin, end int64, period string) (dbtypes.Depth, error) {
-	defer func() {
-		if r := recover(); r != nil {
-			e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-				fmt.Sprintf("GetDepth error, the error number is %s", r))
-		}
-	}()
-	var opt dbtypes.Option
-	opt.Market = e.option.Type
-	opt.Symbol = e.GetStockType()
-	opt.Period = e.recordsPeriodDbMap[period]
-	opt.BeginTime = begin
-	opt.EndTime = end
-	client := dbsdk.NewClient(config.String(constant.STOCKDBURL), config.String(constant.STOCKDBAUTH))
-	depth := client.GetDepth(opt)
-	if !depth.Success {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			fmt.Sprint("GetDepth error, the error number is %s"+depth.Message))
-		return dbtypes.Depth{}, nil
-	}
-	return depth.Data, nil
 }
 
 // Init ...
@@ -470,41 +230,8 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	return nil
 }
 
-// Stop ...
-func (e *BaseExchange) Stop() error {
-	if err := e.father.stop(); err != nil {
-		return err
-	}
-	close(e.ch)
-	return nil
-}
-
-// Start ...
-func (e *BaseExchange) Start() error {
-	if err := e.father.start(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// SetID set ID
 func (e *BaseExchange) SetID(id int) {
 	e.id = id
-}
-
-// GetID.father.get ID
-func (e *BaseExchange) GetID() int {
-	return e.id
-}
-
-// SetIO set IO mode
-func (e *BaseExchange) SetIO(mode string) {
-	e.ioMode = mode
-}
-
-// GetIO.father.get IO mode
-func (e *BaseExchange) GetIO() string {
-	return e.ioMode
 }
 
 // GetStockType ...
@@ -568,90 +295,38 @@ func (e *BaseExchange) GetRecordsPeriodMap() map[string]int64 {
 
 // GetRecords ...
 func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
-	val := e.GetCache(constant.CacheRecord, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("record get fail")
-	}
+	e.GetStockType
 	return val.Data.([]constant.Record), nil
-}
-
-func (e *BaseExchange) isRefresh() bool {
-	io := e.GetIO()
-	refresh := false
-	if io == constant.IOBLOCK {
-		refresh = true
-	}
-	return refresh
 }
 
 // GetTicker  market ticker
 func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
-	e.wait(e.GetStockType(), constant.CacheTicker)
-	val := e.GetCache(constant.CacheTicker, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("ticker get fail")
-	}
-	dst := val.Data.(constant.Ticker)
-	return &dst, nil
+	return e.father.getTicker(e.GetStockType())
 }
 
 // GetDepth.father.get depth from exchange
 func (e *BaseExchange) GetDepth() (*constant.Depth, error) {
-	val := e.GetCache(constant.CacheDepth, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("depth get fail")
-	}
-	dst := val.Data.(constant.Depth)
-	return &dst, nil
+	return e.father.getDepth(e.GetStockType())
 }
 
 // GetOrder ...
 func (e *BaseExchange) GetOrder(id string) (*constant.Order, error) {
-	orders, err := e.GetOrders()
-	if err != nil {
-		return nil, err
-	}
-	for _, order := range orders {
-		if order.Id == id {
-			return &order, nil
-		}
-	}
-	return nil, fmt.Errorf("order get fail")
+	return e.father.getOrder(e.GetStockType(), id)
 }
 
 // GetOrders.father.get all unfilled orders
 func (e *BaseExchange) GetOrders() ([]constant.Order, error) {
-	stockType := e.GetStockType()
-	e.wait(stockType, constant.CacheOrder)
-
-	val := e.GetCache(constant.CacheOrder, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("orders get fail")
-	}
-	dst := val.Data.([]constant.Order)
-	return dst, nil
+	return e.father.getOrders(e.GetStockType())
 }
 
 // GetAccount ...
 func (e *BaseExchange) GetAccount() (*constant.Account, error) {
-	e.wait("", constant.CacheAccount)
-	val := e.GetCache(constant.CacheAccount, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("account get fail")
-	}
-	dst := val.Data.(constant.Account)
-	return &dst, nil
+	return e.father.getAccount()
 }
 
 // GetPosition.father.get position from exchange
 func (e *BaseExchange) GetPosition() ([]constant.Position, error) {
-	stockType := e.GetStockType()
-	e.wait(stockType, constant.CachePosition)
-	val := e.GetCache(constant.CachePosition, e.GetStockType(), e.isRefresh())
-	if val.Data == nil {
-		return nil, fmt.Errorf("position get fail")
-	}
-	return val.Data.([]constant.Position), nil
+	return e.father.getPosition(e.stockType())
 }
 
 // ValidBuy ...

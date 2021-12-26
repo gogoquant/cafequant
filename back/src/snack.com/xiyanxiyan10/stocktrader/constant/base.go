@@ -186,7 +186,6 @@ type Option struct {
 	host     string
 	BackTest bool // 是否开启回测
 	BackLog  bool // 是否将日志输出到终端，而不是数据库
-	BackExit bool // 是否独立运行，即脚本不依赖stocktrader运行
 }
 
 // OrderBook struct
