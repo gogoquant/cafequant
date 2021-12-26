@@ -17,7 +17,7 @@ import (
 
 // Trader Variable
 var (
-	Executor = make(map[int64]*Global) //保存正在运行的策略，防止重复运行
+	Executor = make(map[int64]*Global)
 	errHalt  = fmt.Errorf("HALT")
 )
 
@@ -76,7 +76,7 @@ func initializeJs(trader *Global) (err error) {
 	return
 }
 
-//initialize 核心是初始化js运行环境，及其可以调用的api
+//initialize
 func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 	if t := Executor[id]; t != nil && t.Status > 0 {
 		return
@@ -138,7 +138,7 @@ func initialize(id int64, backlog, backtest bool) (trader Global, err error) {
 	return
 }
 
-// err2String 捕获策略的错误信息并转化为对应的字符串
+// err2String
 func err2String(err interface{}) string {
 	switch err.(type) {
 	case *otto.Error:

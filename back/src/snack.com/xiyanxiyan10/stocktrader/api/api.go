@@ -24,13 +24,9 @@ type ExchangeBroker interface {
 
 // Exchange interface
 type Exchange interface {
-	// Set Period
 	SetPeriod(string)
-	// Get Period
 	GetPeriod() string
-	// Set Period size
 	SetPeriodSize(int)
-	// Get Period Size
 	GetPeriodSize() int
 	Log(action, symbol string, price, amount float64, messages string)
 	GetType() string
@@ -72,7 +68,6 @@ var (
 	}
 	// ExchangeBackerMaker backtest exchange
 	ExchangeBackerMaker = map[string]func(constant.Option) (Exchange, error){
-		//保存所有交易所的构造函数
 		constant.HuoBiDm: NewFutureBackExchange,
 		constant.HuoBi:   NewSpotBackExchange,
 		constant.SZ:      NewSpotBackExchange,
