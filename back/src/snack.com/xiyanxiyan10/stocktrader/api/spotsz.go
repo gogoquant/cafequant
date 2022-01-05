@@ -10,8 +10,8 @@ import (
 
 	"github.com/axgle/mahonia"
 	simplejson "github.com/bitly/go-simplejson"
-	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 const (
@@ -74,14 +74,14 @@ func pareseRecords(str string, ma int) []constant.Record {
 	for _, row := range rows {
 		if maps, ok := row.(map[string]interface{}); ok {
 			var record constant.Record
-			record.Open = conver.Float64Must(maps["open"])
-			record.Close = conver.Float64Must(maps["close"])
-			record.High = conver.Float64Must(maps["high"])
-			record.Low = conver.Float64Must(maps["low"])
-			record.Volume = conver.Float64Must(maps["volume"])
+			record.Open = util.Float64Must(maps["open"])
+			record.Close = util.Float64Must(maps["close"])
+			record.High = util.Float64Must(maps["high"])
+			record.Low = util.Float64Must(maps["low"])
+			record.Volume = util.Float64Must(maps["volume"])
 
-			//record.MaPrice = conver.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
-			//record.MaVolume = conver.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
+			//record.MaPrice = util.Float64Must(maps["ma_price"+strconv.Itoa(ma)])
+			//record.MaVolume = util.Float64Must(maps["ma_volume"+strconv.Itoa(ma)])
 			records = append(records, record)
 		}
 	}
@@ -123,14 +123,14 @@ func parseTicker(data string) (*constant.Ticker, error) {
 	if len(arr) < 32 {
 		return nil, fmt.Errorf("arr len too smail:%d", len(arr))
 	}
-	ticker.Open = conver.Float64Must(arr[1])
-	ticker.Close = conver.Float64Must(arr[2])
-	ticker.Last = conver.Float64Must(arr[3])
-	ticker.High = conver.Float64Must(arr[4])
-	ticker.Low = conver.Float64Must(arr[5])
-	ticker.Buy = conver.Float64Must(arr[6])
-	ticker.Sell = conver.Float64Must(arr[7])
-	ticker.Vol = conver.Float64Must(arr[8])
+	ticker.Open = util.Float64Must(arr[1])
+	ticker.Close = util.Float64Must(arr[2])
+	ticker.Last = util.Float64Must(arr[3])
+	ticker.High = util.Float64Must(arr[4])
+	ticker.Low = util.Float64Must(arr[5])
+	ticker.Buy = util.Float64Must(arr[6])
+	ticker.Sell = util.Float64Must(arr[7])
+	ticker.Vol = util.Float64Must(arr[8])
 	t := arr[30] + " " + arr[31]
 	stamp, err := time.ParseInLocation(timeTemplate1, t, time.Local)
 	if err != nil {
@@ -149,12 +149,12 @@ func parseDepth(data string) (*constant.Depth, error) {
 	}
 	for i := 0; i < 5; i++ {
 		var record constant.DepthRecord
-		record.Amount = conver.Float64Must(arr[10+2*i])
-		record.Price = conver.Float64Must(arr[10+2*i+1])
+		record.Amount = util.Float64Must(arr[10+2*i])
+		record.Price = util.Float64Must(arr[10+2*i+1])
 		depth.Bids = append(depth.Bids, record)
 
-		record.Amount = conver.Float64Must(arr[20+2*i])
-		record.Price = conver.Float64Must(arr[20+2*i+1])
+		record.Amount = util.Float64Must(arr[20+2*i])
+		record.Price = util.Float64Must(arr[20+2*i+1])
 		depth.Asks = append(depth.Asks, record)
 	}
 	t := arr[30] + " " + arr[31]

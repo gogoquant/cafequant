@@ -9,9 +9,9 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 
-	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // FutureExchange the exchange struct of futureExchange.com
@@ -57,12 +57,12 @@ func (e *FutureExchange) tickerA2U(exTicker *goex.Ticker) *constant.Ticker {
 		High: exTicker.High,
 		Low:  exTicker.Low,
 		Vol:  exTicker.Vol,
-		Time: conver.Int64Must(tickStr),
+		Time: util.Int64Must(tickStr),
 	}
 	return &ticker
 }
 
-// positionA2U convert api position to usr depth
+// positionA2U utilt api position to usr depth
 func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant.Position {
 	resPositionVec := []constant.Position{}
 	for _, position := range positions {
@@ -99,7 +99,7 @@ func (e *FutureExchange) positionA2U(positions []goex.FuturePosition) []constant
 	return resPositionVec
 }
 
-// depthA2U convert api depth to usr depth
+// depthA2U utilt api depth to usr depth
 func (e *FutureExchange) depthA2U(depth *goex.Depth) *constant.Depth {
 	var resDepth constant.Depth
 	resDepth.Time = depth.UTime.Unix()
@@ -284,13 +284,13 @@ func (e *FutureExchange) buy(price, amount string, msg string) (string, error) {
 	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Buy() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Buy() error, the error number is stockType")
 		return "", fmt.Errorf("Buy() error, the error number is stockType")
 	}
 	if err := e.ValidBuy(); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Buy() error, the error number is %s", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Buy() error, the error number is %s", err.Error())
 		return "", fmt.Errorf("Buy() error, the error number is %s", err.Error())
 	}
 	level := e.GetMarginLevel()
@@ -303,12 +303,12 @@ func (e *FutureExchange) buy(price, amount string, msg string) (string, error) {
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
 		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return orderID, nil
 }
@@ -321,13 +321,13 @@ func (e *FutureExchange) sell(price, amount string, msg string) (string, error) 
 	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Sell() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Sell() error, the error number is stockType")
 		return "", fmt.Errorf("Sell() error, the error number is stockType")
 	}
 	if err := e.ValidSell(); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
 		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
 	level := e.GetMarginLevel()
@@ -340,12 +340,12 @@ func (e *FutureExchange) sell(price, amount string, msg string) (string, error) 
 		price, amount, openType, matchPrice, level)
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Sell() error, the error number is %s", err.Error())
 		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return orderID, nil
 }
@@ -355,13 +355,13 @@ func (e *FutureExchange) getOrder(symbol, id string) (*constant.Order, error) {
 	stockType, contract := e.getSymbol(symbol)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id),
 			"GetOrder() error, the error number is stockType")
 		return nil, fmt.Errorf("GetOrder() error, the error number is stockType")
 	}
 	orders, err := e.api.GetUnfinishFutureOrders(exchangeStockType, contract)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id),
 			"GetOrder() error, the error number is ", err.Error())
 		return nil, fmt.Errorf("GetOrder() error, the error number is %s", err.Error())
 	}
@@ -405,22 +405,22 @@ func (e *FutureExchange) cancelOrder(orderID string) (bool, error) {
 	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID),
 			"CancelOrder() error, the error number is stockType")
 		return false, fmt.Errorf("CancelOrder() error, the error number is stockType")
 	}
 	result, err := e.api.FutureCancelOrder(exchangeStockType, contract, orderID)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID),
 			"CancelOrder() error, the error number is ", err.Error())
 		return false, fmt.Errorf("CancelOrder() error, the error number is %s", err.Error())
 	}
 	if !result {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID),
 			"CancelOrder() error, the error number is false")
 		return result, fmt.Errorf("CancelOrder() error, the error number is false")
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID),
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID),
 		"CancelOrder() success")
 	return result, nil
 }
@@ -448,7 +448,6 @@ func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error) {
 	stockType, contract := e.getSymbol(stockType)
 	exchangeStockType, ok := e.stockTypeMap[stockType]
-	var since = 0
 	var key = stockType
 	size := e.GetPeriodSize()
 	periodStr := e.GetPeriod()
@@ -459,7 +458,7 @@ func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error)
 		return nil, errors.New("GetRecords() error, the error number is stockType")
 	}
 
-	klineVec, err := e.api.GetKlineRecords(contract, exchangeStockType, int(periodnum), size, since)
+	klineVec, err := e.api.GetKlineRecords(contract, exchangeStockType, goex.KlinePeriod(periodnum), size)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
 			"GetRecords() error, the error number is "+err.Error())

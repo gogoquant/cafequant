@@ -88,7 +88,7 @@ func (e *ExchangeFutureBack) Debug() error {
 	fmt.Printf("currTicker:\n")
 	v, err := json.Marshal(e.currData[e.stockType])
 	if err != nil {
-		fmt.Printf("convert ticker err :%s\n", err.Error())
+		fmt.Printf("utilt ticker err :%s\n", err.Error())
 		return err
 	}
 	fmt.Printf("%s\n", string(v))
@@ -97,14 +97,14 @@ func (e *ExchangeFutureBack) Debug() error {
 	fmt.Printf("longPosition:\n")
 	v, err = json.Marshal(e.longPosition)
 	if err != nil {
-		fmt.Printf("convert longPosition err :%s\n", err.Error())
+		fmt.Printf("utilt longPosition err :%s\n", err.Error())
 		return err
 	}
 	fmt.Printf("%s\n", string(v))
 	fmt.Printf("shortPosition:\n")
 	v, err = json.Marshal(e.shortPosition)
 	if err != nil {
-		fmt.Printf("convert shortPosition err :%s\n", err.Error())
+		fmt.Printf("utilt shortPosition err :%s\n", err.Error())
 		return err
 	}
 	fmt.Printf("%s\n", string(v))
@@ -112,7 +112,7 @@ func (e *ExchangeFutureBack) Debug() error {
 	if e.acc != nil {
 		v, err = json.Marshal(e.acc)
 		if err != nil {
-			fmt.Printf("convert account err :%s\n", err.Error())
+			fmt.Printf("utilt account err :%s\n", err.Error())
 			return err
 		}
 		fmt.Printf("%s\n", string(v))
@@ -120,7 +120,7 @@ func (e *ExchangeFutureBack) Debug() error {
 	fmt.Printf("pendingOrders:\n")
 	v, err = json.Marshal(e.pendingOrders)
 	if err != nil {
-		fmt.Printf("convert pending orders err :%s\n", err.Error())
+		fmt.Printf("utilt pending orders err :%s\n", err.Error())
 		return err
 	}
 	fmt.Printf("%s\n", string(v))

@@ -3,8 +3,8 @@ package api
 import (
 	"fmt"
 
-	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // NewFutureBackExchange create an exchange struct of futureExchange.com
@@ -76,7 +76,7 @@ func (e *ExchangeFutureBackLink) Buy(price, amount string, msg string) (string, 
 	stockType := e.GetStockType()
 	if err := e.ValidBuy(); err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(),
-			conver.Float64Must(amount), conver.Float64Must(amount),
+			util.Float64Must(amount), util.Float64Must(amount),
 			"Buy() error, the error number is ", err.Error())
 		return "", nil
 	}
@@ -97,12 +97,12 @@ func (e *ExchangeFutureBackLink) Buy(price, amount string, msg string) (string, 
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return "", nil
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 
@@ -114,8 +114,8 @@ func (e *ExchangeFutureBackLink) Sell(price, amount string, msg string) (string,
 	var ord *constant.Order
 	stockType := e.GetStockType()
 	if err := e.ValidSell(); err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return "", nil
 	}
 	if e.ExchangeFutureBack.GetDirection() == constant.TradeTypeShort {
@@ -135,12 +135,12 @@ func (e *ExchangeFutureBackLink) Sell(price, amount string, msg string) (string,
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount),
-			conver.Float64Must(amount), "Buy() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount),
+			util.Float64Must(amount), "Buy() error, the error number is ", err.Error())
 		return "", nil
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return ord.Id, nil
 }
@@ -149,7 +149,7 @@ func (e *ExchangeFutureBackLink) Sell(price, amount string, msg string) (string,
 func (e *ExchangeFutureBackLink) GetOrder(id string) (*constant.Order, error) {
 	order, err := e.ExchangeFutureBack.GetOneOrder(id, e.GetStockType())
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id),
 			"GetOrder() error, the error number is ", err.Error())
 		return nil, nil
 	}
@@ -171,14 +171,14 @@ func (e *ExchangeFutureBackLink) GetOrders() ([]constant.Order, error) {
 func (e *ExchangeFutureBackLink) CancelOrder(orderID string) (bool, error) {
 	result, err := e.ExchangeFutureBack.CancelOrder(orderID, e.GetStockType())
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID),
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID),
 			"CancelOrder() error, the error number is ", err.Error())
 		return false, nil
 	}
 	if !result {
 		return false, nil
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID),
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID),
 		"CancelOrder() success")
 	return false, nil
 }

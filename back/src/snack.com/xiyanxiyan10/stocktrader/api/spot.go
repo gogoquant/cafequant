@@ -7,9 +7,9 @@ import (
 	goex "github.com/nntaoli-project/goex"
 	"github.com/nntaoli-project/goex/builder"
 
-	"snack.com/xiyanxiyan10/conver"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // SpotExchange the exchange struct of futureExchange.com
@@ -160,7 +160,7 @@ func (e *SpotExchange) Buy(price, amount string, msg string) (string, error) {
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Buy() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Buy() error, the error number is stockType")
 		return "", fmt.Errorf("Buy() error, the error number is stockType")
 	}
 	var matchPrice = 0
@@ -174,11 +174,11 @@ func (e *SpotExchange) Buy(price, amount string, msg string) (string, error) {
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return order.Cid, nil
 }
@@ -190,7 +190,7 @@ func (e *SpotExchange) Sell(price, amount string, msg string) (string, error) {
 	stockType := e.GetStockType()
 	exchangeStockType, ok := e.stockTypeMap[stockType]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is stockType")
 		return "", fmt.Errorf("Sell() error, the error number is stockType")
 	}
 	var matchPrice = 0
@@ -204,11 +204,11 @@ func (e *SpotExchange) Sell(price, amount string, msg string) (string, error) {
 	}
 
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), conver.Float64Must(amount), conver.Float64Must(amount), "Sell() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), util.Float64Must(amount), util.Float64Must(amount), "Sell() error, the error number is ", err.Error())
 		return "", fmt.Errorf("Sell() error, the error number is %s", err.Error())
 	}
-	priceFloat := conver.Float64Must(price)
-	amountFloat := conver.Float64Must(amount)
+	priceFloat := util.Float64Must(price)
+	amountFloat := util.Float64Must(amount)
 	e.logger.Log(e.direction, stockType, priceFloat, amountFloat, msg)
 	return order.Cid, nil
 }
@@ -217,12 +217,12 @@ func (e *SpotExchange) Sell(price, amount string, msg string) (string, error) {
 func (e *SpotExchange) GetOrder(id string) (*constant.Order, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(id), "GetOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(id), "GetOrder() error, the error number is stockType")
 		return nil, fmt.Errorf("GetOrder() error, the error number is stockType")
 	}
 	order, err := e.api.GetOneOrder(id, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(id), "GetOrder() error, the error number is ", err.Error())
 		return nil, fmt.Errorf("GetOrder() error, the error number is %s", err.Error())
 	}
 
@@ -280,18 +280,18 @@ func (e *SpotExchange) GetOrders() ([]constant.Order, error) {
 func (e *SpotExchange) CancelOrder(orderID string) (bool, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() error, the error number is stockType")
 		return false, fmt.Errorf("CancelOrder() error, the error number is stockType")
 	}
 	result, err := e.api.CancelOrder(orderID, exchangeStockType)
 	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, conver.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
+		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, util.Float64Must(orderID), "CancelOrder() error, the error number is ", err.Error())
 		return false, fmt.Errorf("CancelOrder() error, the error number is %s", err.Error())
 	}
 	if !result {
 		return false, fmt.Errorf("CancelOrder() error, the error number is false")
 	}
-	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, conver.Float64Must(orderID), "CancelOrder() success")
+	e.logger.Log(constant.TradeTypeCancel, e.GetStockType(), 0, util.Float64Must(orderID), "CancelOrder() success")
 	return true, nil
 }
 
@@ -316,7 +316,7 @@ func (e *SpotExchange) GetTicker() (*constant.Ticker, error) {
 		High: exTicker.High,
 		Low:  exTicker.Low,
 		Vol:  exTicker.Vol,
-		Time: conver.Int64Must(tickStr),
+		Time: util.Int64Must(tickStr),
 	}
 	return &ticker, nil
 }
@@ -325,7 +325,6 @@ func (e *SpotExchange) GetTicker() (*constant.Ticker, error) {
 func (e *SpotExchange) GetRecords() ([]constant.Record, error) {
 	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
 	var period int64 = -1
-	var since = 0
 	periodStr := e.GetPeriod()
 	size := e.GetPeriodSize()
 	period, ok = e.recordsPeriodMap[periodStr]
@@ -334,7 +333,7 @@ func (e *SpotExchange) GetRecords() ([]constant.Record, error) {
 		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 	}
 
-	klineVec, err := e.api.GetKlineRecords(exchangeStockType, int(period), size, since)
+	klineVec, err := e.api.GetKlineRecords(exchangeStockType, goex.KlinePeriod(period), size)
 	if err != nil {
 		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
 		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())

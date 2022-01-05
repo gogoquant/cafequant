@@ -2,12 +2,13 @@ package api
 
 import (
 	"os"
-	"snack.com/xiyanxiyan10/conver"
+
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/draw"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 	"snack.com/xiyanxiyan10/stocktrader/notice"
+	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // GlobalHandler ...
@@ -94,7 +95,7 @@ func (g *Global) DingSend(msg string) error {
 
 // MailSet ...
 func (g *Global) MailSet(to, server, portStr, username, password string) error {
-	port, err := conver.Int(portStr)
+	port, err := util.Int(portStr)
 	if err != nil {
 		return err
 	}
