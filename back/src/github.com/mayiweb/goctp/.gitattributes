@@ -1,3 +1,0 @@
-*.* linguist-language=go
-*.go linguist-language=go
-*.swigcxx linguist-language=go
