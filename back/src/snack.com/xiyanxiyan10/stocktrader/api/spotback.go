@@ -8,7 +8,6 @@ import (
 	"time"
 
 	goex "github.com/nntaoli-project/goex"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
@@ -40,7 +39,7 @@ type ExchangeBack struct {
 	pendingOrders        map[string]*constant.Order
 	finishedOrders       map[string]*constant.Order
 	dataLoader           map[string]*DataLoader
-	currData             dbtypes.OHLC
+	currData             constant.OHLC
 	idGen                *util.IDGen
 	contractRate         float64 // 合约每张价值
 	CurrencyStandard     bool    // 是否为币本位

@@ -2,15 +2,16 @@ package api
 
 import (
 	"fmt"
-	"github.com/axgle/mahonia"
-	simplejson "github.com/bitly/go-simplejson"
 	"io/ioutil"
 	"net/http"
-	"snack.com/xiyanxiyan10/conver"
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/axgle/mahonia"
+	simplejson "github.com/bitly/go-simplejson"
+	"snack.com/xiyanxiyan10/conver"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 const (

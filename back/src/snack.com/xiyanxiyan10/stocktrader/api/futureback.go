@@ -7,7 +7,6 @@ import (
 	"math"
 
 	goex "github.com/nntaoli-project/goex"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 
@@ -43,7 +42,7 @@ type ExchangeFutureBack struct {
 	finishedOrders       map[string]*constant.Order
 	dataLoader           map[string]*DataLoader
 	stockTypeMap         map[string]goex.CurrencyPair
-	currData             map[string]dbtypes.OHLC
+	currData             map[string]constant.OHLC
 	idGen                *util.IDGen
 	sortedCurrencies     constant.Account
 	longPosition         map[string]constant.Position // 多仓
@@ -466,7 +465,7 @@ func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 
 // GetTicker ...
 func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, error) {
-	var ohlc *dbtypes.OHLC
+	var ohlc *constant.OHLC
 	//var progress int
 	for symbol, loader := range ex.dataLoader {
 		if loader == nil {

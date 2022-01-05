@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	dbconstant "snack.com/xiyanxiyan10/stockdb/constant"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
 )
@@ -34,11 +32,11 @@ type DataConfig struct {
 type DataLoader struct {
 	curr  int
 	size  int
-	datas []dbtypes.OHLC
+	datas []constant.OHLC
 }
 
 // Next ...
-func (l *DataLoader) Next() *dbtypes.OHLC {
+func (l *DataLoader) Next() *constant.OHLC {
 	nextPos := l.curr + 1
 	if nextPos >= l.size {
 		return nil
@@ -57,12 +55,12 @@ func (l *DataLoader) Progress() int {
 }
 
 // Dump ...
-func (l *DataLoader) Dump() []dbtypes.OHLC {
+func (l *DataLoader) Dump() []constant.OHLC {
 	return l.datas
 }
 
 // Load ...
-func (l *DataLoader) Load(ohlcs []dbtypes.OHLC) {
+func (l *DataLoader) Load(ohlcs []constant.OHLC) {
 	l.datas = append(l.datas, ohlcs...)
 	l.size += len(l.datas)
 	// move one for first records, at least one ohlc
@@ -218,15 +216,15 @@ func (e *BaseExchange) Init(opt constant.Option) error {
 	e.limit = opt.Limit
 	e.lastSleep = time.Now().UnixNano()
 	e.recordsPeriodDbMap = map[string]int64{
-		"M1":  dbconstant.Minute,
-		"M5":  5 * dbconstant.Minute,
-		"M15": 15 * dbconstant.Minute,
-		"M30": 30 * dbconstant.Minute,
-		"H1":  dbconstant.Hour,
-		"H2":  2 * dbconstant.Hour,
-		"H4":  4 * dbconstant.Hour,
-		"D1":  dbconstant.Day,
-		"W1":  dbconstant.Week,
+		"M1":  constant.Minute,
+		"M5":  5 * constant.Minute,
+		"M15": 15 * constant.Minute,
+		"M30": 30 * constant.Minute,
+		"H1":  constant.Hour,
+		"H2":  2 * constant.Hour,
+		"H4":  4 * constant.Hour,
+		"D1":  constant.Day,
+		"W1":  constant.Week,
 	}
 	e.SetPeriodSize(constant.RecordSize)
 	e.currencyMap = make(map[string]float64)

@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
+
 	"snack.com/xiyanxiyan10/conver"
-	dbtypes "snack.com/xiyanxiyan10/stockdb/types"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
@@ -27,7 +27,7 @@ func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
 	futureExchange := ExchangeFutureBackLink{
 		records: make(map[string][]constant.Record),
 	}
-	futureExchange.currData = make(map[string]dbtypes.OHLC)
+	futureExchange.currData = make(map[string]constant.OHLC)
 	opt.Limit = 10.0
 	futureExchange.BaseExchange.Init(opt)
 	futureExchange.SetMinAmountMap(map[string]float64{
