@@ -20,6 +20,8 @@ type ExchangeBroker interface {
 	buy(price, amount, msg string) (string, error)
 	sell(price, amount, msg string) (string, error)
 	cancelOrder(orderID string) (bool, error)
+	start() error
+	stop() error
 }
 
 // Exchange interface

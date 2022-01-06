@@ -202,11 +202,11 @@ func (e *BaseExchange) GetPeriod() string {
 }
 
 func (e *BaseExchange) Start() error {
-	return e.Start()
+	return e.father.start()
 }
 
 func (e *BaseExchange) Stop() error {
-	return e.Stop()
+	return e.father.stop()
 }
 
 // Init ...

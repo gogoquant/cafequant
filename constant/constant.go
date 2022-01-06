@@ -1,45 +1,10 @@
 package constant
 
 const (
-	// CacheTicker ...
-	CacheTicker = "ticker"
-
-	// CacheDepth ...
-	CacheDepth = "depth"
-
-	// CacheTrader ...
-	CacheTrader = "trader"
-
-	// CacheKLine ...
-	CacheKLine = "kline"
-
-	// CacheOrder ...
-	CacheOrder = "order"
-
-	// CacheRecord ...
-	CacheRecord = "record"
-
-	// CachePosition ...
-	CachePosition = "position"
-
-	// CacheAccount ...
-	CacheAccount = "account"
-)
-
-const (
 	StepLine   = "stepline"
 	SmoothLine = "smoothline"
 	BrokeLine  = "brokeline"
 	AreaLine   = "arealine"
-)
-
-const (
-	// IONONE ...
-	IONONE = ""
-	// IOCACHE get from cache
-	IOCACHE = "cache"
-	// IOBLOCK ...
-	IOBLOCK = "block"
 )
 
 const (

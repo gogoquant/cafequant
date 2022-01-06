@@ -156,6 +156,7 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 		},
 		exchangeTypeMap: map[string]string{
 			constant.HuoBiDm: goex.HBDM,
+			constant.HuoBi:   goex.HUOBI_PRO,
 		},
 		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
