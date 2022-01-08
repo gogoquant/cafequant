@@ -1,17 +1,12 @@
-# QuantBot 服务
+# QuantBot 
 
-## 已支持功能
-
-- 数字货币在线交易
-- 历史数据管理及使用
+Build easy quant platform based on web 
 
 
-## 开发中功能
+## Feature
 
-- 回测
+- web ui
+- online trade
+- offline backtest
+- multiply stragey run support
 
-
-## 待完成功能
-
-- xtp交易渠道
-- k3s容器化管理交易
