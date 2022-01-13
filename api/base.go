@@ -77,7 +77,8 @@ type BaseExchange struct {
 	stockType          string  // stockType
 	lever              float64 // lever
 	recordsPeriodMap   map[string]int64
-	recordsPeriodDbMap map[string]int64
+	recordsPeriodDbMap map[string]int64 // coin watched
+	watchlist          []string         // register datas watched before backtest
 	// recordsPeriod support
 	minAmountMap map[string]float64 // minAmount of trade
 	limit        int64

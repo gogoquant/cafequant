@@ -7,6 +7,7 @@ import (
 	"math"
 
 	goex "github.com/nntaoli-project/goex"
+	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 
@@ -158,7 +159,12 @@ func (e *ExchangeFutureBack) Start() error {
 	e.shortPosition = make(map[string]constant.Position, 0)
 
 	//@ load ohlc here
-	//e.dataLoader[stock].Load(ohlcs)
+	historyDir := config.String("history")
+	for _, name := range e.watchlist {
+		dataPath := historyDir + "/" + name + ".csv"
+		fmt.Printf("load csv kline from %s\n", dataPath)
+		//e.dataLoader[stock].Load(ohlcs)
+	}
 	currencyMap := e.BaseExchange.currencyMap
 	for key, val := range currencyMap {
 		var sub constant.SubAccount
