@@ -20,6 +20,7 @@ require (
 	github.com/nntaoli-project/goex v1.3.1
 	github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
 	github.com/senseyeio/roger v0.0.0-20191009211040-43e330bee47f
+	github.com/zhnxin/csvreader v0.0.0-20190606083136-f9e31b1bce61
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/logger.v1 v1.0.1
