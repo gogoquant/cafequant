@@ -63,7 +63,7 @@ type Exchange interface {
 var (
 	constructor = map[string]func(constant.Option) (Exchange, error){}
 	// ExchangeMaker online exchange
-	ExchangeMaker = map[string]func(constant.Option) (Exchange, error){ //保存所有交易所的构造函数
+	ExchangeMaker = map[string]func(constant.Option) (Exchange, error){
 		constant.HuoBiDm: NewHuoBiDmExchange,
 		constant.HuoBi:   NewHuoBiExchange,
 		constant.SZ:      NewSZExchange,

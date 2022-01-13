@@ -14,7 +14,6 @@ import (
 // main ...
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("命令行的参数不足:", len(os.Args))
 		config.Init("./config.ini")
 	} else {
 		if err := config.Init(os.Args[1]); err != nil {

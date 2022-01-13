@@ -18,12 +18,12 @@ type ExchangeBackConfig struct {
 	TakerFee             float64
 	MakerFee             float64
 	SupportCurrencyPairs []string
-	QuoteCurrency        string //净值币种
+	QuoteCurrency        string
 	Account              constant.Account
 	BackTestStartTime    int64
 	BackTestEndTime      int64
-	DepthSize            int64 //回测多少档深度
-	UnGzip               bool  //是否解压
+	DepthSize            int64
+	UnGzip               bool
 }
 
 // ExchangeBack ...
@@ -41,11 +41,11 @@ type ExchangeBack struct {
 	dataLoader           map[string]*DataLoader
 	currData             constant.OHLC
 	idGen                *util.IDGen
-	contractRate         float64 // 合约每张价值
-	CurrencyStandard     bool    // 是否为币本位
+	contractRate         float64 // contract price
+	CurrencyStandard     bool    // stand money ?
 	sortedCurrencies     constant.Account
-	longPosition         map[string]constant.Position // 多仓
-	shortPosition        map[string]constant.Position // 空仓
+	longPosition         map[string]constant.Position // long
+	shortPosition        map[string]constant.Position // short
 }
 
 // NewExchangeBack ...
