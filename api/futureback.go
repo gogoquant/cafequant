@@ -475,12 +475,10 @@ func (ex *ExchangeFutureBack) GetAccount() (*constant.Account, error) {
 // GetTicker ...
 func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, error) {
 	var ohlc *constant.OHLC
-	//var progress int
 	for symbol, loader := range ex.dataLoader {
 		if loader == nil {
 			return nil, errors.New("loader not found")
 		}
-		//progress = loader.Progress()
 		curr := loader.Next()
 		if curr == nil {
 			panic(constant.BackEnd)
