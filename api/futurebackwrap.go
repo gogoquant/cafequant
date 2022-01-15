@@ -1,8 +1,6 @@
 package api
 
 import (
-	"fmt"
-
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
 )
@@ -50,7 +48,6 @@ func (e *ExchangeFutureBackLink) GetDepth() (*constant.Depth, error) {
 
 // GetPosition get position from exchange
 func (e *ExchangeFutureBackLink) GetPosition() ([]constant.Position, error) {
-	fmt.Printf("wait todo")
 	return nil, nil
 }
 

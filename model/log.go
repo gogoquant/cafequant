@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+	"snack.com/xiyanxiyan10/stocktrader/constant"
 )
 
 // Log struct
@@ -72,7 +74,7 @@ func (l Logger) Log(method string, stockType string, price, amount float64, mess
 	now := time.Now().UnixNano()
 	if l.Back {
 		message := l.messages2message(method, messages)
-		fmt.Print(message + "\n")
+		log.Info(message + "\n")
 		return
 	}
 

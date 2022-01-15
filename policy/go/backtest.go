@@ -28,12 +28,12 @@ func main() {
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
-	opt.Name = constant.HuoBi
+	opt.Name = constant.HuoBiDm
 	opt.TraderID = 1
-	opt.Type = constant.HuoBi
+	opt.Type = constant.HuoBiDm
 	opt.Index = 1
 	opt.BackLog = true
-	opt.BackTest = false
+	opt.BackTest = true
 
 	exchange, err := api.GetExchange(opt)
 	if err != nil {

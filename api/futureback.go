@@ -7,6 +7,7 @@ import (
 	"math"
 
 	goex "github.com/nntaoli-project/goex"
+	log "github.com/sirupsen/logrus"
 	"github.com/zhnxin/csvreader"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
@@ -86,47 +87,47 @@ func NewExchangeFutureBack(config ExchangeBackConfig) *ExchangeFutureBack {
 
 // Debug ..,
 func (e *ExchangeFutureBack) Debug() error {
-	fmt.Printf("---FutureBack info start---\n")
-	fmt.Printf("currTicker:\n")
+	log.Infof("---FutureBack info start---\n")
+	log.Infof("currTicker:\n")
 	v, err := json.Marshal(e.currData[e.stockType])
 	if err != nil {
-		fmt.Printf("utilt ticker err :%s\n", err.Error())
+		log.Infof("utilt ticker err :%s\n", err.Error())
 		return err
 	}
-	fmt.Printf("%s\n", string(v))
+	log.Infof("%s\n", string(v))
 	marginRatio, lft, rht := e.marginRatio()
-	fmt.Printf("marginRatio %f lft %f  rht %f\n", marginRatio, lft, rht)
-	fmt.Printf("longPosition:\n")
+	log.Infof("marginRatio %f lft %f  rht %f\n", marginRatio, lft, rht)
+	log.Infof("longPosition:\n")
 	v, err = json.Marshal(e.longPosition)
 	if err != nil {
-		fmt.Printf("utilt longPosition err :%s\n", err.Error())
+		log.Infof("utilt longPosition err :%s\n", err.Error())
 		return err
 	}
-	fmt.Printf("%s\n", string(v))
-	fmt.Printf("shortPosition:\n")
+	log.Infof("%s\n", string(v))
+	log.Infof("shortPosition:\n")
 	v, err = json.Marshal(e.shortPosition)
 	if err != nil {
-		fmt.Printf("utilt shortPosition err :%s\n", err.Error())
+		log.Infof("utilt shortPosition err :%s\n", err.Error())
 		return err
 	}
-	fmt.Printf("%s\n", string(v))
-	fmt.Printf("account:\n")
+	log.Infof("%s\n", string(v))
+	log.Infof("account:\n")
 	if e.acc != nil {
 		v, err = json.Marshal(e.acc)
 		if err != nil {
-			fmt.Printf("utilt account err :%s\n", err.Error())
+			log.Infof("utilt account err :%s\n", err.Error())
 			return err
 		}
-		fmt.Printf("%s\n", string(v))
+		log.Infof("%s\n", string(v))
 	}
-	fmt.Printf("pendingOrders:\n")
+	log.Infof("pendingOrders:\n")
 	v, err = json.Marshal(e.pendingOrders)
 	if err != nil {
-		fmt.Printf("utilt pending orders err :%s\n", err.Error())
+		log.Infof("utilt pending orders err :%s\n", err.Error())
 		return err
 	}
-	fmt.Printf("%s\n", string(v))
-	fmt.Printf("---FutureBack info end---\n")
+	log.Infof("%s\n", string(v))
+	log.Infof("---FutureBack info end---\n")
 	return nil
 }
 
@@ -276,7 +277,7 @@ func (ex *ExchangeFutureBack) coverPosition(stockType string) {
 	marginRatio, _, rht := ex.marginRatio()
 	if marginRatio < 0 || rht > 0.0 && marginRatio < ex.coverRate {
 
-		fmt.Printf("force cover %f -> %f\n", marginRatio, ex.coverRate)
+		log.Infof("force cover %f -> %f\n", marginRatio, ex.coverRate)
 		ex.Debug()
 		//Force cover position
 		ex.longPosition[CurrencyA] = constant.Position{}
@@ -493,7 +494,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		ex.settlePosition(currency)
 		ex.coverPosition(currency)
 	}
-	//ex.Debug()
+	ex.Debug()
 	if ohlc == nil {
 		//backtest end
 		return nil, nil
@@ -599,14 +600,14 @@ func (ex *ExchangeFutureBack) unFrozenAsset(fee, matchAmount, matchPrice float64
 					position.Amount+order.Amount)
 				position.Amount = position.Amount + order.Amount
 				ex.longPosition[CurrencyA] = position
-				//fmt.Printf("set long position as:%v\n", position)
+				//log.Infof("set long position as:%v\n", position)
 			} else {
 				position := ex.shortPosition[CurrencyA]
 				position.Price = util.SafefloatDivide(position.Price*position.Amount+order.OpenPrice*order.Amount,
 					position.Amount+order.Amount)
 				position.Amount = position.Amount + order.Amount
 				ex.shortPosition[CurrencyA] = position
-				//fmt.Printf("set short position as:%v\n", position)
+				//log.Infof("set short position as:%v\n", position)
 			}
 			ex.acc.SubAccounts[assetA.StockType] = constant.SubAccount{
 				StockType:    assetA.StockType,
