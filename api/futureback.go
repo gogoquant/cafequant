@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"strings"
 
 	goex "github.com/nntaoli-project/goex"
 	log "github.com/sirupsen/logrus"
@@ -163,7 +164,8 @@ func (e *ExchangeFutureBack) Start() error {
 	//@ load ohlc here
 	historyDir := config.String("history")
 	for _, name := range e.option.WatchList {
-		dataPath := historyDir + "/" + e.GetExchangeName() + "." + name + ".csv"
+		dataPath := historyDir + "/" + strings.Replace((e.GetExchangeName()+name), "/", ".", -1) + ".csv"
+
 		var ohlcs []constant.OHLC
 		err := csvreader.New().UnMarshalFile(dataPath, &ohlcs)
 		if err != nil {
@@ -172,6 +174,7 @@ func (e *ExchangeFutureBack) Start() error {
 		} else {
 			log.Infof("Load data from %s to %s success", dataPath, name)
 		}
+		e.dataLoader[name] = new(DataLoader)
 		e.dataLoader[name].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
