@@ -500,19 +500,21 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		ex.settlePosition(currency)
 		ex.coverPosition(currency)
 	}
-	ex.Debug()
+	// ex.Debug()
 	if ohlc == nil {
 		//backtest end
 		return nil, nil
 	}
 	return &constant.Ticker{
-		Vol:  ohlc.Volume,
-		Time: ohlc.Time,
-		Last: ohlc.Close,
-		Buy:  ohlc.Close,
-		Sell: ohlc.Close,
-		High: ohlc.High,
-		Low:  ohlc.Low,
+		Vol:   ohlc.Volume,
+		Time:  ohlc.Time,
+		Last:  ohlc.Close,
+		Buy:   ohlc.Close,
+		Sell:  ohlc.Close,
+		High:  ohlc.High,
+		Low:   ohlc.Low,
+		Open:  ohlc.Open,
+		Close: ohlc.Close,
 	}, nil
 }
 

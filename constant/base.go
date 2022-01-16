@@ -110,17 +110,7 @@ type OHLC struct {
 	Volume float64 `json:"Volume"`
 }
 
-// Record struct
-type Record struct {
-	Time   int64   //unix时间戳
-	Open   float64 //开盘价
-	High   float64 //最高价
-	Low    float64 //最低价
-	Close  float64 //收盘价
-	Volume float64 //交易量
-	//MaPrice  float64 //交易价
-	//MaVolume float64 //交易价
-}
+type Record OHLC
 
 // Option is an exchange option
 type Option struct {

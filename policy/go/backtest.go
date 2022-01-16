@@ -22,8 +22,7 @@ func main() {
 		}
 	}
 	var opt constant.Option
-	//var symbol = "BTC/USD.quarter"
-	var symbol = "BTC/USD"
+	var symbol = "BTC/USDT.quater"
 	var period = "M30"
 
 	opt.AccessKey = ""
@@ -52,24 +51,13 @@ func main() {
 		return
 	}
 	for {
-		records, err := exchange.GetRecords()
-		if err != nil {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-			continue
-		}
-		if len(records) == 0 {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, "policy end")
-			break
-		}
-
-		fmt.Printf("record %s\n", util.Struct2Json(records[0]))
 		ticker, err := exchange.GetTicker()
 		if err != nil {
 			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
 			continue
 		}
 		if ticker == nil {
-			continue
+			break
 		}
 		fmt.Printf("ticker %s\n", util.Struct2Json(*ticker))
 	}
