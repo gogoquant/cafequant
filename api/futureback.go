@@ -162,11 +162,16 @@ func (e *ExchangeFutureBack) Start() error {
 
 	//@ load ohlc here
 	historyDir := config.String("history")
-	for _, name := range e.watchlist {
+	for _, name := range e.option.WatchList {
 		dataPath := historyDir + "/" + e.GetExchangeName() + "." + name + ".csv"
 		var ohlcs []constant.OHLC
-		log.Infof("Load data from %s to %s", dataPath, name)
-		_ = csvreader.New().UnMarshalFile(dataPath, &ohlcs)
+		err := csvreader.New().UnMarshalFile(dataPath, &ohlcs)
+		if err != nil {
+			log.Errorf("Load data from %s to %s error %s", dataPath, name, err.Error())
+			return err
+		} else {
+			log.Infof("Load data from %s to %s success", dataPath, name)
+		}
 		e.dataLoader[name].Load(ohlcs)
 	}
 	currencyMap := e.BaseExchange.currencyMap
@@ -482,8 +487,7 @@ func (ex *ExchangeFutureBack) GetTicker(currency string) (*constant.Ticker, erro
 		}
 		curr := loader.Next()
 		if curr == nil {
-			panic(constant.BackEnd)
-			//return nil, nil
+			return nil, nil
 		}
 		if symbol == currency {
 			ohlc = curr

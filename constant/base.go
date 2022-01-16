@@ -135,6 +135,8 @@ type Option struct {
 	LastSleep int64
 	LastTimes int64
 
+	WatchList []string // register datas watched before backtest
+
 	host string
 
 	BackTest bool // 是否开启回测

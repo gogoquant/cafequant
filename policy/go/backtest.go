@@ -34,6 +34,7 @@ func main() {
 	opt.Index = 1
 	opt.BackLog = true
 	opt.BackTest = true
+	opt.WatchList = append(opt.WatchList, "BTC/USDT.quater")
 
 	exchange, err := api.GetExchange(opt)
 	if err != nil {
@@ -45,8 +46,11 @@ func main() {
 	exchange.SetPeriod(period)
 	exchange.SetPeriodSize(3)
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
-	exchange.Start()
-
+	err = exchange.Start()
+	if err != nil {
+		exchange.Log(constant.ERROR, "", 0.0, 0.0, err.Error())
+		return
+	}
 	for {
 		records, err := exchange.GetRecords()
 		if err != nil {
