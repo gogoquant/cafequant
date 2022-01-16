@@ -165,6 +165,7 @@ func (e *ExchangeFutureBack) Start() error {
 	for _, name := range e.watchlist {
 		dataPath := historyDir + "/" + e.GetExchangeName() + "." + name + ".csv"
 		var ohlcs []constant.OHLC
+		log.Infof("Load data from %s to %s", dataPath, name)
 		_ = csvreader.New().UnMarshalFile(dataPath, &ohlcs)
 		e.dataLoader[name].Load(ohlcs)
 	}
