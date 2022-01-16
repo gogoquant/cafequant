@@ -21,7 +21,7 @@ func Init(path string) error {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
-	// log.SetReportCaller(true)
+	log.SetReportCaller(true)
 	conf, err := ini.InsensitiveLoad(path)
 	if err != nil {
 		log.Printf("Load %s error: %s\n", path, err.Error())

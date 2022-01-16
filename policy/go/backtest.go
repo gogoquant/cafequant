@@ -54,8 +54,8 @@ func main() {
 			continue
 		}
 		if len(records) == 0 {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, "records not found\n")
-			continue
+			exchange.Log(constant.INFO, "", 0.0, 0.0, "policy end")
+			break
 		}
 
 		fmt.Printf("record %s\n", util.Struct2Json(records[0]))
