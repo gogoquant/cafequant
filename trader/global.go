@@ -2,11 +2,13 @@ package trader
 
 import (
 	"context"
+	"sync"
+
+	talib "github.com/markcheno/go-talib"
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"sync"
 )
 
 // Tasks ...
@@ -30,6 +32,11 @@ type Global struct {
 	running    bool               // 运行中
 	scriptType string             // 脚本语言
 	cancel     context.CancelFunc // 执行python脚本
+}
+
+// GroupCandles group candles
+func (g *Global) GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
+	return talib.GroupCandles(highs, opens, closes, lows, groupingFactor)
 }
 
 // AddTask ...

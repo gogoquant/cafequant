@@ -25,6 +25,8 @@ type GlobalHandler interface {
 	DrawKLine(time string, open, closed, low, high float32)
 	DrawLine(name string, time string, data float32, shape string)
 	DrawPlot() error
+	//talib
+	GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error)
 }
 
 var globalMap map[int64]*Global
