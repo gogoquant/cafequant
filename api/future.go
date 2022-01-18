@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -23,8 +22,6 @@ type FutureExchange struct {
 	tradeTypeMap        map[int]string
 	tradeTypeMapReverse map[string]int
 	exchangeTypeMap     map[string]string
-
-	records map[string][]constant.Record
 
 	apiBuilder *builder.APIBuilder
 	api        goex.FutureRestAPI
@@ -158,7 +155,6 @@ func NewFutureExchange(opt constant.Option) *FutureExchange {
 			constant.HuoBiDm: goex.HBDM,
 			constant.HuoBi:   goex.HUOBI_PRO,
 		},
-		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	opt.Limit = 10.0
@@ -443,61 +439,4 @@ func (e *FutureExchange) getTicker(symbol string) (*constant.Ticker, error) {
 	}
 	ticker := e.tickerA2U(exTicker)
 	return ticker, nil
-}
-
-// GetRecords get candlestick data
-func (e *FutureExchange) getRecords(stockType string) ([]constant.Record, error) {
-	stockType, contract := e.getSymbol(stockType)
-	exchangeStockType, ok := e.stockTypeMap[stockType]
-	var key = stockType
-	size := e.GetPeriodSize()
-	periodStr := e.GetPeriod()
-	periodnum, ok := e.recordsPeriodMap[periodStr]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0,
-			"GetRecords() error, the error number is stockType")
-		return nil, errors.New("GetRecords() error, the error number is stockType")
-	}
-
-	klineVec, err := e.api.GetKlineRecords(contract, exchangeStockType, goex.KlinePeriod(periodnum), size)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			"GetRecords() error, the error number is "+err.Error())
-		return nil, fmt.Errorf("GetRecords() error, the error number is:%s", err.Error())
-	}
-	timeLast := int64(0)
-	if len(e.records[key]) > 0 {
-		timeLast = e.records[key][len(e.records[key])-1].Time
-	}
-	var recordsNew []constant.Record
-	for i := len(klineVec); i > 0; i-- {
-		kline := klineVec[i-1]
-		recordTime := kline.Timestamp
-		if recordTime > timeLast {
-			recordsNew = append([]constant.Record{{
-				Time:   recordTime,
-				Open:   kline.Open,
-				High:   kline.High,
-				Low:    kline.Low,
-				Close:  kline.Close,
-				Volume: kline.Vol2,
-			}}, recordsNew...)
-		} else if timeLast > 0 && recordTime == timeLast {
-			e.records[key][len(e.records[key])-1] = constant.Record{
-				Time:   recordTime,
-				Open:   kline.Open,
-				High:   kline.High,
-				Low:    kline.Low,
-				Close:  kline.Close,
-				Volume: kline.Vol2,
-			}
-		} else {
-			break
-		}
-	}
-	e.records[key] = append(e.records[key], recordsNew...)
-	if len(e.records[key]) > size {
-		e.records[key] = e.records[key][len(e.records[key])-size : len(e.records[key])]
-	}
-	return e.records[key], nil
 }

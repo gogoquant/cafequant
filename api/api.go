@@ -15,7 +15,6 @@ type ExchangeBroker interface {
 	getAccount() (*constant.Account, error)
 	getOrders(symbol string) ([]constant.Order, error)
 	getTicker(symbol string) (*constant.Ticker, error)
-	getRecords(stockType string) ([]constant.Record, error)
 	getPosition(stockType string) ([]constant.Position, error)
 	buy(price, amount, msg string) (string, error)
 	sell(price, amount, msg string) (string, error)
@@ -26,10 +25,6 @@ type ExchangeBroker interface {
 
 // Exchange interface
 type Exchange interface {
-	SetPeriod(string)
-	GetPeriod() string
-	SetPeriodSize(int)
-	GetPeriodSize() int
 	Log(action, symbol string, price, amount float64, messages string)
 	GetType() string
 	GetName() string
@@ -42,7 +37,6 @@ type Exchange interface {
 	GetOrders() ([]constant.Order, error)
 	CancelOrder(orderID string) (bool, error)
 	GetTicker() (*constant.Ticker, error)
-	GetRecords() ([]constant.Record, error)
 	GetPosition() ([]constant.Position, error)
 	GetAccount() (*constant.Account, error)
 	GetDepth() (*constant.Depth, error)

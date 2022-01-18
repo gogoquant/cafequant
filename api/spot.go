@@ -22,8 +22,6 @@ type SpotExchange struct {
 	tradeTypeMapReverse map[string]int
 	exchangeTypeMap     map[string]string
 
-	records map[string][]constant.Record
-
 	apiBuilder *builder.APIBuilder
 	api        goex.API
 }
@@ -45,7 +43,6 @@ func NewSpotExchange(opt constant.Option) *SpotExchange {
 		exchangeTypeMap: map[string]string{
 			constant.HuoBi: goex.HUOBI_PRO,
 		},
-		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	spotExchange.SetMinAmountMap(map[string]float64{
@@ -319,58 +316,4 @@ func (e *SpotExchange) GetTicker() (*constant.Ticker, error) {
 		Time: util.Int64Must(tickStr),
 	}
 	return &ticker, nil
-}
-
-// GetRecords get candlestick data
-func (e *SpotExchange) GetRecords() ([]constant.Record, error) {
-	exchangeStockType, ok := e.stockTypeMap[e.GetStockType()]
-	var period int64 = -1
-	periodStr := e.GetPeriod()
-	size := e.GetPeriodSize()
-	period, ok = e.recordsPeriodMap[periodStr]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
-	}
-
-	klineVec, err := e.api.GetKlineRecords(exchangeStockType, goex.KlinePeriod(period), size)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is ", err.Error())
-		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())
-	}
-	timeLast := int64(0)
-	if len(e.records[periodStr]) > 0 {
-		timeLast = e.records[periodStr][len(e.records[periodStr])-1].Time
-	}
-	var recordsNew []constant.Record
-	for i := len(klineVec); i > 0; i-- {
-		kline := klineVec[i-1]
-		recordTime := kline.Timestamp
-		if recordTime > timeLast {
-			recordsNew = append([]constant.Record{{
-				Time:   recordTime,
-				Open:   kline.Open,
-				High:   kline.High,
-				Low:    kline.Low,
-				Close:  kline.Close,
-				Volume: kline.Vol,
-			}}, recordsNew...)
-		} else if timeLast > 0 && recordTime == timeLast {
-			e.records[periodStr][len(e.records[periodStr])-1] = constant.Record{
-				Time:   recordTime,
-				Open:   kline.Open,
-				High:   kline.High,
-				Low:    kline.Low,
-				Close:  kline.Close,
-				Volume: kline.Vol,
-			}
-		} else {
-			break
-		}
-	}
-	e.records[periodStr] = append(e.records[periodStr], recordsNew...)
-	if len(e.records[periodStr]) > size {
-		e.records[periodStr] = e.records[periodStr][len(e.records[periodStr])-size : len(e.records[periodStr])]
-	}
-	return e.records[periodStr], nil
 }

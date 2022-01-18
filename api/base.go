@@ -294,11 +294,6 @@ func (e *BaseExchange) GetRecordsPeriodMap() map[string]int64 {
 	return e.recordsPeriodMap
 }
 
-// GetRecords ...
-func (e *BaseExchange) GetRecords() ([]constant.Record, error) {
-	return e.father.getRecords(e.GetStockType())
-}
-
 // GetTicker  market ticker
 func (e *BaseExchange) GetTicker() (*constant.Ticker, error) {
 	return e.father.getTicker(e.GetStockType())

@@ -17,14 +17,11 @@ func NewFutureBackExchange(opt constant.Option) (Exchange, error) {
 // ExchangeFutureBackLink ...
 type ExchangeFutureBackLink struct {
 	ExchangeFutureBack
-	records map[string][]constant.Record
 }
 
 // NewExchangeFutureBackLink create an exchange struct of futureExchange.com
 func NewExchangeFutureBackLink(opt constant.Option) *ExchangeFutureBackLink {
-	futureExchange := ExchangeFutureBackLink{
-		records: make(map[string][]constant.Record),
-	}
+	futureExchange := ExchangeFutureBackLink{}
 	futureExchange.currData = make(map[string]constant.OHLC)
 	opt.Limit = 10.0
 	futureExchange.BaseExchange.Init(opt)
@@ -189,15 +186,4 @@ func (e *ExchangeFutureBackLink) GetTicker() (*constant.Ticker, error) {
 		return nil, nil
 	}
 	return ticker, nil
-}
-
-// GetRecords get candlestick data
-func (e *ExchangeFutureBackLink) GetRecords() ([]constant.Record, error) {
-	records, err := e.ExchangeFutureBack.GetRecords()
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0,
-			"GetRecords() error, the error number is ", err.Error())
-		return nil, nil
-	}
-	return records, nil
 }

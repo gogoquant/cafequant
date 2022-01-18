@@ -27,8 +27,6 @@ type ExchangeBackLink struct {
 	tradeTypeMap        map[int]string
 	tradeTypeMapReverse map[string]int
 	exchangeTypeMap     map[string]string
-
-	records map[string][]constant.Record
 }
 
 // SetTradeTypeMap ...
@@ -58,7 +56,6 @@ func NewExchangeBackLink(opt constant.Option) *ExchangeBackLink {
 		exchangeTypeMap: map[string]string{
 			constant.HuoBiDm: goex.HBDM,
 		},
-		records: make(map[string][]constant.Record),
 		//apiBuilder: builder.NewAPIBuilder().HttpTimeout(5 * time.Second),
 	}
 	opt.Limit = 10.0
@@ -211,10 +208,4 @@ func (e *ExchangeBackLink) GetTicker() (*constant.Ticker, error) {
 		return nil, fmt.Errorf("GetTicker() error, the error number is %s", err.Error())
 	}
 	return ticker, nil
-}
-
-// GetRecords get candlestick data
-func (e *ExchangeBackLink) GetRecords() ([]constant.Record, error) {
-	e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-	return nil, fmt.Errorf("GetRecords() error, the error number is stockType")
 }

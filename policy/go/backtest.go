@@ -23,7 +23,6 @@ func main() {
 	}
 	var opt constant.Option
 	var symbol = "BTC/USDT.quater"
-	var period = "M30"
 
 	opt.AccessKey = ""
 	opt.SecretKey = ""
@@ -42,8 +41,6 @@ func main() {
 	}
 
 	exchange.SetStockType(symbol)
-	exchange.SetPeriod(period)
-	exchange.SetPeriodSize(3)
 	exchange.Log(constant.INFO, "", 0.0, 0.0, "Call")
 	err = exchange.Start()
 	if err != nil {

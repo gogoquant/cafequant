@@ -269,26 +269,6 @@ func (e *SZExchange) GetTicker() (*constant.Ticker, error) {
 	return ticker, nil
 }
 
-// GetRecords get candlestick data
-func (e *SZExchange) GetRecords() ([]constant.Record, error) {
-	exchangeStockType := e.GetStockType()
-	var period int64 = -1
-	periodStr := e.GetPeriod()
-	size := e.GetPeriodSize()
-	period, ok := e.recordsPeriodMap[periodStr]
-	if !ok {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0, 0, "GetRecords() error, the error number is stockType")
-		return nil, fmt.Errorf("GetRecords() error, the error number is period:%s", periodStr)
-	}
-	ma := 15
-	res, err := getRecords(exchangeStockType, int(period), ma, size)
-	if err != nil {
-		e.logger.Log(constant.ERROR, e.GetStockType(), 0.0, 0.0, "GetRecords() error, the error number is%s\n", err.Error())
-		return nil, fmt.Errorf("GetRecords() error, the error number is %s", err.Error())
-	}
-	return pareseRecords(res, ma), nil
-}
-
 // GetDepth ...
 func (e *SZExchange) GetDepth() (*constant.Depth, error) {
 	stockType := e.GetStockType()
