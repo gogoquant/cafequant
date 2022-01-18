@@ -48,17 +48,6 @@ func main() {
 	exchange.Start()
 
 	for {
-		records, err := exchange.GetRecords()
-		if err != nil {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
-			continue
-		}
-		if len(records) == 0 {
-			exchange.Log(constant.INFO, "", 0.0, 0.0, "records not found\n")
-			continue
-		}
-
-		fmt.Printf("record %s\n", util.Struct2Json(records[0]))
 		ticker, err := exchange.GetTicker()
 		if err != nil {
 			exchange.Log(constant.INFO, "", 0.0, 0.0, err.Error())
