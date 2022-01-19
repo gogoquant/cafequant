@@ -8,6 +8,9 @@
  - 数据工程师分析历史数据制作指标库，扩展平台的指标插件。
  - 平台开发工程师可根据接口规范以插件的形式为平台扩展交易渠道。
 
+# 前端
+[dashboard](https://github.com/gogoquant/jojoquant-dashboard)
+
 ## 下一步
 - go 指标插件扩展支持
 - js 指标插件扩展支持
