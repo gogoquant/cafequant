@@ -62,12 +62,6 @@ var (
 		constant.HuoBi:   NewHuoBiExchange,
 		constant.SZ:      NewSZExchange,
 	}
-	// ExchangeBackerMaker backtest exchange
-	ExchangeBackerMaker = map[string]func(constant.Option) (Exchange, error){
-		constant.HuoBiDm: NewFutureBackExchange,
-		constant.HuoBi:   NewSpotBackExchange,
-		constant.SZ:      NewSpotBackExchange,
-	}
 )
 
 // loadMaker ...
@@ -99,7 +93,6 @@ func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchang
 		return
 	}
 	fmt.Printf("get back exchange %s\n", exchangeType)
-	maker, ok = ExchangeBackerMaker[exchangeType]
 	return
 }
 
