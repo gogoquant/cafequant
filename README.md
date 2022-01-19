@@ -1,4 +1,4 @@
-# Goquant
+# jojoquant
 
 为用户构建简单易用的交易平台
 
