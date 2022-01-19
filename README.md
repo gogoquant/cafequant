@@ -1,12 +1,16 @@
-# QuantBot 
+# Goquant
 
-Build easy quant platform based on web 
+为用户构建简单易用的交易平台
 
+# 功能 
+ - 基于web页面的多用户多策略的管理
+ - 交易员根据各种指标在界面上控制交易策略和交易流程。
+ - 数据工程师分析历史数据制作指标库，扩展平台的指标插件。
+ - 平台开发工程师可根据接口规范以插件的形式为平台扩展交易渠道。
 
-## Feature
+## 下一步
+- go 指标插件扩展支持
+- js 指标插件扩展支持
+- rust 指标插件支持
 
-- web ui
-- online trade
-- offline backtest
-- multiply stragey run support
 
