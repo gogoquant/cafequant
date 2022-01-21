@@ -10,11 +10,13 @@ import (
 )
 
 func main() {
+	var configPath string
 	if len(os.Args) < 2 {
-		fmt.Println("command args invalid")
-		return
+		configPath = "./config.ini"
+	} else {
+		configPath = os.Args[1]
 	}
-	if err := config.Init(os.Args[1]); err != nil {
+	if err := config.Init(configPath); err != nil {
 		fmt.Printf("config init error is %s\n", err.Error())
 		return
 	}
