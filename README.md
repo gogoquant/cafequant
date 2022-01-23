@@ -12,7 +12,7 @@
 [dashboard](https://github.com/gogoquant/jojoquant-dashboard)
 
 ## 下一步
-- go 指标插件扩展支持
+- 页面依赖升级
 - js 指标插件扩展支持
 - rust 指标插件支持
 
