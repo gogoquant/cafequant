@@ -1,11 +1,7 @@
 package trader
 
 import (
-	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
 	"reflect"
 	"time"
 
@@ -161,36 +157,6 @@ func run(id int64) (err error) {
 	return runJs(trader, id)
 }
 
-// runPy ...
-func runPy(trader Global, id int64) (err error) {
-	go func() {
-		defer func() {
-			trader.Status = constant.Stop
-			trader.Pending = constant.Disable
-		}()
-		ctx, cancel := context.WithCancel(context.Background())
-		trader.cancel = cancel
-		script := trader.Algorithm.Script
-		str := []byte(script)
-		filename := fmt.Sprintf("/tmp/%d_%s.py", trader.ID, trader.Name)
-		err = ioutil.WriteFile(filename, str, 0644)
-		if err != nil {
-			return
-		}
-		cmd := exec.CommandContext(ctx, "python3", filename)
-		cmd.Stdout = os.Stdout
-		cmd.Start()
-		trader.LastRunAt = time.Now()
-		trader.Status = constant.Running
-
-		cmd.Wait()
-		fmt.Println("退出程序中...", cmd.Process.Pid)
-	}()
-	Executor[trader.ID] = &trader
-	return
-	//cancel()
-}
-
 // runJs ...
 func runJs(trader Global, id int64) (err error) {
 	err = initializeJs(&trader)
@@ -251,13 +217,6 @@ func stop(id int64) (err error) {
 // stop ...
 func stopJs(id int64) (err error) {
 	Executor[id].ctx.Interrupt <- func() { panic(errHalt) }
-	return
-}
-
-// stop ...
-func stopPy(id int64) (err error) {
-	trader := Executor[id]
-	trader.cancel()
 	return
 }
 
