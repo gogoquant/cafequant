@@ -1,15 +1,12 @@
 package trader
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/robertkrimen/otto"
 	"snack.com/xiyanxiyan10/stocktrader/api"
-	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/model"
-	"snack.com/xiyanxiyan10/stocktrader/util"
 )
 
 // Tasks ...
@@ -22,47 +19,16 @@ type task struct {
 	args []interface{} //函数的参数
 }
 
-type Plugin interface {
-	Start(map[string]interface{}) error
-	Process(map[string]interface{}) (interface{}, error)
-	Stop(map[string]interface{}) error
-}
-
 // Global ...
 type Global struct {
 	api.Global
 	model.Trader
-	plugins map[string]Plugin
 
 	ctx        *otto.Otto     // js虚拟机
 	es         []api.Exchange // 交易所列表
 	tasks      Tasks          // 任务列表
 	running    bool           // 运行中
 	scriptType string         // 脚本语言
-}
-
-// LoadPlugin register plugin struct
-func (g *Global) LoadPlugin(pluginName, pluginType string) error {
-	f, err := util.HotPlugin(config.String(fmt.Sprintf("/%s/%s.so",
-		config.String(constant.GoPluginPath), pluginType)), constant.GoHandler)
-	if err != nil {
-		return err
-	}
-	makerplugin, ok := f.(func() Plugin)
-	if !ok {
-		return fmt.Errorf("load plugin %s fail", pluginName)
-	}
-	g.plugins[pluginName] = makerplugin()
-	return nil
-}
-
-// ProcessPlugin call plugin after load plugin
-func (g *Global) ProcessPlugin(name string, params map[string]interface{}) (interface{}, error) {
-	plugin, ok := g.plugins[name]
-	if !ok {
-		return nil, fmt.Errorf("find plugin %s, fail", name)
-	}
-	return plugin.Process(params)
 }
 
 // AddTask ...

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"os"
 
 	"snack.com/xiyanxiyan10/stocktrader/config"
@@ -19,6 +20,8 @@ type GlobalHandler interface {
 	DingSend(msg string) error
 	MailSet(to, server, portStr, username, password string) error
 	MailSend(msg string) error
+	RegisterPlugin(pluginName, pluginType string) error
+	CallPlugin(name string, params map[string]interface{}) (interface{}, error)
 	DrawSetPath(path string)
 	DrawGetPath() string
 	DrawReset()
@@ -45,6 +48,8 @@ func getGlobal(id int64) (*Global, bool) {
 type Global struct {
 	logger model.Logger // 利用这个对象保存日志
 
+	plugins map[string]Plugin
+
 	backtest  bool // 是否为回测模式
 	backlog   bool
 	mail      notice.MailHandler // 邮件发送
@@ -56,6 +61,36 @@ type Global struct {
 // NewGlobal get global struct
 func NewGlobal(opt constant.Option) GlobalHandler {
 	return NewGlobalStruct(opt)
+}
+
+type Plugin interface {
+	Start(map[string]interface{}) error
+	Process(map[string]interface{}) (interface{}, error)
+	Stop(map[string]interface{}) error
+}
+
+// LoadPlugin register plugin struct
+func (g *Global) RegisterPlugin(pluginName, pluginType string) error {
+	f, err := util.HotPlugin(config.String(fmt.Sprintf("/%s/%s.so",
+		config.String(constant.GoPluginPath), pluginType)), constant.GoHandler)
+	if err != nil {
+		return err
+	}
+	makerplugin, ok := f.(func() Plugin)
+	if !ok {
+		return fmt.Errorf("load plugin %s fail", pluginName)
+	}
+	g.plugins[pluginName] = makerplugin()
+	return nil
+}
+
+// ProcessPlugin call plugin after load plugin
+func (g *Global) CallPlugin(name string, params map[string]interface{}) (interface{}, error) {
+	plugin, ok := g.plugins[name]
+	if !ok {
+		return nil, fmt.Errorf("find plugin %s, fail", name)
+	}
+	return plugin.Process(params)
 }
 
 func NewGlobalStruct(opt constant.Option) *Global {
