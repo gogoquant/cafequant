@@ -124,6 +124,7 @@ type Option struct {
 	Limit     int64
 	LastSleep int64
 	LastTimes int64
+	WatchList []string
 
 	host string
 

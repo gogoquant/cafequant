@@ -24,6 +24,7 @@ func TestFutureBack(t *testing.T) {
 	opt.Index = 1
 	opt.BackLog = true
 	opt.BackTest = true
+	opt.WatchList = append(opt.WatchList, symbol)
 
 	exchange, err := GetExchange(opt)
 	if err != nil {
