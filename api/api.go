@@ -59,9 +59,11 @@ var (
 	constructor = map[string]func(constant.Option) (Exchange, error){}
 	// ExchangeMaker online exchange
 	ExchangeMaker = map[string]func(constant.Option) (Exchange, error){
-		constant.HuoBiDm: NewHuoBiDmExchange,
-		constant.HuoBi:   NewHuoBiExchange,
-		constant.SZ:      NewSZExchange,
+		constant.HuoBiDm:    NewHuoBiDmExchange,
+		constant.HuoBi:      NewHuoBiExchange,
+		constant.FutureBack: NewFutureBackExchange,
+		constant.SpotBack:   NewSpotBackExchange,
+		constant.SZ:         NewSZExchange,
 	}
 )
 

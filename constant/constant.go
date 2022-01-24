@@ -59,7 +59,7 @@ const (
 
 // some variables
 var (
-	ExchangeTypes = []string{HuoBiDm, FutureBack, HuoBi, SpotBack, SZ}
+	ExchangeTypes = []string{HuoBiDm, FutureBack, HuoBi, SpotBack}
 	ScriptTypes   = []string{ScriptJs}
 )
 
