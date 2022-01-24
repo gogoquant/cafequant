@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"snack.com/xiyanxiyan10/stocktrader/config"
 	"snack.com/xiyanxiyan10/stocktrader/constant"
 	"snack.com/xiyanxiyan10/stocktrader/util"
@@ -86,16 +85,7 @@ func loadMaker(exchangeType string) (func(constant.Option) (Exchange, error), er
 // GetExchange Maker
 func getExchangeMaker(opt constant.Option) (maker func(constant.Option) (Exchange, error), ok bool) {
 	exchangeType := opt.Type
-	Back := opt.BackTest
-	if !Back {
-		maker, ok = ExchangeMaker[exchangeType]
-		log.Infof("get online exchange %s\n", exchangeType)
-		//if !ok {
-		//	loadMaker(exchangeType)
-		//}
-		return
-	}
-	log.Infof("get back exchange %s\n", exchangeType)
+	maker, ok = ExchangeMaker[exchangeType]
 	return
 }
 

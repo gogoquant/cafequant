@@ -24,7 +24,7 @@ func Init(path string) error {
 	log.SetReportCaller(true)
 	conf, err := ini.InsensitiveLoad(path)
 	if err != nil {
-		log.Printf("Load %s error: %s\n", path, err.Error())
+		log.Printf("Load %s error: %s", path, err.Error())
 		return err
 	}
 	keys := conf.Section("").KeyStrings()
